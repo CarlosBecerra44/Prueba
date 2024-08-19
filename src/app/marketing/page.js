@@ -1,4 +1,4 @@
-import { marketing as Marketing } from "@/components/component/marketing";
+import { marketing as Marketing } from "@/components/component/Marketing";
 function page() {
     return (
         <div>

@@ -19,7 +19,7 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client"
 
-import { useState, useMemo } from "react"
+import { UseState, UseMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -70,9 +70,9 @@ export function marketing() {
       image: "/placeholder.svg",
     },
   ]
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState([])
-  const filteredProducts = useMemo(() => {
+  const [searchTerm, setSearchTerm] = UseState("")
+  const [selectedCategories, setSelectedCategories] = UseState([])
+  const filteredProducts = UseMemo(() => {
     return products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,7 +91,7 @@ export function marketing() {
       setSelectedCategories([...selectedCategories, category])
     }
   }
-  const categories = useMemo(() => {
+  const categories = UseMemo(() => {
     return Array.from(new Set(products.map((p) => p.category)));
   }, [products])
   return (
