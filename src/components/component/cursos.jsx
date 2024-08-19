@@ -25,15 +25,15 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client"
 
-import { UseState, UseMemo } from "react"
+import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export function cursos() {
-  const [searchTerm, setSearchTerm] = UseState("")
-  const [selectedCategory, setSelectedCategory] = UseState("all")
+export function Cursos() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
   const courses = [
     {
       id: 1,
@@ -78,7 +78,7 @@ export function cursos() {
       category: "Creatividad",
     },
   ]
-  const filteredCourses = UseMemo(() => {
+  const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
       if (selectedCategory === "all") {
         return course.title.toLowerCase().includes(searchTerm.toLowerCase());

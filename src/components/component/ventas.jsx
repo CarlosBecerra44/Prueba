@@ -19,7 +19,7 @@ To read more about using these font, please visit the Next.js documentation:
 **/
 "use client"
 
-import { UseState, UseMemo } from "react"
+import { useState, useMemo } from "react"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
@@ -28,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 
-export function ventas() {
+export function Ventas() {
   const products = [
     {
       id: 1,
@@ -73,8 +73,8 @@ export function ventas() {
       image: "/placeholder.svg",
     },
   ]
-  const [sortBy, setSortBy] = UseState("featured")
-  const [filters, setFilters] = UseState({
+  const [sortBy, setSortBy] = useState("featured")
+  const [filters, setFilters] = useState({
     category: [],
     price: {
       min: 0,
@@ -90,7 +90,7 @@ export function ventas() {
       [type]: value,
     }))
   }
-  const filteredProducts = UseMemo(() => {
+  const filteredProducts = useMemo(() => {
     return products
       .filter((product) => {
         if (filters.category.length > 0) {

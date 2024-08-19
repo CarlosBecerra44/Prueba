@@ -1,4 +1,4 @@
-import { cursos as Cursos } from "@/components/component/cursos";
+import { Cursos as Cursos } from "@/components/component/Cursos";
 function page() {
     return (
         <div>

@@ -92,7 +92,7 @@ export function principal() {
           <section>
             <Card>
               <CardHeader>
-                <CardTitle>What's New</CardTitle>
+                <CardTitle>test</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
@@ -106,7 +106,7 @@ export function principal() {
                     <div className="grid gap-1">
                       <h3 className="text-lg font-medium">Introducing Our Latest Product</h3>
                       <p className="text-muted-foreground">
-                        We're excited to launch our newest product, designed to revolutionize the industry.
+                        test excited to launch our newest product, designed to revolutionize the industry.
                       </p>
                       <Link href="#" className="text-primary" prefetch={false}>
                         Learn More
@@ -140,7 +140,7 @@ export function principal() {
                     <div className="grid gap-1">
                       <h3 className="text-lg font-medium">Exciting Company Announcement</h3>
                       <p className="text-muted-foreground">
-                        We're thrilled to share a major announcement that will impact our business and industry.
+                        test thrilled to share a major announcement that will impact our business and industry.
                       </p>
                       <Link href="#" className="text-primary" prefetch={false}>
                         Read More
@@ -165,7 +165,7 @@ export function principal() {
                         <ActivityIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our R&D team is constantly innovating and pushing the boundaries of what's possible.
+                      test team is constantly innovating and pushing the boundaries of test possible.
                       </p>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-4">
@@ -194,7 +194,7 @@ export function principal() {
                         <DollarSignIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our finance department ensures the company's financial stability and growth.
+                        Our finance department ensures the test financial stability and growth.
                       </p>
                     </div>
                   </div>
