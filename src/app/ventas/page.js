@@ -1,5 +1,5 @@
 // archivo: pages/home.js
-import { ventas as Ventas } from "@/components/component/Ventas";
+import { ventas as Ventas } from "@/components/component/ventas";
 function page() {
   return (
     <div>
