@@ -1,9 +1,9 @@
 // archivo: pages/home.js
-import { Ventas as Ventas } from "@/components/component/Ventas";
+import { Ventas as Ven } from "@/components/component/Ventas";
 function page() {
   return (
     <div>
-      <Ventas />
+      <Ven />
     </div>
   );
 }
