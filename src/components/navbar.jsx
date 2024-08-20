@@ -31,7 +31,7 @@ export function navbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" />
+                <AvatarImage src="/321.png" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
               <span className="sr-only">Toggle user menu</span>
@@ -40,12 +40,12 @@ export function navbar() {
           <DropdownMenuContent align="end">
             <div className="flex items-center gap-2 p-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" />
+                <AvatarImage src="/321.png" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
               <div className="grid gap-0.5 leading-none">
                 <div className="font-semibold">John Doe</div>
-                <div className="text-sm text-muted-foreground">john@example.com</div>
+                <div className="text-sm text-muted-foreground">j.orozoco@nutriton.com.nx</div>
               </div>
             </div>
             <DropdownMenuSeparator />
