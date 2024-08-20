@@ -57,7 +57,7 @@ export function principal() {
                   </div>
                   <div className="grid gap-2">
                     <img
-                      src="/Brigada.jpg"
+                      src="/brigada.jpg"
                       width="550"
                       height="310"
                       alt="Article Image"
