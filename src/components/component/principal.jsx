@@ -50,8 +50,7 @@ export function principal() {
                     <div className="grid gap-1">
                       <h3 className="text-xl font-bold">Certificación</h3>
                       <p className="text-muted-foreground">
-                        Our team has developed a new technology that promises to revolutionize the renewable energy
-                        industry.
+                       Certificaciones constantes para mejor desempeño de las áreas 
                       </p>
                     </div>
                   </div>
@@ -65,8 +64,7 @@ export function principal() {
                     <div className="grid gap-1">
                       <h3 className="text-xl font-bold">Brigada de primeros Auxilios</h3>
                       <p className="text-muted-foreground">
-                        We are excited to announce the opening of our new offices in Europe and Asia, further
-                        strengthening our international presence.
+                        Actividades extracurriculares para personal 
                       </p>
                     </div>
                   </div>
@@ -80,8 +78,7 @@ export function principal() {
                     <div className="grid gap-1">
                       <h3 className="text-xl font-bold">Estándar de trabajo</h3>
                       <p className="text-muted-foreground">
-                        This year marks a significant milestone for our company as we celebrate 10 years of success and
-                        growth.
+                       Mejora en nuestras actividades diarias como colaboradores
                       </p>
                     </div>
                   </div>
@@ -92,7 +89,7 @@ export function principal() {
           <section>
             <Card>
               <CardHeader>
-                <CardTitle>test</CardTitle>
+                <CardTitle>Cursos</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
@@ -104,11 +101,11 @@ export function principal() {
                       alt="Product Image"
                       className="aspect-square overflow-hidden rounded-lg object-cover object-center" />
                     <div className="grid gap-1">
-                      <h3 className="text-lg font-medium">Introducing Our Latest Product</h3>
+                      <h3 className="text-lg font-medium">Cerfiicaciones</h3>
                       <p className="text-muted-foreground">
-                        test excited to launch our newest product, designed to revolutionize the industry.
+                       Mejora continua con cursos adecuados
                       </p>
-                      <Link href="#" className="text-primary" prefetch={false}>
+                      <Link href="https://productivity.center/" className="text-primary" prefetch={false}>
                         Learn More
                       </Link>
                     </div>
@@ -121,12 +118,12 @@ export function principal() {
                       alt="Event Image"
                       className="aspect-square overflow-hidden rounded-lg object-cover object-center" />
                     <div className="grid gap-1">
-                      <h3 className="text-lg font-medium">Upcoming Industry Event</h3>
+                      <h3 className="text-lg font-medium">Eventos Proximos</h3>
                       <p className="text-muted-foreground">
-                        Join us at the upcoming industry event to network and learn about the latest trends.
+                        Conoce mas de nuestros proximos eventos de mejora continua
                       </p>
-                      <Link href="#" className="text-primary" prefetch={false}>
-                        Register Now
+                      <Link href="" className="text-primary" prefetch={false}>
+                        Ingresa
                       </Link>
                     </div>
                   </div>
@@ -138,12 +135,12 @@ export function principal() {
                       alt="Announcement Image"
                       className="aspect-square overflow-hidden rounded-lg object-cover object-center" />
                     <div className="grid gap-1">
-                      <h3 className="text-lg font-medium">Exciting Company Announcement</h3>
+                      <h3 className="text-lg font-medium">Más sobre nuestros valores</h3>
                       <p className="text-muted-foreground">
-                        test thrilled to share a major announcement that will impact our business and industry.
+                        Lo hacemos posible 
                       </p>
                       <Link href="#" className="text-primary" prefetch={false}>
-                        Read More
+                        Ver más
                       </Link>
                     </div>
                   </div>
@@ -165,7 +162,7 @@ export function principal() {
                         <ActivityIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                      test team is constantly innovating and pushing the boundaries of test possible.
+                      Implementación de nuevo producto
                       </p>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-4">
@@ -174,7 +171,7 @@ export function principal() {
                         <MegaphoneIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our marketing experts are dedicated to promoting our products and services.
+                        La imagen de la empresa.
                       </p>
                     </div>
                   </div>
@@ -185,7 +182,7 @@ export function principal() {
                         <BriefcaseIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our sales team is dedicated to providing exceptional customer service and closing deals.
+                       Prospectar con clientes para venta.
                       </p>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-4">
@@ -194,7 +191,7 @@ export function principal() {
                         <DollarSignIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our finance department ensures the test financial stability and growth.
+                        Llevamos las finanzas de cada razón social.
                       </p>
                     </div>
                   </div>
@@ -205,7 +202,7 @@ export function principal() {
                         <UsersIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our HR team is dedicated to supporting and developing our talented workforce.
+                        Equipo de RH que brinda apoyo a cada uno de nuestros empleados
                       </p>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-4">
@@ -214,7 +211,7 @@ export function principal() {
                         <ServerIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
-                        Our IT department ensures the smooth operation of our technology infrastructure.
+                        Departamento centrado para soporte a usuario y brindar asistencia.
                       </p>
                     </div>
                   </div>
