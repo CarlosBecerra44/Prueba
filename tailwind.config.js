@@ -72,5 +72,8 @@ module.exports = {
             }
           }
 },
-  plugins: [require("tailwindcss-animate")],
+  // Otras configuraciones de Tailwind
+  plugins: [
+    require('tailwindcss-animate'),
+  ],
 };

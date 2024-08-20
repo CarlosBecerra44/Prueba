@@ -1,3 +1,6 @@
+'use client'
+
+import { signIn } from 'next-auth/react'
 
 export function login() {
   return (
@@ -31,6 +34,7 @@ export function login() {
             Iniciar sesión
           </button>
         </form>
+        <button onClick={() => signIn('google')}>Sign in with Google</button>
       </div>
     </div>)
   );
