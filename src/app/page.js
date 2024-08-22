@@ -1,9 +1,9 @@
 // archivo: pages/home.js
-import { principal as Inicio } from "@/components/component/principal";
+import { login as In } from "@/components/component/login";
 function Home() {
   return (
     <div>
-      <Inicio />
+      <In />
     </div>
   );
 }

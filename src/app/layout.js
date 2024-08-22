@@ -12,16 +12,17 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   const pathname = usePathname(); // Obtiene la ruta actual
-  const showNavbar = pathname !== '/login'; // Determina si debe mostrarse la Navbar
+  const showNavbar = pathname !== '/login';
+  const showNavbar3 = pathname !== '/'; // Determina si debe mostrarse la Navbar
   const showNavbar2 = pathname !== '/login/registro'; // Determina si debe mostrarse la Navbar
 
   return (
     <html lang="en">
       <title>AIONET</title>
       <meta name="description" content="Bienvenido a AIONET, la plataforma ..." />
-      <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+      <link rel="icon" type="image/png" sizes="16x16" href="/logo1.png" />
       <body className={inter.className}>
-        {showNavbar && showNavbar2 && <Inicio />} {/* Muestra la Navbar si corresponde */}
+        {showNavbar &&showNavbar3 && showNavbar2 && <Inicio />} {/* Muestra la Navbar si corresponde */}
         <br />
         {children}
       </body>
