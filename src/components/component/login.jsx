@@ -40,7 +40,7 @@ export function login() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+            <span className="bg-background px-2 text-muted-foreground">Continua con correo</span>
           </div>
         </div>
         <div className="space-y-2">
@@ -51,9 +51,10 @@ export function login() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" placeholder="Enter your password" required />
         </div>
-        <Button type="submit" className="w-full">
-          Sign In
-        </Button>
+        <div className='row'>
+        <Button type="submit" className="w-full">Iniciar</Button>
+        <Button type="submit" className="w-full">Registro</Button>
+        </div>
       </div>
     </div>)
   );
