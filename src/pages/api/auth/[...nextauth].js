@@ -35,6 +35,11 @@ export default NextAuth({
         return Promise.resolve('/inicio');
       }
       return Promise.resolve(baseUrl);
+    },
+    async session({ session, token }) {
+      // Puedes modificar la sesión aquí si lo necesitas
+      session.GOOGLE_CLIENT_ID = token.sub; // Por ejemplo, agregar el userId a la sesión
+      return session;
     }
   },
 });

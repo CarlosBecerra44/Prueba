@@ -23,10 +23,11 @@ import { signIn } from 'next-auth/react'
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import Link from "next/link";
 
 export function login() {
   return (
-    (<div className="mx-auto max-w-md space-y-6">
+    (<div className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
       <div className="space-y-2 text-center">
         <img src="/logo.png" alt="" />
       </div>
@@ -54,6 +55,12 @@ export function login() {
         <Button type="submit" className="w-full">
           Sign In
         </Button>
+        <div className="text-center text-sm text-muted-foreground">
+        ¿Aún no tienes una cuenta?{" "}
+        <Link href="/login/registro" className="underline" prefetch={false}>
+        Regístrate
+        </Link>
+      </div>
       </div>
     </div>)
   );
