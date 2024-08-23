@@ -17,21 +17,46 @@ To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
-'use client'
-
-import { signIn } from 'next-auth/react'
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+"use client"
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
-export function login() {
+export function Login() {
+  const [correo, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ correo, password }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      setError(data.message);
+    } else {
+      // Redirigir o manejar inicio de sesión exitoso
+      window.location.href = '/inicio';
+    }
+  };
+
   return (
-    (<div className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
-      <div className="space-y-2 text-center">
-        <img src="/logo.png" alt="" />
-      </div>
-      <div className="space-y-4">
+    <div className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-2 text-center">
+          <img src="/logo.png" alt="" />
+        </div>
+        <div className="space-y-4"><br />
         <Button onClick={() => signIn('google')} variant="outline" className="w-full">
           <ChromeIcon className="mr-2 h-4 w-4" />
           Sign in with Google
@@ -44,10 +69,32 @@ export function login() {
             <span className="bg-background px-2 text-muted-foreground">Continua con correo</span>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={correo}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="m@example.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          {error && <p className="text-center text-red-500">{error}</p>}
+          <Button type="submit" className="w-full">Sign In</Button>
         </div>
+<<<<<<< Updated upstream
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" placeholder="Enter your password" required />
@@ -57,6 +104,15 @@ export function login() {
         </Button>
       </div>
     </div>)
+=======
+      </form>
+      <div className="text-center text-sm text-muted-foreground">
+        ¿Aún no tienes una cuenta?{" "}
+        <Link href="/login/registro" className="underline">Regístrate</Link>
+      </div>
+      
+    </div>
+>>>>>>> Stashed changes
   );
 }
 

@@ -1,4 +1,4 @@
-import { login as Entrar } from "@/components/component/login";
+import { Login as Entrar } from "@/components/component/login";
 
 function Contact() {
   return (
