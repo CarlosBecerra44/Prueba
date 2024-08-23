@@ -1,10 +1,12 @@
-'use client'
+
+"use client";
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from "next/link"
+import bcrypt from 'bcryptjs';
 
 export function Registro() {
   const [name, setName] = useState('');
@@ -19,6 +21,7 @@ export function Registro() {
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden');
+      
       return;
     }
 
@@ -45,9 +48,8 @@ export function Registro() {
       setError('Hubo un problema con el registro. Por favor, intenta nuevamente.');
     }
   };
-
   return (
-    <form onSubmit={handleSubmit}>
+    ( <form onSubmit={handleSubmit}>
       <div className="mx-auto max-w-[450px] space-y-6"><br /><br /><br /><br /><br />
         <div className="space-y-2 text-center">
           <img src="/logo.png" alt="" />
@@ -83,6 +85,6 @@ export function Registro() {
           </Link>
         </div>
       </div>
-    </form>
+    </form>)
   );
 }
