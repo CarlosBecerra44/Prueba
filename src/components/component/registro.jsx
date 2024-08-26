@@ -50,7 +50,7 @@ export function Registro() {
   };
   return (
     ( <form onSubmit={handleSubmit}>
-      <div className="mx-auto max-w-[450px] space-y-6"><br /><br /><br /><br /><br />
+      <div style={{ marginLeft: "500px" }} className="mx-auto max-w-[450px] space-y-6"><br /><br /><br /><br /><br />
         <div className="space-y-2 text-center">
           <img src="/logo.png" alt="" />
         </div>

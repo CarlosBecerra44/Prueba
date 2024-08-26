@@ -23,68 +23,97 @@ To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
+"use client"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import Link from "next/link"
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
 
-export function principal() {
+export function Principal() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const images = [
+    {
+      src: "/certificacion.jpg?height=400&width=800",
+      title: "Certificación",
+      description: "Certificaciones constantes para mejor desempeño de las áreas.",
+    },
+    {
+      src: "/brigada.jpg?height=400&width=800",
+      title: "Brigada de primeros auxilios",
+      description: "Actividades extracurriculares para personal.",
+    },
+    {
+      src: "/estandar.jpg?height=400&width=800",
+      title: "Estándar de trabajo",
+      description: "Mejora en nuestras actividades diarias como colaboradores.",
+    },
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [images.length])
+
+  const handlePrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
+  }
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+  }
+
   return (
-    (<div className="flex flex-col min-h-screen bg-muted/40">
-      
-        <main className="grid flex-1 gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+    (<main className="grid flex-1 gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <section>
-            <Card>
-              <CardHeader>
-                <CardTitle>Novedades</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="grid gap-2">
-                    <img
-                      src="/certificacion.jpg"
-                      width="550"
-                      height="310"
-                      alt="Article Image"
-                      className="aspect-video overflow-hidden rounded-xl object-cover object-center" />
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold">Certificación</h3>
-                      <p className="text-muted-foreground">
-                       Certificaciones constantes para mejor desempeño de las áreas 
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <img
-                      src="/brigada.jpg"
-                      width="550"
-                      height="310"
-                      alt="Article Image"
-                      className="aspect-video overflow-hidden rounded-xl object-cover object-center" />
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold">Brigada de primeros Auxilios</h3>
-                      <p className="text-muted-foreground">
-                        Actividades extracurriculares para personal 
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <img
-                      src="/estandar.jpg"
-                      width="550"
-                      height="310"
-                      alt="Article Image"
-                      className="aspect-video overflow-hidden rounded-xl object-cover object-center" />
-                    <div className="grid gap-1">
-                      <h3 className="text-xl font-bold">Estándar de trabajo</h3>
-                      <p className="text-muted-foreground">
-                       Mejora en nuestras actividades diarias como colaboradores
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="relative w-full mx-auto">
+      <div className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)`, height: "550px" }}>
+          {images.map((image, index) => (
+            <div key={index} className="shrink-0 w-full relative" style={{ height: "550px" }}>
+              <img
+                src={image.src}
+                alt={image.title}
+                className="w-full h-full object-cover"
+                style={{ height: "550px", objectFit: "cover" }} />
+              {/* Texto centrado */}
+              <div className="absolute inset-0 flex flex-col justify-center items-center bg-black/50 p-4">
+                <h3 className="text-white text-4xl font-bold text-center" style={{ textShadow: "2px 2px 5px black", color: "white" }}>
+                  {image.title}
+                </h3>
+                <p className="text-white text-lg text-center mt-2" style={{ textShadow: "2px 2px 5px black", color: "white" }}>
+                  {image.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="absolute inset-y-1/2 left-4 -translate-y-1/2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handlePrevious}
+          className="rounded-full bg-white/50 hover:bg-white">
+          <ChevronLeftIcon className="w-6 h-6" />
+          <span className="sr-only">Previous</span>
+        </Button>
+      </div>
+      <div className="absolute inset-y-1/2 right-4 -translate-y-1/2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleNext}
+          className="rounded-full bg-white/50 hover:bg-white">
+          <ChevronRightIcon className="w-6 h-6" />
+          <span className="sr-only">Next</span>
+        </Button>
+      </div>
+    </div>
           </section>
           <section>
             <Card>
@@ -220,7 +249,6 @@ export function principal() {
             </Card>
           </section>
         </main>
-      </div>
     )
   );
 }
@@ -426,5 +454,41 @@ function PowerIcon(props) {
       <path d="M12 2v10" />
       <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
     </svg>)
+  );
+}
+
+function ChevronLeftIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   );
 }

@@ -36,7 +36,7 @@ export function Login() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
+    <div style={{ marginLeft: "500px" }} className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
       <form onSubmit={handleSubmit}>
         <div className="space-y-2 text-center">
           <img src="/logo.png" alt="" />

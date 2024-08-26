@@ -2,7 +2,7 @@
 import { Inter } from "next/font/google";
 import { usePathname } from 'next/navigation'; // Importa usePathname
 import "./globals.css";
-import { navbarv1 as Inicio } from "@/components/navbar";
+import { Navbarv1 as Inicio } from "@/components/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
     <body className={inter.className}>
       <div style={{ display: 'flex' }}>
         {showNavbar && showNavbar3 && showNavbar2 && (
-          <div style={{ width: '250px', position: 'fixed', top: '0', left: '0', height: '100vh', backgroundColor: '#f8f9fa' }}>
+          <div style={{ width: '250px', position: 'fixed', top: '0', left: '0', height: '100vh', backgroundColor: '#000000d6' }}>
             <Inicio /> {/* Navbar */}
           </div>
         )}

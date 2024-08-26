@@ -1,5 +1,5 @@
 // archivo: pages/home.js
-import { principal as Ini } from "@/components/component/principal";
+import { Principal as Ini } from "@/components/component/principal";
 function page() {
   return (
     <div>
