@@ -1,4 +1,3 @@
-
 'use client'
 
 import { signIn } from 'next-auth/react'
@@ -7,7 +6,6 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import Link from "next/link";
 import { useState  } from "react";
-
 
 export function Login() {
   const [correo, setEmail] = useState('');
@@ -54,9 +52,9 @@ password,
           <img src="/logo.png" alt="" />
         </div>
         <div className="space-y-4"><br />
-        <Button onClick={() => signIn('google')} variant="outline" className="w-full">
+        <Button onClick={() => signIn("google", { callbackUrl: "/inicio" })} variant="outline" className="w-full">
           <ChromeIcon className="mr-2 h-4 w-4" />
-          Sign in with Google
+          Iniciar sesión con Google
         </Button>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -67,29 +65,29 @@ password,
           </div>
         </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               type="email"
               value={correo}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="m@example.com"
+              placeholder="juana@example.com"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="Introduce tu contraseña"
               required
             />
           </div>
           {error && <p className="text-center text-red-500">{error}</p>}
-          <Button type="submit" className="w-full">Sign In</Button>
+          <Button type="submit" className="w-full">Iniciar sesión</Button>
         </div>
       </form>
       <div className="text-center text-sm text-muted-foreground">

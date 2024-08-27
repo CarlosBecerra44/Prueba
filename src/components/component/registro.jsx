@@ -67,11 +67,11 @@ export function Registro() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" type="password" placeholder="Introduce una contraseña" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-            <Input id="confirmPassword" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            <Input id="confirmPassword" type="password" placeholder="Vuelve a introducir la contraseña" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
           {error && <div className="text-red-500">{error}</div>}
           <Button type="submit" className="w-full">

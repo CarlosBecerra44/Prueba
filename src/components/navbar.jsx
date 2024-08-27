@@ -18,10 +18,10 @@ export function Navbarv1() {
     
   }
   if (!session || !session.user) {
+    window.location.href = '/';
     return <p>No has iniciado sesión</p>;
   }
  
-
   return (
     (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
       <div
@@ -160,7 +160,7 @@ export function Navbarv1() {
         <Link href="/" className="underline">
           <Button style={{ color: "black" }} variant="outline" size="sm" className="w-full" onClick={()=>signOut({callbackUrl:'/'})}>
             <LogOutIcon className="h-4 w-4 mr-2" />
-            {session ? "Cerrar Sesión":"Iniciar Sesión"}
+            {session ? "Cerrar sesión":"Iniciar sesión"}
           </Button>
         </Link>
       </div>

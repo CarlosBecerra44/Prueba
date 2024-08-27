@@ -29,6 +29,7 @@ import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { useSession,  signOut } from "next-auth/react";
 
 export function Principal() {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -63,6 +64,21 @@ export function Principal() {
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+  }
+
+  const [openSection, setOpenSection] = useState(null)
+  
+  const {data: session,status}=useSession ();
+  const toggleSection = (section) => {
+    setOpenSection(openSection === section ? null : section)
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+    
+  }
+  if (!session || !session.user) {
+    window.location.href = '/';
+    return <p>No has iniciado sesión</p>;
   }
 
   return (
@@ -466,7 +482,7 @@ function ChevronLeftIcon(props) {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="white"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round">
@@ -484,7 +500,7 @@ function ChevronRightIcon(props) {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="white"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round">
