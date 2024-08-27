@@ -4,12 +4,24 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useSession,  signOut } from "next-auth/react";
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null)
+  
+  const {data: session,status}=useSession ();
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section)
   }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+    
+  }
+  if (!session || !session.user) {
+    return <p>No has iniciado sesión</p>;
+  }
+ 
+
   return (
     (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
       <div
@@ -22,7 +34,7 @@ export function Navbarv1() {
             width="32"
             height="32"
             style={{ aspectRatio: "32/32", objectFit: "cover" }} />
-          <span className="ml-2 font-medium">John Doe</span>
+          <span className="ml-2 font-medium">{session.user.name}</span>
         </div>
       </div>
       <div className="p-4">
@@ -30,7 +42,7 @@ export function Navbarv1() {
           <SearchIcon style={{ color: "black" }} className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
           <Input
             type="search"
-            placeholder="Search"
+            placeholder="Buscar..."
             className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white placeholder-gray-400" />
         </div>
         <nav className="space-y-2">
@@ -146,9 +158,9 @@ export function Navbarv1() {
       </div>
       <div className="mt-auto border-t border-gray-700 p-4">
         <Link href="/" className="underline">
-          <Button style={{ color: "black" }} variant="outline" size="sm" className="w-full">
+          <Button style={{ color: "black" }} variant="outline" size="sm" className="w-full" onClick={()=>signOut({callbackUrl:'/'})}>
             <LogOutIcon className="h-4 w-4 mr-2" />
-            Sign Out
+            {session ? "Cerrar Sesión":"Iniciar Sesión"}
           </Button>
         </Link>
       </div>

@@ -17,6 +17,18 @@ export function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const result =await signIn("credentials", {
+redirect: false,
+correo,
+password,
+    });
+    if (result.error) {
+      setError("Error en inicio de sesión"+ result.error);
+      
+    }else{
+      window.location.href= "/inicio";
+    }
+
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: {

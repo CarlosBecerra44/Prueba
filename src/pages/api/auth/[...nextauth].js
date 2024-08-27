@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
-import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import bcrypt from 'bcrypt';
+import pool from '@/lib/db'; // Tu conexión a la base de datos
 
 export default NextAuth({
   providers: [
@@ -12,34 +13,65 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        username: { label: "Correo", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const user = { id: 1, name: "admin", email: "admin@example.com" };
-        if (credentials.username === "admin" && credentials.password === "password") {
-          return user;
-        } else {
-          return null;
+        const { correo, password } = credentials;
+         
+        try {
+          // Consulta a la base de datos para obtener el usuario
+          const query = 'SELECT * FROM usuarios WHERE correo = $1';
+          const values = [correo];
+          const result = await pool.query(query, values);
+
+          if (result.rows.length > 0) {
+            const user = result.rows[0];
+
+            // Verifica la contraseña encriptada
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+
+            if (isPasswordValid) {
+              // Retorna el usuario si la autenticación es exitosa
+              return { id: user.id, name: user.nombre, email: user.correo };
+            } else {
+              throw new Error('Contraseña incorrecta');
+            }
+          } else {
+            throw new Error('Usuario no encontrado');
+          }
+        } catch (error) {
+          throw new Error(error.message);
         }
       }
     })
   ],
   pages: {
-    signIn: '/inicio',  // Página personalizada de inicio de sesión
+    signIn: '/inicio',
+    signOut: '/',
+    error: '/error',
   },
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      // Redirige a la página de inicio después de iniciar sesión
-      if (url.startsWith(baseUrl)) {
-        return Promise.resolve('/inicio');
+    async jwt({ token, user }) {
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+      
       }
-      return Promise.resolve(baseUrl);
+      console.log("JWT Token:", token); 
+      return token;
     },
     async session({ session, token }) {
-      // Puedes modificar la sesión aquí si lo necesitas
-      session.GOOGLE_CLIENT_ID = token.sub; // Por ejemplo, agregar el userId a la sesión
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email;
+        
+      }
+      console.log("Session Token:", token);
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : baseUrl;
     }
   },
 });
