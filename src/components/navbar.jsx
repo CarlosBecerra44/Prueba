@@ -23,13 +23,13 @@ export function Navbarv1() {
         style={{ borderBottomWidth: "2px", width: "15.6rem", color: "white" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
         <div style={{ color: "white" }} className="flex items-center">
           <img
-            src="/placeholder.svg"
+            src="/icon_user.png"
             alt="Logo"
             className="h-8"
             width="32"
             height="32"
             style={{ aspectRatio: "32/32", objectFit: "cover" }} />
-          <span className="ml-2 font-medium">{session.user.name}</span>
+         <a href="/perfil"> <span className="ml-2 font-medium">{session.user.name}</span> </a>
         </div>
       </div>
       <div className="p-4">
@@ -45,7 +45,7 @@ export function Navbarv1() {
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("fundamentals")}
             style={{ color: "white" }}>
-            Fundamentals
+            Principal
             {openSection === "fundamentals" ? (
               <div className="h-5 w-5 float-right" />
             ) : (
@@ -55,24 +55,37 @@ export function Navbarv1() {
           {openSection === "fundamentals" && (
             <div style={{ color: "white" }} className="pl-4 space-y-2">
               <Link
-                href="#"
+                href="/inicio"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Brand Appearance
+                Inicio
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Basics
+                noticias
               </Link>
+              <Link
+                href="#"
+                className="block py-2 px-4 rounded-md hover:bg-gray-700"
+                prefetch={false}>
+                Foros
+              </Link>
+              <Link
+                href="#"
+                className="block py-2 px-4 rounded-md hover:bg-gray-700"
+                prefetch={false}>
+                Ayuda
+              </Link>
+            
             </div>
           )}
           <div
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("user-interface")}
             style={{ color: "white" }}>
-            User Interface
+            Departamentos
             {openSection === "user-interface" ? (
               <div className="h-5 w-5 float-right" />
             ) : (
@@ -85,67 +98,65 @@ export function Navbarv1() {
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                UI Introduction
+                Gente & Cultura
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                UX Paradigms
+                Marketing
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Responsive UI
+                Operaciones
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Form Tool
+                IT
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Components
+                Ingenería de nuevo producto
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Icon Library
+                Auditorias
               </Link>
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                UI Animation
+                Ventas
               </Link>
-              <Link
-                href="#"
-                className="block py-2 px-4 rounded-md bg-gray-700"
-                prefetch={false}>
-                Response Effect
-              </Link>
+              
+            </div>
+          )}
+          <div
+            className="text-gray-400 cursor-pointer"
+            onClick={() => toggleSection("Cursos")}
+            style={{ color: "white" }}>
+            Cursos
+            {openSection === "Cursos" ? (
+              <div className="h-5 w-5 float-right" />
+            ) : (
+              <div className="h-5 w-5 float-right" />
+            )}
+          </div>
+          {openSection === "Cursos" && (
+            <div style={{ color: "white" }} className="pl-4 space-y-2">
               <Link
                 href="#"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Functional Animation
-              </Link>
-              <Link
-                href="#"
-                className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                prefetch={false}>
-                Transitions
-              </Link>
-              <Link
-                href="#"
-                className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                prefetch={false}>
-                Browser Support
+                Capacitaciones
               </Link>
             </div>
           )}

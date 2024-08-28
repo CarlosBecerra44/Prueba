@@ -39,9 +39,6 @@ password,
 
     if (!data.success) {
       setError(data.message);
-    } else {
-      // Redirigir o manejar inicio de sesión exitoso
-      window.location.href = '/inicio';
     }
   };
 
