@@ -1,4 +1,3 @@
-
 "use client";
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -6,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from "next/link"
-import bcrypt from 'bcryptjs';
 
 export function Registro() {
   const [name, setName] = useState('');

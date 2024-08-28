@@ -13,19 +13,14 @@ export function Navbarv1() {
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section)
   }
-  if (status=="loading") {
-    return <p>cargando...</p>;
-    
-  }
   if (!session || !session.user) {
-    window.location.href = '/';
-    return <p>No has iniciado sesión</p>;
+    return;
   }
  
   return (
     (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
       <div
-        className="flex items-center justify-between h-16 border-b border-gray-700 px-4">
+        style={{ borderBottomWidth: "2px", width: "15.6rem", color: "white" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
         <div style={{ color: "white" }} className="flex items-center">
           <img
             src="/placeholder.svg"
@@ -156,7 +151,7 @@ export function Navbarv1() {
           )}
         </nav>
       </div>
-      <div className="mt-auto border-t border-gray-700 p-4">
+      <div style={{ borderTopWidth: "2px", width: "15.6rem", color: "white" }} className="mt-auto border-gray-700 p-4">
         <Link href="/" className="underline">
           <Button style={{ color: "black" }} variant="outline" size="sm" className="w-full" onClick={()=>signOut({callbackUrl:'/'})}>
             <LogOutIcon className="h-4 w-4 mr-2" />

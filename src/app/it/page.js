@@ -1,4 +1,4 @@
-import { it as It } from "@/components/component/it";
+import { It as It } from "@/components/component/it";
 function page() {
     return (
         <div>

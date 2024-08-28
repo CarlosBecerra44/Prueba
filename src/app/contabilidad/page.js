@@ -1,4 +1,4 @@
-import { contabilidad as Conta } from "@/components/component/contabilidad";
+import { Contabilidad as Conta } from "@/components/component/contabilidad";
 function page() {
   return (
     <div>

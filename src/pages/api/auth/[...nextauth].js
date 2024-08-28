@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import pool from '@/lib/db'; // Tu conexión a la base de datos
 
 export default NextAuth({
+  secret: process.env.AUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
