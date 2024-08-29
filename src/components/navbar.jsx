@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useSession,  signOut } from "next-auth/react";
+import { Weight } from "lucide-react"
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null)
@@ -44,7 +45,7 @@ export function Navbarv1() {
           <div
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("fundamentals")}
-            style={{ color: "white" }}>
+            style={{ color: " white", fontWeight: "bold", textDecoration: "underline" }}>
             Principal
             {openSection === "fundamentals" ? (
               <div className="h-5 w-5 float-right" />
@@ -52,7 +53,7 @@ export function Navbarv1() {
               <div className="h-5 w-5 float-right" />
             )}
           </div>
-          {openSection === "fundamentals" && (
+       
             <div style={{ color: "white" }} className="pl-4 space-y-2">
               <Link
                 href="/inicio"
@@ -80,11 +81,11 @@ export function Navbarv1() {
               </Link>
             
             </div>
-          )}
+         
           <div
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("user-interface")}
-            style={{ color: "white" }}>
+            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
             Departamentos
             {openSection === "user-interface" ? (
               <div className="h-5 w-5 float-right" />
@@ -92,34 +93,34 @@ export function Navbarv1() {
               <div className="h-5 w-5 float-right" />
             )}
           </div>
-          {openSection === "user-interface" && (
+          
             <div style={{ color: "white" }} className="pl-4 space-y-2">
               <Link
-                href="#"
+                href="/gente_y_cultura"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
                 Gente & Cultura
               </Link>
               <Link
-                href="#"
+                href="/marketing"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
                 Marketing
               </Link>
               <Link
-                href="#"
+                href="/operaciones"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
                 Operaciones
               </Link>
               <Link
-                href="#"
+                href="/it"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
                 IT
               </Link>
               <Link
-                href="#"
+                href="/ingenieria_nuevo_producto"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
                 Ingenería de nuevo producto
@@ -130,19 +131,25 @@ export function Navbarv1() {
                 prefetch={false}>
                 Auditorias
               </Link>
-              <Link
-                href="#"
+                <Link
+                  href="/ventas"
+                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
+                  prefetch={false}>
+                  Ventas
+                </Link>
+                <Link
+                href="/contabilidad"
                 className="block py-2 px-4 rounded-md hover:bg-gray-700"
                 prefetch={false}>
-                Ventas
+                Contabilidad
               </Link>
               
             </div>
-          )}
+          
           <div
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("Cursos")}
-            style={{ color: "white" }}>
+            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
             Cursos
             {openSection === "Cursos" ? (
               <div className="h-5 w-5 float-right" />
@@ -150,7 +157,7 @@ export function Navbarv1() {
               <div className="h-5 w-5 float-right" />
             )}
           </div>
-          {openSection === "Cursos" && (
+        
             <div style={{ color: "white" }} className="pl-4 space-y-2">
               <Link
                 href="#"
@@ -159,7 +166,7 @@ export function Navbarv1() {
                 Capacitaciones
               </Link>
             </div>
-          )}
+
         </nav>
       </div>
       <div style={{ borderTopWidth: "2px", width: "15.6rem", color: "white" }} className="mt-auto border-gray-700 p-4">

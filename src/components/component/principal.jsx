@@ -216,7 +216,7 @@ export function Principal() {
                     </div>
                     <div className="bg-muted/50 rounded-lg p-4">
                       <div className="flex items-center justify-between">
-                      <a href="/contabilidad"><h3 className="text-lg font-medium">Contabilidad</h3></a>
+                      <a href="/contabilidad"><h3 className="text-lg font-medium">Operaciones</h3></a>
                         <DollarSignIcon className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <p className="text-muted-foreground">
