@@ -6,28 +6,106 @@ import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
+import { useSession,  signOut } from "next-auth/react";
+import styles from '../../../public/CSS/spinner.css';
+import { useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export function TimeTracker() {
   const [year, setYear] = useState(2024)
   const [selectedDate, setSelectedDate] = useState(null)
   const [modalVisible, setModalVisible] = useState(false)
+  const modalRef = useRef();
+
+  const handleGeneratePDF = async () => {
+    const element = modalRef.current;
+    const canvas = await html2canvas(element, {
+        scale: 2, // Escala para aumentar la resolución de la imagen
+        useCORS: true // Habilita el uso de CORS para cargar imágenes externas
+    });
+    const imgData = canvas.toDataURL('image/png');
+
+    // Crear el PDF en formato horizontal ('landscape')
+    const pdf = new jsPDF('l', 'mm', 'a4'); // 'l' para landscape
+
+    const pageWidth = 210; // A4 width in mm for landscape
+    const pageHeight = 297; // A4 height in mm for landscape
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 50;
+
+    // Ajusta la imagen para que se ajuste al ancho de la página
+    pdf.addImage(imgData, 'PNG', 45, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('formulario-horizontal.pdf');
+  };
   
-  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+  const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
   const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
+
+  // Aquí puedes definir el estado de los días, por ejemplo:
+  const dayStatus = {
+    '2024-08-16': 'validado',
+    '2024-08-19': 'por_aprobar',
+    '2024-08-20': 'rechazado',
+    '2024-01-01': 'festivo',
+    '2024-02-05': 'festivo',
+    '2024-03-21': 'festivo',
+    '2024-05-01': 'festivo',
+    '2024-09-16': 'festivo',
+    '2024-10-01': 'festivo',
+    '2024-11-20': 'festivo',
+    '2024-12-25': 'festivo',
+  }
 
   const renderMonth = (month, index) => {
     const daysInMonth = new Date(year, index + 1, 0).getDate()
     const firstDay = new Date(year, index, 1).getDay()
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+    const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+    
+    // Ajustar el estilo de los días según el estado
+    const getDayStyle = (day, monthIndex) => {
+      const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      switch (dayStatus[dateKey]) {
+        case 'validado':
+          return 'bg-green'
+        case 'por_aprobar':
+          return 'bg-yellow'
+        case 'rechazado':
+          return 'bg-red'
+        case 'festivo':
+          return 'bg-purple'
+        default:
+          return ''
+      }
+    }
 
     return (
       <div key={month} className="mb-4">
         <h3 className="text-sm font-semibold mb-2">{`${month} ${year}`}</h3>
         <div className="grid grid-cols-7 gap-1">
-          {days.map((day, dayIndex) => (
+          {days.map((day, index) => (
+            <div key={index} className="text-xs text-center p-1 font-semibold">
+              {day}
+            </div>
+          ))}
+          {Array.from({ length: firstDay }).map((_, i) => (
+            <div key={i} className="text-xs p-1" />
+          ))}
+          {daysArray.map((day, dayIndex) => (
             <div
               key={day}
-              className={`text-xs text-center p-1 cursor-pointer ${day === 1 ? 'bg-blue-100' : ''} ${[13].includes(day) ? 'bg-gray-200' : ''}`}
+              className={`text-xs text-center p-1 cursor-pointer ${getDayStyle(day, index)}`}
               onClick={() => handleDateClick(day, index)}
             >
               {day}
@@ -45,72 +123,50 @@ export function TimeTracker() {
     setModalVisible(true)
   }
 
-  return (
-    <div className={`p-4 max-w-6xl mx-auto ${modalVisible ? 'overflow-hidden' : ''}`}>
-      <div className={`flex items-center justify-between mb-4 ${modalVisible ? 'hidden' : ''}`}>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon"><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline">HOY</Button>
-          <Button variant="outline" size="icon"><ChevronRight className="h-4 w-4" /></Button>
-          <Select>
-            <option>AÑO</option>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="default">NUEVO TIEMPO PERSONAL</Button>
-          <Button variant="outline">NUEVO SOLICITUD DE ASIGNACIÓN</Button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm"><Filter className="h-4 w-4 mr-2" />Filtros</Button>
-          <Button variant="ghost" size="sm"><Star className="h-4 w-4 mr-2" />Favoritos</Button>
-        </div>
-      </div>
-      
-      <div className={`flex ${modalVisible ? 'hidden' : ''}`}>
-        <div className="grid grid-cols-4 gap-4 flex-grow">
-          {months.map((month, index) => renderMonth(month, index))}
-        </div>
-        <div className="w-64 ml-4">
-          <div className="mb-4">
-            <Input type="search" placeholder="Buscar..." className="w-full" />
-          </div>
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2">Tipo de tiempo personal</h4>
-            <div className="flex items-center mb-2">
-              <Checkbox id="tiempo-personal" />
-              <label htmlFor="tiempo-personal" className="ml-2 text-sm">Tiempo personal por enfermedad</label>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Leyenda</h4>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-purple-600 mr-2"></div>
-                <span className="text-sm">Validado</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-300 mr-2"></div>
-                <span className="text-sm">Por aprobar</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-600 mr-2"></div>
-                <span className="text-sm">Rechazado</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-200 mr-2"></div>
-                <span className="text-sm">Día festivo</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-yellow-200 mr-2"></div>
-                <span className="text-sm">Día por estrés</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  const handlePreviousYear = () => {
+    setYear(prevYear => prevYear - 1)
+  }
 
-      {modalVisible && (
-        <div style={{marginTop: "50px"}} className="p-4 max-w-4xl">
+  const handleNextYear = () => {
+    setYear(prevYear => prevYear + 1)
+  }
+
+  const {data: session,status}=useSession ();
+  
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+
+  if (!session || !session.user) {
+    window.location.href = '/';
+    return <p>No has iniciado sesión</p>;
+  }
+
+  return (
+    <div style={{ marginTop: '50px' }} className="p-4 " ref={modalRef}>
+      <table style={{textAlign:"center"}} className="w-full border-collapse border border-gray-300">
+          <tr>
+            <td rowspan="2"><img
+            src="/pasiLogo.png"
+            alt="Logo"
+            style={{paddingLeft: "0px", width: "100%", height: "60px"}} /></td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Especialidades Nutriton S.A. de C.V.</td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Última revisión<br /><span style={{fontWeight:"normal"}}>22 de abril de 2022</span></td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Vigencia<br /><span style={{fontWeight:"normal"}}>22 de abril de 2025</span></td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Código<br /><span style={{fontWeight:"normal"}}>RH-RE-1</span></td>
+          </tr>
+          <tr>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>MOVIMIENTOS DE PERSONAL</td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Edición<br /><span style={{fontWeight:"normal"}}>0</span></td>
+            <td className="border border-gray-300 p-2" style={{fontWeight:"bold"}}>Nivel<br /><span style={{fontWeight:"normal"}}>2</span></td>
+            <td className="border border-gray-300 p-2">Pág. 1 de 2</td>
+          </tr>
+        </table><br /><br />
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className="font-bold">Empleado <input type="checkbox" className="mr-2" /></label>
@@ -125,9 +181,9 @@ export function TimeTracker() {
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr>
-              <th className="border border-gray-300 p-2">Inasistencia</th>
-              <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} >Justificada <input type="checkbox" className="mr-2" /></th>
-              <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} >Injustificada <input type="checkbox" className="mr-2" /></th>
+              <th className="border border-gray-300 p-2" style={{textAlign:"justify"}} >Inasistencia</th>
+              <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Justificada <input type="checkbox" className="mr-2" /></th>
+              <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Injustificada <input type="checkbox" className="mr-2" /></th>
               <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" /></span></th>
               <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" /></span></th>
               <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" /></span></th>
@@ -202,7 +258,7 @@ export function TimeTracker() {
                 <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" /></span>
               </td>
               <td className="border border-gray-300 p-2">
-                <span style={{display: "flex"}}>Horas: <input style={{marginLeft: "0.5rem"}} type="time" className="w-full" /></span>
+                <span style={{display:"flex"}}>Horas: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" /></span>
               </td>
               <td className="border border-gray-300 p-2">
                 <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" /></span>
@@ -216,7 +272,7 @@ export function TimeTracker() {
         </table>
         <div className="mt-4">
           <label className="font-bold">Observaciones:</label>
-          <textarea style={{width: "116%"}} className="border border-gray-300 p-2 mt-2" rows="4" />
+          <textarea style={{width: "100%"}} className="border border-gray-300 p-2 mt-2" rows="4" />
         </div>
         <Button
           variant="outline"
@@ -224,9 +280,14 @@ export function TimeTracker() {
         >
           Cerrar
         </Button>
+        <Button
+        style={{marginLeft: "0.5rem"}}
+          variant="outline"
+          onClick={handleGeneratePDF}
+        >
+          Guardar como PDF
+        </Button>
       </div>
-      )}
-    </div>
   )
 }
 
@@ -235,7 +296,7 @@ function FolderIcon(props) {
     <svg
       className="h-4 w-4 text-gray-600"
       fill="none"
-      stroke="black"
+      stroke="currentColor"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -243,8 +304,14 @@ function FolderIcon(props) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-4z"
+        d="M3 7h6l2 2h9a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z"
       />
     </svg>
+  )
+}
+
+function Spinner() {
+  return (
+    <div className="spinner" />
   );
 }

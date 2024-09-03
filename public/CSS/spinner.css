@@ -12,3 +12,19 @@
       transform: rotate(360deg);
     }
   }
+
+  .bg-green {
+    background-color: #6dc146; /* Puedes cambiar este color al que prefieras */
+  }
+  
+  .bg-yellow {
+    background-color: #e4e010;
+  }
+  
+  .bg-red {
+    background-color: #e53e3e;
+  }
+  
+  .bg-purple {
+    background-color: #d80bdf;
+  }
