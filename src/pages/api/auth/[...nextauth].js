@@ -10,13 +10,12 @@ export default NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          
     }),
     
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Correo", type: "text" },
+        correo: { label: "Correo", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
@@ -73,6 +72,23 @@ export default NextAuth({
       console.log("Session Token:", token);
       return session;
     },
+    async signIn({ user, account }) {
+      if (account.provider === 'google') {
+        // Verifica si el usuario ya existe en la base de datos
+        const query = 'SELECT * FROM usuarios WHERE correo = $1';
+        const values = [user.email];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+          const rol = "estandar";
+          // Si el usuario no existe, lo inserta en la base de datos
+          const insertQuery = 'INSERT INTO usuarios (rol, nombre, correo) VALUES ($1, $2, $3)';
+          const insertValues = [rol, user.name, user.email];
+          await pool.query(insertQuery, insertValues);
+        }
+      }
+      return true;
+    }
   },
 });
  

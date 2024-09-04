@@ -76,15 +76,19 @@ export function Perfil() {
   }
   if (status=="loading") {
     return <p>cargando...</p>;
-    
   }
   if (!session || !session.user) {
-    window.location.href = '/';
-    return <p>No has iniciado sesión</p>;
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
   }
 
   return (
-    (<div style={{ paddingTop: "10rem", paddingBottom: "10rem" }} className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    (<div style={{ paddingTop: "10rem", paddingBottom: "10rem" }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-background rounded-lg shadow-md p-6">

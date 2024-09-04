@@ -62,17 +62,17 @@ export function TimeTracker() {
 
   // Aquí puedes definir el estado de los días, por ejemplo:
   const dayStatus = {
-    '2024-08-16': 'validado',
-    '2024-08-19': 'por_aprobar',
-    '2024-08-20': 'rechazado',
-    '2024-01-01': 'festivo',
-    '2024-02-05': 'festivo',
-    '2024-03-21': 'festivo',
-    '2024-05-01': 'festivo',
-    '2024-09-16': 'festivo',
-    '2024-10-01': 'festivo',
-    '2024-11-20': 'festivo',
-    '2024-12-25': 'festivo',
+    [`${year}-08-16`]: 'validado',
+    [`${year}-08-19`]: 'por_aprobar',
+    [`${year}-08-20`]: 'rechazado',
+    [`${year}-01-01`]: 'festivo',
+    [`${year}-02-05`]: 'festivo',
+    [`${year}-03-21`]: 'festivo',
+    [`${year}-05-01`]: 'festivo',
+    [`${year}-09-16`]: 'festivo',
+    [`${year}-10-01`]: 'festivo',
+    [`${year}-11-20`]: 'festivo',
+    [`${year}-12-25`]: 'festivo',
   }
 
   const renderMonth = (month, index) => {
@@ -148,10 +148,17 @@ export function TimeTracker() {
       </div>
     );
   }
-
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
   if (!session || !session.user) {
-    window.location.href = '/';
-    return <p>No has iniciado sesión</p>;
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
   }
 
   return (
@@ -173,7 +180,7 @@ export function TimeTracker() {
           </Select>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="default">NUEVO TIEMPO PERSONAL</Button>
+          <Button variant="default" onClick={() => setModalVisible(true)} >NUEVO TIEMPO PERSONAL</Button>
           <Button variant="outline">NUEVO SOLICITUD DE ASIGNACIÓN</Button>
         </div>
         <div className="flex items-center space-x-2">

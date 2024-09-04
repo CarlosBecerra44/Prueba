@@ -22,11 +22,15 @@ export function Contabilidad() {
   }
   if (status=="loading") {
     return <p>cargando...</p>;
-    
   }
   if (!session || !session.user) {
-    window.location.href = '/';
-    return <p>No has iniciado sesión</p>;
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
   }
 
   return (

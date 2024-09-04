@@ -9,8 +9,9 @@ import { Weight } from "lucide-react"
 import { getSession } from 'next-auth/react';
 
 export function Navbarv1() {
-  const [openSection, setOpenSection] = useState(null)
+  const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -26,7 +27,6 @@ export function Navbarv1() {
         const userData = await response.json();
         if (userData.success) {
           setNombre(userData.user.nombre);
-          // La contraseña generalmente no se prellena por razones de seguridad
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -34,14 +34,35 @@ export function Navbarv1() {
     };
     fetchUserData();
   }, []);
-  
-  const {data: session,status}=useSession ();
+
+  const { data: session, status } = useSession();
   const toggleSection = (section) => {
-    setOpenSection(openSection === section ? null : section)
-  }
+    setOpenSection(openSection === section ? null : section);
+  };
+
   if (!session || !session.user) {
-    return;
+    return null;
   }
+
+  const categories = [
+    { id: 1, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 2, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 3, name: "Foros", href: "#", icon: <ForosIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 5, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 6, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 7, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 8, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 9, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 11, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 12, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 13, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+  ];
+
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
  
   return (
     (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
@@ -64,171 +85,65 @@ export function Navbarv1() {
           <Input
             type="search"
             placeholder="Buscar..."
-            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white placeholder-gray-400" />
+            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white placeholder-gray-400"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         <nav className="space-y-2">
-          <div
+          {filteredCategories.map((category) => (
+          <>
+            {category.id === 1 ? (
+              <div
+              className="text-gray-400 cursor-pointer"
+              onClick={() => toggleSection("fundamentals")}
+              style={{ color: " white", fontWeight: "bold", textDecoration: "underline" }}>
+              Principal
+              {openSection === "fundamentals" ? (
+                <div className="h-5 w-5 float-right" />
+              ) : (
+                <div className="h-5 w-5 float-right" />
+              )}
+            </div>
+            ) : category.id === 5 ? <div
+            key={`departamentos-${category.id}`} // Clave única para este div
             className="text-gray-400 cursor-pointer"
             onClick={() => toggleSection("fundamentals")}
-            style={{ color: " white", fontWeight: "bold", textDecoration: "underline" }}>
-            Principal
+            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+          >
+            Departamentos
             {openSection === "fundamentals" ? (
               <div className="h-5 w-5 float-right" />
             ) : (
               <div className="h-5 w-5 float-right" />
             )}
-          </div>
-       
-            <div style={{ color: "white" }} className="pl-4 space-y-2">
-              <div className="flex items-center">
-                <InicioIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/inicio"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Inicio
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <NoticiasIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="#"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Noticias
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <ForosIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="#"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Foros
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <AyudaIcon style={{marginRight: "0px"}} className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="#"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Ayuda
-                </Link>
-              </div>
-            </div>
-         
-          <div
+          </div> : category.id === 13 ? <div
+            key={`cursos-${category.id}`} // Clave única para este div
             className="text-gray-400 cursor-pointer"
-            onClick={() => toggleSection("user-interface")}
-            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
-            Departamentos
-            {openSection === "user-interface" ? (
-              <div className="h-5 w-5 float-right" />
-            ) : (
-              <div className="h-5 w-5 float-right" />
-            )}
-          </div>
-          
-          <div style={{ color: "white" }} className="pl-4 space-y-2">
-              <div className="flex items-center">
-                <GenteCulturaIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/gente_y_cultura"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Gente & Cultura
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <MarketingIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/marketing"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Marketing
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <OperacionesIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/operaciones"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Operaciones
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <ITIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/it"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  IT
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/ingenieria_nuevo_producto"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Ingenería de nuevo producto
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <AuditoriasIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="#"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Auditorias
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <VentasIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/ventas"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Ventas
-                </Link>
-              </div>
-              <div className="flex items-center">
-                <ContabilidadIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="/contabilidad"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Contabilidad
-                </Link>
-              </div>
-            </div>
-          <div
-            className="text-gray-400 cursor-pointer"
-            onClick={() => toggleSection("Cursos")}
-            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
+            onClick={() => toggleSection("fundamentals")}
+            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+          >
             Cursos
-            {openSection === "Cursos" ? (
+            {openSection === "fundamentals" ? (
               <div className="h-5 w-5 float-right" />
             ) : (
               <div className="h-5 w-5 float-right" />
             )}
-          </div>
-        
-            <div style={{ color: "white" }} className="pl-4 space-y-2">
-              <div className="flex items-center">
-                <CapacitacionesIcon className="h-6 w-6 text-gray-400" />
-                <Link
-                  href="#"
-                  className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                  prefetch={false}>
-                  Capacitaciones
-                </Link>
-              </div>
+          </div>: null}
+          <div key={category.name} style={{ color: "white" }} className="pl-4 space-y-2">
+            <div className="flex items-center">
+              {category.icon}
+              <Link
+                href={category.href}
+                className="block py-2 px-4 rounded-md hover:bg-gray-700"
+                prefetch={false}
+              >
+                {category.name}
+              </Link>
             </div>
-
-        </nav>
+          </div>
+        </>
+      ))}
+      </nav>
       </div>
       <div style={{ borderTopWidth: "2px", width: "15.6rem", color: "white" }} className="mt-auto border-gray-700 p-4">
         <Link href="/" className="underline">
@@ -261,7 +176,6 @@ function LogOutIcon(props) {
     </svg>)
   );
 }
-
 
 function SearchIcon(props) {
   return (
