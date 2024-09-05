@@ -39,7 +39,7 @@ export function ExploradorArchivos() {
       <div className="bg-background border-r w-64 p-4 flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <FolderIcon className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-medium">File Explorer</h2>
+          <h2 className="text-lg font-medium">Explorador de Archivos</h2>
         </div>
         <div className="flex-1 overflow-auto">
           <nav className="space-y-1">
@@ -48,21 +48,21 @@ export function ExploradorArchivos() {
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
               prefetch={false}>
               <HomeIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Home</span>
+              <span>Inicio</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
               prefetch={false}>
               <FolderIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Documents</span>
+              <span>Documentos</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
               prefetch={false}>
               <ImageIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Images</span>
+              <span>Imagenes</span>
             </Link>
             <Link
               href="#"
@@ -76,18 +76,18 @@ export function ExploradorArchivos() {
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
               prefetch={false}>
               <DownloadIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Downloads</span>
+              <span>Descargas</span>
             </Link>
           </nav>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <UploadIcon className="w-4 h-4 mr-2" />
-            Upload
+            Cargar
           </Button>
           <Button variant="outline" size="sm">
             <DownloadIcon className="w-4 h-4 mr-2" />
-            Download
+            Descargar
           </Button>
         </div>
       </div>
@@ -96,15 +96,15 @@ export function ExploradorArchivos() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Home</BreadcrumbLink>
+                <BreadcrumbLink href="#">Inicio</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Documents</BreadcrumbLink>
+                <BreadcrumbLink href="#">Documentos</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Project Files</BreadcrumbPage>
+                <BreadcrumbPage>Archivos</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

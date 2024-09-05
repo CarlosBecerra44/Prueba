@@ -87,6 +87,7 @@ export function Perfil() {
     );
   }
 
+
   return (
     (<div style={{ paddingTop: "10rem", paddingBottom: "10rem" }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <form onSubmit={handleSubmit}>

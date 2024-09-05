@@ -19,7 +19,24 @@ export function TimeTracker() {
     const daysInMonth = new Date(year, index + 1, 0).getDate()
     const firstDay = new Date(year, index, 1).getDay()
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-
+    const {data: session,status}=useSession ();
+    if (status === "loading") {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner className={styles.spinner} />
+          <p className="ml-3">Cargando...</p>
+        </div>
+      );
+    }
+    if (status=="loading") {
+      return <p>cargando...</p>;
+      
+    }
+    if (!session || !session.user) {
+      window.location.href = '/';
+      return <p>No has iniciado sesión</p>;
+    }
+  
     return (
       <div key={month} className="mb-4">
         <h3 className="text-sm font-semibold mb-2">{`${month} ${year}`}</h3>

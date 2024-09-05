@@ -57,14 +57,19 @@ export function Navbarv1() {
     { id: 10, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 11, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 12, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 13, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 13, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
 
+  const handleDropdown = (id) => {
+    setOpenDropdown(openDropdown === id ? null : id); // Abre o cierra el dropdown
+  };
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
  
   return (
+
+    
     (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
       <div
         style={{ borderBottomWidth: "2px", width: "15.6rem", color: "white" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
@@ -129,7 +134,7 @@ export function Navbarv1() {
               <div className="h-5 w-5 float-right" />
             )}
           </div>: null}
-          <div key={category.name} style={{ color: "white" }} className="pl-4 space-y-2">
+          <div key={category.id} style={{ color: "white" }} className="pl-4 space-y-2">
             <div className="flex items-center">
               {category.icon}
               <Link
@@ -153,6 +158,7 @@ export function Navbarv1() {
           </Button>
         </Link>
       </div>
+      
     </div>)
   );
 }
