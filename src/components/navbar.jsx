@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { useSession,  signOut } from "next-auth/react";
 import { Weight } from "lucide-react"
 import { getSession } from 'next-auth/react';
+import styles from '../../public/CSS/spinner.css';
+import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
@@ -45,19 +47,22 @@ export function Navbarv1() {
   }
 
   const categories = [
-    { id: 1, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 2, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 3, name: "Foros", href: "#", icon: <ForosIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 5, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 6, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 7, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 8, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 9, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 11, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 12, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 13, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 1, name: "Principal", href: "#"},
+    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Foros", href: "#", icon: <ForosIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 6, name: "Departamentos", href: "#"},,
+    { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/campanas", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
+    { id: 9, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 13, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 14, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 15, name: "Cursos", href: "#"},
+    { id: 16, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -65,95 +70,105 @@ export function Navbarv1() {
   );
  
   return (
-    (<div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
-      <div
-        style={{ borderBottomWidth: "2px", width: "15.6rem", color: "white" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
-        <div style={{ color: "white" }} className="flex items-center">
+    <div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
+      <div className="flex items-center justify-between h-16 border-b border-gray-700 px-4">
+        <div style={{color:"white"}} className="flex items-center">
           <img
             src="/icon_user.png"
             alt="Logo"
-            className="h-8"
-            width="32"
-            height="32"
-            style={{ aspectRatio: "32/32", objectFit: "cover" }} />
-         <a href="/perfil"> <span className="ml-2 font-medium">{nombre}</span> </a>
+            className="h-8 w-8"
+          />
+          <a href="/perfil"><span className="ml-2 font-medium">{nombre}</span></a>
         </div>
       </div>
       <div className="p-4">
         <div className="relative mb-4">
-          <SearchIcon style={{ color: "black" }} className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+          <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
           <Input
             type="search"
             placeholder="Buscar..."
-            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white placeholder-gray-400"
+            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)} />
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-        <nav className="space-y-2">
-          {filteredCategories.map((category) => (
-          <>
-            {category.id === 1 ? (
-              <div
-              className="text-gray-400 cursor-pointer"
-              onClick={() => toggleSection("fundamentals")}
-              style={{ color: " white", fontWeight: "bold", textDecoration: "underline" }}>
-              Principal
-              {openSection === "fundamentals" ? (
-                <div className="h-5 w-5 float-right" />
-              ) : (
-                <div className="h-5 w-5 float-right" />
-              )}
-            </div>
-            ) : category.id === 5 ? <div
-            key={`departamentos-${category.id}`} // Clave única para este div
-            className="text-gray-400 cursor-pointer"
-            onClick={() => toggleSection("fundamentals")}
-            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-          >
-            Departamentos
-            {openSection === "fundamentals" ? (
-              <div className="h-5 w-5 float-right" />
-            ) : (
-              <div className="h-5 w-5 float-right" />
-            )}
-          </div> : category.id === 13 ? <div
-            key={`cursos-${category.id}`} // Clave única para este div
-            className="text-gray-400 cursor-pointer"
-            onClick={() => toggleSection("fundamentals")}
-            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-          >
-            Cursos
-            {openSection === "fundamentals" ? (
-              <div className="h-5 w-5 float-right" />
-            ) : (
-              <div className="h-5 w-5 float-right" />
-            )}
-          </div>: null}
-          <div key={category.name} style={{ color: "white" }} className="pl-4 space-y-2">
-            <div className="flex items-center">
-              {category.icon}
-              <Link
-                href={category.href}
-                className="block py-2 px-4 rounded-md hover:bg-gray-700"
-                prefetch={false}
-              >
-                {category.name}
-              </Link>
-            </div>
+        <nav className="">
+        {filteredCategories.map((category) => (
+  <div key={category.id} className="group">
+    {/* Sección especial para "Principal" */}
+    {category.id === 1 ? (
+      <div
+        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
+        onClick={() => toggleSection("principal")}
+        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+      >
+        Principal
+      </div>
+    ) : category.id === 6 ? (
+      /* Sección especial para "Departamentos" */
+      <div
+        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
+        onClick={() => toggleSection("departamentos")}
+        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+      >
+        Departamentos
+      </div>
+    ) : category.id === 15 ? (
+      /* Sección especial para "Cursos" */
+      <div
+        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
+        onClick={() => toggleSection("cursos")}
+        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+      >
+        Cursos
+      </div>
+    ) : (
+      /* Elementos regulares */
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700"
+          onClick={() => toggleSection(category.id)}
+          style={{color: "white"}}
+        >
+          <div className="flex items-center">
+            {category.icon}
+            <Link href={category.href} className="ml-2">
+              {category.name}
+            </Link>
           </div>
-        </>
-      ))}
-      </nav>
+          {category.subMenu && (
+            <span className="text-gray-400">
+              {openSection === category.id ? "-" : "+"}
+            </span>
+          )}
+        </div>
+        {/* Mostrar submenú si existe */}
+        {openSection === category.id && category.subMenu && (
+          <div className="pl-8" style={{color: "white"}}>
+            {category.subMenu.map((subItem) => (
+              <Link key={subItem.name} href={subItem.href} style={{display:"flex"}} className="block py-2 px-4 hover:bg-gray-600">
+                <div style={{marginRight:"10px"}}>
+                {subItem.icon}
+                </div>
+                {subItem.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-      <div style={{ borderTopWidth: "2px", width: "15.6rem", color: "white" }} className="mt-auto border-gray-700 p-4">
-        <Link href="/" className="underline">
-          <Button style={{ color: "black" }} variant="outline" size="sm" className="w-full" onClick={()=>signOut({callbackUrl:'/'})}>
-            <LogOutIcon className="h-4 w-4 mr-2" />
-            {session ? "Cerrar sesión":"Iniciar sesión"}
-          </Button>
-        </Link>
+    )}
+  </div>
+))}
+        </nav>
       </div>
-    </div>)
+      <div className="mt-auto p-4 border-t border-gray-700">
+        
+        <Button onClick={() => signOut({ callbackUrl: '/' })} className="w-full" style={{color: "black", background: "white"}}>
+          Cerrar sesión
+          <LogOutIcon style={{marginLeft: "0.5rem"}} className="h-4 w-4 text-gray-400" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -201,6 +216,28 @@ function GenteCulturaIcon(props) {
     (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="7" r="4"></circle>
       <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"></path>
+    </svg>)
+  );
+}
+
+function EstrategiaIcon(props) {
+  return (
+    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22" fill="white">
+      <path d="M10 50 L20 40 M20 50 L10 40" stroke="white" stroke-width="2" />
+      <path d="M40 10 L50 20 M50 10 L40 20" stroke="white" stroke-width="2" />
+      <path d="M15 15 L30 30" stroke="white" stroke-width="2" stroke-dasharray="5,5"/>
+      <circle cx="30" cy="30" r="4" fill="white" />
+      <circle cx="50" cy="50" r="4" fill="white" />
+    </svg>
+    )
+  );
+}
+
+function FirmasIcon(props) {
+  return (
+    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22" fill="white">
+      <path d="M10 45 Q15 35, 25 45 T40 40 T55 45" stroke="white" stroke-width="2" fill="none"/>
+      <path d="M40 40 L45 35 L50 40 L45 45 Z" fill="white"/>
     </svg>)
   );
 }
