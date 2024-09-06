@@ -222,23 +222,22 @@ function GenteCulturaIcon(props) {
 
 function EstrategiaIcon(props) {
   return (
-    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22" fill="white">
-      <path d="M10 50 L20 40 M20 50 L10 40" stroke="white" stroke-width="2" />
-      <path d="M40 10 L50 20 M50 10 L40 20" stroke="white" stroke-width="2" />
-      <path d="M15 15 L30 30" stroke="white" stroke-width="2" stroke-dasharray="5,5"/>
-      <circle cx="30" cy="30" r="4" fill="white" />
-      <circle cx="50" cy="50" r="4" fill="white" />
+    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="white">
+      <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+      <circle cx="12" cy="12" r="6" stroke="white" stroke-width="2" fill="none"/>
+      <circle cx="12" cy="12" r="2" fill="white"/>
     </svg>
+
     )
   );
 }
 
 function FirmasIcon(props) {
   return (
-    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22" fill="white">
-      <path d="M10 45 Q15 35, 25 45 T40 40 T55 45" stroke="white" stroke-width="2" fill="none"/>
-      <path d="M40 40 L45 35 L50 40 L45 45 Z" fill="white"/>
-    </svg>)
+    (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="white">
+      <path d="M2 22l2-6 12-12a4 4 0 1 1 6 6L8 22l-6 0zm16.5-16.5a2 2 0 0 0-2.83 0L6 15.17 8.83 18l9.67-9.67a2 2 0 0 0 0-2.83z"/>
+    </svg>
+)
   );
 }
 
