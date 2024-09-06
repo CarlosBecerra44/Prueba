@@ -1,10 +1,12 @@
-import { TablaEventosMejorada as Ta } from "@/components/component/tabla-eventos-mejorada";
+import { EventPlanningForm as Form } from "@/components/component/formulario";
 function page() {
-    return (
+    
+      return (
         <div>
-            <Ta />
+          
+          <Form />
         </div>
-    );
+      );
 }
 
 export default page;

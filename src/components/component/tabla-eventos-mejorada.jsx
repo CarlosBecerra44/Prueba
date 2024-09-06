@@ -73,8 +73,12 @@ export function TablaEventosMejorada() {
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())))
 
   return (
+    
     <div className="container mx-auto py-10">
+    <a href="/marketing/formulario"><Button variant="contained" color="secondary"style={{background:"green", padding:"5px"}}>Agregar +</Button></a>
+    <p style={{padding:"5px"}}></p>
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+       
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
           <Input
