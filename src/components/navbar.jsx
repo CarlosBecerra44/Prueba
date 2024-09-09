@@ -71,7 +71,7 @@ export function Navbarv1() {
  
   return (
     <div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
-      <div className="flex items-center justify-between h-16 border-b border-gray-700 px-4">
+      <div style={{ borderBottomWidth: "2px", marginRight: "6px"}} className="flex items-center justify-between h-16 border-gray-700 px-4">
         <div style={{color:"white"}} className="flex items-center">
           <img
             src="/icon_user.png"
@@ -161,7 +161,7 @@ export function Navbarv1() {
 ))}
         </nav>
       </div>
-      <div className="mt-auto p-4 border-t border-gray-700">
+      <div style={{ borderTopWidth: "2px", marginRight: "6px"}} className="mt-auto p-4 border-gray-700">
         
         <Button onClick={() => signOut({ callbackUrl: '/' })} className="w-full" style={{color: "black", background: "white"}}>
           Cerrar sesión

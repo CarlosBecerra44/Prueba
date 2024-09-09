@@ -49,8 +49,8 @@ export function EventPlanningForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prevData => ({
-      ...prevData,
+    setFormData(formData => ({
+      ...formData,
       [name]: value
     }))
   }
@@ -229,11 +229,29 @@ export function EventPlanningForm() {
     setRoi(roiValue)
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-    // Here you would typically send the data to your backend or perform other actions
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Datos del formulario:", formData);
+
+    try {
+      const response = await fetch('../api/guardarFormulario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar los datos');
+      }
+
+      const result = await response.json();
+      console.log('Formulario guardado:', result);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     (<Card style={{maxWidth: "100rem", marginBottom: "2rem"}} className="w-full mx-auto">
@@ -595,11 +613,12 @@ export function EventPlanningForm() {
               Agregar pieza digital
             </Button>
           </div>
-        </form>
-      </CardContent>
-      <CardFooter>
+          <CardFooter>
         <Button type="submit" className="w-full">Enviar Planificación</Button>
       </CardFooter>
+        </form>
+      </CardContent>
+      
     </Card>)
   );
 }
