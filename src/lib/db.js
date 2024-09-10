@@ -1,14 +1,14 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  user: 'aionet_owner',
-  host: 'ep-bitter-scene-a5wk1xt2.us-east-2.aws.neon.tech',
+  user: 'postgres',
+  host: 'localhost',
   database: 'aionet',
-  password: 'rzUZtRVd2WD9',
+  password: 'gus100202',
   port: 5432, 
-  ssl: {
+  /*ssl: {
     rejectUnauthorized: false, // Esto asegura que la conexión use SSL, pero sin verificar el certificado
-  },// Puerto por defecto de PostgreSQL
+  },// Puerto por defecto de PostgreSQL*/
 });
 
 module.exports = pool;

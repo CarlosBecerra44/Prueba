@@ -1,4 +1,5 @@
-'use client';
+// Archivo: src/pages/editarEstrategia.js
+"use client"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,8 +8,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle, X } from "lucide-react"
+import { useSearchParams } from 'next/navigation';
 
-export function EventPlanningForm() {
+export function EditarEstrategia() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const [formData, setFormData] = useState({
     evento: "",
     marca: "",
@@ -43,9 +47,27 @@ export function EventPlanningForm() {
   const [totals, setTotals] = useState({ presupuestado: 0, real: 0 })
   const [roi, setRoi] = useState(0)
 
+  // Obtener los datos desde el backend cuando el componente se monta
+  useEffect(() => {
+    async function fetchData() {
+      if (!id) return;
+      
+      try {
+        const response = await fetch(`/api/obtenerFormulario?id=${id}`);
+        const data = await response.json();
+        setFormData(data);
+      } catch (error) {
+        console.error('Error al obtener el formulario:', error);
+      }
+    }
+
+    fetchData();
+  }, [id]);
+
   useEffect(() => {
     calculateTotals()
   }, [formData.costos, formData.resultadoVenta])
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -234,7 +256,7 @@ export function EventPlanningForm() {
     console.log("Datos del formulario:", formData);
 
     try {
-      const response = await fetch('../api/guardarFormulario', {
+      const response = await fetch(`/api/actualizarFormulario?id=${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
