@@ -41,7 +41,8 @@ export function EditarEstrategia() {
     },
     productosVenta: [],
     facturasProveedores: [],
-    piezasDigitales: []
+    piezasDigitales: [],
+    dropdownValue: ""
   })
 
   const [totals, setTotals] = useState({ presupuestado: 0, real: 0 })
@@ -250,6 +251,13 @@ export function EditarEstrategia() {
     const roiValue = realTotal !== 0 ? ((resultadoVenta - realTotal) / realTotal) * 100 : 0
     setRoi(roiValue)
   }
+
+  const handleDropdownChange = (value) => {
+    setFormData(prevState => ({
+      ...prevState,
+      dropdownValue: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -635,6 +643,26 @@ export function EditarEstrategia() {
               <PlusCircle className="h-4 w-4 mr-2" />
               Agregar pieza digital
             </Button>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Estatus</h3>
+            <div className="space-y-2">
+              <Select
+                id="dropdown"
+                value={formData.dropdownValue}
+                onValueChange={handleDropdownChange}
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                  <SelectValue placeholder="Seleccionar estatus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Completado">Completado</SelectItem>
+                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  <SelectItem value="En progreso">En progreso</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <CardFooter>
         <Button type="submit" className="w-full">Enviar Planificación</Button>
