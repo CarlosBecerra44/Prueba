@@ -8,6 +8,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle, X } from "lucide-react"
 import { maxWidth } from "@mui/system";
+import styles from '../../../public/CSS/spinner.css';
+import { useSession,  signOut } from "next-auth/react";
 
 export function EventPlanningForm() {
   const [formData, setFormData] = useState({
@@ -262,6 +264,28 @@ export function EventPlanningForm() {
       console.error('Error:', error);
     }
   };
+
+  const {data: session,status}=useSession ();
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
+  if (!session || !session.user) {
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
+  }
 
   return (
     (<Card style={{maxWidth: "100rem", marginBottom: "2rem"}} className="w-full mx-auto">
@@ -650,5 +674,11 @@ export function EventPlanningForm() {
       </CardContent>
       
     </Card>)
+  );
+}
+
+function Spinner() {
+  return (
+    <div className="spinner" />
   );
 }
