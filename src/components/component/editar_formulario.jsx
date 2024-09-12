@@ -693,7 +693,6 @@ export function EditarEstrategia() {
       </CardFooter>
         </form>
       </CardContent>
-      
     </Card>)
   );
 }

@@ -245,7 +245,7 @@ export function EventPlanningForm() {
     console.log("Datos del formulario:", formData);
 
     try {
-      const response = await fetch('../api/guardarFormulario', {
+      const response = await fetch('/api/guardarFormulario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -672,7 +672,6 @@ export function EventPlanningForm() {
       </CardFooter>
         </form>
       </CardContent>
-      
     </Card>)
   );
 }
