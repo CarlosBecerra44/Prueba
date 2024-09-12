@@ -240,7 +240,7 @@ export function TablaEventosMejorada() {
       </div>
       <div className="overflow-x-auto">
         <Table>
-          <TableCaption>Tabla de Eventos y Datos Financieros</TableCaption>
+          <TableCaption>Tabla de Estrategias</TableCaption>
           <TableHeader>
             <TableRow>
               {encabezados.map((encabezado, index) => (
@@ -278,7 +278,22 @@ export function TablaEventosMejorada() {
                 <TableCell>{evento.gastoPresupuesto}</TableCell>
                 <TableCell>{evento.gastoReal}</TableCell>
                 <TableCell>{evento.ventaTotal}</TableCell>
-                <TableCell>{evento.roi}</TableCell>
+                <TableCell
+                  style={{
+                    color: (() => {
+                      const roiFixed = parseFloat(evento.roi); // Convertir a número para comparación
+                      if (roiFixed > 0.00) {
+                        return 'green';
+                      } else if (roiFixed < 0.00) {
+                        return 'red';
+                      } else {
+                        return 'black'; // color por defecto
+                      }
+                    })(),
+                  }}
+                >
+                  {evento.roi}
+                </TableCell>
                 <TableCell>{evento.accion ? evento.accion(evento.id) : "N/A"}</TableCell>
               </TableRow>
             ))}

@@ -402,7 +402,7 @@ export function EventPlanningForm() {
             })}
             
             <div className="space-y-2">
-              <Label>Otros gastos</Label>
+              <Label>Otros gastos</Label><br />
               {formData.costos.otros.map((otro, index) => (
                 <div key={index} className="grid grid-cols-3 gap-4 items-center">
                   <Input
@@ -430,7 +430,7 @@ export function EventPlanningForm() {
                   </div>
                 </div>
               ))}
-              <Button type="button" variant="outline" onClick={addOtroCosto} className="mt-2">
+              <Button style={{background:"#78ff0099"}} type="button" variant="outline" onClick={addOtroCosto} className="mt-2">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Agregar otro gasto
               </Button>
@@ -457,7 +457,18 @@ export function EventPlanningForm() {
             <div className="grid grid-cols-3 gap-4 font-semibold">
               <div>ROI</div>
               <div></div>
-              <div>{roi.toFixed(2)}%</div>
+              <div style={{
+                color: (() => {
+                  const roiFixed = parseFloat(roi.toFixed(2)); // Convertir a número para comparación
+                  if (roiFixed > 0.00) {
+                    return 'green';
+                  } else if (roiFixed < 0.00) {
+                    return 'red';
+                  } else {
+                    return 'black'; // color por defecto
+                  }
+                })(),
+              }}>{roi.toFixed(2)}%</div>
             </div>
           </div>
 
@@ -497,7 +508,7 @@ export function EventPlanningForm() {
                 required />
             </div>
             <div className="space-y-2">
-              <Label>Descripción</Label>
+              <Label>Descripción</Label><br />
               {formData.especificaciones.descripcion.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Input
@@ -521,6 +532,7 @@ export function EventPlanningForm() {
               <Button
                 type="button"
                 variant="outline"
+                style={{background:"#78ff0099"}}
                 onClick={addDescripcionItem}
                 className="mt-2">
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -554,6 +566,7 @@ export function EventPlanningForm() {
             <Button
               type="button"
               variant="outline"
+              style={{background:"#78ff0099"}}
               onClick={addProductoVenta}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -599,6 +612,7 @@ export function EventPlanningForm() {
             <Button
               type="button"
               variant="outline"
+              style={{background:"#78ff0099"}}
               onClick={addFacturaProveedor}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -641,6 +655,7 @@ export function EventPlanningForm() {
             <Button
               type="button"
               variant="outline"
+              style={{background:"#78ff0099"}}
               onClick={addPiezaDigital}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
