@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await pool.query('SELECT formulario FROM Prueba WHERE id = $1', [id]);
+    const result = await pool.query('SELECT formulario FROM marketing_estrategia WHERE id = $1', [id]);
     const datos = result.rows[0]?.formulario || {};
     res.status(200).json(datos);
   } catch (error) {

@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   try {
     // Guardar el formulario en la base de datos
-    await pool.query('INSERT INTO prueba (formulario) VALUES ($1)', [JSON.stringify(formData)]);
+    await pool.query('INSERT INTO marketing_estrategia (formulario) VALUES ($1)', [JSON.stringify(formData)]);
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {

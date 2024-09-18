@@ -8,9 +8,9 @@ export default async function handler(req, res) {
 
   try {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
-    const result = await pool.query('SELECT * FROM marketing_estrategia WHERE eliminado = 0 ORDER BY id ASC');
+    const result = await pool.query('SELECT * FROM etiquetas_form ');
     const eventos = result.rows;
-    console.log(eventos)
+    console.log(eventos) 
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);
