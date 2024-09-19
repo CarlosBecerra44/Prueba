@@ -33,9 +33,11 @@ export function It() {
     );
   }
 
+  const it = "it";
+
   return (
     (<div className="relative w-full max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-16">
-      <Link href='/explorador_archivos'>
+      <Link href={`/explorador_archivos?id=${it}`}>
         <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 top-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
           <div className="h-3.5 w-3.5" />
           <FolderIcon className="h-4 w-4" />

@@ -106,9 +106,11 @@ export function Marketing() {
     );
   }
 
+  const marketing = "marketing";
+
   return (
     (<div className="w-full">
-      <Link href='/explorador_archivos'>
+      <Link href={`/explorador_archivos?id=${marketing}`}>
         <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 bottom-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
           <div className="h-3.5 w-3.5" />
           <FolderIcon className="h-4 w-4" />

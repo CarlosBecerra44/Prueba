@@ -33,9 +33,11 @@ export function Ingenieria_nuevo_producto() {
     );
   }
 
+  const ingenieriaNuevoProducto = "ingenieria_nuevo_producto";
+
   return (
     (<div className="w-full max-w-6xl mx-auto py-12 md:py-20">
-      <Link href='/explorador_archivos'>
+      <Link href={`/explorador_archivos?id=${ingenieriaNuevoProducto}`}>
         <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 top-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
           <div className="h-3.5 w-3.5" />
           <FolderIcon className="h-4 w-4" />

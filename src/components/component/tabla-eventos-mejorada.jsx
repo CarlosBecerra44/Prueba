@@ -21,6 +21,8 @@ import withReactContent from 'sweetalert2-react-content';
 import * as XLSX from "xlsx";
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
+import PDFDocument from './pdf'; // Importa el componente que creamos
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 const MySwal = withReactContent(Swal);
 
@@ -28,6 +30,8 @@ export function TablaEventosMejorada() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [eventos, setEventos] = useState([])
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const encabezados = [
     "Evento",
@@ -54,6 +58,8 @@ export function TablaEventosMejorada() {
     }
     fetchEventos()
   }, [])
+
+  const [pdfToGenerate, setPdfToGenerate] = useState(null);
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -142,6 +148,30 @@ export function TablaEventosMejorada() {
               </svg>
             </Button>
           </Link>
+          <Button style={{ width: "1px", height: "40px" }} onClick={() => setPdfToGenerate(evento.id)}>
+            {pdfToGenerate === evento.id ? (
+              <PDFDownloadLink
+                document={<PDFDocument evento={evento.formulario} />}
+                fileName={`planificacion-evento-${evento.id}.pdf`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-file-text">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </PDFDownloadLink>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-file-text">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            )}
+          </Button>
         </div>
       ),
     }
@@ -198,8 +228,16 @@ export function TablaEventosMejorada() {
     );
   }
 
+  // Paginación
+  const indexOfLastEvento = currentPage * itemsPerPage;
+  const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
+  const currentEventos = filteredEventos.slice(indexOfFirstEvento, indexOfLastEvento);
+  const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <div style={{ display:"flex" }}>
         <a href="/marketing/estrategias/formulario"><Button variant="contained" color="secondary" style={{ background: "green", padding: "5px" }}>Agregar +</Button></a>
         <Button
@@ -240,7 +278,6 @@ export function TablaEventosMejorada() {
       </div>
       <div className="overflow-x-auto">
         <Table>
-          <TableCaption>Tabla de Estrategias</TableCaption>
           <TableHeader>
             <TableRow>
               {encabezados.map((encabezado, index) => (
@@ -251,8 +288,9 @@ export function TablaEventosMejorada() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEventos.map((evento, index) => (
+            {currentEventos.map((evento, index) => (
               <TableRow key={index}>
+                {/* Renderiza las celdas aquí */}
                 <TableCell>{evento.evento}</TableCell>
                 <TableCell>{evento.marca}</TableCell>
                 <TableCell>{evento.lugar}</TableCell>
@@ -282,8 +320,10 @@ export function TablaEventosMejorada() {
                   style={{
                     color: (() => {
                       const roiFixed = parseFloat(evento.roi); // Convertir a número para comparación
-                      if (roiFixed > 0.00) {
+                      if (roiFixed >= 50.00) {
                         return 'green';
+                      } else if (roiFixed > 0.00 && roiFixed < 50.00) {
+                        return 'orange';
                       } else if (roiFixed < 0.00) {
                         return 'red';
                       } else {
@@ -299,6 +339,22 @@ export function TablaEventosMejorada() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Paginación */}
+      <div className="flex justify-center mt-4 mb-4">
+        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+          Anterior
+        </button><span style={{marginRight:"2rem"}}></span>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button style={{marginLeft:"1rem", marginRight: "1rem"}} key={index} onClick={() => paginate(index + 1)} className={currentPage === index + 1 ? "font-bold" : ""}>
+            {index + 1}
+          </button>
+        ))}
+        <span style={{marginLeft:"2rem"}}></span>
+        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+          Siguiente
+        </button>
       </div>
     </div>
   )

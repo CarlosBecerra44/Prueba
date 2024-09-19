@@ -2,28 +2,47 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb"
-import { useState } from "react"
-import { useSession } from "next-auth/react";
-import styles from '../../../public/CSS/spinner.css';
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import styles from '../../../public/CSS/spinner.css'
+import { useSearchParams } from 'next/navigation';
 
 export function ExploradorArchivos() {
   const [openSection, setOpenSection] = useState(null)
-  
-  const {data: session,status}=useSession ();
+  const [files, setFiles] = useState([]) // Aquí almacenaremos los archivos FTP
+  const { data: session, status } = useSession()
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
+
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section)
   }
+
+  useEffect(() => {
+    if (id) {
+      // Llama a la API para obtener los archivos en la carpeta especificada
+      fetch(`/api/list-files?folderId=${id}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.files) {
+            setFiles(data.files);
+          } else {
+            console.error('Error:', data.error);
+          }
+        })
+        .catch(error => console.error('Error al obtener los archivos:', error));
+    }
+  }, [id]);
+
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
         <p className="ml-3">Cargando...</p>
       </div>
-    );
+    )
   }
-  if (status=="loading") {
-    return <p>cargando...</p>;
-  }
+
   if (!session || !session.user) {
     return (
       window.location.href = "/",
@@ -31,11 +50,11 @@ export function ExploradorArchivos() {
         <Spinner className={styles.spinner} />
         <p className="ml-3">No has iniciado sesión</p>
       </div>
-    );
+    )
   }
 
   return (
-    (<div className="flex h-screen w-full">
+    <div className="flex h-screen w-full">
       <div className="bg-background border-r w-64 p-4 flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <FolderIcon className="w-5 h-5 text-primary" />
@@ -80,17 +99,15 @@ export function ExploradorArchivos() {
             </Link>
           </nav>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <UploadIcon className="w-4 h-4 mr-2" />
-            Cargar
-          </Button>
           <Button variant="outline" size="sm">
             <DownloadIcon className="w-4 h-4 mr-2" />
             Descargar
           </Button>
         </div>
       </div>
+
       <div className="flex-1 p-4">
         <div className="flex items-center justify-between mb-4">
           <Breadcrumb>
@@ -100,103 +117,42 @@ export function ExploradorArchivos() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Documentos</BreadcrumbLink>
+                <BreadcrumbLink href="#">Archivos</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Archivos</BreadcrumbPage>
+                <BreadcrumbPage>Explorador</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <FilterIcon className="w-4 h-4 mr-2" />
-              Filter
-            </Button>
-            <Button variant="outline" size="sm">
-              <ListOrderedIcon className="w-4 h-4 mr-2" />
-              Sort
-            </Button>
+            {/* Aquí puedes agregar filtros o botones adicionales */}
           </div>
         </div>
+
+        {/* Mostrar archivos recuperados del FTP */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Document.docx</h3>
-              <p className="text-xs text-muted-foreground">2.3 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <ImageIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Image.jpg</h3>
-              <p className="text-xs text-muted-foreground">1.5 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <VideoIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Video.mp4</h3>
-              <p className="text-xs text-muted-foreground">25.1 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Report.pdf</h3>
-              <p className="text-xs text-muted-foreground">4.7 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Presentation.pptx</h3>
-              <p className="text-xs text-muted-foreground">8.2 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileSpreadsheetIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Spreadsheet.xlsx</h3>
-              <p className="text-xs text-muted-foreground">3.9 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Notes.txt</h3>
-              <p className="text-xs text-muted-foreground">0.5 MB</p>
-            </div>
-          </div>
-          <div className="bg-background rounded-md shadow-sm overflow-hidden">
-            <div className="h-32 bg-muted/20 flex items-center justify-center">
-              <FileArchiveIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div className="p-3">
-              <h3 className="text-sm font-medium truncate">Archive.zip</h3>
-              <p className="text-xs text-muted-foreground">12.4 MB</p>
-            </div>
-          </div>
+          {files.length > 0 ? (
+            files.map((file, index) => (
+              <div key={index} className="bg-background rounded-md shadow-sm overflow-hidden">
+                <div className="h-32 bg-muted/20 flex items-center justify-center">
+                  <FileIcon className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-medium truncate">{file.name}</h3>
+                  <p className="text-xs text-muted-foreground">{file.size} bytes</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No hay archivos disponibles.</p>
+          )}
         </div>
       </div>
-    </div>)
-  );
+    </div>
+  )
 }
+
 
 function DownloadIcon(props) {
   return (

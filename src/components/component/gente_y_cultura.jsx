@@ -161,9 +161,11 @@ export function TimeTracker() {
     );
   }
 
+  const genteCultura = "gente_y_cultura";
+
   return (
     <div style={{marginTop: "70px"}} className={`p-4 max-w-6xl mx-auto ${modalVisible ? 'overflow-hidden' : ''}`}>
-      <Link href='/explorador_archivos'>
+      <Link href={`/explorador_archivos?id=${genteCultura}`}>
         <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 bottom-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
           <div className="h-3.5 w-3.5" />
           <FolderIcon className="h-4 w-4" />

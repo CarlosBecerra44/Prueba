@@ -481,8 +481,10 @@ export function EditarEstrategia() {
               <div style={{
                 color: (() => {
                   const roiFixed = parseFloat(roi.toFixed(2)); // Convertir a número para comparación
-                  if (roiFixed > 0.00) {
+                  if (roiFixed >= 50.00) {
                     return 'green';
+                  } else if (roiFixed > 0.00 && roiFixed < 50.00) {
+                    return 'orange';
                   } else if (roiFixed < 0.00) {
                     return 'red';
                   } else {

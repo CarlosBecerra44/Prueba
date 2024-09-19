@@ -60,7 +60,6 @@ export default NextAuth({
         token.email = user.email;
       
       }
-      console.log("JWT Token:", token); 
       return token;
     },
     async session({ session, token }) {
@@ -69,7 +68,6 @@ export default NextAuth({
         session.user.email = token.email;
         
       }
-      console.log("Session Token:", token);
       return session;
     },
     async signIn({ user, account }) {

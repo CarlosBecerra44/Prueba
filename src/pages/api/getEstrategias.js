@@ -10,7 +10,6 @@ export default async function handler(req, res) {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
     const result = await pool.query('SELECT * FROM formularios_estrategias WHERE eliminado = 0 ORDER BY id ASC');
     const eventos = result.rows;
-    console.log(eventos)
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);
