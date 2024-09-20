@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
-    const result = await pool.query('SELECT * FROM etiquetas_form ');
+    const result = await pool.query('SELECT * FROM etiquetas_form   WHERE eliminado = false');
     const eventos = result.rows;
     console.log(eventos) 
 
