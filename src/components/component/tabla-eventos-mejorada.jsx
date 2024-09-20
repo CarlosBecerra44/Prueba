@@ -262,7 +262,7 @@ export function TablaEventosMejorada() {
           />
         </div>
         <div className="w-full sm:w-1/3">
-          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por Estatus</Label>
+          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
           <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
             <SelectTrigger id="status-filter">
               <SelectValue placeholder="Seleccionar estatus" />
