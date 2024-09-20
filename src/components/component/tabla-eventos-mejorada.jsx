@@ -239,7 +239,7 @@ export function TablaEventosMejorada() {
   return (
     <div className="container mx-auto">
       <div style={{ display:"flex" }}>
-        <a href="/marketing/estrategias/formulario"><Button variant="contained" color="secondary" style={{ background: "green", padding: "5px" }}>Agregar +</Button></a>
+        <a href="/marketing/estrategias/formulario"><Button variant="contained" color="secondary" style={{ background: "green", padding: "5px" }}>Agregar estrategia +</Button></a>
         <Button
           variant="contained"
           color="primary"
@@ -278,6 +278,7 @@ export function TablaEventosMejorada() {
       </div>
       <div className="overflow-x-auto">
         <Table>
+          <TableCaption>Estrategias vigentes</TableCaption>
           <TableHeader>
             <TableRow>
               {encabezados.map((encabezado, index) => (
@@ -288,55 +289,63 @@ export function TablaEventosMejorada() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentEventos.map((evento, index) => (
-              <TableRow key={index}>
-                {/* Renderiza las celdas aquí */}
-                <TableCell>{evento.evento}</TableCell>
-                <TableCell>{evento.marca}</TableCell>
-                <TableCell>{evento.lugar}</TableCell>
-                <TableCell>{evento.fecha}</TableCell>
-                <TableCell
-                  style={{
-                    color: (() => {
-                      switch (evento.estatus) {
-                        case 'Completado':
+            {currentEventos.length > 0 ? (
+              currentEventos.map((evento, index) => (
+                <TableRow key={index}>
+                  {/* Renderiza las celdas aquí */}
+                  <TableCell>{evento.evento}</TableCell>
+                  <TableCell>{evento.marca}</TableCell>
+                  <TableCell>{evento.lugar}</TableCell>
+                  <TableCell>{evento.fecha}</TableCell>
+                  <TableCell
+                    style={{
+                      color: (() => {
+                        switch (evento.estatus) {
+                          case 'Completado':
+                            return 'green';
+                          case 'Pendiente':
+                            return 'red';
+                          case 'En progreso':
+                            return 'orange';
+                          default:
+                            return 'black'; // color por defecto
+                        }
+                      })(),
+                    }}
+                  >
+                    {evento.estatus}
+                  </TableCell>
+                  <TableCell>{evento.gastoPresupuesto}</TableCell>
+                  <TableCell>{evento.gastoReal}</TableCell>
+                  <TableCell>{evento.ventaTotal}</TableCell>
+                  <TableCell
+                    style={{
+                      color: (() => {
+                        const roiFixed = parseFloat(evento.roi); // Convertir a número para comparación
+                        if (roiFixed >= 50.00) {
                           return 'green';
-                        case 'Pendiente':
-                          return 'red';
-                        case 'En progreso':
+                        } else if (roiFixed > 0.00 && roiFixed < 50.00) {
                           return 'orange';
-                        default:
+                        } else if (roiFixed < 0.00) {
+                          return 'red';
+                        } else {
                           return 'black'; // color por defecto
-                      }
-                    })(),
-                  }}
-                >
-                  {evento.estatus}
+                        }
+                      })(),
+                    }}
+                  >
+                    {evento.roi}
+                  </TableCell>
+                  <TableCell>{evento.accion ? evento.accion(evento.id) : "N/A"}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center">
+                  No se encontraron estrategias
                 </TableCell>
-                <TableCell>{evento.gastoPresupuesto}</TableCell>
-                <TableCell>{evento.gastoReal}</TableCell>
-                <TableCell>{evento.ventaTotal}</TableCell>
-                <TableCell
-                  style={{
-                    color: (() => {
-                      const roiFixed = parseFloat(evento.roi); // Convertir a número para comparación
-                      if (roiFixed >= 50.00) {
-                        return 'green';
-                      } else if (roiFixed > 0.00 && roiFixed < 50.00) {
-                        return 'orange';
-                      } else if (roiFixed < 0.00) {
-                        return 'red';
-                      } else {
-                        return 'black'; // color por defecto
-                      }
-                    })(),
-                  }}
-                >
-                  {evento.roi}
-                </TableCell>
-                <TableCell>{evento.accion ? evento.accion(evento.id) : "N/A"}</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

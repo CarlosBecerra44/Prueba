@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@mui/material"
 import Link from "next/link"
+import Swal from 'sweetalert2';
 
 export function TablaEventosMejorada() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -33,16 +34,31 @@ export function TablaEventosMejorada() {
 
   const handleDelete = async (index) => {
     try {
-      const response = await axios.post(`/api/eliminarFormularioEtiqueta?id=${index}`);
-      if (response.status === 200) {
-        alert('Formulario eliminado correctamente');
-        window.location.href = "/marketing/etiquetas/tabla_general"
-      } else {
-        alert('Error al eliminar el formulario');
+      // Mostrar alerta de confirmación
+      const result = await Swal.fire({
+        title: '¿Deseas eliminar el formulario?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar',
+      });
+
+      // Si el usuario confirma la eliminación
+      if (result.isConfirmed) {
+        const response = await axios.post(`/api/eliminarFormularioEtiqueta?id=${index}`);
+        if (response.status === 200) {
+          await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
+          window.location.href = "/marketing/etiquetas/tabla_general";
+        } else {
+          Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+        }
       }
     } catch (error) {
       console.error('Error al eliminar el formulario:', error);
-      alert('Ocurrió un error al intentar eliminar el formulario');
+      Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
     }
   };
   // Obtener eventos desde el backend
@@ -86,11 +102,10 @@ export function TablaEventosMejorada() {
   return (
     <div className="container mx-auto py-10">
       <a href="/marketing/etiquetas">
-        <Button variant="contained" color="secondary" style={{ background: "blue", padding: "5px" }}>Añadir etiqueta</Button>
+        <Button variant="contained" color="secondary" style={{ background: "green", padding: "5px", marginBottom: "10px" }}>Agregar etiqueta +</Button>
       </a>
-      
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="w-full sm:w-1/3"> <br />
+        <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
           <SearchIcon style={{marginTop:"10px", marginLeft:"15px"}} className="absolute h-5 w-5 text-gray-400" />
           <Input
@@ -102,7 +117,7 @@ export function TablaEventosMejorada() {
           />
         </div>
         <div className="w-full sm:w-1/3">
-          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por Estatus</Label>
+          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
           <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
             <SelectTrigger id="status-filter">
               <SelectValue placeholder="Seleccionar estatus" />
@@ -142,7 +157,7 @@ export function TablaEventosMejorada() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
-                  No se encontraron eventos
+                  No se encontraron etiquetas
                 </TableCell>
               </TableRow>
             )}
