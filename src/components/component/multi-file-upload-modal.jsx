@@ -13,12 +13,17 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { UploadIcon, FileIcon, XIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import styles from '../../../public/CSS/spinner.css';
+import { useSession,  signOut } from "next-auth/react";
+import { useSearchParams } from 'next/navigation';
 
 export function MultiFileUploadModalComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
 
   const handleFileChange = (event) => {
     if (event.target.files) {
@@ -60,37 +65,67 @@ export function MultiFileUploadModalComponent() {
 
   const handleUpload = async () => {
     if (files.length === 0) return;
-  
-    const formData = new FormData();
-    files.forEach(({ file }) => formData.append('file', file)); // Cambié 'files' a 'file' para que coincida con el backend
-  
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      if (!response.ok) {
-        throw new Error('Error en la subida de archivos');
+
+    if(id) {
+      const formData = new FormData();
+      files.forEach(({ file }) => formData.append('file', file)); // Cambié 'files' a 'file' para que coincida con el backend
+    
+      try {
+        const response = await fetch(`/api/upload?folderId=${id}`, {
+          method: 'POST',
+          body: formData,
+        });
+    
+        if (!response.ok) {
+          throw new Error('Error en la subida de archivos');
+        }
+    
+        const result = await response.json();
+        console.log('Archivos subidos con éxito:', result);
+        setIsOpen(false);
+        setFiles([]);
+        window.location.href = `/explorador_archivos?id=${id}`
+      } catch (error) {
+        console.error('Error al subir los archivos:', error);
+        setIsOpen(false);
+        setFiles([]);
       }
-  
-      const result = await response.json();
-      console.log('Archivos subidos con éxito:', result);
-    } catch (error) {
-      console.error('Error al subir los archivos:', error);
     }
   };
+
+  const {data: session,status}=useSession ();
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+      </div>
+    );
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
+  if (!session || !session.user) {
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+      </div>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
   <DialogTrigger asChild>
-    <Button style={{ marginLeft: "15px", marginBottom: "15px" }} variant="outline" className="gap-2">
-      <UploadIcon className="h-4 w-4" />
-      Subir Archivos
+    <Button style={{ marginLeft: "8rem",
+    fontSize: "12px",
+    marginRight: "50rem",
+    position: "absolute",
+    marginTop: "889px",
+    width: "110px",
+    height: "40px"}} variant="outline" className="gap-1">
+      <UploadIcon className="h-3 w-3" />
+      Subir
     </Button>
   </DialogTrigger>
 
-  {/* No es necesario usar form */}
   <DialogContent className="sm:max-w-[800px]">
     <DialogHeader>
       <DialogTitle>Subir Archivos</DialogTitle>
@@ -161,5 +196,11 @@ export function MultiFileUploadModalComponent() {
     </DialogFooter>
   </DialogContent>
 </Dialog>
+  );
+}
+
+function Spinner() {
+  return (
+    <div className="spinner" />
   );
 }

@@ -13,6 +13,7 @@ import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
+  const [departamento, setDepartamento] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function Navbarv1() {
         const userData = await response.json();
         if (userData.success) {
           setNombre(userData.user.nombre);
+          setDepartamento(userData.departamento.nombre)
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -52,9 +54,11 @@ export function Navbarv1() {
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 4, name: "Foros", href: "#", icon: <ForosIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 6, name: "Departamentos", href: "#"},,
+    { id: 6, name: "Departamentos", href: "#"},
     { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
+    ...(departamento === "marketing" ? [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }, { name: "Permisos", href: "/marketing/permisos", icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> }] }]
+      : [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] }]
+    ),
     { id: 9, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 10, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
     { id: 11, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
@@ -396,5 +400,18 @@ function CapacitacionesIcon(props) {
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
     </svg>
+  )
+}
+
+function PapeletasIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+  <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h6l4 4v12a2 2 0 0 1 -2 2z" />
+  <path d="M9 9h1" />
+  <path d="M9 13h6" />
+  <path d="M9 17h6" />
+</svg>
   )
 }

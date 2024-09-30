@@ -11,10 +11,11 @@ export const config = {
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
+    const { folderId } = req.query;
     const client = new Client();
     client.ftp.verbose = true; // Opcional: para ver más logs
 
-    const uploadDir = path.join(process.cwd(), '/');
+    const uploadDir = path.join(process.cwd(), `/`);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir);
     }
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'Archivo no encontrado' });
           }
 
-          const remoteFilePath = path.join('/', file.originalFilename);
+          const remoteFilePath = path.join(`/${folderId}`, file.originalFilename);
           await client.uploadFrom(filePath, remoteFilePath);
         }
 

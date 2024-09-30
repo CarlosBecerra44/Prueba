@@ -13,6 +13,7 @@ export function ExploradorArchivos() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section)
@@ -34,9 +35,72 @@ export function ExploradorArchivos() {
     }
   }, [id]);
 
+  const handleFileSelection = (event, file) => {
+    if (event.target.checked) {
+      setSelectedFiles([...selectedFiles, file.name]);
+    } else {
+      setSelectedFiles(selectedFiles.filter(f => f !== file.name));
+    }
+  };
+
+  const handleDownload = () => {
+    if (selectedFiles.length === 0) {
+      alert("Por favor selecciona al menos un archivo para descargar.");
+      return;
+    }
+  
+    selectedFiles.forEach(file => {
+      // Llamar a la API para descargar el archivo
+      fetch(`/api/download?fileName=${file}`)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(new Blob([blob]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', file); // Archivo descargado con el mismo nombre
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        })
+        .catch(error => console.error('Error al descargar el archivo:', error));
+    });
+  };
+
+  const fileExtensions = {
+    image: ['.jpg', '.jpeg', '.png', '.gif', '.bmp'],
+    document: ['.pdf', '.doc', '.docx', '.txt', '.xlsx'],
+    video: ['.mp4', '.avi', '.mov', '.mkv'],
+  };
+  
+  const listFiles = (type) => {
+    if (id) {
+      fetch(`/api/list-files?folderId=${id}&correo=${session.user.email}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.files) {
+            let filteredFiles = data.files;
+  
+            if (type !== 'all') {
+              const extensions = fileExtensions[type];
+  
+              filteredFiles = data.files.filter(file => {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                return extensions.includes(`.${fileExtension}`);
+              });
+            }
+  
+            setFiles(filteredFiles);
+          } else {
+            console.error('Error:', data.error);
+          }
+        })
+        .catch(error => console.error('Error al obtener los archivos:', error));
+    }
+  };
+
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div style={{marginLeft:"45rem"}} className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
         <p className="ml-3">Cargando...</p>
       </div>
@@ -46,7 +110,7 @@ export function ExploradorArchivos() {
   if (!session || !session.user) {
     return (
       window.location.href = "/",
-      <div className="flex items-center justify-center min-h-screen">
+      <div style={{marginLeft:"45rem"}} className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
         <p className="ml-3">No has iniciado sesión</p>
       </div>
@@ -63,46 +127,50 @@ export function ExploradorArchivos() {
         <div className="flex-1 overflow-auto">
           <nav className="space-y-1">
             <Link
-              href="#"
+              href={`/${id}`}
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
               prefetch={false}>
-              <HomeIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Inicio</span>
+              <BackIcon className="w-4 h-4 text-muted-foreground" />
+              <span>Regresar</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
-              prefetch={false}>
+              prefetch={false}
+              onClick={() => listFiles('document')}>
               <FolderIcon className="w-4 h-4 text-muted-foreground" />
               <span>Documentos</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
-              prefetch={false}>
+              prefetch={false}
+              onClick={() => listFiles('image')}>
               <ImageIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Imagenes</span>
+              <span>Imágenes</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
-              prefetch={false}>
+              prefetch={false}
+              onClick={() => listFiles('video')}>
               <VideoIcon className="w-4 h-4 text-muted-foreground" />
               <span>Videos</span>
             </Link>
             <Link
               href="#"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted"
-              prefetch={false}>
-              <DownloadIcon className="w-4 h-4 text-muted-foreground" />
-              <span>Descargas</span>
+              prefetch={false}
+              onClick={() => listFiles('all')}>
+              <AllFilesIcon className="w-4 h-4 text-muted-foreground" />
+              <span>Todos los archivos</span>
             </Link>
           </nav>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <DownloadIcon className="w-4 h-4 mr-2" />
+          <Button style={{fontSize: "12px"}} variant="outline" onClick={handleDownload}>
+            <DownloadIcon className="w-3 h-3 mr-1" />
             Descargar
           </Button>
         </div>
@@ -113,15 +181,7 @@ export function ExploradorArchivos() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Inicio</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="#">Archivos</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Explorador</BreadcrumbPage>
+                <BreadcrumbPage>Archivos</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -135,6 +195,11 @@ export function ExploradorArchivos() {
           {files.length > 0 ? (
             files.map((file, index) => (
               <div key={index} className="bg-background rounded-md shadow-sm overflow-hidden">
+                <input
+                  type="checkbox"
+                  checked={selectedFiles.includes(file.name)} // Verifica si el archivo está seleccionado
+                  onChange={(e) => handleFileSelection(e, file)}
+                />
                 <div className="h-32 bg-muted/20 flex items-center justify-center">
                   <FileIcon className="w-10 h-10 text-muted-foreground" />
                 </div>
@@ -152,7 +217,6 @@ export function ExploradorArchivos() {
     </div>
   )
 }
-
 
 function DownloadIcon(props) {
   return (
@@ -173,7 +237,6 @@ function DownloadIcon(props) {
     </svg>)
   );
 }
-
 
 function FileArchiveIcon(props) {
   return (
@@ -198,7 +261,6 @@ function FileArchiveIcon(props) {
   );
 }
 
-
 function FileIcon(props) {
   return (
     (<svg
@@ -217,7 +279,6 @@ function FileIcon(props) {
     </svg>)
   );
 }
-
 
 function FileSpreadsheetIcon(props) {
   return (
@@ -242,7 +303,6 @@ function FileSpreadsheetIcon(props) {
   );
 }
 
-
 function FilterIcon(props) {
   return (
     (<svg
@@ -260,7 +320,6 @@ function FilterIcon(props) {
     </svg>)
   );
 }
-
 
 function FolderIcon(props) {
   return (
@@ -281,7 +340,6 @@ function FolderIcon(props) {
   );
 }
 
-
 function HomeIcon(props) {
   return (
     (<svg
@@ -300,7 +358,6 @@ function HomeIcon(props) {
     </svg>)
   );
 }
-
 
 function ImageIcon(props) {
   return (
@@ -321,7 +378,6 @@ function ImageIcon(props) {
     </svg>)
   );
 }
-
 
 function ListOrderedIcon(props) {
   return (
@@ -346,7 +402,6 @@ function ListOrderedIcon(props) {
   );
 }
 
-
 function UploadIcon(props) {
   return (
     (<svg
@@ -367,7 +422,6 @@ function UploadIcon(props) {
   );
 }
 
-
 function VideoIcon(props) {
   return (
     (<svg
@@ -385,6 +439,44 @@ function VideoIcon(props) {
         d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
       <rect x="2" y="6" width="14" height="12" rx="2" />
     </svg>)
+  );
+}
+
+function BackIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  );
+}
+
+function AllFilesIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+    </svg>
   );
 }
 

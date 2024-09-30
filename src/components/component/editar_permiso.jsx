@@ -1,24 +1,28 @@
-'use client'
-import React, { useState } from 'react'
-import { ChevronLeft, ChevronRight, Filter, Star } from 'lucide-react'
+// Archivo: src/pages/editarEstrategia.js
+"use client"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
-import { useSession,  signOut } from "next-auth/react";
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { PlusCircle, X } from "lucide-react"
+import { useSearchParams } from 'next/navigation';
 import styles from '../../../public/CSS/spinner.css';
+import { useSession,  signOut } from "next-auth/react";
 import { useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import Link from "next/link"
 
-export function TimeTracker() {
-  const [year, setYear] = useState(2024)
-  const [selectedDate, setSelectedDate] = useState(null)
-  const [modalVisible, setModalVisible] = useState(false)
+export function EditarPermiso() {
+  const [modalVisible, setModalVisible] = useState(true)
   const [mostrarTabla, setMostrarTabla] = useState(false);
   const [mostrarBotones, setMostrarBotones] = useState(true);
   const modalRef = useRef();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
 
   const handleGeneratePDF = async () => {
     await setMostrarTabla(true);
@@ -96,74 +100,24 @@ export function TimeTracker() {
       al: ""
     },
     observaciones: "",
-    autorizado: "Pendiente"
+    autorizado: ""
   });
 
-  const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
-  const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
-
-  // Aquí puedes definir el estado de los días, por ejemplo:
-  const dayStatus = {
-    [`${year}-08-16`]: 'validado',
-    [`${year}-08-19`]: 'por_aprobar',
-    [`${year}-08-20`]: 'rechazado',
-    [`${year}-01-01`]: 'festivo',
-    [`${year}-02-05`]: 'festivo',
-    [`${year}-03-21`]: 'festivo',
-    [`${year}-05-01`]: 'festivo',
-    [`${year}-09-16`]: 'festivo',
-    [`${year}-10-01`]: 'festivo',
-    [`${year}-11-20`]: 'festivo',
-    [`${year}-12-25`]: 'festivo',
-  }
-
-  const renderMonth = (month, index) => {
-    const daysInMonth = new Date(year, index + 1, 0).getDate()
-    const firstDay = new Date(year, index, 1).getDay()
-    const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-    
-    // Ajustar el estilo de los días según el estado
-    const getDayStyle = (day, monthIndex) => {
-      const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      switch (dayStatus[dateKey]) {
-        case 'validado':
-          return 'bg-green'
-        case 'por_aprobar':
-          return 'bg-yellow'
-        case 'rechazado':
-          return 'bg-red'
-        case 'festivo':
-          return 'bg-purple'
-        default:
-          return ''
+  useEffect(() => {
+    async function fetchData() {
+      if (!id) return;
+      
+      try {
+        const response = await fetch(`/api/obtenerPermiso?id=${id}`);
+        const data = await response.json();
+        setFormData(data);
+      } catch (error) {
+        console.error('Error al obtener el formulario:', error);
       }
     }
 
-    return (
-      <div key={month} className="mb-4">
-        <h3 className="text-sm font-semibold mb-2">{`${month} ${year}`}</h3>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map((day, index) => (
-            <div key={index} className="text-xs text-center p-1 font-semibold">
-              {day}
-            </div>
-          ))}
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={i} className="text-xs p-1" />
-          ))}
-          {daysArray.map((day, dayIndex) => (
-            <div
-              key={day}
-              className={`text-xs text-center p-1 cursor-pointer ${getDayStyle(day, index)}`}
-              onClick={() => handleDateClick(day, index)}
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+    fetchData();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
@@ -186,46 +140,39 @@ export function TimeTracker() {
     }
   };
 
+  const handleDropdownChange = (value) => {
+    setFormData(prevState => ({
+      ...prevState,
+      autorizado: value
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Datos del formulario:", formData);
 
     try {
-      // Enviar los datos a la API
-      fetch(`/api/guardarPapeleta?formData=${JSON.stringify(formData)}&emailUsuario=${session.user.email}`, {
-        method: "POST",
+      const response = await fetch(`/api/actualizarPermiso?id=${id}`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
-      }).then((response) => {
-        if (response.ok) {
-          console.log("Formulario guardado");
-        }
+        body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
       });
-      setModalVisible(false)
-      window.location.href="/gente_y_cultura"
+
+      if (!response.ok) {
+        throw new Error('Error al guardar los datos');
+      }
+
+      const result = await response.json();
+      console.log('Formulario guardado:', result);
+      window.location.href = "/marketing/permisos";
     } catch (error) {
       console.error('Error:', error);
     }
   };
 
-  const handleDateClick = (day, monthIndex) => {
-    const month = months[monthIndex]
-    const fullDate = `${day} ${month} ${year}`
-    setSelectedDate(fullDate)
-    setModalVisible(true)
-  }
-
-  const handlePreviousYear = () => {
-    setYear(prevYear => prevYear - 1)
-  }
-
-  const handleNextYear = () => {
-    setYear(prevYear => prevYear + 1)
-  }
-
   const {data: session,status}=useSession ();
-  
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -247,75 +194,8 @@ export function TimeTracker() {
     );
   }
 
-  const genteCultura = "gente_y_cultura";
-
   return (
     <div style={{marginTop: "70px"}} className={`p-4 max-w-6xl mx-auto ${modalVisible ? 'overflow-hidden' : ''}`}>
-      <Link href={`/explorador_archivos?id=${genteCultura}`}>
-        <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 bottom-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
-          <div className="h-3.5 w-3.5" />
-          <FolderIcon className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Explorador de archivos</span>
-        </Button>
-      </Link>
-      <div className={`flex items-center justify-between mb-4 ${modalVisible ? 'hidden' : ''}`}>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="icon" onClick={handlePreviousYear}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline">HOY</Button>
-          <Button variant="outline" size="icon" onClick={handleNextYear}><ChevronRight className="h-4 w-4" /></Button>
-          <Select value={year} onChange={(e) => setYear(e.target.value)}>
-            <option value={year}>{year}</option>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="default" onClick={() => setModalVisible(true)} >NUEVO TIEMPO PERSONAL</Button>
-          <Button variant="outline">NUEVO SOLICITUD DE ASIGNACIÓN</Button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm"><Filter className="h-4 w-4 mr-2" />Filtros</Button>
-          <Button variant="ghost" size="sm"><Star className="h-4 w-4 mr-2" />Favoritos</Button>
-        </div>
-      </div>
-      
-      <div className={`flex ${modalVisible ? 'hidden' : ''}`}>
-        <div className="grid grid-cols-4 gap-4 flex-grow">
-          {months.map((month, index) => renderMonth(month, index))}
-        </div>
-        <div className="w-64 ml-4">
-          <div className="mb-4">
-            <Input type="search" placeholder="Buscar..." className="w-full" />
-          </div>
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2">Tipo de tiempo personal</h4>
-            <div className="flex items-center mb-2">
-              <Checkbox id="tiempo-personal" />
-              <label htmlFor="tiempo-personal" className="ml-2 text-sm">Tiempo personal por enfermedad</label>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Leyenda</h4>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-green mr-2"></div>
-                <span className="text-sm">Validado</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-yellow mr-2"></div>
-                <span className="text-sm">Por aprobar</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red mr-2"></div>
-                <span className="text-sm">Rechazado</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-purple mr-2"></div>
-                <span className="text-sm">Día festivo</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {modalVisible && (
         <div className="p-4" ref={modalRef}>
         <table style={{ textAlign: "center" }} className={`w-full border-collapse border border-gray-300 ${mostrarTabla ? '' : 'hidden'}`}>
@@ -444,18 +324,31 @@ export function TimeTracker() {
               <label className="font-bold">Observaciones:</label>
               <textarea name="observaciones" value={formData.observaciones} onChange={handleChange} className="border border-gray-300 p-2 mt-2" rows="4" style={{ width: "100%" }} />
             </div>
-            <Button
-            className={`${mostrarBotones ? '' : 'hidden'}`}
-            variant="outline"
-            onClick={() => setModalVisible(false)}
-            >
-              Cerrar
-            </Button>
+            <div className={`${mostrarBotones ? '' : 'hidden'} space-y-2`}>
+            <label className="font-bold">Estatus:</label>
+              <Select
+                id="dropdown"
+                value={formData.autorizado}
+                onValueChange={handleDropdownChange}
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                  <SelectValue placeholder="Seleccionar estatus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Autorizado">Autorizado</SelectItem>
+                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  <SelectItem value="No autorizado">No autorizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div><br />
+            <Link href="/marketing/permisos">
+              <Button className={`${mostrarBotones ? '' : 'hidden'}`} variant="outline">Regresar</Button>
+            </Link>
             <Button style={{marginLeft: "0.5rem"}} type="submit" variant="outline" className={`${mostrarBotones ? '' : 'hidden'}`}>Enviar Papeleta</Button>
           </form>
           <Button
             className={`${mostrarBotones ? '' : 'hidden'}`}
-            style={{marginLeft: "14.4rem", bottom:"2.5rem", position:"relative"}}
+            style={{marginLeft: "15.5rem", bottom:"2.5rem", position:"relative"}}
             variant="outline"
             onClick={handleGeneratePDF}
           >
@@ -464,26 +357,7 @@ export function TimeTracker() {
         </div>
       )}
     </div>
-  )
-}
-
-function FolderIcon(props) {
-  return(
-    <svg
-      className="h-4 w-4 text-gray-600"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 7h6l2 2h9a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z"
-      />
-    </svg>
-  )
+  );
 }
 
 function Spinner() {
