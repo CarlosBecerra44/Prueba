@@ -1,71 +1,104 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'; // Nuevo hook para obtener parámetros de consulta
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Textarea } from "@/components/ui/textarea"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
-export function DocumentSigningForm() {
+const EditarEtiqueta = () => {
+  const searchParams = useSearchParams(); // Reemplaza a useRouter para obtener parámetros
+  const id = searchParams.get('id'); // Obteniendo el valor del parámetro 'id'
+  
   const [formulario, setFormulario] = useState({});
   const [nowPdfPreview, setNowPdfPreview] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) return;
+  
+      try {
+        const response = await fetch(`/api/EtiquetaUpdate?id=${id}`);
+        console.log('Response:', response);
+        const data = await response.json();
+        console.log('Data:', data);
+        setFormulario(data);
+  
+        if (data.pdfPath) {
+          setNowPdfPreview(`/uploads/${data.pdfPath}`);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, [id]);
+  
+  const handleInputChange = (value, name) => {
     setFormulario((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value // Actualiza el valor del campo en el estado
     }));
   };
+  
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    // Crear un nuevo FormData
-    const formData = new FormData();
-  
-    // Añadir todos los datos del formulario (excluyendo el archivo)
-    for (const key in formulario) {
-      formData.append(key, formulario[key]);
-    }
-  
-    // Añadir el archivo PDF al FormData
-    const fileInput = document.querySelector('#nowPdf');
-    if (fileInput.files.length > 0) {
-      formData.append('nowPdf', fileInput.files[0]);
-    }
-  
-    try {
-      // Enviar los datos al backend
-      const response = await fetch('../api/GuardarEtiquetas', {
-        method: 'POST',
-        body: formData, // No es necesario agregar headers aquí
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-        alert(`Formulario guardado con ID: ${data.id}`);
-      } else {
-        alert('Error al guardar formulario');
-      }
-    } catch (error) {
-      console.error('Error al enviar el formulario:', error);
-    }
-  };
-  
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
+      setPdfFile(file);
       const reader = new FileReader();
       reader.onload = (e) => setNowPdfPreview(e.target?.result);
       reader.readAsDataURL(file);
     }
   };
+  const handleSelectChange = (value, name) => {
+    setFormulario((prevData) => ({
+      ...prevData,
+      [name]: value  // Actualiza el campo dinámico correspondiente en el formulario
+    }));
+  };
+  
+  
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    const formData = new FormData();
+    for (const key in formulario) {
+      formData.append(key, formulario[key]);
+    }
+
+    if (pdfFile) {
+      formData.append('nowPdf', pdfFile);
+    }
+    try {
+      const response = await fetch(`/api/Act_etiqueta?id=${id}`, {
+        method: 'PUT',
+        headers:{
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+    if (!formData) {
+      console.error("formulario vacio");
+      
+    }
+      if (response.ok) {
+        alert('Etiqueta actualizada correctamente');
+      } else {
+        alert('Error al actualizar etiqueta');
+      }
+    } catch (error) {
+      console.error('Error al actualizar etiqueta:', error);
+    }
+      };
   const verifiers = [
     'Directora de marketing',
     'Gerente de maquilas y desarrollo de nuevo productos',
@@ -83,183 +116,188 @@ export function DocumentSigningForm() {
     'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
     'Cambio estético', 'Cambio crítico', 'Auditable',
   ];
-
-  // Array para almacenar imágenes seleccionadas
-  const [selectedImages, setSelectedImages] = useState([]);
-
-  const handleImageSelection = (index) => {
-    setSelectedImages((prevSelectedImages) =>
-      prevSelectedImages.includes(index)
-        ? prevSelectedImages.filter((i) => i !== index)
-        : [...prevSelectedImages, index]
-    );
-    setFormulario((prevData) => ({
-      ...prevData,
-      selectedImages: selectedImages.includes(index)
-        ? selectedImages.filter((i) => i !== index)
-        : [...selectedImages, index],
-    }));
-  };
-
   return (
     <div className="container mx-auto py-8 space-y-12">
-      <h1 className="text-3xl font-bold text-center mb-8">Autorización Etiquetas</h1>
+   <h1 className="text-3xl font-bold text-center mb-8">Editar Etiqueta</h1>
       <form onSubmit={handleSubmit}>
-        {/* PDF Section */}
         <Card>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1">
-              <div>
-                <Label htmlFor="nowPdf">PDF</Label><br />
-                <Input
-                
-                  id="nowPdf"
-                  type="file"
-                  accept=".pdf"
-                  name=""
-                  onChange={handleFileChange}
-                />
-                {nowPdfPreview && (
-                  <div className="mt-2">
-                    <embed src={nowPdfPreview} type="application/pdf" width="100%" height="500px" />
-                  </div>
-                )}
-              </div>
-            </div>
+            <Label htmlFor="nowPdf">PDF</Label><br />
+            <Input id="nowPdf" type="file" accept=".pdf" name="nowPdf" onChange={handleFileChange} />
+
+            {/* Mostrar la vista previa del PDF existente o el nuevo PDF cargado */}
+            {nowPdfPreview && (
+              <embed src={nowPdfPreview} type="application/pdf" width="100%" height="500px" />
+            )}
           </CardContent>
         </Card>
-
         {/* Detalles del Producto */}
+        {/* ... resto del formulario */}
         <Card>
           <CardHeader>
             <CardTitle>Detalles del Producto</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { id: "nombre_producto", label: "Nombre del producto" },
-                { id: "proveedor", label: "Proveedor" },
-                { id: "terminado", label: "Terminado" },
-                { id: "articulo", label: "Artículo" },
-                { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
-                { id: "edicion", label: "Edición" },
-                { id: "sustrato", label: "Sustrato" },
-                { id: "dimensiones", label: "Dimensiones" },
-                { id: "escala", label: "Escala" },
-              ].map((field) => (
-                <div key={field.id}>
-                  <Label htmlFor={field.id}>{field.label}</Label>
-                  <Input id={field.id} name={field.id} type={field.type || "text"} onChange={handleInputChange} />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Modificaciones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Modificaciones</CardTitle>
-          </CardHeader>
-          <CardContent>
+        
+        <CardContent>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {[
+      { id: "nombre_producto", label: "Nombre del producto" },
+      { id: "proveedor", label: "Proveedor" },
+      { id: "terminado", label: "Terminado" },
+      { id: "articulo", label: "Artículo" },
+      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+      { id: "edicion", label: "Edición" },
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+      { id: "escala", label: "Escala" },
+      { id: "inventory", label: "Inventario" },
+      { id: "description", label: "Descripción" },
+      { id: "comments-1", label: "Comentarios 1" },
+      { id: "verifier-0", label: "Verificador 0" },
+      { id: "fecha_autorizacion-0", label: "Fecha Autorización 0", type: "date" }
+    ].map((field) => (
+      <div key={field.id}>
+        <Label htmlFor={field.id}>{field.label}</Label>
+        <Input
+          id={field.id}
+          name={field.id}
+          type={field.type || "text"}
+          value={formulario[field.id] ? formulario[field.id][0] : ''}  // Extrae el primer valor del arreglo
+          onChange={handleInputChange} // Manejador de cambios
+        />
+      </div>
+    ))}
+  </div>
+</CardContent>
+</Card>
+<CardHeader>
+  <CardTitle>Modificaciones</CardTitle>
+</CardHeader>
+<CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="col-span-full">
                 <Label htmlFor="description">Descripción</Label>
-                <Input id="description" name="description" onChange={handleInputChange} />
+                <Input id="description" name="description" value={formulario.description} onChange={handleInputChange} />
               </div>
-              {modifications.map((item) => (
-                <div key={item}>
-                  <Label>{item}</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
+              {modifications.map((item, index) => (
+                    <div key={item}>
+                      <Label>{item}</Label>
+                      {/* Se asegura de que `miSelect` se esté utilizando con el índice correcto */}
+                      <Select 
+                        name={`miSelect${index + 1}`}  
+                        value={formulario[`miSelect${index + 1}`] || ""}  // Aquí usamos el índice dinámico
+                        onValueChange={(value) => handleSelectChange(value, `miSelect${index + 1}`)} // Función personalizada para manejar el valor
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+
               <div>
                 <Label htmlFor="inventory">Inventario (pzs)</Label>
-                <Input id="inventory" name="inventory" type="number" onChange={handleInputChange} />
+                <Input id="inventory" name="inventory" type="number" value={formulario.inventory} onChange={handleInputChange} />
               </div>
               <div>
                 <Label htmlFor="value">Valor ($)</Label>
-                <Input id="value" name="value" type="number" onChange={handleInputChange} />
+                <Input id="value" name="value" type="number"  value={formulario.value} onChange={handleInputChange} />
               </div>
             </div>
           </CardContent>
-        </Card>
+{/* Verificación */}
+<Card>
+  <CardHeader>
+    <CardTitle>Verificación</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    {verifiers.map((verifier, index) => (
+      <div key={index} className="space-y-4">
+        <Label htmlFor={`verifier-${index}`}>{verifier}</Label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Input
+            id={`verifier-${index}`}
+            name={`verifier-${index}`}
+            value={formulario[`verifier-${index}`] || ""} // Valor de verificación
+            onChange={handleInputChange}
+          />
+  <RadioGroup
+  value={formulario[`authorize-${index}`] || ""}
+  name={`authorize-${index}`}
+  onValueChange={(value) => handleInputChange(value, `authorize-${index}`)}
+>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="si" id={`authorize-${index}-si`} />
+    <Label htmlFor={`authorize-${index}-si`}>Sí</Label>
+  </div>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="no" id={`authorize-${index}-no`} />
+    <Label htmlFor={`authorize-${index}-no`}>No</Label>
+  </div>
+</RadioGroup>
 
-        {/* Verificación */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Verificación</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {verifiers.map((verifier, index) => (
-              <div key={index} className="space-y-4">
-                <Label htmlFor={`verifier-${index}`}>{verifier}</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Input id={`verifier-${index}`} name={`verifier-${index}`} placeholder="Nombre" onChange={handleInputChange} />
-                  <div className="flex items-center space-x-4">
-                    <RadioGroup defaultValue="no" className="flex space-x-4" name={`authorize-${index}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="si" id={`authorize-${index}-si`} />
-                        <Label htmlFor={`authorize-${index}-si`}>Sí</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id={`authorize-${index}-no`} />
-                        <Label htmlFor={`authorize-${index}-no`}>No</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <Input type="date" name={`fecha_autorizacion-${index}`} onChange={handleInputChange} />
-                </div>
-                <div>
-                  <Label htmlFor={`comments-${index}`}>Comentarios</Label>
-                  <Textarea
-                    id={`comments-${index}`}
-                    name={`comments-${index}`}
-                    placeholder="Ingrese sus comentarios aquí"
-                    className="w-full"
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          <Input
+            type="date"
+            name={`fecha_autorizacion-${index}`}
+            value={formulario[`fecha_autorizacion-${index}`] || ''} // Fecha de autorización
+            onChange={handleInputChange}
+          />
+        </div>
+        <div>
+          <Label htmlFor={`comments-${index}`}>Comentarios</Label>
+          <Textarea
+            id={`comments-${index}`}
+            name={`comments-${index}`}
+            value={formulario[`comments-${index}`] || ''} // Comentarios
+            placeholder="Ingrese sus comentarios aquí"
+            className="w-full"
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+    ))}
+  </CardContent>
+</Card>
 
-        {/* Selección de imágenes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Imágenes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Checkbox id={`image-${index}`} name={`image-${index}`} onChange={handleInputChange} />
-                  <Label htmlFor={`image-${index}`}>
-                    <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                      <img 
-                        src={`/img${index + 1}.png`} 
-                        alt={`Imagen ${index + 1}`} 
-                        className="object-cover w-full h-full" 
-                      />
-                    </div>
-                  </Label>
-                </div>
-              ))}
+{/* Selección de imágenes */}
+<Card>
+  <CardHeader>
+    <CardTitle>Imágenes</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div key={index} className="flex items-center space-x-2">
+          <Checkbox
+            id={`image-${index}`}
+            name={`image-${index}`}
+            checked={formulario[`image-${index}`] || false} // Estado de las imágenes
+            onChange={handleInputChange}
+          />
+          <Label htmlFor={`image-${index}`}>
+            <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+              <img
+                src={`/img${index + 1}.png`}
+                alt={`Imagen ${index + 1}`}
+                className="object-cover w-full h-full"
+              />
             </div>
-          </CardContent>
-        </Card>
+          </Label>
+        </div>
+      ))}
+    </div>
+  </CardContent>
+</Card>
 
-        <Button type="submit" className="w-full">Enviar</Button>
+       
+        <Button type="submit" className="w-full">Guardar Cambios</Button>
       </form>
     </div>
   );
-}
+};
+
+export default EditarEtiqueta;
