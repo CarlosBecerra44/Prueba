@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
@@ -83,7 +83,6 @@ export function EditarEtiqueta() {
     if (fileInput && fileInput.files.length > 0) {
       formData.append('nowPdf', fileInput.files[0]);
     }
-  
     try {
       const response = await fetch('../api/GuardarEtiquetas', {
         method: 'POST',
@@ -92,13 +91,12 @@ export function EditarEtiqueta() {
       });
   
       if (response.ok) {
-        const data = await response.json();
-        alert(`Formulario guardado con ID: ${data.id}`);
+        alert('Etiqueta actualizada correctamente');
       } else {
-        alert('Error al guardar formulario');
+        alert('Error al actualizar etiqueta');
       }
     } catch (error) {
-      console.error('Error al enviar el formulario:', error);
+      console.error('Error al actualizar etiqueta:', error);
     }
   };
     
@@ -132,9 +130,8 @@ export function EditarEtiqueta() {
  
   return (
     <div className="container mx-auto py-8 space-y-12">
-      <h1 className="text-3xl font-bold text-center mb-8">Autorización Etiquetas</h1>
+   <h1 className="text-3xl font-bold text-center mb-8">Editar Etiqueta</h1>
       <form onSubmit={handleSubmit}>
-        {/* PDF Section */}
         <Card>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1">
@@ -157,8 +154,8 @@ export function EditarEtiqueta() {
             </div>
           </CardContent>
         </Card>
-
         {/* Detalles del Producto */}
+        {/* ... resto del formulario */}
         <Card>
           <CardHeader>
             <CardTitle>Detalles del Producto</CardTitle>
@@ -316,8 +313,11 @@ export function EditarEtiqueta() {
           </CardContent>
         </Card>
 
-        <Button type="submit" className="w-full">Enviar</Button>
+       
+        <Button type="submit" className="w-full">Guardar Cambios</Button>
       </form>
     </div>
   );
-}
+};
+
+export default EditarEtiqueta;
