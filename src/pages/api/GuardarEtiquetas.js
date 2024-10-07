@@ -45,10 +45,11 @@ export default async function guardarFormulario(req, res) {
         const result = await pool.query(
           'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado) VALUES ($1, $2, $3) RETURNING *',
           [fields, pdfPath, false] // Guardamos la ruta del PDF
+          
         );
-
+          console.log(result.rows);
         // Enviar la respuesta con éxito
-        res.status(200).json({ success: true, data: result.rows[0] });
+        res.status(200).json( result.rows );
       } catch (error) {
         console.error('Error al guardar en la base de datos:', error);
         return res.status(500).json({ success: false, message: 'Error al guardar en la base de datos' });

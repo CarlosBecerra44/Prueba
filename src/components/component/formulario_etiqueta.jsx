@@ -48,7 +48,8 @@ export function DocumentSigningForm() {
   
       if (response.ok) {
         const data = await response.json();
-        alert(`Formulario guardado con ID: ${data.id}`);
+        
+        alert(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
       } else {
         alert('Error al guardar formulario');
       }
