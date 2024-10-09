@@ -1,5 +1,6 @@
+'use client'
 import { TablaEventosMejorada as Ta } from "@/components/component/tabla-eventos-mejorada";
-function page() {
+function Estrategias() {
     
       return (
         <div>
@@ -9,4 +10,4 @@ function page() {
       );
 }
 
-export default page;
+export default Estrategias;

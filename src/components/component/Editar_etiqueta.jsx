@@ -12,22 +12,33 @@ import { useSearchParams } from 'next/navigation';
 
 import { Textarea } from "@/components/ui/textarea"
 import { Field } from 'formik'
+import { selectClasses } from '@mui/material';
 
 export function EditarEtiqueta() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [formulario, setFormulario] = useState({
-   
+    
   });
+  const [imagenes, setImagenes] = useState([false, false, false, false, false, false, false, false]); // Array de 8 elementos
+
   const [nowPdfPreview, setNowPdfPreview] = useState(null);
   useEffect(() => {
     async function fetchData() {
       if (!id) return;
       
       try {
-        const response = await fetch(`/api/obtenerEtiqueta?id=${id}`);
+        const response = await fetch(`/api/EtiquetaUpdate?id=${id}`);
         const data = await response.json();
         setFormulario(data);
+        const prueba = data.selectedImages;
+        const prueba2 = String(prueba).split(',')
+        const arrayp = prueba2.map((valor) => valor === "true" || valor === "true]" || valor === "[true")
+
+        
+        const selectedImages = JSON.parse(data.selectedImages[0]);
+        setImagenes(selectedImages) // Convertimos el string a un array
+        console.log(imagenes);
       } catch (error) {
         console.error('Error al obtener el formulario:', error);
       }
@@ -35,33 +46,47 @@ export function EditarEtiqueta() {
 
     fetchData();
   }, [id]);
-  const handleInputChange = (value, name) => {
+
+  const handleInputChange = (e) => {
+    if (!e || !e.target) {
+      console.error("Evento o target no válido");
+      return;
+    }
+  
+    const { name, value, type, checked } = e.target;
+  
     setFormulario((prevFormulario) => ({
       ...prevFormulario,
-      [name]: value, // Actualizamos solo el campo select correspondiente
+      [name]: type === 'checkbox' ? checked : value, // Si es checkbox, guardamos true/false
+    }));
+  };
+
+  const handleSelectChange = (value,name) => {
+    setFormulario((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   };
   
-  const handleImageSelection = (index) => {
-    setFormulario((prevData) => {
-      const selectedImages  = prevData.selectedImages || [];
   
-      // Verificar si la imagen ya está seleccionada o no
-      if (selectedImages .includes(index)) {
-        // Si está seleccionada, la eliminamos
-        return {
-          ...prevData,
-          selectedImages: selectedImages .filter((i) => i !== index),
-        };
-      } else {
-        // Si no está seleccionada, la añadimos
-        return {
-          ...prevData,
-          selectedImages: [...selectedImages , index],
-        };
-      }
+
+  // Función para manejar los cambios en los checkboxes
+  const handleChange = (event) => {
+    const imageIndex = parseInt(event.target.name.split("-")[1], 10);
+  
+    setImagenes((prevState) => {
+      const newSelectedImages = [...(prevState || Array(8).fill(false))]; // Asegurar que siempre haya 8 elementos
+      newSelectedImages[imageIndex] = !newSelectedImages[imageIndex]; // Alternar el valor
+  
+      return newSelectedImages;
     });
   };
+  
+  
+  
+  
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,20 +96,16 @@ export function EditarEtiqueta() {
     
     // Añadir todos los datos del formulario
     for (const key in formulario) {
-      formData.append(key, formulario[key]);
+      if (Array.isArray(formulario[key])) {
+        formData.append(key, JSON.stringify(formulario[key])); // Asegurarse de que los arrays se envíen como JSON
+      } else {
+        formData.append(key, formulario[key]);
+      }
     }
-   // Enviar las imágenes seleccionadas si existen
-   if (formulario.selectedImages?.length > 0) {
-    formData.append('selectedImages', JSON.stringify(formulario.selectedImages));
-  }
+   
 
-    // Añadir el archivo PDF
-    const fileInput = document.querySelector('#nowPdf');
-    if (fileInput && fileInput.files.length > 0) {
-      formData.append('nowPdf', fileInput.files[0]);
-    }
     try {
-      const response = await fetch('../api/GuardarEtiquetas', {
+      const response = await fetch(`../api/Act_etiqueta?id=${id}`, {
         method: 'POST',
         // Eliminar el encabezado 'Content-Type' para que fetch lo maneje automáticamente al enviar FormData
         body: formData, // Enviar el FormData directamente
@@ -132,24 +153,20 @@ export function EditarEtiqueta() {
     <div className="container mx-auto py-8 space-y-12">
    <h1 className="text-3xl font-bold text-center mb-8">Editar Etiqueta</h1>
       <form onSubmit={handleSubmit}>
-        <Card>
+        
+      <Card>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1">
               <div>
-                <Label htmlFor="nowPdf">PDF</Label><br />
-                <Input
+               
                 
-                  id="nowPdf"
-                  type="file"
-                  accept=".pdf"
-                  name="pdf"
-                  onChange={handleFileChange}
-                />
-                {nowPdfPreview && (
-                  <div className="mt-2">
-                    <embed src={nowPdfPreview} type="application/pdf" width="100%" height="500px" />
-                  </div>
-                )}
+                <div className='mt-2'>
+                {formulario.pdf ? (
+          <iframe src={formulario.pdf} width="1485" height="600" title="PDF" />
+        ) : (
+          <p>No se ha cargado ningún PDF</p>
+        )}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -205,7 +222,7 @@ export function EditarEtiqueta() {
     <Select 
       name={`miSelect${index + 1}`} 
       value={formulario[`miSelect${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
-      onValueChange={(value) => handleInputChange(value, `miSelect${index + 1}`)} // También pasamos la clave dinámica al manejador
+      onValueChange={(value) => handleSelectChange(value, `miSelect${index + 1}`)} // También pasamos la clave dinámica al manejador
     >
       <SelectTrigger>
         <SelectValue placeholder="Seleccionar" />
@@ -244,24 +261,20 @@ export function EditarEtiqueta() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input id={`verifier-${index}`} name={`verifier-${index}`} placeholder="Nombre"  onChange={ handleInputChange} // name y value desde el evento 
                    value={formulario[`verifier-${index}`] || ''}/>
-                  <div className="flex items-center space-x-4">
-                 <RadioGroup
-                    defaultValue={formulario[`authorize-${index}`] || ''}
-                    className="flex space-x-4"
-                    name={`authorize-${index}`}
-                    onValueChange={ handleInputChange}
-                     // Manejo del cambio
-                     
-                      >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="si" id={`authorize-${index}-si`} />
-                      <Label htmlFor={`authorize-${index}-si`}>Sí</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id={`authorize-${index}-no`} />
-                      <Label htmlFor={`authorize-${index}-no`}>No</Label>
-                    </div>
-                  </RadioGroup>
+                  <div style={{width:"5rem"}} className="flex items-center space-x-4">
+                  <Select 
+                    name={`authorize-${index}`} 
+                    value={formulario[`authorize-${index}`] || 'no'} // Usamos la clave dinámica en `formulario`
+                    onValueChange={(value) => handleSelectChange(value, `authorize-${index}`)} // También pasamos la clave dinámica al manejador
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={formulario[`authorize-${index}`] || ''}  />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="si">Sí</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
                   </div>
                   <Input type="date" name={`fecha_autorizacion-${index}`}  onChange={handleInputChange} value={formulario[`fecha_autorizacion-${index}`] || ''} // name y value desde el evento
                    />
@@ -288,28 +301,28 @@ export function EditarEtiqueta() {
             <CardTitle>Imágenes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`image-${index}`}
-                      name={`image-${index}`}
-                      checked={formulario.selectedImages?.includes(index)}
-                      onChange={(e) => handleInputChange(e.target.value, e.target.name)}
-                    />
-                    <Label htmlFor={`image-${index}`}>
-                      <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                        <img
-                          src={`/img${index + 1}.png`}
-                          alt={`Imagen ${index + 1}`}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    </Label>
-                  </div>
-                ))}
-
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id={`image-${index}`}
+                name={`image-${index}`}
+                checked={imagenes[index] || false} // Controlar si está seleccionado
+                onChange={handleChange} // Manejar el cambio
+              />
+              <label htmlFor={`image-${index}`}>
+                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                  <img
+                    src={`/img${index + 1}.png`}
+                    alt={`Imagen ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </label>
             </div>
+          ))}
+        </div>
           </CardContent>
         </Card>
 

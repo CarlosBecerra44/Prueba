@@ -12,14 +12,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await pool.query('SELECT datos_formulario FROM etiquetas_form WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM etiquetas_form WHERE id = $1', [id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Etiqueta no encontrada' });
     }
 
     // No necesitas JSON.parse porque `datos_formulario` ya es un objeto
-    const datos = result.rows[0].datos_formulario || {};
+    const datos_formulario = result.rows[0].datos_formulario || {};
+    const pdf_path = result.rows[0].pdf_path || ''; // Valor por defecto si es null o undefined // Valor por defecto si es null o undefined
+
+// Combinar las columnas en un solo objeto
+const datos = {
+    ...datos_formulario,  // Desestructurar los datos del formulario
+    pdf: pdf_path  // Agregar la columna2 al objeto
+};
 
     console.log('Datos obtenidos:', datos); // Verifica el contenido de los datos
 

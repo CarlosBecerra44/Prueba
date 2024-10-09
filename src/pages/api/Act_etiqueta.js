@@ -1,7 +1,8 @@
 import pool from '@/lib/db';
 
 export default async function handler(req, res) {
-  if (req.method !== 'PUT') {
+ 
+  if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
@@ -14,6 +15,8 @@ export default async function handler(req, res) {
   // Obtén el cuerpo de la solicitud directamente
   const formData = req.body;
 
+
+console.log(formData);
   if (!formData) {
     return res.status(400).json({ message: 'Datos del formulario son requeridos' });
   }

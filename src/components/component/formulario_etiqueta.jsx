@@ -11,7 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 
 export function DocumentSigningForm() {
-  const [formulario, setFormulario] = useState({});
+  const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
+
+   });
   const [nowPdfPreview, setNowPdfPreview] = useState(null);
 
   const handleInputChange = (value,name) => {
@@ -20,24 +22,22 @@ export function DocumentSigningForm() {
       [name]: value,
     }));
   };
-  const handleImageSelection = (index) => {
-    setFormulario((prevData) => {
-      const selectedImages  = prevData.selectedImages || [];
-  
-      // Verificar si la imagen ya está seleccionada o no
-      if (selectedImages .includes(index)) {
-        // Si está seleccionada, la eliminamos
-        return {
-          ...prevData,
-          selectedImages: selectedImages .filter((i) => i !== index),
-        };
-      } else {
-        // Si no está seleccionada, la añadimos
-        return {
-          ...prevData,
-          selectedImages: [...selectedImages , index],
-        };
-      }
+
+  // Función para manejar los cambios en los checkboxes
+  const handleChange = (event) => {
+    const imageIndex = parseInt(event.target.name.split("-")[1], 10); // Extraer el índice de la imagen
+
+    setFormulario((prevState) => {
+      // Clonamos el array para evitar mutaciones
+      const newSelectedImages = [...prevState.selectedImages];
+
+      // Actualizamos el valor true/false del checkbox correspondiente
+      newSelectedImages[imageIndex] = !newSelectedImages[imageIndex];
+
+      return {
+        ...prevState,
+        selectedImages: newSelectedImages, // Guardamos como array de booleanos
+      };
     });
   };
 
@@ -49,12 +49,12 @@ export function DocumentSigningForm() {
     
     // Añadir todos los datos del formulario
     for (const key in formulario) {
-      formData.append(key, formulario[key]);
+      if (Array.isArray(formulario[key])) {
+        formData.append(key, JSON.stringify(formulario[key])); // Asegurarse de que los arrays se envíen como JSON
+      } else {
+        formData.append(key, formulario[key]);
+      }
     }
-   // Enviar las imágenes seleccionadas si existen
-   if (formulario.selectedImages?.length > 0) {
-    formData.append('selectedImages', JSON.stringify(formulario.selectedImages));
-  }
 
     // Añadir el archivo PDF
     const fileInput = document.querySelector('#nowPdf');
@@ -73,6 +73,7 @@ export function DocumentSigningForm() {
         const data = await response.json();
         
         alert(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
+        console.log("Formulario completo:", formulario);
       } else {
         alert('Error al guardar formulario');
       }
@@ -108,7 +109,6 @@ export function DocumentSigningForm() {
     'Cambio estético', 'Cambio crítico', 'Auditable',
   ];
 
- 
   return (
     <div className="container mx-auto py-8 space-y-12">
       <h1 className="text-3xl font-bold text-center mb-8">Autorización Etiquetas</h1>
@@ -260,35 +260,34 @@ export function DocumentSigningForm() {
 
         {/* Selección de imágenes */}
         <Card>
-          <CardHeader>
-            <CardTitle>Imágenes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`image-${index}`}
-                      name={`image-${index}`}
-                      checked={formulario.selectedImages?.includes(index)}
-                      onChange={(e) => handleInputChange(e.target.value, e.target.name)}
-                    />
-                    <Label htmlFor={`image-${index}`}>
-                      <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                        <img
-                          src={`/img${index + 1}.png`}
-                          alt={`Imagen ${index + 1}`}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    </Label>
-                  </div>
-                ))}
-
+      <CardHeader>
+        <CardTitle>Imágenes</CardTitle>
+      </CardHeader>
+      <CardContent>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id={`image-${index}`}
+                name={`image-${index}`}
+                checked={formulario.selectedImages[index]} // Controlar si está seleccionado
+                onChange={handleChange} // Manejar el cambio
+              />
+              <label htmlFor={`image-${index}`}>
+                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                  <img
+                    src={`/img${index + 1}.png`}
+                    alt={`Imagen ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </label>
             </div>
-          </CardContent>
-        </Card>
-
+          ))}
+        </div>
+      </CardContent>
+    </Card>
         <Button type="submit" className="w-full">Enviar</Button>
       </form>
     </div>
