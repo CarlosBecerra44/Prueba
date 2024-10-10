@@ -13,8 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await pool.query('SELECT formulario FROM formularios_papeletas WHERE id = $1', [id]);
-    const datos = result.rows[0]?.formulario || {};
+    const result = await pool.query('SELECT * FROM formularios_papeletas WHERE id = $1', [id]);
+    const datos = result.rows[0] || {};
     res.status(200).json(datos);
   } catch (error) {
     console.error('Error al obtener los datos:', error);
