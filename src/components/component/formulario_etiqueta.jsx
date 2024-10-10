@@ -100,6 +100,7 @@ export function DocumentSigningForm() {
     'Diseñador gráfico',
     'Gerente o supervisor de calidad',
     'Gerente o coordinador de auditorías',
+    'Químico o formulador',
   ];
 
   const modifications = [

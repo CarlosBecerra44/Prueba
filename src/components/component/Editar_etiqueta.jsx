@@ -11,41 +11,50 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useSearchParams } from 'next/navigation';
 
 import { Textarea } from "@/components/ui/textarea"
-import { Field } from 'formik'
+import { Field, isEmptyArray } from 'formik'
 import { selectClasses } from '@mui/material';
 
 export function EditarEtiqueta() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [formulario, setFormulario] = useState({
-    
+    selectedImages: Array(8).fill(false)
   });
-  const [imagenes, setImagenes] = useState([false, false, false, false, false, false, false, false]); // Array de 8 elementos
-
-  const [nowPdfPreview, setNowPdfPreview] = useState(null);
+  
   useEffect(() => {
     async function fetchData() {
       if (!id) return;
-      
+
       try {
         const response = await fetch(`/api/EtiquetaUpdate?id=${id}`);
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos');
+        }
         const data = await response.json();
-        setFormulario(data);
-        const prueba = data.selectedImages;
-        const prueba2 = String(prueba).split(',')
-        const arrayp = prueba2.map((valor) => valor === "true" || valor === "true]" || valor === "[true")
+        let prueba;
 
+        try {
+          // Si `data.selectedImages` es una cadena JSON, se puede parsear
+          prueba = JSON.parse(data.selectedImages);
+          console.log("HOLA - parsed");
+        } catch (e) {
+          // Si falla el parsing, asumimos que ya es un objeto
+          console.log("HOLA2 - not parsed");
+          prueba = data.selectedImages;
+        }
+
+        setFormulario({
+          ...data,
+          selectedImages: prueba // Manejamos como objeto, esté o no parseado
+        });
         
-        const selectedImages = JSON.parse(data.selectedImages[0]);
-        setImagenes(selectedImages) // Convertimos el string a un array
-        console.log(imagenes);
       } catch (error) {
         console.error('Error al obtener el formulario:', error);
       }
     }
 
     fetchData();
-  }, [id]);
+  }, [id]); 
 
   const handleInputChange = (e) => {
     if (!e || !e.target) {
@@ -67,66 +76,49 @@ export function EditarEtiqueta() {
       [name]: value,
     }));
   };
-  
-  
 
   // Función para manejar los cambios en los checkboxes
-  const handleChange = (event) => {
+  const handleImageChange = (event) => {
     const imageIndex = parseInt(event.target.name.split("-")[1], 10);
   
-    setImagenes((prevState) => {
-      const newSelectedImages = [...(prevState || Array(8).fill(false))]; // Asegurar que siempre haya 8 elementos
-      newSelectedImages[imageIndex] = !newSelectedImages[imageIndex]; // Alternar el valor
-  
-      return newSelectedImages;
+    setFormulario((prevFormulario) => {
+      const newSelectedImages = [...prevFormulario.selectedImages];
+      newSelectedImages[imageIndex] = !newSelectedImages[imageIndex];
+      return {
+        ...prevFormulario,
+        selectedImages: newSelectedImages,
+      };
     });
   };
-  
-  
-  
-  
-  
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formulario);
-  
-    const formData = new FormData();
-    
-    // Añadir todos los datos del formulario
-    for (const key in formulario) {
-      if (Array.isArray(formulario[key])) {
-        formData.append(key, JSON.stringify(formulario[key])); // Asegurarse de que los arrays se envíen como JSON
-      } else {
-        formData.append(key, formulario[key]);
-      }
-    }
-   
+
+    const dataToSend = {
+      ...formulario,
+      selectedImages: formulario.selectedImages
+    };
 
     try {
-      const response = await fetch(`../api/Act_etiqueta?id=${id}`, {
+      const response = await fetch(`/api/Act_etiqueta?id=${id}`, {
         method: 'POST',
-        // Eliminar el encabezado 'Content-Type' para que fetch lo maneje automáticamente al enviar FormData
-        body: formData, // Enviar el FormData directamente
+        headers: {
+          'Content-Type': 'application/json', // Establecer el tipo de contenido a JSON
+        },
+        body: JSON.stringify(dataToSend), // Enviar el formulario como JSON
       });
-  
+
       if (response.ok) {
         alert('Etiqueta actualizada correctamente');
       } else {
+        const errorData = await response.text(); // o response.json() si el servidor responde con JSON
+        console.error('Error al actualizar etiqueta:', errorData);
         alert('Error al actualizar etiqueta');
       }
     } catch (error) {
       console.error('Error al actualizar etiqueta:', error);
-    }
-  };
-    
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setNowPdfPreview(e.target?.result);
-      reader.readAsDataURL(file);
+      alert('Error al actualizar etiqueta');
     }
   };
 
@@ -139,13 +131,15 @@ export function EditarEtiqueta() {
     'Diseñador gráfico',
     'Gerente o supervisor de calidad',
     'Gerente o coordinador de auditorías',
+    'Químico o formulador',
+    'Planeación',
   ];
 
   const modifications = [
     'Información', 'Dimensiones', 'Sustrato', 'Tamaño de letra',
     'Impresión interior/exterior', 'Ortografía', 'Logotipo', 'Acabado',
     'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
-    'Cambio estético', 'Cambio crítico', 'Auditable',
+    'Cambio estético', 'Cambio crítico', 'Auditable', 'Fórmula',
   ];
 
  
@@ -308,8 +302,8 @@ export function EditarEtiqueta() {
                 type="checkbox"
                 id={`image-${index}`}
                 name={`image-${index}`}
-                checked={imagenes[index] || false} // Controlar si está seleccionado
-                onChange={handleChange} // Manejar el cambio
+                checked={formulario.selectedImages[index] || false} // Controlar si está seleccionado
+                onChange={handleImageChange} // Manejar el cambio
               />
               <label htmlFor={`image-${index}`}>
                 <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
