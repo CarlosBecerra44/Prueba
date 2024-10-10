@@ -14,6 +14,7 @@ export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
   const [departamento, setDepartamento] = useState('');
+  const [idUser, setID] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -30,7 +31,8 @@ export function Navbarv1() {
         const userData = await response.json();
         if (userData.success) {
           setNombre(userData.user.nombre);
-          setDepartamento(userData.departamento.nombre)
+          setDepartamento(userData.departamento.nombre);
+          setID(userData.user.id);
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -52,7 +54,7 @@ export function Navbarv1() {
     { id: 1, name: "Principal", href: "#"},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Foros", href: "#", icon: <ForosIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Ver mis permisos", href: `/permisos?id=${idUser}`, icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
     { id: 6, name: "Departamentos", href: "#"},
     { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
@@ -405,7 +407,7 @@ function CapacitacionesIcon(props) {
 
 function PapeletasIcon(props) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M14 3v4a1 1 0 0 0 1 1h4" />
   <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h6l4 4v12a2 2 0 0 1 -2 2z" />

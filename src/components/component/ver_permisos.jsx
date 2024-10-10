@@ -16,9 +16,10 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import Link from "next/link"
 
-export function EditarPermiso() {
+export function VisualizarPermiso() {
   const [modalVisible, setModalVisible] = useState(true)
   const [mostrarTabla, setMostrarTabla] = useState(false);
+  const [idUser, setID] = useState('');
   const [mostrarBotones, setMostrarBotones] = useState(true);
   const modalRef = useRef();
   const searchParams = useSearchParams();
@@ -111,6 +112,7 @@ export function EditarPermiso() {
         const response = await fetch(`/api/obtenerPermiso?id=${id}`);
         const data = await response.json();
         setFormData(data.formulario);
+        setID(data.id_usuario);
       } catch (error) {
         console.error('Error al obtener el formulario:', error);
       }
@@ -216,37 +218,36 @@ export function EditarPermiso() {
               <td className="border border-gray-300 p-2">Pág. 1 de 2</td>
             </tr>
           </table><br />
-          <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
-                <label className="font-bold">Empleado <input type="checkbox" name="empleado" checked={formData.empleado} onChange={handleChange} className="mr-2" /></label>
+                <label className="font-bold">Empleado <input type="checkbox" name="empleado" checked={formData.empleado} disabled onChange={handleChange} className="mr-2" /></label>
               </div>
               <div>
-                <label className="font-bold">Sindicalizado <input type="checkbox" name="sindicalizado" checked={formData.sindicalizado} onChange={handleChange} className="mr-2" /></label>
+                <label className="font-bold">Sindicalizado <input type="checkbox" name="sindicalizado" checked={formData.sindicalizado} disabled onChange={handleChange} className="mr-2" /></label>
               </div>
               <div>
-                <label className="font-bold">Planta <input type="checkbox" name="planta" checked={formData.planta} onChange={handleChange} className="mr-2" /></label>
+                <label className="font-bold">Planta <input type="checkbox" name="planta" checked={formData.planta} onChange={handleChange} disabled className="mr-2" /></label>
               </div>
             </div>
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr>
                   <th className="border border-gray-300 p-2" style={{textAlign:"justify"}} >Inasistencia</th>
-                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Justificada <input type="checkbox" name="justificada" data-section="inasistencia" checked={formData.inasistencia.justificada} onChange={handleChange} /></th>
-                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Injustificada <input type="checkbox" name="injustificada" data-section="inasistencia" checked={formData.inasistencia.injustificada} onChange={handleChange} /></th>
-                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="inasistencia" value={formData.inasistencia.dias} onChange={handleChange} /></span></th>
-                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="inasistencia" value={formData.inasistencia.del} onChange={handleChange} /></span></th>
-                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="inasistencia" value={formData.inasistencia.al} onChange={handleChange} /></span></th>
+                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Justificada <input type="checkbox" name="justificada" data-section="inasistencia" checked={formData.inasistencia.justificada} disabled onChange={handleChange} /></th>
+                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal", textAlign: "justify" }} >Injustificada <input type="checkbox" name="injustificada" data-section="inasistencia" checked={formData.inasistencia.injustificada} disabled onChange={handleChange} /></th>
+                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="inasistencia" value={formData.inasistencia.dias} onChange={handleChange} readOnly={true} /></span></th>
+                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="inasistencia" value={formData.inasistencia.del} onChange={handleChange} readOnly={true} /></span></th>
+                  <th className="border border-gray-300 p-2" style={{ fontWeight:"normal" }} ><span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="inasistencia" value={formData.inasistencia.al} onChange={handleChange} readOnly={true} /></span></th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td className="border border-gray-300 p-2" style={{ fontWeight:"bold" }} >Llegada tarde / Salida antes</td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display: "flex"}}>Hora: <input style={{marginLeft: "0.5rem"}} type="time" name="hora" data-section="llegadaTarde" value={formData.llegadaTarde.hora} onChange={handleChange} /></span>
+                    <span style={{display: "flex"}}>Hora: <input style={{marginLeft: "0.5rem"}} type="time" name="hora" data-section="llegadaTarde" value={formData.llegadaTarde.hora} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Fecha: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="fecha" data-section="llegadaTarde" value={formData.llegadaTarde.fecha} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Fecha: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="fecha" data-section="llegadaTarde" value={formData.llegadaTarde.fecha} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2" />
                   <td className="border border-gray-300 p-2" />
@@ -255,13 +256,13 @@ export function EditarPermiso() {
                 <tr>
                   <td className="border border-gray-300 p-2" style={{ fontWeight:"bold" }} >Suspensión</td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="suspension" value={formData.suspension.dias} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="suspension" value={formData.suspension.dias} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="suspension" value={formData.suspension.del} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="suspension" value={formData.suspension.del} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="suspension" value={formData.suspension.al} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="suspension" value={formData.suspension.al} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2" />
                   <td className="border border-gray-300 p-2" />
@@ -270,34 +271,34 @@ export function EditarPermiso() {
                   <td className="border border-gray-300 p-2" style={{ fontWeight:"bold" }} >Permiso</td>
                   <td className="border border-gray-300 p-2">
                     <label className="flex items-center">
-                      Con sueldo <input type="checkbox" name="conSueldo" data-section="permiso" checked={formData.permiso.conSueldo} onChange={handleChange} />
+                      Con sueldo <input type="checkbox" name="conSueldo" data-section="permiso" checked={formData.permiso.conSueldo} disabled onChange={handleChange} />
                     </label>
                   </td>
                   <td className="border border-gray-300 p-2">
                     <label className="flex items-center">
-                      Sin sueldo <input type="checkbox" name="sinSueldo" data-section="permiso" checked={formData.permiso.sinSueldo} onChange={handleChange} /> 
+                      Sin sueldo <input type="checkbox" name="sinSueldo" data-section="permiso" checked={formData.permiso.sinSueldo} disabled onChange={handleChange} /> 
                     </label>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="permiso" value={formData.permiso.dias} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="permiso" value={formData.permiso.dias} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="permiso" value={formData.permiso.del} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="permiso" value={formData.permiso.del} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="permiso" value={formData.permiso.al} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="permiso" value={formData.permiso.al} onChange={handleChange} readOnly={true} /></span>
                   </td>
                 </tr>
                 <tr>
                   <td className="border border-gray-300 p-2" style={{ fontWeight:"bold" }} >Vacaciones</td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="vacaciones" value={formData.vacaciones.dias} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="vacaciones" value={formData.vacaciones.dias} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="vacaciones" value={formData.vacaciones.del} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="vacaciones" value={formData.vacaciones.del} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="vacaciones" value={formData.vacaciones.al} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="vacaciones" value={formData.vacaciones.al} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2" />
                   <td className="border border-gray-300 p-2" />
@@ -305,16 +306,16 @@ export function EditarPermiso() {
                 <tr>
                   <td className="border border-gray-300 p-2" style={{ fontWeight:"bold" }} >Tiempo por tiempo</td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.dias} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Dias: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="dias" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.dias} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>Horas: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="horas" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.horas} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>Horas: <input style={{marginLeft: "0.5rem", width: "2.5rem"}} type="number" name="horas" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.horas} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.del} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>del: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="del" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.del} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.al} onChange={handleChange} /></span>
+                    <span style={{display:"flex"}}>al: <input style={{marginLeft: "0.5rem", width: "7.5rem"}} type="date" name="al" data-section="tiempoPorTiempo" value={formData.tiempoPorTiempo.al} onChange={handleChange} readOnly={true} /></span>
                   </td>
                   <td className="border border-gray-300 p-2" />
                 </tr>
@@ -322,38 +323,23 @@ export function EditarPermiso() {
             </table>
             <div className="mt-4">
               <label className="font-bold">Observaciones:</label>
-              <textarea name="observaciones" value={formData.observaciones} onChange={handleChange} className="border border-gray-300 p-2 mt-2" rows="4" style={{ width: "100%" }} />
+              <textarea name="observaciones" value={formData.observaciones} onChange={handleChange} readOnly={true} className="border border-gray-300 p-2 mt-2" rows="4" style={{ width: "100%" }} />
             </div>
             <div className={`${mostrarBotones ? '' : 'hidden'} space-y-2`}>
             <label className="font-bold">Estatus:</label>
-              <Select
-                id="dropdown"
-                value={formData.autorizado}
-                onValueChange={handleDropdownChange}
-              >
-                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
-                  <SelectValue placeholder="Seleccionar estatus" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Autorizado">Autorizado</SelectItem>
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
-                  <SelectItem value="No autorizado">No autorizado</SelectItem>
-                </SelectContent>
-              </Select>
+            <input style={{marginLeft: "0.5rem", width: "7.5rem", color:"red"}} type="text" name="estatus" value={formData.autorizado} readOnly={true} />
             </div><br />
-            <Link href="/marketing/permisos">
+            <Link href={`/permisos?id=${idUser}`}>
               <Button className={`${mostrarBotones ? '' : 'hidden'}`} variant="outline">Regresar</Button>
             </Link>
-            <Button style={{marginLeft: "0.5rem"}} type="submit" variant="outline" className={`${mostrarBotones ? '' : 'hidden'}`}>Enviar Papeleta</Button>
-          </form>
-          <Button
-            className={`${mostrarBotones ? '' : 'hidden'}`}
-            style={{marginLeft: "15.5rem", bottom:"2.5rem", position:"relative"}}
-            variant="outline"
-            onClick={handleGeneratePDF}
-          >
-            Guardar como PDF
-          </Button>
+            <Button
+              className={`${mostrarBotones ? '' : 'hidden'}`}
+              style={{marginLeft: "0.5rem"}}
+              variant="outline"
+              onClick={handleGeneratePDF}
+            >
+              Guardar como PDF
+            </Button>
         </div>
       )}
     </div>
