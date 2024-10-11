@@ -6,12 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useSearchParams } from 'next/navigation';
 import { useSession } from "next-auth/react"
 import { Textarea } from "@/components/ui/textarea"
-import { Field, isEmptyArray } from 'formik'
-import { selectClasses } from '@mui/material';
+import styles from '../../../public/CSS/spinner.css';
 
 const verifiers = [
   'Directora de marketing',
@@ -41,7 +39,7 @@ const mails = [
 ];
 
 export function EditarEtiqueta() {
-  const { data: session, status } = useSession()
+  const {data: session,status}=useSession ();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [formulario, setFormulario] = useState({
@@ -114,10 +112,8 @@ export function EditarEtiqueta() {
         try {
           // Si `data.selectedImages` es una cadena JSON, se puede parsear
           prueba = JSON.parse(data.selectedImages);
-          console.log("HOLA - parsed");
         } catch (e) {
           // Si falla el parsing, asumimos que ya es un objeto
-          console.log("HOLA2 - not parsed");
           prueba = data.selectedImages;
         }
 
@@ -199,6 +195,27 @@ export function EditarEtiqueta() {
       console.error('Error al actualizar etiqueta:', error);
     }
   };
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
+  if (!session || !session.user) {
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
+  }
  
   return (
     <div className="container mx-auto py-8 space-y-12">
