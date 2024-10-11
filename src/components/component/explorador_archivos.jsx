@@ -21,7 +21,7 @@ export function ExploradorArchivos() {
   useEffect(() => {
     if (id) {
       // Llama a la API para obtener los archivos en la carpeta especificada
-      fetch(`/api/list-files?folderId=${id}`)
+      fetch(`/api/list-files?folderId=${id}&correo=${session.user.email}`)
         .then(response => response.json())
         .then(data => {
           if (data.files) {
