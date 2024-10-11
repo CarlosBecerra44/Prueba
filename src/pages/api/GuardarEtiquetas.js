@@ -43,8 +43,8 @@ export default async function guardarFormulario(req, res) {
       try {
         // Guardar los datos en la base de datos
         const result = await pool.query(
-          'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado) VALUES ($1, $2, $3) RETURNING *',
-          [fields, pdfPath, false] // Guardamos la ruta del PDF
+          'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
+          [fields, pdfPath, false, 'Pendiente'] // Guardamos la ruta del PDF
           
         );
           console.log(result.rows);

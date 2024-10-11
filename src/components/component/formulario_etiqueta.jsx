@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
+import styles from '../../../public/CSS/spinner.css';
+import { useSession,  signOut } from "next-auth/react";
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
@@ -41,6 +42,28 @@ export function DocumentSigningForm() {
     });
   };
 
+  const {data: session,status}=useSession ();
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
+  if (!session || !session.user) {
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formulario);
@@ -72,10 +95,11 @@ export function DocumentSigningForm() {
       if (response.ok) {
         const data = await response.json();
         
-        alert(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
+        console.log(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
         console.log("Formulario completo:", formulario);
+        window.location.href = "/marketing/etiquetas/tabla_general";
       } else {
-        alert('Error al guardar formulario');
+        console.log('Error al guardar formulario');
       }
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
@@ -292,5 +316,11 @@ export function DocumentSigningForm() {
         <Button type="submit" className="w-full">Enviar</Button>
       </form>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div className="spinner" />
   );
 }

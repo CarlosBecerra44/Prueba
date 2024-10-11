@@ -4,15 +4,12 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useSearchParams } from 'next/navigation';
-
 import { Textarea } from "@/components/ui/textarea"
-import { Field, isEmptyArray } from 'formik'
-import { selectClasses } from '@mui/material';
+import styles from '../../../public/CSS/spinner.css';
+import { useSession,  signOut } from "next-auth/react";
 
 export function EditarEtiqueta() {
   const searchParams = useSearchParams();
@@ -110,17 +107,40 @@ export function EditarEtiqueta() {
       });
 
       if (response.ok) {
-        alert('Etiqueta actualizada correctamente');
+        console.log('Etiqueta actualizada correctamente');
+        window.location.href = "/marketing/etiquetas/tabla_general";
       } else {
         const errorData = await response.text(); // o response.json() si el servidor responde con JSON
         console.error('Error al actualizar etiqueta:', errorData);
-        alert('Error al actualizar etiqueta');
+        console.log('Error al actualizar etiqueta');
       }
     } catch (error) {
       console.error('Error al actualizar etiqueta:', error);
-      alert('Error al actualizar etiqueta');
+      console.log('Error al actualizar etiqueta');
     }
   };
+
+  const {data: session,status}=useSession ();
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+  if (status=="loading") {
+    return <p>cargando...</p>;
+  }
+  if (!session || !session.user) {
+    return (
+      window.location.href = "/",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No has iniciado sesión</p>
+      </div>
+    );
+  }
 
   const verifiers = [
     'Directora de marketing',
@@ -326,5 +346,11 @@ export function EditarEtiqueta() {
     </div>
   );
 };
+
+function Spinner() {
+  return (
+    <div className="spinner" />
+  );
+}
 
 export default EditarEtiqueta;
