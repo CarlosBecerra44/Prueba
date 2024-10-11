@@ -5,7 +5,7 @@ const ftp = require("basic-ftp");
 export default async function handler(req, res) {
   try {
     const { folderId, correo } = req.query;
-
+console.log(correo)
     const result = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
     if (result.rows.length > 0) {
       const id = result.rows[0].departamento_id; // Accediendo a la columna 'id' de la primera fila
