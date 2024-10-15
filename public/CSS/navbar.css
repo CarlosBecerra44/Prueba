@@ -1,0 +1,33 @@
+/* Navbar.css */
+
+/* Ocultar la barra de desplazamiento en navegadores WebKit */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ocultar la barra de desplazamiento en Firefox e IE */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+/* Estilizar la barra de desplazamiento en WebKit */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #2d3748; /* Color del track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4a5568; /* Color del thumb */
+  border-radius: 4px;
+  border: 2px solid #2d3748; /* Espacio alrededor del thumb */
+}
+
+/* Estilizar la barra de desplazamiento en Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Opciones: auto, thin */
+  scrollbar-color: #4a5568 #2d3748; /* thumb color y track color */
+}

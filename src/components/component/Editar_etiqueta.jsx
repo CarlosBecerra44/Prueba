@@ -102,7 +102,7 @@ export function EditarEtiqueta() {
       if (!id) return;
 
       try {
-        const response = await fetch(`/api/EtiquetaUpdate?id=${id}&correo=${session.user.email} `);
+        const response = await fetch(`/api/EtiquetaUpdate?id=${id}`);
         if (!response.ok) {
           throw new Error('Error al obtener los datos');
         }
@@ -229,7 +229,7 @@ export function EditarEtiqueta() {
                 
                 <div className='mt-2'>
                 {formulario.pdf ? (
-          <iframe src={formulario.pdf} width="1485" height="600" title="PDF" />
+          <iframe src={`/api/obtenerPdf?pdf=${encodeURIComponent(formulario.pdf)}`} width="1485" height="600" title="PDF" />
         ) : (
           <p>No se ha cargado ningún PDF</p>
         )}

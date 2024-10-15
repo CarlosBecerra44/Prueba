@@ -9,12 +9,14 @@ import { Weight } from "lucide-react"
 import { getSession } from 'next-auth/react';
 import styles from '../../public/CSS/spinner.css';
 import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
+import "../../public/CSS/navbar.css"
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [idUser, setID] = useState('');
+  const [correoUser, setCorreo] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export function Navbarv1() {
           setNombre(userData.user.nombre);
           setDepartamento(userData.departamento.nombre);
           setID(userData.user.id);
+          setCorreo(userData.user.correo);
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -58,7 +61,7 @@ export function Navbarv1() {
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
     { id: 6, name: "Departamentos", href: "#"},
     { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
-    ...(departamento === "marketing" ? [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }, { name: "Permisos", href: "/marketing/permisos", icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> }] }]
+    ...(correoUser === "guscardenas83@gmail.com" && departamento === "marketing" ? [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }, { name: "Permisos", href: "/marketing/permisos", icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> }] }]
       : [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] }]
     ),
     { id: 9, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
@@ -87,7 +90,7 @@ export function Navbarv1() {
           <a href="/perfil"><span className="ml-2 font-medium">{nombre}</span></a>
         </div>
       </div>
-      <div className="p-4">
+      <div className="p-4 flex-1 overflow-y-auto">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
           <Input

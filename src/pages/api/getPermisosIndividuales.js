@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   
   try {
     // Consulta para obtener los eventos junto con los datos del usuario
-    const query = "SELECT * FROM formularios_papeletas WHERE id_usuario = $1 AND estatus != 'No visible'";
+    const query = "SELECT * FROM formularios_papeletas WHERE id_usuario = $1 AND estatus != 'No visible' ORDER BY id ASC";
     const values = [id];
     const result = await pool.query(query,values);
     const eventos = result.rows;

@@ -327,7 +327,20 @@ export function VisualizarPermiso() {
             </div>
             <div className={`${mostrarBotones ? '' : 'hidden'} space-y-2`}>
             <label className="font-bold">Estatus:</label>
-            <input style={{marginLeft: "0.5rem", width: "7.5rem", color:"red"}} type="text" name="estatus" value={formData.autorizado} readOnly={true} />
+            <input style={{marginLeft: "0.5rem", width: "7.5rem",
+                    color: (() => {
+                      switch (formData.autorizado) {
+                        case 'Autorizado':
+                          return 'green';
+                        case 'No autorizado':
+                          return 'red';
+                        case 'Pendiente':
+                          return 'orange';
+                        default:
+                          return 'black'; // color por defecto
+                      }
+                    })(),
+                  }} type="text" name="estatus" value={formData.autorizado} readOnly={true} />
             </div><br />
             <Link href={`/permisos?id=${idUser}`}>
               <Button className={`${mostrarBotones ? '' : 'hidden'}`} variant="outline">Regresar</Button>
