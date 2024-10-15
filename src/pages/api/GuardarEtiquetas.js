@@ -12,7 +12,7 @@ export const config = {
 export default async function guardarFormulario(req, res) {
   if (req.method === 'POST') {
     const form = formidable({
-      uploadDir: path.join(process.cwd(), '/public/uploads'), // Ruta donde se guardará el archivo
+      uploadDir: path.join(process.cwd(), '/uploads'), // Ruta donde se guardará el archivo
       keepExtensions: true, // Mantener la extensión del archivo
     });
 
