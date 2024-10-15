@@ -1,8 +1,7 @@
 import pool from '@/lib/db';
 import formidable from 'formidable';
-import fs from 'fs';
-import path from 'path';
 import { Client } from 'basic-ftp';
+import fs from 'fs';
 
 export const config = {
   api: {
@@ -10,8 +9,8 @@ export const config = {
   },
 };
 
-// Función para subir el archivo al servidor FTP
-async function subirArchivoFtp(localFilePath, remoteFileName) {
+// Función para subir el archivo directamente al servidor FTP
+async function subirArchivoFtp(fileStream, remoteFileName) {
   const client = new Client();
   try {
     await client.access({
@@ -24,8 +23,8 @@ async function subirArchivoFtp(localFilePath, remoteFileName) {
     // Cambia al directorio deseado
     await client.ensureDir("/uploads");
 
-    // Sube el archivo al servidor FTP
-    await client.uploadFrom(localFilePath, remoteFileName);
+    // Sube el archivo usando el stream directamente
+    await client.uploadFrom(fileStream, remoteFileName);
 
     console.log('Archivo subido correctamente al servidor FTP');
   } catch (err) {
@@ -39,13 +38,12 @@ async function subirArchivoFtp(localFilePath, remoteFileName) {
 export default async function guardarFormulario(req, res) {
   if (req.method === 'POST') {
     const form = formidable({
-      uploadDir: path.join(process.cwd(), '/public/uploads'), // Guardamos temporalmente en un directorio local
       keepExtensions: true, // Mantener la extensión del archivo
     });
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error('Error al subir el archivo:', err);
+        console.error('Error al procesar el archivo:', err);
         return res.status(500).json({ success: false, message: 'Error al procesar el archivo' });
       }
 
@@ -57,16 +55,12 @@ export default async function guardarFormulario(req, res) {
         return res.status(400).json({ success: false, message: 'Archivo PDF no encontrado' });
       }
 
-      const filePathKey = pdfFile.filepath || pdfFile.path;
-      if (!filePathKey) {
-        return res.status(400).json({ success: false, message: 'Ruta de archivo no encontrada' });
-      }
-
-      const remoteFileName = path.basename(filePathKey);
+      const fileStream = fs.createReadStream(pdfFile.filepath || pdfFile.path);
+      const remoteFileName = pdfFile.originalFilename || pdfFile.name;
 
       try {
-        // Subir el archivo al servidor FTP
-        await subirArchivoFtp(filePathKey, remoteFileName);
+        // Subir el archivo directamente al servidor FTP
+        await subirArchivoFtp(fileStream, remoteFileName);
 
         // Ruta final en el servidor FTP
         const ftpPath = `/uploads/${remoteFileName}`;

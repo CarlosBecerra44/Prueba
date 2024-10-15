@@ -75,5 +75,6 @@ module.exports = {
   // Otras configuraciones de Tailwind
   plugins: [
     require('tailwindcss-animate'),
+    require('tailwind-scrollbar'),
   ],
 };

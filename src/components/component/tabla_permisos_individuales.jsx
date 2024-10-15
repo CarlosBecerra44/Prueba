@@ -65,6 +65,19 @@ export function TablaPermisos() {
         minute: "2-digit",
         second: "2-digit",
     });
+
+    const fechaCompleta2 = evento.fecha_actualizacion;
+    const fecha2 = new Date(fechaCompleta2);
+
+    // Extraer solo la fecha y la hora
+    const fechaFormateada2 = fecha2.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
     
     const handleDelete = async (index) => {
       try {
@@ -100,11 +113,12 @@ export function TablaPermisos() {
       id: evento.id,
       estatus: evento.formulario.autorizado || "No especificado",
       fechaDeSubida: fechaFormateada,
+      fechaDeActualizacion: fechaFormateada2,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
           <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px"}}>
             <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Button>
           <Link href={`permisos/ver_permisos?id=${index}`}>
@@ -222,7 +236,7 @@ export function TablaPermisos() {
                     {evento.estatus}
                   </TableCell>
                   <TableCell>{evento.fechaDeSubida}</TableCell>
-                  <TableCell>{evento.fechaDeSubida}</TableCell>
+                  <TableCell>{evento.fechaDeActualizacion}</TableCell>
                   <TableCell>{evento.accion ? evento.accion(evento.id) : "N/A"}</TableCell>
                 </TableRow>
               ))
@@ -289,7 +303,7 @@ function VisualizeIcon(props) {
       <path
         d="M32 12C16 12 4 32 4 32s12 20 28 20 28-20 28-20S48 12 32 12z"
         fill="none"
-        stroke="blue"
+        stroke="rgb(31 41 55)"
         stroke-width="4"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -300,13 +314,13 @@ function VisualizeIcon(props) {
         cy="32"
         r="10"
         fill="none"
-        stroke="blue"
+        stroke="rgb(31 41 55)"
         stroke-width="4"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
       
-      <circle cx="32" cy="32" r="4" fill="blue" />
+      <circle cx="32" cy="32" r="4" fill="rgb(31 41 55)" />
     </svg>)
   )
 }
