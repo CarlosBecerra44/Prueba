@@ -10,6 +10,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
+import Swal from 'sweetalert2';
+
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
@@ -73,7 +75,8 @@ export function DocumentSigningForm() {
     // Añadir todos los datos del formulario
     for (const key in formulario) {
       if (Array.isArray(formulario[key])) {
-        formData.append(key, JSON.stringify(formulario[key])); // Asegurarse de que los arrays se envíen como JSON
+        formData.append(key, JSON.stringify(formulario[key]));
+         // Asegurarse de que los arrays se envíen como JSON
       } else {
         formData.append(key, formulario[key]);
       }
@@ -90,6 +93,7 @@ export function DocumentSigningForm() {
         method: 'POST',
         // Eliminar el encabezado 'Content-Type' para que fetch lo maneje automáticamente al enviar FormData
         body: formData, // Enviar el FormData directamente
+        
       });
   
       if (response.ok) {
@@ -97,13 +101,42 @@ export function DocumentSigningForm() {
         
         console.log(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
         console.log("Formulario completo:", formulario);
-        window.location.href = "/marketing/etiquetas/tabla_general";
+ 
       } else {
         console.log('Error al guardar formulario');
       }
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
     }
+   try{
+      const res= fetch('/api/send-mail',{
+        method: 'POST',
+        headers: {
+             'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emails: ['correo1@example.com', 'guscardenas63@gmail.com', 'correo3@example.com'], // Añadir tus correos específicos
+          subject: 'Alerta importante',
+          message: 'Se ha guardado un nuevo formulario con los siguientes detalles...',
+        }),
+      });
+      if (res) {
+        Swal.fire({
+          title: 'Subido',
+          text: 'Se ha creado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/marketing/etiquetas/tabla_general";
+        });
+      } else {
+        Swal.fire('Error', 'Error al subir formulario', 'error');
+      }
+   }catch (error){
+      console.error(error);
+      alert(error);
+   }
   };
     
   const handleFileChange = (event) => {
