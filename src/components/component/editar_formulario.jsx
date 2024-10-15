@@ -451,7 +451,7 @@ export function EditarEstrategia() {
                   </div>
                 </div>
               ))}
-              <Button style={{background:"#78ff0099"}} type="button" variant="outline" onClick={addOtroCosto} className="mt-2">
+              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={addOtroCosto} className="mt-2">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Agregar otro gasto
               </Button>
@@ -555,7 +555,7 @@ export function EditarEstrategia() {
               <Button
                 type="button"
                 variant="outline"
-                style={{background:"#78ff0099"}}
+                style={{background:"rgb(31 41 55)", color:"white"}}
                 onClick={addDescripcionItem}
                 className="mt-2">
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -589,7 +589,7 @@ export function EditarEstrategia() {
             <Button
               type="button"
               variant="outline"
-              style={{background:"#78ff0099"}}
+              style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addProductoVenta}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -635,7 +635,7 @@ export function EditarEstrategia() {
             <Button
               type="button"
               variant="outline"
-              style={{background:"#78ff0099"}}
+              style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addFacturaProveedor}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -678,7 +678,7 @@ export function EditarEstrategia() {
             <Button
               type="button"
               variant="outline"
-              style={{background:"#78ff0099"}}
+              style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addPiezaDigital}
               className="mt-2">
               <PlusCircle className="h-4 w-4 mr-2" />
