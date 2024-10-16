@@ -172,7 +172,7 @@ export function Navbarv1() {
       </div>
       <div style={{ borderTopWidth: "2px", marginRight: "6px"}} className="mt-auto p-4 border-gray-700">
         
-        <Button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full" style={{color: "black", background: "white"}}>
+        <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{color: "black", background: "white"}}>
           Cerrar sesión
           <LogOutIcon style={{marginLeft: "0.5rem"}} className="h-4 w-4 text-gray-400" />
         </Button>
