@@ -115,7 +115,9 @@ export function DocumentSigningForm() {
              'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          emails: ['correo1@example.com', 'guscardenas63@gmail.com', 'correo3@example.com'], // Añadir tus correos específicos
+          emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
+            'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
+            'o.rivera@nutriton.com.mx'], // Añadir tus correos específicos
           subject: 'Alerta importante',
           message: 'Se ha guardado un nuevo formulario con los siguientes detalles...',
         }),

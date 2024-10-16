@@ -9,7 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { useSearchParams } from 'next/navigation';
 import { useSession } from "next-auth/react"
 import { Textarea } from "@/components/ui/textarea"
-import styles from '../../../public/CSS/spinner.css';
+import styles from '../../../public/CSS/spinner.css'
+
 
 const verifiers = [
   'Directora de marketing',
@@ -37,7 +38,6 @@ const mails = [
   'carlosgabrielbecerragallardo2@gmail.com',
   'carlosgabrielbecerragallardo3@gmail.com',
 ];
-
 export function EditarEtiqueta() {
   const {data: session,status}=useSession ();
   const searchParams = useSearchParams();
@@ -185,7 +185,7 @@ export function EditarEtiqueta() {
 
       if (response.ok) {
         console.log('Etiqueta actualizada correctamente');
-        window.location.href = "/marketing/etiquetas/tabla_general";
+      
       } else {
         const errorData = await response.text(); // o response.json() si el servidor responde con JSON
         console.error('Error al actualizar etiqueta:', errorData);
@@ -216,6 +216,51 @@ export function EditarEtiqueta() {
       </div>
     );
   }
+  const handleSave =async()=>{
+
+    if (session) {
+      const userEmail1 = session.user.email;
+  
+      // Definir los destinatarios y orden
+      const emailFlow1 = {
+        "o.rivera@nutriton.com.mx": "investigacion@nutriton.com.mx",
+        "investigacion@nutriton.com.mx": "calidad@nutriton.com.mx",
+        "calidad@nutriton.com.mx": "r.contreras@nutriton.com.mx",
+        "r.contreras@nutriton.com.mx": "investigacion@nutriton.com.mx",
+        "investigacion@nutriton.com.mx": "j.leyva@nutriton.com.mx",
+        "j.leyva@nutriton.com.mx": "l.torres@nutriton.com.mx",
+        "l.torres@nutriton.com.mx": "marketing@nutriton.com.mx",
+        "marketing@nutriton.com.mx": "j.perez@nutriton.com.mx"
+      };
+  
+      // Verificar el correo del usuario actual y enviar el aviso al siguiente
+      const nextRecipient = emailFlow1[userEmail1];
+      if (nextRecipient) {
+        try {
+          // Hacer la petición a la API para enviar el correo
+          const response = await fetch('/api/send-mailEdit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              recipientEmail: nextRecipient,
+              subject: 'Etiqueta Editada',
+              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.`,
+            }),
+          });
+  
+          if (response.ok) {
+            console.log('Correo enviado a:', nextRecipient);
+          } else {
+            console.error('Error al enviar el correo');
+          }
+        } catch (error) {
+          console.error('Error al enviar la petición:', error);
+        }
+      }
+    }
+  };
  
   return (
     <div className="container mx-auto py-8 space-y-12">
@@ -414,7 +459,7 @@ export function EditarEtiqueta() {
         </Card>
 
        
-        <Button type="submit" className="w-full">Guardar Cambios</Button>
+        <Button type="submit" className="w-full" onClick={handleSave}>Guardar Cambios</Button>
       </form>
     </div>
   );
