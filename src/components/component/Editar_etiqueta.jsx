@@ -48,9 +48,15 @@ export function EditarEtiqueta() {
 
   // Lógica para asociar correos a índices
   const userVerifierIndex = {
-    "carlosgabrielbecerragallardo@gmail.com":[0],
-    "otrocorreo@example.com": [1],
-    "tercercorreo@example.com": [2],
+    "calidad@nutriton.com.mx":[6],
+ "r.contreras@nutriton.com.mx":[7],
+ "j.leyva@nutriton.com.mx":[3],
+ "l.torres@nutriton.com.mx":[1],
+ "marketing@nutriton.com.mx":[0],
+ "j.perez@nutriton.com.mx":[9],
+"investigacion@nutriton.com.mx":[8], 
+"investigacionproductos@nutriton.com.mx":[2],
+"o.rivera@nutriton.com.mx": [5],
     // Añadir más correos según necesidad
   };
   const verifierIndices  = session && session.user && userVerifierIndex[session.user.email];
@@ -58,9 +64,16 @@ export function EditarEtiqueta() {
   // Lógica para asociar correos a índices
   const userModificationIndex = {
     "carlosgabrielbecerragallardo@gmail.com":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
-    "otrocorreo@example.com": [1],
-    "tercercorreo@example.com": [2],
-    // Añadir más correos según necesidad
+ "calidad@nutriton.com.mx":[0,5],
+ "r.contreras@nutriton.com.mx":[15],
+ "j.leyva@nutriton.com.mx":[2,4,7,12],
+ "l.torres@nutriton.com.mx":[6],
+ "marketing@nutriton.com.mx":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+ "j.perez@nutriton.com.mx":[],
+"investigacion@nutriton.com.mx":[16], 
+"investigacionproductos@nutriton.com.mx":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+"o.rivera@nutriton.com.mx": [6,8,9],
+
   };
   const modificationIndices  = session && session.user && userModificationIndex[session.user.email];
 
@@ -75,20 +88,54 @@ export function EditarEtiqueta() {
 
 
   const emailFieldsMap = {
-    "carlosgabrielbecerragallardo@gmail.com": [
+    "o.rivera@nutriton.com.mx": [
       { id: "nombre_producto", label: "Nombre del producto" },
       { id: "proveedor", label: "Proveedor" },
-    ],
-    "otrocorreo@example.com": [
       { id: "terminado", label: "Terminado" },
       { id: "articulo", label: "Artículo" },
-    ],
-    "tercerusuario@example.com": [
       { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
       { id: "edicion", label: "Edición" },
       { id: "sustrato", label: "Sustrato" },
       { id: "dimensiones", label: "Dimensiones" },
       { id: "escala", label: "Escala" },
+    ],
+    "marketing@nutriton.com.mx": [
+      { id: "nombre_producto", label: "Nombre del producto" },
+      { id: "proveedor", label: "Proveedor" },
+      { id: "terminado", label: "Terminado" },
+      { id: "articulo", label: "Artículo" },
+      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+      { id: "edicion", label: "Edición" },
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+      { id: "escala", label: "Escala" },
+    ],
+    "l.torres@nutriton.com.mx": [
+      { id: "nombre_producto", label: "Nombre del producto" },
+      { id: "proveedor", label: "Proveedor" },
+      { id: "terminado", label: "Terminado" },
+      { id: "articulo", label: "Artículo" },
+      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+      { id: "edicion", label: "Edición" },
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+      { id: "escala", label: "Escala" },
+    ],
+    "investigacionproductos@nutriton.com.mx": [
+      { id: "nombre_producto", label: "Nombre del producto" },
+      { id: "proveedor", label: "Proveedor" },
+      { id: "terminado", label: "Terminado" },
+      { id: "articulo", label: "Artículo" },
+      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+      { id: "edicion", label: "Edición" },
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+      { id: "escala", label: "Escala" },
+    ],
+    "j.leyva@nutriton.com.mx": [
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+     
     ],
     // Añadir más correos y campos según sea necesario
   };
@@ -223,8 +270,8 @@ export function EditarEtiqueta() {
   
       // Definir los destinatarios y orden
       const emailFlow1 = {
-        "o.rivera@nutriton.com.mx": "investigacion@nutriton.com.mx",
-        "investigacion@nutriton.com.mx": "calidad@nutriton.com.mx",
+        "o.rivera@nutriton.com.mx": "investigacionproductos@nutriton.com.mx",
+        "investigacionproductos@nutriton.com.mx": "calidad@nutriton.com.mx",
         "calidad@nutriton.com.mx": "r.contreras@nutriton.com.mx",
         "r.contreras@nutriton.com.mx": "investigacion@nutriton.com.mx",
         "investigacion@nutriton.com.mx": "j.leyva@nutriton.com.mx",
@@ -319,11 +366,12 @@ export function EditarEtiqueta() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {session && session.user.email === "o.rivera@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||"marketing@nutriton.com.mx" ||"investigacionproductos@nutriton.com.mx" ? (
               <div className="col-span-full">
                 <Label htmlFor="description">Descripción</Label>
                 <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}// name y value desde el evento
                  />
-              </div>
+              </div>):(<div></div>)}
               {modificationIndices ? (
               modificationIndices.map((index) => (
               <div key={index}>
@@ -347,23 +395,27 @@ export function EditarEtiqueta() {
             ) : (
               <div>Correo no asignado a ninguna modificación</div>
             )}
-              {session && session.user.email === "carlosgabrielbecerragallardo@gmail.com" ? (
+              
                 
                <div style={{display:"flex", gap:"2rem"}}>
+               {session && session.user.email === "j.perez@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||"marketing@nutriton.com.mx" || "investigacionproductos@nutriton.com.mx"  ? (
               <div>
                 <Label htmlFor="inventory">Inventario (pzs)</Label>
                 <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory} // name y value desde el evento 
                 />
-              </div>
+              </div>):(<div></div>)}
+              {session && session.user.email === "j.leyva@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||  "investigacionproductos@nutriton.com.mx"||
+              "marketing@nutriton.com.mx"  ? (
               <div>
                 <Label htmlFor="value">Valor ($)</Label>
                 <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value} // name y value desde el evento
                 />
               </div>
+                   ):(
+                    <div></div>
+                  )}
                </div>
-                ):(
-              <div></div>
-            )}
+           
             </div>
           </CardContent>
         </Card>
@@ -428,6 +480,7 @@ export function EditarEtiqueta() {
       </CardContent>
     </Card>
         {/* Selección de imágenes */}
+        {session && session.user.email === "j.leyva@nutriton.com.mx" || "marketing@nutriton.com.mx" || "investigacionproductos@nutriton.com.mx" ? (
         <Card>
           <CardHeader>
             <CardTitle>Imágenes</CardTitle>
@@ -457,7 +510,7 @@ export function EditarEtiqueta() {
         </div>
           </CardContent>
         </Card>
-
+              ):(<div></div>)}
        
         <Button type="submit" className="w-full" onClick={handleSave}>Guardar Cambios</Button>
       </form>

@@ -160,11 +160,13 @@ export function TablaEventosMejorada() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
+
     <div className="container mx-auto">
+      {session && session.user.email=="o.rivera@nutiton.com.mx" ?(
       <a href="/marketing/etiquetas">
         <Button variant="contained" color="secondary" style={{ background: "rgb(31 41 55)", padding: "5px", marginBottom: "10px" }}>+</Button>
       </a>
-      
+      ): (<div></div>)}
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
