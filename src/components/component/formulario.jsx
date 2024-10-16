@@ -304,7 +304,7 @@ export function EventPlanningForm() {
                 name="evento"
                 value={formData.evento}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="marca">Marca que va</Label>
@@ -313,7 +313,7 @@ export function EventPlanningForm() {
                 name="marca"
                 value={formData.marca}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lugar">Lugar del evento</Label>
@@ -322,7 +322,7 @@ export function EventPlanningForm() {
                 name="lugar"
                 value={formData.lugar}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fecha">Fecha del evento</Label>
@@ -332,7 +332,7 @@ export function EventPlanningForm() {
                 type="date"
                 value={formData.fecha}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="horarioEvento">Horario del evento</Label>
@@ -342,7 +342,7 @@ export function EventPlanningForm() {
                 type="time"
                 value={formData.horarioEvento}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="horarioMontaje">Horario de montaje</Label>
@@ -352,7 +352,7 @@ export function EventPlanningForm() {
                 type="time"
                 value={formData.horarioMontaje}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="estrategia">Estrategia para el evento</Label>
@@ -361,7 +361,7 @@ export function EventPlanningForm() {
                 name="estrategia"
                 value={formData.estrategia}
                 onChange={handleChange}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="objetivo">Objetivo</Label>
@@ -370,7 +370,7 @@ export function EventPlanningForm() {
                 name="objetivo"
                 value={formData.objetivo}
                 onChange={handleChange}
-                required />
+                 />
             </div>
           </div>
 
@@ -391,12 +391,12 @@ export function EventPlanningForm() {
                     type="number"
                     value={costo.presupuestado}
                     onChange={(e) => handleCostoChange(key, 'presupuestado', e.target.value)}
-                    required />
+                     />
                   <Input
                     type="number"
                     value={costo.real}
                     onChange={(e) => handleCostoChange(key, 'real', e.target.value)}
-                    required />
+                     />
                 </div>)
               );
             })}
@@ -451,7 +451,7 @@ export function EventPlanningForm() {
                 type="number"
                 value={formData.resultadoVenta}
                 onChange={handleChange}
-                required />
+                 />
             </div>
 
             <div className="grid grid-cols-3 gap-4 font-semibold">
@@ -483,7 +483,7 @@ export function EventPlanningForm() {
                 type="date"
                 value={formData.especificaciones.fechaListo}
                 onChange={(e) => handleEspecificacionesChange('fechaListo', e.target.value)}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="envioMaterial">Cómo/a dónde se envía el material</Label>
@@ -491,7 +491,7 @@ export function EventPlanningForm() {
                 id="envioMaterial"
                 value={formData.especificaciones.envioMaterial}
                 onChange={(e) => handleEspecificacionesChange('envioMaterial', e.target.value)}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="personalEvento">Personal que cubre el evento</Label>
@@ -499,7 +499,7 @@ export function EventPlanningForm() {
                 id="personalEvento"
                 value={formData.especificaciones.personalEvento}
                 onChange={(e) => handleEspecificacionesChange('personalEvento', e.target.value)}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label htmlFor="materialMontaje">Material para montaje</Label>
@@ -507,7 +507,7 @@ export function EventPlanningForm() {
                 id="materialMontaje"
                 value={formData.especificaciones.materialMontaje}
                 onChange={(e) => handleEspecificacionesChange('materialMontaje', e.target.value)}
-                required />
+                 />
             </div>
             <div className="space-y-2">
               <Label>Descripción</Label><br />

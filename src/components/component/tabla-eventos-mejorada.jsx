@@ -23,6 +23,7 @@ import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import PDFDocument from './pdf'; // Importa el componente que creamos
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 
 const MySwal = withReactContent(Swal);
 
@@ -59,7 +60,31 @@ export function TablaEventosMejorada() {
     fetchEventos()
   }, [])
 
-  const [pdfToGenerate, setPdfToGenerate] = useState(null);
+  const handleDownload = async (evento) => {
+    try {
+      // Generar el documento PDF
+      const blob = await pdf(<PDFDocument evento={evento.formulario} />).toBlob();
+      
+      // Crear una URL temporal para el Blob
+      const url = URL.createObjectURL(blob);
+      
+      // Crear un elemento <a> temporal para iniciar la descarga
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `planificacion-evento-${evento.id}.pdf`;
+      
+      // Añadir el elemento al DOM y desencadenar el clic
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar el DOM y revocar la URL temporal
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al generar o descargar el PDF:', error);
+      Swal.fire('Error', 'Ocurrió un error al generar el PDF', 'error');
+    }
+  };  
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -148,30 +173,29 @@ export function TablaEventosMejorada() {
               </svg>
             </Button>
           </Link>
-          <Button style={{ width: "1px", height: "40px" }} onClick={() => setPdfToGenerate(evento.id)}>
-            {pdfToGenerate === evento.id ? (
-              <PDFDownloadLink
-                document={<PDFDocument evento={evento.formulario} />}
-                fileName={`planificacion-evento-${evento.id}.pdf`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-file-text">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-              </PDFDownloadLink>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-file-text">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-            )}
-          </Button>
+          <Button
+  style={{ width: "1px", height: "40px" }}
+  onClick={() => handleDownload(evento)}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px"
+    height="24px"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="rgb(31 41 55)"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="feather feather-file-text"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+</Button>
         </div>
       ),
     }
@@ -293,10 +317,10 @@ export function TablaEventosMejorada() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
-                  <TableCell>{evento.evento}</TableCell>
-                  <TableCell>{evento.marca}</TableCell>
-                  <TableCell>{evento.lugar}</TableCell>
-                  <TableCell>{evento.fecha}</TableCell>
+                  <TableCell>{evento.evento || 'Sin nombre de evento especificado'}</TableCell>
+                  <TableCell>{evento.marca || 'Sin marca especificada'}</TableCell>
+                  <TableCell>{evento.lugar || 'Sin lugar especificado'}</TableCell>
+                  <TableCell>{evento.fecha || 'Sin fecha especificada'}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {
@@ -313,11 +337,11 @@ export function TablaEventosMejorada() {
                       })(),
                     }}
                   >
-                    {evento.estatus}
+                    {evento.estatus || 'Sin estatus especificado'}
                   </TableCell>
                   <TableCell>{evento.gastoPresupuesto}</TableCell>
                   <TableCell>{evento.gastoReal}</TableCell>
-                  <TableCell>{evento.ventaTotal}</TableCell>
+                  <TableCell>{evento.ventaTotal || 'Sin venta total especificada'}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {
