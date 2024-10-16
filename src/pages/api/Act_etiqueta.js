@@ -22,8 +22,9 @@ console.log(formData);
   }
 
   try {
+    const estatus = formData.estatus;
     // Guardar el formulario en la base de datos
-    await pool.query('UPDATE etiquetas_form SET datos_formulario = $1 WHERE id = $2', [JSON.stringify(formData), id]);
+    await pool.query('UPDATE etiquetas_form SET datos_formulario = $1, estatus = $2, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $3', [JSON.stringify(formData), estatus, id]);
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {

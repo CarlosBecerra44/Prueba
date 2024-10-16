@@ -43,13 +43,13 @@ export function EditarEtiqueta() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const [formulario, setFormulario] = useState({
-    selectedImages: Array(8).fill(false)
+    selectedImages: Array(8).fill(false),estatus:"",
   });
 
   // Lógica para asociar correos a índices
   const userVerifierIndex = {
     "carlosgabrielbecerragallardo@gmail.com":[0],
-    "otrocorreo@example.com": [1],
+    "guscardenas83@gmail.com": [0,1,2,3,4,5,6,7,8,9],
     "tercercorreo@example.com": [2],
     // Añadir más correos según necesidad
   };
@@ -58,7 +58,7 @@ export function EditarEtiqueta() {
   // Lógica para asociar correos a índices
   const userModificationIndex = {
     "carlosgabrielbecerragallardo@gmail.com":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
-    "otrocorreo@example.com": [1],
+    "guscardenas83@gmail.com": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
     "tercercorreo@example.com": [2],
     // Añadir más correos según necesidad
   };
@@ -84,6 +84,17 @@ export function EditarEtiqueta() {
       { id: "articulo", label: "Artículo" },
     ],
     "tercerusuario@example.com": [
+      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+      { id: "edicion", label: "Edición" },
+      { id: "sustrato", label: "Sustrato" },
+      { id: "dimensiones", label: "Dimensiones" },
+      { id: "escala", label: "Escala" },
+    ],
+    "guscardenas83@gmail.com": [
+      { id: "nombre_producto", label: "Nombre del producto" },
+      { id: "proveedor", label: "Proveedor" },
+      { id: "terminado", label: "Terminado" },
+      { id: "articulo", label: "Artículo" },
       { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
       { id: "edicion", label: "Edición" },
       { id: "sustrato", label: "Sustrato" },
@@ -163,6 +174,20 @@ export function EditarEtiqueta() {
         selectedImages: newSelectedImages,
       };
     });
+  };
+
+  const handleDropdownChange = (value) => {
+    setFormulario(prevState => ({
+      ...prevState,
+      tipo: value
+    }));
+  };
+
+  const handleDropdownChange2 = (value) => {
+    setFormulario(prevState => ({
+      ...prevState,
+      estatus: value
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -283,6 +308,31 @@ export function EditarEtiqueta() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+      <CardHeader>
+        <CardTitle>Tipo</CardTitle>
+      </CardHeader>
+      <CardContent>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Select
+                id="dropdown"
+                value={formulario.tipo}
+                onValueChange={handleDropdownChange}
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                  <SelectValue placeholder="Seleccionar tipo de etiqueta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Interna">Interna</SelectItem>
+                  <SelectItem value="Maquilas">Maquilas</SelectItem>
+                </SelectContent>
+              </Select>
+        </div>
+      </CardContent>
+    </Card>
+
+
         {/* Detalles del Producto */}
         {/* ... resto del formulario */}
         {allowedFields && allowedFields.length > 0 ? (
@@ -347,7 +397,8 @@ export function EditarEtiqueta() {
             ) : (
               <div>Correo no asignado a ninguna modificación</div>
             )}
-              {session && session.user.email === "carlosgabrielbecerragallardo@gmail.com" ? (
+              {session && session.user.email === "carlosgabrielbecerragallardo@gmail.com" || session && session.user.email 
+              === "guscardenas83@gmail.com" ? (
                 
                <div style={{display:"flex", gap:"2rem"}}>
               <div>
@@ -425,6 +476,42 @@ export function EditarEtiqueta() {
         ) : (
           <div>Correo no asignado a ningún verificador</div>
         )}
+        {formulario.tipo === "Maquilas" ? (
+                <div className="space-y-4">
+                <Label htmlFor={`verifier-10`}>Maquilas</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input id={`verifier-10`} name={`verifier-10`} placeholder="Nombre"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento 
+                  />
+                  <div style={{width:"5rem"}} className="flex items-center space-x-4">
+                  <Select
+                    name={`authorize-10`}
+                    value={formulario[`authorize-10`] || 'no'}
+                    onValueChange={(value) => handleSelectChange(value, `authorize-10`)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={formulario[`authorize-10`] || ''} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="si">Sí</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                  <Input type="date" name={`fecha_autorizacion-10`}  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
+                   />
+                </div>
+                <div>
+                  <Label htmlFor={`comments-10`}>Comentarios</Label>
+                  <Textarea
+                    id={`comments-10`}
+                    name={`comments-10`}
+                    placeholder="Ingrese sus comentarios aquí"
+                    className="w-full"
+                    onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
+                  />
+                </div>
+              </div>
+              ) : (<div></div>)}
       </CardContent>
     </Card>
         {/* Selección de imágenes */}
@@ -458,6 +545,30 @@ export function EditarEtiqueta() {
           </CardContent>
         </Card>
 
+        <Card>
+      <CardHeader>
+        <CardTitle>Estatus</CardTitle>
+      </CardHeader>
+      <CardContent>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Select
+                id="dropdown"
+                value={formulario.estatus}
+                onValueChange={handleDropdownChange2}
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                  <SelectValue placeholder="Seleccionar estatus de la etiqueta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Completado">Completado</SelectItem>
+                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  <SelectItem value="Rechazado">Rechazado</SelectItem>
+                  <SelectItem value="Eliminado">Eliminado</SelectItem>
+                </SelectContent>
+              </Select>
+        </div>
+      </CardContent>
+    </Card>
        
         <Button type="submit" className="w-full" onClick={handleSave}>Guardar Cambios</Button>
       </form>

@@ -28,6 +28,7 @@ export function TablaEventosMejorada() {
   const itemsPerPage = 10;
 
   const encabezados = [
+    "Tipo",
     "Nombre",
     "Articulo",
     "Fecha Envio",
@@ -81,19 +82,45 @@ export function TablaEventosMejorada() {
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
+    const fechaCompleta = evento.fecha_envio;
+    const fecha = new Date(fechaCompleta);
+
+    // Extraer solo la fecha y la hora
+    const fechaFormateada = fecha.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
+
+    const fechaCompleta2 = evento.fecha_actualizacion;
+    const fecha2 = new Date(fechaCompleta2);
+
+    // Extraer solo la fecha y la hora
+    const fechaFormateada2 = fecha2.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
     return {
       id: evento.id,
+      tipo: evento.datos_formulario.tipo,
       nombreProducto: evento.datos_formulario.nombre_producto,
       proveedor: evento.datos_formulario.proveedor,
       terminado: evento.datos_formulario.terminado,
       articulo: evento.datos_formulario.articulo,
-      fechaElaboracion: evento.datos_formulario.fecha_elaboracion,
+      fechaElaboracion: fechaFormateada,
       edicion: evento.datos_formulario.edicion,
       sustrato: evento.datos_formulario.sustrato,
       dimensiones: evento.datos_formulario.dimensiones,
       escala: evento.datos_formulario.escala,
       descripcion: evento.datos_formulario.description,
-      fechaUltimoMovimiento: evento.datos_formulario?.['fecha_autorizacion-0'],
+      fechaUltimoMovimiento: fechaFormateada2,
       inventario: evento.datos_formulario.inventory,
       valor: evento.datos_formulario.value,
       estatus: evento.estatus
@@ -188,6 +215,7 @@ export function TablaEventosMejorada() {
               <SelectItem value="Completado">Completado</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
               <SelectItem value="Rechazado">Rechazado</SelectItem>
+              <SelectItem value="Eliminado">Eliminado</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -208,6 +236,7 @@ export function TablaEventosMejorada() {
             {currentEventos.length > 0 ? (
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
+                  <TableCell>{evento.tipo || "Sin tipo"}</TableCell>
                   <TableCell>{evento.nombreProducto || "Sin nombre"}</TableCell>
                   <TableCell>{evento.articulo || "Sin artículo"}</TableCell>
                   <TableCell>{evento.fechaElaboracion || "Sin fecha"}</TableCell>
@@ -234,7 +263,7 @@ export function TablaEventosMejorada() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No se encontraron etiquetas
                 </TableCell>
               </TableRow>

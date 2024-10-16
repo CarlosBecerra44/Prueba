@@ -21,11 +21,13 @@ export default async function handler(req, res) {
     // No necesitas JSON.parse porque `datos_formulario` ya es un objeto
     const datos_formulario = result.rows[0].datos_formulario || {};
     const pdf_path = result.rows[0].pdf_path || ''; // Valor por defecto si es null o undefined // Valor por defecto si es null o undefined
+    const estatus = result.rows[0].estatus || '';
 
 // Combinar las columnas en un solo objeto
 const datos = {
     ...datos_formulario,  // Desestructurar los datos del formulario
-    pdf: pdf_path  // Agregar la columna2 al objeto
+    pdf: pdf_path,  // Agregar la columna2 al objeto
+    estatus: estatus
 };
 
     console.log('Datos obtenidos:', datos); // Verifica el contenido de los datos
