@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     try {
       // Actualiza la columna 'deleted' (o la que uses) en lugar de eliminar el registro
       const result = await pool.query(
-        "UPDATE etiquetas_form SET eliminado = true WHERE id = $1",
+        "UPDATE etiquetas_form SET estatus = 'Eliminado' WHERE id = $1",
         [id]
       );
 

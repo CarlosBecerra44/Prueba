@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
-
+    tipo: "",
    });
   const [nowPdfPreview, setNowPdfPreview] = useState(null);
 
@@ -42,6 +42,13 @@ export function DocumentSigningForm() {
         selectedImages: newSelectedImages, // Guardamos como array de booleanos
       };
     });
+  };
+
+  const handleDropdownChange = (value) => {
+    setFormulario(prevState => ({
+      ...prevState,
+      tipo: value
+    }));
   };
 
   const {data: session,status}=useSession ();
@@ -158,13 +165,14 @@ export function DocumentSigningForm() {
     'Gerente o supervisor de calidad',
     'Gerente o coordinador de auditorías',
     'Químico o formulador',
+    'Planeación',
   ];
 
   const modifications = [
     'Información', 'Dimensiones', 'Sustrato', 'Tamaño de letra',
     'Impresión interior/exterior', 'Ortografía', 'Logotipo', 'Acabado',
     'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
-    'Cambio estético', 'Cambio crítico', 'Auditable',
+    'Cambio estético', 'Cambio crítico', 'Auditable', 'Fórmula',
   ];
 
   return (
@@ -194,6 +202,29 @@ export function DocumentSigningForm() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+      <CardHeader>
+        <CardTitle>Tipo</CardTitle>
+      </CardHeader>
+      <CardContent>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Select
+                id="dropdown"
+                value={formulario.tipo}
+                onValueChange={handleDropdownChange}
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                  <SelectValue placeholder="Seleccionar tipo de etiqueta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Interna">Interna</SelectItem>
+                  <SelectItem value="Maquilas">Maquilas</SelectItem>
+                </SelectContent>
+              </Select>
+        </div>
+      </CardContent>
+    </Card>
 
         {/* Detalles del Producto */}
         <Card>
@@ -313,6 +344,44 @@ export function DocumentSigningForm() {
                 </div>
               </div>
             ))}
+            {formulario.tipo === "Maquilas" ? (
+                <div className="space-y-4">
+                <Label htmlFor={`verifier-10`}>Maquilas</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input id={`verifier-10`} name={`verifier-10`} placeholder="Nombre"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento 
+                  />
+                  <div className="flex items-center space-x-4">
+                 <RadioGroup
+                    defaultValue="no"
+                    className="flex space-x-4"
+                    name={`authorize-10`}
+                    onValueChange={(value) => handleInputChange(value, `authorize-10`)} // Manejo del cambio
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="si" id={`authorize-10-si`} />
+                      <Label htmlFor={`authorize-10-si`}>Sí</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id={`authorize-10-no`} />
+                      <Label htmlFor={`authorize-10-no`}>No</Label>
+                    </div>
+                  </RadioGroup>
+                  </div>
+                  <Input type="date" name={`fecha_autorizacion-10`}  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
+                   />
+                </div>
+                <div>
+                  <Label htmlFor={`comments-10`}>Comentarios</Label>
+                  <Textarea
+                    id={`comments-10`}
+                    name={`comments-10`}
+                    placeholder="Ingrese sus comentarios aquí"
+                    className="w-full"
+                    onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
+                  />
+                </div>
+              </div>
+              ) : (<div></div>)}
           </CardContent>
         </Card>
 
