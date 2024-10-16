@@ -246,7 +246,7 @@ export function EditarEtiqueta() {
 
       if (response.ok) {
         console.log('Etiqueta actualizada correctamente');
-      
+        window.location.href = "/marketing/etiquetas/tabla_general";
       } else {
         const errorData = await response.text(); // o response.json() si el servidor responde con JSON
         console.error('Error al actualizar etiqueta:', errorData);
