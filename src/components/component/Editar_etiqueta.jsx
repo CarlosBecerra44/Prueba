@@ -72,7 +72,7 @@ export function EditarEtiqueta() {
  "j.perez@nutriton.com.mx":[],
 "investigacion@nutriton.com.mx":[16], 
 "investigacionproductos@nutriton.com.mx":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
-"o.rivera@nutriton.com.mx": [6,8,9],
+"o.rivera@nutriton.com.mx": [3,6,8,9],
 
   };
   const modificationIndices  = session && session.user && userModificationIndex[session.user.email];
@@ -348,8 +348,11 @@ export function EditarEtiqueta() {
               </div>
             </div>
           </CardContent>
+          
         </Card>
+            {session && session.user.email==="o.rivera@nutriton.com.mx"?(
 
+            
         <Card>
       <CardHeader>
         <CardTitle>Tipo</CardTitle>
@@ -372,7 +375,14 @@ export function EditarEtiqueta() {
         </div>
       </CardContent>
     </Card>
-
+):(<Card>
+  <CardHeader>
+  <CardTitle>Tipo</CardTitle> 
+  <CardContent>
+    <br />    <Label>{formulario.tipo}</Label>
+    </CardContent>     
+  </CardHeader>
+</Card>) }
 
         {/* Detalles del Producto */}
         {/* ... resto del formulario */}
@@ -410,7 +420,7 @@ export function EditarEtiqueta() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {session && session.user.email === "o.rivera@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||"marketing@nutriton.com.mx" ||"investigacionproductos@nutriton.com.mx" ? (
+            {session && session.user.email === "o.rivera@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||session.user.email === "marketing@nutriton.com.mx" ||session.user.email === "investigacionproductos@nutriton.com.mx" ? (
               <div className="col-span-full">
                 <Label htmlFor="description">Descripción</Label>
                 <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}// name y value desde el evento
@@ -442,14 +452,14 @@ export function EditarEtiqueta() {
               
                 
                <div style={{display:"flex", gap:"2rem"}}>
-               {session && session.user.email === "j.perez@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||"marketing@nutriton.com.mx" || "investigacionproductos@nutriton.com.mx"  ? (
+               {session && session.user.email === "j.perez@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||session.user.email === "marketing@nutriton.com.mx" || session.user.email ===  "investigacionproductos@nutriton.com.mx"  ? (
               <div>
                 <Label htmlFor="inventory">Inventario (pzs)</Label>
                 <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory} // name y value desde el evento 
                 />
               </div>):(<div></div>)}
-              {session && session.user.email === "j.leyva@nutriton.com.mx" ||  "l.torres@nutriton.com.mx" ||  "investigacionproductos@nutriton.com.mx"||
-              "marketing@nutriton.com.mx"  ? (
+              {session && session.user.email === "j.leyva@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||  session.user.email === "investigacionproductos@nutriton.com.mx"||
+              session.user.email === "marketing@nutriton.com.mx"  ? (
               <div>
                 <Label htmlFor="value">Valor ($)</Label>
                 <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value} // name y value desde el evento
@@ -521,7 +531,8 @@ export function EditarEtiqueta() {
         ) : (
           <div>Correo no asignado a ningún verificador</div>
         )}
-        {formulario.tipo === "Maquilas" ? (
+        
+        { session && session.user.email==="maquilas@nutriton.com.mx"? (
                 <div className="space-y-4">
                 <Label htmlFor={`verifier-10`}>Maquilas</Label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -560,7 +571,7 @@ export function EditarEtiqueta() {
       </CardContent>
     </Card>
         {/* Selección de imágenes */}
-        {session && session.user.email === "j.leyva@nutriton.com.mx" || "marketing@nutriton.com.mx" || "investigacionproductos@nutriton.com.mx" ? (
+        {session && session.user.email === "j.leyva@nutriton.com.mx" || session.user.email === "marketing@nutriton.com.mx" ||session.user.email ===  "investigacionproductos@nutriton.com.mx" ? (
         <Card>
           <CardHeader>
             <CardTitle>Imágenes</CardTitle>
@@ -591,6 +602,8 @@ export function EditarEtiqueta() {
           </CardContent>
         </Card>
         ):(<div></div>)}
+        
+        {session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
         <Card>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
@@ -615,8 +628,16 @@ export function EditarEtiqueta() {
         </div>
       </CardContent>
     </Card>
-       
-        <Button type="submit" className="w-full" onClick={handleSave}>Guardar Cambios</Button>
+       ):(<div><Card>
+        <CardHeader>
+          <CardTitle>
+          Estatus
+          </CardTitle>
+        </CardHeader>
+        <Label style={{marginLeft:"2rem", }}
+        >{formulario.estatus}</Label>
+      </Card></div>)}
+        <Button type="submit" className="w-full" onClick={handleSave} style={{marginTop: "2rem"}}>Guardar Cambios</Button>
       </form>
     </div>
   );
