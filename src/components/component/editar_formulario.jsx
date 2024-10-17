@@ -11,6 +11,7 @@ import { PlusCircle, X } from "lucide-react"
 import { useSearchParams } from 'next/navigation';
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
+import Swal from 'sweetalert2';
 
 export function EditarEstrategia() {
   const searchParams = useSearchParams();
@@ -274,13 +275,19 @@ export function EditarEstrategia() {
         body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
       });
 
-      if (!response.ok) {
-        throw new Error('Error al guardar los datos');
+      if (response.ok) {
+        Swal.fire({
+          title: 'Editado',
+          text: 'Se ha editado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/marketing/estrategias";
+        });
+      } else {
+        Swal.fire('Error', 'Error al editar formulario', 'error');
       }
-
-      const result = await response.json();
-      console.log('Formulario guardado:', result);
-      window.location.href = "/marketing/estrategias";
     } catch (error) {
       console.error('Error:', error);
     }

@@ -10,7 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useSession } from "next-auth/react"
 import { Textarea } from "@/components/ui/textarea"
 import styles from '../../../public/CSS/spinner.css'
-
+import Swal from 'sweetalert2';
 
 const verifiers = [
   'Directora de marketing',
@@ -245,12 +245,17 @@ export function EditarEtiqueta() {
       });
 
       if (response.ok) {
-        console.log('Etiqueta actualizada correctamente');
-        window.location.href = "/marketing/etiquetas/tabla_general";
+        Swal.fire({
+          title: 'Editado',
+          text: 'Se ha editado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/marketing/etiquetas/tabla_general";
+        });
       } else {
-        const errorData = await response.text(); // o response.json() si el servidor responde con JSON
-        console.error('Error al actualizar etiqueta:', errorData);
-        console.log('Error al actualizar etiqueta');
+        Swal.fire('Error', 'Error al editar formulario', 'error');
       }
     } catch (error) {
       console.error('Error al actualizar etiqueta:', error);
