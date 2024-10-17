@@ -189,7 +189,7 @@ export function TablaEventosMejorada() {
   return (
 
     <div className="container mx-auto">
-      {session && session.user.email=="o.rivera@nutiton.com.mx" ?(
+      {session && session.user.email==="o.rivera@nutriton.com.mx" ?(
       <a href="/marketing/etiquetas">
         <Button variant="contained" color="secondary" style={{ background: "rgb(31 41 55)", padding: "5px", marginBottom: "10px" }}>+</Button>
       </a>
