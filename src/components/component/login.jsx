@@ -87,7 +87,7 @@ password,
           <Button type="submit" className="w-full">Iniciar sesión</Button>
         </div>
       </form>
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-center text-sm text-muted-foreground" hidden>
         ¿Aún no tienes una cuenta?{" "}
         <Link href="/login/registro" className="underline">Regístrate</Link>
       </div>
