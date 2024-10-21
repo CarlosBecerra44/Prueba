@@ -57,21 +57,19 @@ export function Navbarv1() {
     { id: 1, name: "Principal", href: "#"},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Ver mis permisos", href: `/permisos?id=${idUser}`, icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
     { id: 6, name: "Departamentos", href: "#"},
-    { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
-    ...(correoUser === "guscardenas83@gmail.com" || departamento === "marketing" ? [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }, { name: "Permisos", href: "/marketing/permisos", icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> }] }]
-      : [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] }]
-    ),
-    { id: 9, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 11, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 7, name: "Gente & Cultura", href: "#", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }] },
+    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 13, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 14, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: 15, name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
 
   const filteredCategories = categories.filter((category) =>
