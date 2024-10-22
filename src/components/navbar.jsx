@@ -18,6 +18,7 @@ export function Navbarv1() {
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,7 +72,8 @@ export function Navbarv1() {
     { id: 13, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: 15, name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 16, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 17, name: "Usuarios", href: "/usuario"}
   ];
 
   const filteredCategories = categories.filter((category) =>
