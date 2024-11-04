@@ -5,32 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { useSearchParams } from 'next/navigation';
 import { useSession } from "next-auth/react"
 import { Textarea } from "@/components/ui/textarea"
 import styles from '../../../public/CSS/spinner.css'
 import Swal from 'sweetalert2';
-
-const verifiers = [
-  'Directora de marketing',
-  'Gerente de maquilas y desarrollo de nuevo productos',
-  'Investigación y desarrollo de nuevos productos',
-  'Ingeniería de productos',
-  'Gerente de marketing',
-  'Diseñador gráfico',
-  'Gerente o supervisor de calidad',
-  'Gerente o coordinador de auditorías',
-  'Químico o formulador',
-  'Planeación',
-];
-
-const modifications = [
-  'Información', 'Dimensiones', 'Sustrato', 'Tamaño de letra',
-  'Impresión interior/exterior', 'Ortografía', 'Logotipo', 'Acabado',
-  'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
-  'Cambio estético', 'Cambio crítico', 'Auditable', 'Fórmula',
-];
+import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
 const mails = [
   'carlosgabrielbecerragallardo@gmail.com',
@@ -41,109 +23,110 @@ const mails = [
 export function EditarEtiqueta() {
   const {data: session,status}=useSession ();
   const searchParams = useSearchParams();
+  const [permisos, setPermisos] = useState([]);
   const id = searchParams.get('id');
   const [formulario, setFormulario] = useState({
-    selectedImages: Array(8).fill(false),estatus:"",
+    selectedImages: Array(8).fill(false),estatus:"",tipo:"",firmas:0
   });
 
-  // Lógica para asociar correos a índices
-  const userVerifierIndex = {
-    "calidad@nutriton.com.mx":[6],
- "r.contreras@nutriton.com.mx":[7],
- "j.leyva@nutriton.com.mx":[3],
- "l.torres@nutriton.com.mx":[1],
- "marketing@nutriton.com.mx":[0],
- "j.perez@nutriton.com.mx":[9],
-"investigacion@nutriton.com.mx":[8], 
-"investigacionproductos@nutriton.com.mx":[2],
-"o.rivera@nutriton.com.mx": [5],
-    // Añadir más correos según necesidad
-  };
-  const verifierIndices  = session && session.user && userVerifierIndex[session.user.email];
+  const [loading, setLoading] = useState(true);
+  const [contadorFirmas, setContadorFirmas] = useState(0);
+  const [nombre, setNombre] = useState('');
+  const [idUser, setID] = useState('');
+  const [correoUser, setCorreo] = useState('');
 
-  // Lógica para asociar correos a índices
-  const userModificationIndex = {
-    "carlosgabrielbecerragallardo@gmail.com":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
- "calidad@nutriton.com.mx":[0,5],
- "r.contreras@nutriton.com.mx":[15],
- "j.leyva@nutriton.com.mx":[2,4,7,12],
- "l.torres@nutriton.com.mx":[6],
- "marketing@nutriton.com.mx":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
- "j.perez@nutriton.com.mx":[],
-"investigacion@nutriton.com.mx":[16], 
-"investigacionproductos@nutriton.com.mx":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
-"o.rivera@nutriton.com.mx": [3,6,8,9],
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setNombre(userData.user.nombre);
+          setID(userData.user.id);
+          setCorreo(userData.user.correo);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  };
-  const modificationIndices  = session && session.user && userModificationIndex[session.user.email];
+  const verifiers = [
+    'Directora de marketing',
+    'Gerente de maquilas y desarrollo de nuevo productos',
+    'Investigación y desarrollo de nuevos productos',
+    'Ingeniería de productos',
+    'Gerente de marketing',
+    'Diseñador gráfico',
+    'Gerente o supervisor de calidad',
+    'Gerente o coordinador de auditorías',
+    'Químico o formulador',
+    'Planeación',
+  ];
 
-  // Lógica para asociar correos a índices
-  const userMailIndex = {
-    "carlosgabrielbecerragallardo@gmail.com":[0],
-    "otrocorreo@example.com": [1],
-    "tercercorreo@example.com": [2],
-    // Añadir más correos según necesidad
-  };
-  const mailIndices  = session && session.user && userMailIndex[session.user.email];
+  const verifiersMaquilas = [
+    'Directora de marketing',
+    'Gerente de maquilas y desarrollo de nuevo productos',
+    'Investigación y desarrollo de nuevos productos',
+    'Ingeniería de productos',
+    'Gerente de marketing',
+    'Diseñador gráfico',
+    'Gerente o supervisor de calidad',
+    'Gerente o coordinador de auditorías',
+    'Químico o formulador',
+    'Planeación',
+    'Maquilas',
+  ];
+  
+  const modifications = [
+    'Información', 'Dimensiones', 'Sustrato', 'Tamaño de letra',
+    'Impresión interior/exterior', 'Ortografía', 'Logotipo', 'Acabado',
+    'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
+    'Cambio estético', 'Cambio crítico', 'Auditable', 'Fórmula',
+  ];
 
+  const modificacionesDiseñador = [
+    'Tamaño de letra', 'Logotipo', 'Tipografía', 'Colores',
+  ];
 
-  const emailFieldsMap = {
-    "o.rivera@nutriton.com.mx": [
-      { id: "nombre_producto", label: "Nombre del producto" },
-      { id: "proveedor", label: "Proveedor" },
-      { id: "terminado", label: "Terminado" },
-      { id: "articulo", label: "Artículo" },
-      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
-      { id: "edicion", label: "Edición" },
-      { id: "sustrato", label: "Sustrato" },
-      { id: "dimensiones", label: "Dimensiones" },
-      { id: "escala", label: "Escala" },
-    ],
-    "marketing@nutriton.com.mx": [
-      { id: "nombre_producto", label: "Nombre del producto" },
-      { id: "proveedor", label: "Proveedor" },
-      { id: "terminado", label: "Terminado" },
-      { id: "articulo", label: "Artículo" },
-      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
-      { id: "edicion", label: "Edición" },
-      { id: "sustrato", label: "Sustrato" },
-      { id: "dimensiones", label: "Dimensiones" },
-      { id: "escala", label: "Escala" },
-    ],
-    "l.torres@nutriton.com.mx": [
-      { id: "nombre_producto", label: "Nombre del producto" },
-      { id: "proveedor", label: "Proveedor" },
-      { id: "terminado", label: "Terminado" },
-      { id: "articulo", label: "Artículo" },
-      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
-      { id: "edicion", label: "Edición" },
-      { id: "sustrato", label: "Sustrato" },
-      { id: "dimensiones", label: "Dimensiones" },
-      { id: "escala", label: "Escala" },
-    ],
-    "investigacionproductos@nutriton.com.mx": [
-      { id: "nombre_producto", label: "Nombre del producto" },
-      { id: "proveedor", label: "Proveedor" },
-      { id: "terminado", label: "Terminado" },
-      { id: "articulo", label: "Artículo" },
-      { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
-      { id: "edicion", label: "Edición" },
-      { id: "sustrato", label: "Sustrato" },
-      { id: "dimensiones", label: "Dimensiones" },
-      { id: "escala", label: "Escala" },
-    ],
-    "j.leyva@nutriton.com.mx": [
-      { id: "sustrato", label: "Sustrato" },
-      { id: "dimensiones", label: "Dimensiones" },
-     
-    ],
-    // Añadir más correos y campos según sea necesario
-  };
-   // Obtener el correo electrónico de la sesión
-   const userMail = session?.user?.email;
+  const modificacionesIYDNP = [
+    'Código QR', 'Código de barras',
+    'Cambio estético', 'Cambio crítico',
+    'Distribuido y elaborado por',
+  ];
 
-   // Obtener los campos permitidos para el correo actual
-   const allowedFields = userMail ? emailFieldsMap[userMail] : [];
+  const modificacionesCalidad = [
+    'Información', 'Ortografía',
+  ];
+
+  const modificacionesAuditorias = [
+    'Auditable',
+  ];
+
+  const modificacionesQuimico = [
+    'Fórmula',
+  ];
+
+  const modificacionesIngenieíaNProducto = [
+    'Dimensiones', 'Sustrato',
+    'Impresión interior/exterior', 'Acabado',
+    'Rollo',
+  ];
+
+  const modificacionesGerenteMkt = [
+    'Teléfono', 'Mail/email',
+  ];
+
+  
+
   useEffect(() => {
     async function fetchData() {
       if (!id) return;
@@ -154,6 +137,7 @@ export function EditarEtiqueta() {
           throw new Error('Error al obtener los datos');
         }
         const data = await response.json();
+        console.log(data)
         let prueba;
 
         try {
@@ -164,18 +148,129 @@ export function EditarEtiqueta() {
           prueba = data.selectedImages;
         }
 
-        setFormulario({
+        setFormulario((prev) => ({
           ...data,
-          selectedImages: prueba // Manejamos como objeto, esté o no parseado
-        });
+          selectedImages: prueba, // Manejamos como objeto, esté o no parseado
+          ...Array.from({ length: verifiers.length }, (_, index) => ({
+            [`readOnly-${index}`]: !!data[`verifier-${index}`], [`readOnlyComments-${index}`]: !!data[`comments-${index}`]  // Establecer readOnly si ya hay valor
+          })).reduce((acc, curr) => ({ ...acc, ...curr }), {}) // Combina los estados en un solo objeto
+        }));
+
+        setLoading(false); // Datos listos
         
       } catch (error) {
         console.error('Error al obtener el formulario:', error);
+        setLoading(false); // Termina la carga aunque haya un error
       }
     }
 
     fetchData();
+ 
   }, [id]); 
+
+  useEffect(() => {
+    if (formulario.tipo === "Maquilas") {
+      // Verifica si hay un valor recuperado y establece el estado de readOnly
+      setFormulario((prev) => ({
+        ...prev,
+        [`readOnly-10`]: !!prev[`verifier-10`], // Establece readOnly si ya hay valor
+      }));
+    }
+  }, [formulario.tipo]);  
+
+   
+
+  /*useEffect (()=>{
+    
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get(`/api/permiso`, { params: { id: userId } });
+        console.log(response.data)
+        setPermisos(response.data);
+      } catch (error) {
+        console.error('Error al obtener permisos:', error);
+      }
+    };
+
+    fetchPermissions();
+  
+  }, [userId]);*/
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get(`/api/permiso?userId=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
+        setPermisos(response.data)
+      } catch (error) {
+        console.error('Error al obtener permisos:', error)
+      }
+    }
+    fetchPermissions()
+  }, [idUser])
+
+ // Función para verificar si el usuario tiene permiso en la sección y campo específicos
+ const tienePermiso = (seccion, campo) => {
+  // Asegúrate de que la sección exista en los permisos
+  if (!permisos.campo || !permisos.campo[seccion]) {
+    return false; // No hay permisos para esta sección
+  }
+  // Verifica si el campo está en la lista de campos permitidos
+  return permisos.campo[seccion].includes(campo);
+};
+
+  const verificarCampos = (index) => {
+    // Asegúrate de que el valor es una cadena
+    const nombre = formulario[`verifier-${index}`] || ''; // Asignar cadena vacía si es undefined
+    const autorizacion = formulario[`authorize-${index}`];
+  
+    // Verifica si el campo de nombre tiene un valor y el select es "sí" o "no"
+    if (typeof nombre === 'string' && nombre.trim() !== '' && (autorizacion === 'si' || autorizacion === 'no')) {
+      return true;
+    }
+    return false;
+  };
+
+  const verificarCamposMaquilas = () => {
+    const nombre = formulario[`verifier-10`] || '';
+    const autorizacion = formulario[`authorize-10`];
+
+    return (
+      typeof nombre === 'string' && 
+      nombre.trim() !== '' && 
+      (autorizacion === 'si' || autorizacion === 'no')
+    );
+  };
+
+  const verificarTodosLosCampos = () => {
+    let contadorInicial = 0;
+    
+    verifiers.forEach((_, index) => {
+      if (verificarCampos(index)) {
+        contadorInicial++;
+      }
+    });
+    
+    if (formulario.tipo === "Maquilas" && verificarCamposMaquilas()) {
+      contadorInicial++;
+    }
+    return contadorInicial;
+  };
+  
+  // useEffect para ejecutar la verificación inicial cuando se cargan los datos del formulario
+  useEffect(() => {
+    const nuevoContador = verificarTodosLosCampos(); 
+    setContadorFirmas(nuevoContador);
+
+    setFormulario((prev) => ({
+      ...prev,
+      firmas: nuevoContador // Actualiza la propiedad "firmas"
+    }));// Verifica y ajusta el contador con los valores recuperados
+  }, [formulario[`verifier-0`], formulario[`verifier-1`], formulario[`verifier-2`], formulario[`verifier-3`],
+  formulario[`verifier-4`], formulario[`verifier-5`], formulario[`verifier-6`], formulario[`verifier-7`],
+  formulario[`verifier-8`], formulario[`verifier-9`], formulario[`verifier-10`],
+  formulario[`authorize-0`], formulario[`authorize-1`], formulario[`authorize-2`], formulario[`authorize-3`],
+  formulario[`authorize-4`], formulario[`authorize-5`], formulario[`authorize-6`], formulario[`authorize-7`],
+  formulario[`authorize-8`], formulario[`authorize-9`], formulario[`authorize-10`], formulario.tipo]); // Se ejecuta cada vez que el formulario cambie
 
   const handleInputChange = (e) => {
     if (!e || !e.target) {
@@ -215,7 +310,8 @@ export function EditarEtiqueta() {
   const handleDropdownChange = (value) => {
     setFormulario(prevState => ({
       ...prevState,
-      tipo: value
+      tipo: value,
+      firmas: 0
     }));
   };
 
@@ -224,7 +320,7 @@ export function EditarEtiqueta() {
       ...prevState,
       estatus: value
     }));
-  };
+  }; 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -282,6 +378,30 @@ export function EditarEtiqueta() {
       </div>
     );
   }
+
+  if (!formulario) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+  
+  // Verifica el tipo de formulario
+  if (!formulario.tipo) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">Cargando...</p>
+      </div>
+    );
+  }
+
+  if (formulario.tipo === "Maquilas" && (formulario['authorize-10'] === undefined || formulario['authorize-10'] === '')) {
+    formulario['authorize-10'] = formulario['authorize-10'] || ''; // Asignar un valor por defecto
+  }
+  
   const handleSave =async()=>{
 
     if (session) {
@@ -311,8 +431,8 @@ export function EditarEtiqueta() {
             },
             body: JSON.stringify({
               recipientEmail: nextRecipient,
-              subject: 'Etiqueta Editada',
-              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.`,
+              subject: 'Etiqueta editada',
+              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/Editar?id=${id}\nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
             }),
           });
   
@@ -384,226 +504,7 @@ export function EditarEtiqueta() {
   </CardHeader>
 </Card>) }
 
-        {/* Detalles del Producto */}
-        {/* ... resto del formulario */}
-        {allowedFields && allowedFields.length > 0 ? (
-        <Card>
-      <CardHeader>
-        <CardTitle>Detalles del producto</CardTitle>
-      </CardHeader>
-      <CardContent>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allowedFields.map((field) => (
-              <div key={field.id}>
-                <Label htmlFor={field.id}>{field.label}</Label>
-                <Input
-                  id={field.id}
-                  name={field.id}
-                  type={field.type || "text"}
-                  value={formulario[field.id] || ""}
-                  onChange={handleInputChange} // Usamos el manejador para actualizar los valores
-                />
-              </div>
-            ))}
-          </div>
-        
-      </CardContent>
-    </Card>
-    ) : (
-          <div></div>
-        
-  )}
-        {/* Modificaciones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Modificaciones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {session && session.user.email === "o.rivera@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||session.user.email === "marketing@nutriton.com.mx" ||session.user.email === "investigacionproductos@nutriton.com.mx" ? (
-              <div className="col-span-full">
-                <Label htmlFor="description">Descripción</Label>
-                <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}// name y value desde el evento
-                 />
-              </div>):(<div></div>)}
-              {modificationIndices ? (
-              modificationIndices.map((index) => (
-              <div key={index}>
-                <Label>{modifications[index]}</Label>
-                {/* Usamos la clave dinámica `miSelectX` para cada select */}
-                <Select 
-                  name={`miSelect${index + 1}`} 
-                  value={formulario[`miSelect${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
-                  onValueChange={(value) => handleSelectChange(value, `miSelect${index + 1}`)} // También pasamos la clave dinámica al manejador
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))
-            ) : (
-              <div>Correo no asignado a ninguna modificación</div>
-            )}
-              
-                
-               <div style={{display:"flex", gap:"2rem"}}>
-               {session && session.user.email === "j.perez@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||session.user.email === "marketing@nutriton.com.mx" || session.user.email ===  "investigacionproductos@nutriton.com.mx"  ? (
-              <div>
-                <Label htmlFor="inventory">Inventario (pzs)</Label>
-                <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory} // name y value desde el evento 
-                />
-              </div>):(<div></div>)}
-              {session && session.user.email === "j.leyva@nutriton.com.mx" || session.user.email ===  "l.torres@nutriton.com.mx" ||  session.user.email === "investigacionproductos@nutriton.com.mx"||
-              session.user.email === "marketing@nutriton.com.mx"  ? (
-              <div>
-                <Label htmlFor="value">Valor ($)</Label>
-                <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value} // name y value desde el evento
-                />
-              </div>
-                   ):(
-                    <div></div>
-                  )}
-               </div>
-           
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Verificación */}
-        <Card>
-      <CardHeader>
-        <CardTitle>Verificación</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Mostrar los campos asignados al correo */}
-        {verifierIndices ? (
-          verifierIndices.map((index) => (
-            <div key={index} className="space-y-4">
-              <Label htmlFor={`verifier-${index}`}>{verifiers[index]}</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Input
-                  id={`verifier-${index}`}
-                  name={`verifier-${index}`}
-                  placeholder="Nombre"
-                  onChange={handleInputChange}
-                  value={formulario[`verifier-${index}`] || ''}
-                />
-                <div style={{width:"5rem"}} className="flex items-center space-x-4">
-                  <Select
-                    name={`authorize-${index}`}
-                    value={formulario[`authorize-${index}`] || 'no'}
-                    onValueChange={(value) => handleSelectChange(value, `authorize-${index}`)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={formulario[`authorize-${index}`] || ''} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Input
-                  type="date"
-                  name={`fecha_autorizacion-${index}`}
-                  onChange={handleInputChange}
-                  value={formulario[`fecha_autorizacion-${index}`] || ''}
-                />
-              </div>
-              <div>
-                <Label htmlFor={`comments-${index}`}>Comentarios</Label>
-                <Textarea
-                  id={`comments-${index}`}
-                  name={`comments-${index}`}
-                  placeholder="Ingrese sus comentarios aquí"
-                  className="w-full"
-                  onChange={handleInputChange}
-                  value={formulario[`comments-${index}`] || ''}
-                />
-              </div>
-            </div>
-          ))
-        ) : (
-          <div>Correo no asignado a ningún verificador</div>
-        )}
-        
-        { session && session.user.email==="maquilas@nutriton.com.mx"? (
-                <div className="space-y-4">
-                <Label htmlFor={`verifier-10`}>Maquilas</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Input id={`verifier-10`} name={`verifier-10`} placeholder="Nombre"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento 
-                  />
-                  <div style={{width:"5rem"}} className="flex items-center space-x-4">
-                  <Select
-                    name={`authorize-10`}
-                    value={formulario[`authorize-10`] || 'no'}
-                    onValueChange={(value) => handleSelectChange(value, `authorize-10`)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={formulario[`authorize-10`] || ''} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                  <Input type="date" name={`fecha_autorizacion-10`}  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
-                   />
-                </div>
-                <div>
-                  <Label htmlFor={`comments-10`}>Comentarios</Label>
-                  <Textarea
-                    id={`comments-10`}
-                    name={`comments-10`}
-                    placeholder="Ingrese sus comentarios aquí"
-                    className="w-full"
-                    onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
-                  />
-                </div>
-              </div>
-              ) : (<div></div>)}
-      </CardContent>
-    </Card>
-        {/* Selección de imágenes */}
-        {session && session.user.email === "j.leyva@nutriton.com.mx" || session.user.email === "marketing@nutriton.com.mx" ||session.user.email ===  "investigacionproductos@nutriton.com.mx" ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Imágenes</CardTitle>
-          </CardHeader>
-          <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id={`image-${index}`}
-                name={`image-${index}`}
-                checked={formulario.selectedImages[index] || false} // Controlar si está seleccionado
-                onChange={handleImageChange} // Manejar el cambio
-              />
-              <label htmlFor={`image-${index}`}>
-                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                  <img
-                    src={`/img${index + 1}.png`}
-                    alt={`Imagen ${index + 1}`}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </label>
-            </div>
-          ))}
-        </div>
-          </CardContent>
-        </Card>
-        ):(<div></div>)}
-        
-        {session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
+{session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
         <Card>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
@@ -633,10 +534,527 @@ export function EditarEtiqueta() {
           <CardTitle>
           Estatus
           </CardTitle>
+          <CardContent>
+        <br />    <Label>{formulario.estatus}</Label>
+        </CardContent> 
         </CardHeader>
-        <Label style={{marginLeft:"2rem", }}
-        >{formulario.estatus}</Label>
       </Card></div>)}
+     
+        {/* Detalles del Producto */}
+        
+        <Card>
+        <CardHeader>
+          <CardTitle>Diseñador gráfico</CardTitle>
+          <CardDescription>Orlando o Alex</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+            { id: "nombre_producto", label: "Nombre del producto" },
+            { id: "proveedor", label: "Proveedor" },
+            { id: "terminado", label: "Terminado" },
+            { id: "articulo", label: "Artículo" },
+            { id: "fecha_elaboracion", label: "Fecha de elaboración", type: "date" },
+            { id: "edicion", label: "Edición" },
+            { id: "sustrato", label: "Sustrato" },
+            { id: "dimensiones", label: "Dimensiones" },
+            { id: "escala", label: "Escala" },
+            ].map((field) => (
+              <div key={field.id}>
+                <Label htmlFor={field.id}>{field.label}</Label>
+                <Input
+                  id={field.id}
+                  name={field.id}
+                  type={field.type || "text"}
+                  value={formulario[field.id] || ""}
+                  onChange={handleInputChange}
+                  readOnly={!tienePermiso("Diseño", field.id)} // Establece readOnly según los permisos
+                />
+              </div>
+          ))}
+          <div className="col-span-full">
+            <Label htmlFor="description">Descripción de las modificaciones</Label>
+            <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}
+            readOnly={!tienePermiso("Diseño", 'description')}
+              />
+          </div>
+          {modificacionesDiseñador.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectDiseñador${index + 1}`} 
+                  value={formulario[`miSelectDiseñador${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectDiseñador${index + 1}`)}
+                  disabled={!tienePermiso("Diseño", item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+  
+
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Investigación y Desarrollo de Nuevos Productos</CardTitle>
+          <CardDescription>Pedro</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modificacionesIYDNP.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectInvestigacion${index + 1}`} 
+                  value={formulario[`miSelectInvestigacion${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectInvestigacion${index + 1}`)}
+                  disabled={!tienePermiso('Investigación y Desarrollo de Nuevos Productos', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Calidad</CardTitle>
+          <CardDescription>Blanca o Carmen</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modificacionesCalidad.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectCalidad${index + 1}`} 
+                  value={formulario[`miSelectCalidad${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectCalidad${index + 1}`)}
+                  disabled={!tienePermiso('Calidad', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Auditorías</CardTitle>
+          <CardDescription>Rosy o Janeth</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modificacionesAuditorias.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectAuditorias${index + 1}`} 
+                  value={formulario[`miSelectAuditorias${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectAuditorias${index + 1}`)}
+                  disabled={!tienePermiso('Auditorías', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Químico o Formulador</CardTitle>
+          <CardDescription>Carlos o Fernanda</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modificacionesQuimico.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectQuimico${index + 1}`} 
+                  value={formulario[`miSelectQuimico${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectQuimico${index + 1}`)}
+                  disabled={!tienePermiso('Laboratorio', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Ingeniería de Productos</CardTitle>
+          <CardDescription>Jania o Roger</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
+          {modificacionesIngenieíaNProducto.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectIngenieria${index + 1}`} 
+                  value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
+                  disabled={!tienePermiso('Ingeniería de Productos', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+            ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id={`image-${index}`}
+                name={`image-${index}`}
+                checked={formulario.selectedImages[index] || false} // Controlar si está seleccionado
+                onChange={handleImageChange} // Manejar el cambio
+                disabled={!tienePermiso('Ingeniería de Productos', 'Seleccionar imágenes')}
+              />
+              <label htmlFor={`image-${index}`}>
+                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                  <img
+                    src={`/img${index + 1}.png`}
+                    alt={`Imagen ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </label>
+            </div>
+          ))}
+        </div>
+        </div>
+        
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Gerente de Marketing</CardTitle>
+          <CardDescription>Tania o Martha</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
+          {modificacionesGerenteMkt.map((item, index) => (
+              <div key={item}>
+                <Label>{item}</Label>
+                {/* Usamos la clave dinámica `miSelectX` para cada select */}
+                <Select 
+                  name={`miSelectGerenteMkt${index + 1}`}
+                  value={formulario[`miSelectGerenteMkt${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                  onValueChange={(value) => handleSelectChange(value, `miSelectGerenteMkt${index + 1}`)}
+                  disabled={!tienePermiso('Gerente de Marketing', item)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Compras</CardTitle>
+          <CardDescription>Karla</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div style={{display:"flex", gap:"2rem"}}>
+          <div>
+            <Label htmlFor="value">Valor ($)</Label>
+            <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value}
+            readOnly={!tienePermiso('Compras', 'Valor')}
+            />
+          </div>
+            </div>
+        </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Planeación</CardTitle>
+          <CardDescription>Jaret</CardDescription>
+        </CardHeader>
+        <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div style={{display:"flex", gap:"2rem"}}>
+          <div>
+            <Label htmlFor="inventory">Inventario (pzs)</Label>
+            <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory}
+            readOnly={!tienePermiso('Planeación', 'Inventario')}
+            />
+          </div>
+            </div>
+        </div>
+        </CardContent>
+      </Card>
+
+        {/* Verificación */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Verificación</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {verifiers.map((verifier, index) => (
+              <div key={index} className="space-y-4">
+                <Label htmlFor={`verifier-${index}`}>{verifier}</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input id={`verifier-${index}`} name={`verifier-${index}`} placeholder="Nombre" onChange={(e) => {
+                      handleInputChange(e); // Llama a tu manejador de cambios
+                      
+                      // Verificar si el campo de nombre tiene al menos un carácter
+                      if (e.target.value.trim() !== '') {
+                        // Establecer la fecha actual en el campo correspondiente
+                        const today = new Date().toISOString().split("T")[0];
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`fecha_autorizacion-${index}`]: today,
+                        }));
+                      }
+
+                      if (verificarCampos(index)) {
+                        setContadorFirmas((prev) => prev + 1);
+                      }
+                    }}
+                   value={formulario[`verifier-${index}`] || ''} 
+                   
+                   onBlur={(e) => {
+                    // Convertir a readOnly cuando el campo pierde el foco y no está vacío
+                    if (e.target.value.trim() !== '') {
+                      setFormulario((prev) => ({
+                        ...prev,
+                        [`readOnly-${index}`]: true, // Establecemos un estado de readOnly dinámico
+                      }));
+                    }
+                  }}
+                  readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnly-${index}`] || false}
+                   />
+                  <div style={{width:"9rem"}} className="flex items-center space-x-4">
+                  <Select 
+                    name={`authorize-${index}`} 
+                    value={formulario[`authorize-${index}`]} // Usamos la clave dinámica en `formulario`
+                    onValueChange={(value) => {
+                      handleSelectChange(value, `authorize-${index}`);
+                      // Cambiar el campo de comentarios a obligatorio si el valor es "no"
+                      if (value === 'no') {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`comments-${index}`]: prev[`comments-${index}`] || '', // Mantener el valor actual
+                          commentsRequired: { ...prev.commentsRequired, [`comments-${index}`]: true }, // Hacer que sea obligatorio
+                        }));
+                      } else {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          commentsRequired: { ...prev.commentsRequired, [`comments-${index}`]: false }, // No obligatorio
+                        }));
+                      }
+
+                      if (verificarCampos(index)) {
+                        setContadorFirmas((prev) => prev + 1);
+                      }
+                    }}
+                    disabled={!tienePermiso('Verificación', verifier) || formulario[`authorize-${index}`] === 'si' || formulario[`authorize-${index}`] === 'no'} // Se desactiva si tiene un valor
+                    >
+                    <SelectTrigger>
+                      <SelectValue placeholder={"Seleccionar"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="si">Sí</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  </div>
+                  <Input type="date" name={`fecha_autorizacion-${index}`}  onChange={handleInputChange} value={formulario[`fecha_autorizacion-${index}`] || ''} disabled // Campo de fecha no editable // name y value desde el evento
+                   />
+                </div>
+                <div>
+                  <Label htmlFor={`comments-${index}`}>Comentarios</Label>
+                  <Textarea
+                    id={`comments-${index}`}
+                    name={`comments-${index}`}
+                    placeholder="Ingrese sus comentarios aquí"
+                    className="w-full"
+                    onChange={handleInputChange}
+                    onBlur={(e) => {
+                      // Convertir a readOnly cuando el campo pierde el foco y no está vacío
+                      if (e.target.value.trim() !== '') {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`readOnlyComments-${index}`]: true, // Establecemos un estado de readOnly dinámico
+                        }));
+                      }
+                    }}
+                    readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnlyComments-${index}`] || false}
+                    value={formulario[`comments-${index}`] || ''}  // name y value desde el evento
+                    required={formulario.commentsRequired?.[`comments-${index}`]}
+                  />
+                </div>
+              </div>
+            ))}
+            {formulario.tipo=="Maquilas" ? (
+                <div className="space-y-4">
+                <Label htmlFor={'verifier-10'}>Maquilas</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input id={`verifier-10`} name={`verifier-10`} placeholder="Nombre" onChange={(e) => {
+                      handleInputChange(e); // Llama a tu manejador de cambios
+                      
+                      // Verificar si el campo de nombre tiene al menos un carácter
+                      if (e.target.value.trim() !== '') {
+                        // Establecer la fecha actual en el campo correspondiente
+                        const today = new Date().toISOString().split("T")[0];
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`fecha_autorizacion-10`]: today,
+                        }));
+                      }
+
+                      if (verificarCamposMaquilas()) {
+                        setContadorFirmas((prev) => prev + 1);
+                      }
+                    }}
+                   value={formulario[`verifier-10`] || ''} 
+                   
+                   onBlur={(e) => {
+                    // Convertir a readOnly cuando el campo pierde el foco y no está vacío
+                    if (e.target.value.trim() !== '') {
+                      setFormulario((prev) => ({
+                        ...prev,
+                        [`readOnly-10`]: true, // Establecemos un estado de readOnly dinámico
+                      }));
+                    }
+                  }}
+                  readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnly-10`] || false}
+                   />
+                  <div style={{width:"9rem"}} className="flex items-center space-x-4">
+                  <Select 
+                    name={`authorize-10`} 
+                    value={formulario[`authorize-10`]} // Usamos la clave dinámica en `formulario`
+                    onValueChange={(value) => {
+                      handleSelectChange(value, `authorize-10`);
+                      // Cambiar el campo de comentarios a obligatorio si el valor es "no"
+                      if (value === 'no') {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`comments-10`]: prev[`comments-10`] || '', // Mantener el valor actual
+                          commentsRequired: { ...prev.commentsRequired, [`comments-10`]: true }, // Hacer que sea obligatorio
+                        }));
+                      } else {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          commentsRequired: { ...prev.commentsRequired, [`comments-10`]: false }, // No obligatorio
+                        }));
+                      }
+
+                      if (verificarCamposMaquilas()) {
+                        setContadorFirmas((prev) => prev + 1);
+                      }
+                    }}
+                    disabled={!tienePermiso('Verificación', 'Maquilas') || formulario[`authorize-10`] === 'si' || formulario[`authorize-10`] === 'no'} // Se desactiva si tiene un valor
+                    >
+                        <SelectTrigger>
+                          <SelectValue placeholder={"Seleccionar"}/>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="si">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+                  <Input type="date" name={`fecha_autorizacion-10`}  onChange={handleInputChange} value={formulario[`fecha_autorizacion-10`] || ''} disabled // Campo de fecha no editable // name y value desde el evento
+                   />
+                </div>
+                <div>
+                  <Label htmlFor={'comments-10'}>Comentarios</Label>
+                  <Textarea
+                    id={`comments-10`}
+                    name={`comments-10`}
+                    placeholder="Ingrese sus comentarios aquí"
+                    className="w-full"
+                    onChange={handleInputChange}
+                    onBlur={(e) => {
+                      // Convertir a readOnly cuando el campo pierde el foco y no está vacío
+                      if (e.target.value.trim() !== '') {
+                        setFormulario((prev) => ({
+                          ...prev,
+                          [`readOnlyComments-10`]: true, // Establecemos un estado de readOnly dinámico
+                        }));
+                      }
+                    }}
+                    readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnlyComments-10`] || false}
+                    value={formulario[`comments-10`] || ''}  // name y value desde el evento
+                    required={formulario.commentsRequired?.[`comments-10`]}
+                  />
+                </div>
+              </div>
+              ) : (<div></div>)}
+      
+          </CardContent>
+        </Card>
         <Button type="submit" className="w-full" onClick={handleSave} style={{marginTop: "2rem"}}>Guardar Cambios</Button>
       </form>
     </div>

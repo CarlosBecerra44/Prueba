@@ -18,7 +18,7 @@ export function Navbarv1() {
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-
+  
   useEffect(() => {
     const fetchUserData = async () => {
       const session = await getSession();
@@ -57,19 +57,22 @@ export function Navbarv1() {
     { id: 1, name: "Principal", href: "#"},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Ver mis permisos", href: `/permisos?id=${idUser}`, icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
     { id: 6, name: "Departamentos", href: "#"},
-    { id: 7, name: "Gente & Cultura", href: "#", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }] },
-    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 7, name: "Gente & Cultura", href: "/gente_y_cultura", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
+    ...(correoUser === "guscardenas83@gmail.com" || departamento === "marketing" ? [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }, { name: "Permisos", href: "/marketing/permisos", icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> }] }]
+      : [{ id: 8, name: "Marketing", href: "/marketing", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] }]
+    ),
+    { id: 9, name: "Operaciones", href: "/operaciones", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "IT", href: "/it", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "/ingenieria_nuevo_producto", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 13, name: "Ventas", href: "/ventas", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 14, name: "Contabilidad", href: "/contabilidad", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: 15, name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 16, name: "Capacitaciones", href: "/capacitaciones", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -77,18 +80,18 @@ export function Navbarv1() {
   );
  
   return (
-    <div className="flex flex-col w-64 min-h-screen bg-gray-800 text-white">
-      <div style={{ borderBottomWidth: "2px", marginRight: "6px"}} className="flex items-center justify-between h-16 border-gray-700 px-4">
-        <div style={{color:"white"}} className="flex items-center">
-          <img
-            src="/icon_user.png"
-            alt="Logo"
-            className="h-8 w-8"
-          />
-          <a href="/perfil"><span className="ml-2 font-medium">{nombre}</span></a>
+    <div className="flex flex-col w-64 h-screen min-h-screen bg-gray-800 text-white">
+      <div style={{ borderBottomWidth: "2px", marginRight: "6px" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
+        <div style={{ color: "white" }} className="flex items-center">
+          <img src="/icon_user.png" alt="Logo" className="h-8 w-8" />
+          <a href="/perfil">
+            <span className="ml-2 font-medium">{nombre}</span>
+          </a>
         </div>
       </div>
-      <div className="p-4 flex-1 overflow-y-auto">
+  
+      {/* Sección de contenido desplazable */}
+      <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
           <Input
@@ -99,84 +102,62 @@ export function Navbarv1() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <nav className="">
-        {filteredCategories.map((category) => (
-  <div key={category.id} className="group">
-    {/* Sección especial para "Principal" */}
-    {category.id === 1 ? (
-      <div
-        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
-        onClick={() => toggleSection("principal")}
-        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-      >
-        Principal
-      </div>
-    ) : category.id === 6 ? (
-      /* Sección especial para "Departamentos" */
-      <div
-        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
-        onClick={() => toggleSection("departamentos")}
-        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-      >
-        Departamentos
-      </div>
-    ) : category.id === 15 ? (
-      /* Sección especial para "Cursos" */
-      <div
-        className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
-        onClick={() => toggleSection("cursos")}
-        style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-      >
-        Cursos
-      </div>
-    ) : (
-      /* Elementos regulares */
-      <div>
-        <div
-          className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700"
-          onClick={() => toggleSection(category.id)}
-          style={{color: "white"}}
-        >
-          <div className="flex items-center">
-            {category.icon}
-            <Link href={category.href} className="ml-2">
-              {category.name}
-            </Link>
-          </div>
-          {category.subMenu && (
-            <span className="text-gray-400">
-              {openSection === category.id ? "-" : "+"}
-            </span>
-          )}
-        </div>
-        {/* Mostrar submenú si existe */}
-        {openSection === category.id && category.subMenu && (
-          <div className="pl-8" style={{color: "white"}}>
-            {category.subMenu.map((subItem) => (
-              <Link key={subItem.name} href={subItem.href} style={{display:"flex"}} className="block py-2 px-4 hover:bg-gray-600">
-                <div style={{marginRight:"10px"}}>
-                {subItem.icon}
+        
+        <nav>
+          {filteredCategories.map((category) => (
+            <div key={category.id} className="group">
+              {category.id === 1 ? (
+                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("principal")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
+                  Principal
                 </div>
-                {subItem.name}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    )}
-  </div>
-))}
+              ) : category.id === 6 ? (
+                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("departamentos")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
+                  Departamentos
+                </div>
+              ) : category.id === 15 ? (
+                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("cursos")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
+                  Cursos
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700" onClick={() => toggleSection(category.id)} style={{ color: "white" }}>
+                    <div className="flex items-center">
+                      {category.icon}
+                      <Link href={category.href} className="ml-2">
+                        {category.name}
+                      </Link>
+                    </div>
+                    {category.subMenu && <span className="text-gray-400">{openSection === category.id ? "-" : "+"}</span>}
+                  </div>
+  
+                  {openSection === category.id && category.subMenu && (
+                    <div className="pl-8" style={{ color: "white" }}>
+                      {category.subMenu.map((subItem) => (
+                        <Link key={subItem.name} href={subItem.href} className="block py-2 px-4 hover:bg-gray-600 flex items-center">
+                          <div style={{ marginRight: "10px" }}>
+                            {subItem.icon}
+                          </div>
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
       </div>
-      <div style={{ borderTopWidth: "2px", marginRight: "6px"}} className="mt-auto p-4 border-gray-700">
-        
-        <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{color: "black", background: "white"}}>
+  
+      <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
+        <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
           Cerrar sesión
-          <LogOutIcon style={{marginLeft: "0.5rem"}} className="h-4 w-4 text-gray-400" />
+          <LogOutIcon style={{ marginLeft: "0.5rem" }} className="h-4 w-4 text-gray-400" />
         </Button>
       </div>
     </div>
   );
+  
 }
 
 function LogOutIcon(props) {
@@ -415,6 +396,17 @@ function PapeletasIcon(props) {
   <path d="M9 9h1" />
   <path d="M9 13h6" />
   <path d="M9 17h6" />
+</svg>
+  )
+}
+
+function UsuariosIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+  <circle cx="8" cy="8" r="3" />
+  <path d="M3 21v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2H3z" />
+  <circle cx="16" cy="10" r="3" />
+  <path d="M12 21v-1.5a4.5 4.5 0 0 1 4.5-4.5h1a4.5 4.5 0 0 1 4.5 4.5V21H12z" />
 </svg>
   )
 }

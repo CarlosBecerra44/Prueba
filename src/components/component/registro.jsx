@@ -46,9 +46,10 @@ export function Registro() {
       setError('Hubo un problema con el registro. Por favor, intenta nuevamente.');
     }
   };
+
   return (
-    ( <form onSubmit={handleSubmit}>
-      <div style={{ marginLeft: "500px" }} className="mx-auto max-w-[450px] space-y-6"><br /><br /><br /><br /><br />
+    <div className="fixed inset-0 flex justify-center items-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-[450px] space-y-6 p-6">
         <div className="space-y-2 text-center">
           <img src="/logo.png" alt="" />
         </div>
@@ -56,33 +57,56 @@ export function Registro() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
-              <Input id="name" placeholder="Juana Pérez" required value={name} onChange={(e) => setName(e.target.value)} />
+              <Input 
+                id="name" 
+                placeholder="Juana Pérez" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" type="email" placeholder="juana@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="juana@example.com" 
+                required 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" type="password" placeholder="Introduce una contraseña" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input 
+              id="password" 
+              type="password" 
+              placeholder="Introduce una contraseña" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-            <Input id="confirmPassword" type="password" placeholder="Vuelve a introducir la contraseña" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            <Input 
+              id="confirmPassword" 
+              type="password" 
+              placeholder="Vuelve a introducir la contraseña" 
+              required 
+              value={confirmPassword} 
+              onChange={(e) => setConfirmPassword(e.target.value)} 
+            />
           </div>
           {error && <div className="text-red-500">{error}</div>}
-          <Button type="submit" className="w-full">
-            Registrarse
-          </Button>
+          <Button type="submit" className="w-full">Registrarse</Button>
         </div>
         <div className="text-center text-sm text-muted-foreground">
           ¿Ya tienes una cuenta?{" "}
-          <Link href="/login" className="underline" prefetch={false}>
-            Iniciar sesión
-          </Link>
+          <Link href="/login" className="underline" prefetch={false}>Iniciar sesión</Link>
         </div>
-      </div>
-    </form>)
+      </form>
+    </div>
   );
 }

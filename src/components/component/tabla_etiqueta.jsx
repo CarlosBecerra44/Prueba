@@ -35,8 +35,52 @@ export function TablaEventosMejorada() {
     "Descripción",
     "Fecha último movimiento",
     "Estatus",
+    "Firmas",
     "Acción"
   ]
+
+  const handleChangeStatus = async (id) => {
+    try {
+      // Mostrar una alerta para que el usuario seleccione el nuevo estatus
+      const { value: nuevoEstatus } = await Swal.fire({
+        title: 'Selecciona el nuevo estatus',
+        input: 'select',
+        inputOptions: {
+          Completado: 'Completado',
+          Pendiente: 'Pendiente',
+          Rechazado: 'Rechazado'
+        },
+        inputPlaceholder: 'Selecciona el nuevo estatus',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          return !value ? 'Debes seleccionar un estatus' : null;
+        }
+      });
+  
+      if (nuevoEstatus) {
+        // Realizar la petición para cambiar el estatus
+        const response = await axios.post('/api/cambiarEstatusFormularioEtiqueta', {
+          id,
+          nuevoEstatus
+        });
+  
+        if (response.status === 200) {
+          Swal.fire('Éxito', 'El estatus ha sido actualizado', 'success');
+          // Aquí podrías actualizar la lista de eventos para reflejar el cambio
+          setEventos((prevEventos) =>
+            prevEventos.map((evento) =>
+              evento.id === id ? { ...evento, estatus: nuevoEstatus } : evento
+            )
+          );
+        } else {
+          Swal.fire('Error', 'No se pudo actualizar el estatus', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estatus:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar cambiar el estatus', 'error');
+    }
+  };  
 
   const handleDelete = async (index) => {
     try {
@@ -111,19 +155,12 @@ export function TablaEventosMejorada() {
       id: evento.id,
       tipo: evento.datos_formulario.tipo,
       nombreProducto: evento.datos_formulario.nombre_producto,
-      proveedor: evento.datos_formulario.proveedor,
-      terminado: evento.datos_formulario.terminado,
       articulo: evento.datos_formulario.articulo,
       fechaElaboracion: fechaFormateada,
-      edicion: evento.datos_formulario.edicion,
-      sustrato: evento.datos_formulario.sustrato,
-      dimensiones: evento.datos_formulario.dimensiones,
-      escala: evento.datos_formulario.escala,
       descripcion: evento.datos_formulario.description,
       fechaUltimoMovimiento: fechaFormateada2,
-      inventario: evento.datos_formulario.inventory,
-      valor: evento.datos_formulario.value,
-      estatus: evento.estatus
+      estatus: evento.estatus,
+      firmas: evento.firmas
     }
   }
 
@@ -154,6 +191,14 @@ export function TablaEventosMejorada() {
           </svg>
         </Button>
       </Link>
+
+      {session && session.user.email === "o.rivera@nutriton.com.mx" || session.user.email === "investigacionproductos@nutriton.com.mx" ? (<Button onClick={() => handleChangeStatus(index)} style={{ width: "1px", height: "40px" }}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="rgb(31 41 55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0114.63-4.89L23 10M1 14a9 9 0 0014.63 4.89L17 14"></path>
+      </svg>
+      </Button>) : (<div></div>)}
     </div>
   )
 
@@ -239,7 +284,15 @@ export function TablaEventosMejorada() {
             {currentEventos.length > 0 ? (
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
-                  <TableCell>{evento.tipo || "Sin tipo"}</TableCell>
+                  <TableCell>
+                    {Array.isArray(evento.tipo) && evento.tipo.length === 1 && evento.tipo[0] === ""
+                      ? "Sin tipo" // Si es un array con un valor vacío, mostrar "Sin tipo"
+                      : Array.isArray(evento.tipo) && evento.tipo.length > 0
+                      ? evento.tipo.join(", ") // Si es un array y tiene valores, unirlos y mostrarlos
+                      : typeof evento.tipo === "string" && evento.tipo.trim() !== ""
+                      ? evento.tipo // Si es una cadena no vacía, mostrarla
+                      : "Sin tipo"}
+                  </TableCell>
                   <TableCell>{evento.nombreProducto || "Sin nombre"}</TableCell>
                   <TableCell>{evento.articulo || "Sin artículo"}</TableCell>
                   <TableCell>{evento.fechaElaboracion || "Sin fecha"}</TableCell>
@@ -261,12 +314,17 @@ export function TablaEventosMejorada() {
                       })(),
                     }}
                   >{evento.estatus || "Sin estatus"}</TableCell>
+                  {(Array.isArray(evento.tipo) ? evento.tipo.includes("Maquilas") : evento.tipo === "Maquilas") ? (
+                    <TableCell>{evento.firmas ? evento.firmas + '/11' : "0/11"}</TableCell>
+                  ) : (
+                    <TableCell>{evento.firmas ? evento.firmas + '/10' : "0/10"}</TableCell>
+                  )}
                   <TableCell>{renderAccion(evento.id)}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
+                <TableCell colSpan={9} className="text-center">
                   No se encontraron etiquetas
                 </TableCell>
               </TableRow>

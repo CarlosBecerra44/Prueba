@@ -43,24 +43,28 @@ password,
   };
 
   return (
-    <div style={{ marginLeft: "500px" }} className="mx-auto max-w-md space-y-6"><br /><br /><br /><br /><br />
-      <form onSubmit={handleSubmit}>
+    <div className="fixed inset-0 flex justify-center items-center">
+      <div className="w-full max-w-md space-y-6 p-6">
         <div className="space-y-2 text-center">
           <img src="/logo.png" alt="" />
         </div>
-        <div className="space-y-4"><br />
-        <Button onClick={() => signIn("google", { callbackUrl: "/inicio" })} variant="outline" className="w-full">
-          <ChromeIcon className="mr-2 h-4 w-4" />
-          Iniciar sesión con Google
-        </Button>
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Button
+            onClick={() => signIn("google", { callbackUrl: "/inicio" })}
+            variant="outline"
+            className="w-full"
+          >
+            <ChromeIcon className="mr-2 h-4 w-4" />
+            Iniciar sesión con Google
+          </Button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Continúa con correo</span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Continua con correo</span>
-          </div>
-        </div>
           <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
             <Input
@@ -85,13 +89,12 @@ password,
           </div>
           {error && <p className="text-center text-red-500">{error}</p>}
           <Button type="submit" className="w-full">Iniciar sesión</Button>
+        </form>
+        <div className="text-center text-sm text-muted-foreground">
+          ¿Aún no tienes una cuenta?{" "}
+          <Link href="/login/registro" className="underline">Regístrate</Link>
         </div>
-      </form>
-      <div className="text-center text-sm text-muted-foreground" hidden>
-        ¿Aún no tienes una cuenta?{" "}
-        <Link href="/login/registro" className="underline">Regístrate</Link>
       </div>
-      
     </div>
   );
 }
