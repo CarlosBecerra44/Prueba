@@ -57,7 +57,7 @@ export function Navbarv1() {
     { id: 1, name: "Principal", href: "#"},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Ver mis permisos", href: `#`, icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
     { id: 6, name: "Departamentos", href: "#"},
     { id: 7, name: "Gente & Cultura", href: "#", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
