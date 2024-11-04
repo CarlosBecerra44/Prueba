@@ -9,19 +9,19 @@ export default async function handler(req, res) {
 
   const client = new Client();
   try {
-    await client.access({
+    /*await client.access({
       host: "ftp.aionnet.net",  // Dirección del servidor FTP
       user: "aionnetx",         // Usuario FTP
       password: "Mxxnatura2536//", // Contraseña FTP
       secure: false
-    });
+    });*/
 
-    /*await client.access({
+    await client.access({
       host: "192.168.1.87", // Dirección del servidor FTP
       user: "pruebas",        // Usuario FTP
       password: "NutriAdmin2035",  // Contraseña FTP
       secure: false            // Usa 'true' si el servidor FTP requiere conexión segura
-    });*/
+    });
 
     // Usamos un WritableStream para enviar el archivo directamente al cliente
     res.setHeader('Content-Type', 'application/pdf');
