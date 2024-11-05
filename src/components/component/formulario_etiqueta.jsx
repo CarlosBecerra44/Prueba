@@ -160,19 +160,6 @@ export function DocumentSigningForm() {
           message: 'Se ha guardado un nuevo formulario de etiqueta. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
         }),
       });
-      if (res) {
-        Swal.fire({
-          title: 'Subido',
-          text: 'Se ha creado correctamente',
-          icon: 'success',
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/marketing/etiquetas/tabla_general";
-        });
-      } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
-      }
    }catch (error){
       console.error(error);
       alert(error);
@@ -215,7 +202,7 @@ export function DocumentSigningForm() {
   const modificacionesIYDNP = [
     'Código QR', 'Código de barras',
     'Cambio estético', 'Cambio crítico',
-    'Distribuido y elaborado por',
+    'Distribuido y elaborado por', 'Tabla nutrimental', 'Lista de ingredientes',
   ];
 
   const modificacionesCalidad = [

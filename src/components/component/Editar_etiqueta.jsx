@@ -100,7 +100,7 @@ export function EditarEtiqueta() {
   const modificacionesIYDNP = [
     'Código QR', 'Código de barras',
     'Cambio estético', 'Cambio crítico',
-    'Distribuido y elaborado por',
+    'Distribuido y elaborado por', 'Tabla nutrimental', 'Lista de ingredientes',
   ];
 
   const modificacionesCalidad = [
@@ -432,7 +432,7 @@ export function EditarEtiqueta() {
             body: JSON.stringify({
               recipientEmail: nextRecipient,
               subject: 'Etiqueta editada',
-              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/Editar?id=${id}\nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
+              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
             }),
           });
   

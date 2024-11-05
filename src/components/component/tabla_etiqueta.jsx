@@ -335,19 +335,44 @@ export function TablaEventosMejorada() {
 
       {/* Paginación */}
       <div className="flex justify-center mt-4 mb-4">
-        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-          Anterior
-        </button><span style={{marginRight:"2rem"}}></span>
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button style={{marginLeft:"1rem", marginRight: "1rem"}} key={index} onClick={() => paginate(index + 1)} className={currentPage === index + 1 ? "font-bold" : ""}>
-            {index + 1}
+      <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+        Anterior
+      </button>
+      <span style={{ marginRight: "2rem" }}></span>
+      
+      {/* Páginas */}
+      {currentPage > 3 && (
+        <>
+          <button onClick={() => paginate(1)}>1</button>
+          <span style={{ marginRight: "1rem" }}>...</span>
+        </>
+      )}
+
+      {Array.from({ length: totalPages }, (_, index) => index + 1)
+        .filter(page => page === currentPage || page === currentPage - 1 || page === currentPage + 1)
+        .map(page => (
+          <button
+            key={page}
+            onClick={() => paginate(page)}
+            className={currentPage === page ? "font-bold" : ""}
+            style={{ marginLeft: "1rem", marginRight: "1rem" }}
+          >
+            {page}
           </button>
         ))}
-        <span style={{marginLeft:"2rem"}}></span>
-        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
-          Siguiente
-        </button>
-      </div>
+
+      {currentPage < totalPages - 2 && (
+        <>
+          <span style={{ marginRight: "1rem" }}>...</span>
+          <button onClick={() => paginate(totalPages)}>{totalPages}</button>
+        </>
+      )}
+
+      <span style={{ marginLeft: "2rem" }}></span>
+      <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+        Siguiente
+      </button>
+    </div>
     </div>
   )
 }

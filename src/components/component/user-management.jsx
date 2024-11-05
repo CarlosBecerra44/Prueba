@@ -22,7 +22,7 @@ const formSections = [
     name: 'Investigación y Desarrollo de Nuevos Productos',
     changeOptions: ['Código QR', 'Código de barras',
     'Cambio estético', 'Cambio crítico',
-    'Distribuido y elaborado por']
+    'Distribuido y elaborado por', 'Tabla nutrimental', 'Lista de ingredientes']
   },
   { 
     id: 'Diseño', 
@@ -374,6 +374,7 @@ export function UserManagementTable() {
                     <SelectItem value="12">Auditorias</SelectItem>
                     <SelectItem value="13">Ventas</SelectItem>
                     <SelectItem value="14">Almacen</SelectItem>
+                    <SelectItem value="15">Compras</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -593,7 +594,7 @@ export function UserManagementTable() {
   {currentPage > 3 && (
     <>
       <button onClick={() => paginate(1)}>1</button>
-      <span>...</span>
+      <span style={{ marginRight: "1rem" }}>...</span>
     </>
   )}
 
@@ -612,7 +613,7 @@ export function UserManagementTable() {
 
   {currentPage < totalPages - 2 && (
     <>
-      <span>...</span>
+      <span style={{ marginRight: "1rem" }}>...</span>
       <button onClick={() => paginate(totalPages)}>{totalPages}</button>
     </>
   )}

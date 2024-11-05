@@ -29,19 +29,33 @@ export default function RootLayout({ children}) {
     </head>
     <body className={inter.className}>
      
-      <div style={{ display: 'flex' }}>
-        {showNavbar && showNavbar3 && showNavbar2 && (
-          <div style={{ width: '250px', position: 'fixed', top: '0', left: '0', height: '100vh', backgroundColor: '#000000d6' }}>
-            <Inicio /> {/* Navbar */}
-          </div>
-        )}
-        <div style={{ marginLeft: '250px', width: '100%' }}>
-          <br />
-          
-          {children} {/* Contenido principal */}
-     
-        </div>
-      </div>
+    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+  {/* Navbar */}
+  {showNavbar && showNavbar3 && showNavbar2 && (
+    <div
+      style={{
+        width: '250px',
+        minWidth: '250px',
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        height: '100vh',
+        backgroundColor: '#000000d6',
+        zIndex: 1, // Para que se superponga al contenido en pantallas pequeñas
+      }}
+    >
+      <Inicio />
+    </div>
+  )}
+
+  {/* Contenido Principal */}
+  <div style={{ marginLeft: '250px', width: 'calc(100% - 250px)', padding: '1rem', overflowX: 'auto', boxSizing: 'border-box' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {children}
+    </div>
+</div>
+</div>
+
       
     </body>
   </html>
