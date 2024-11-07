@@ -377,12 +377,13 @@ export function DocumentSigningForm() {
                 name={field.id}
                 type={field.type || "text"}
                 onChange={(e) => handleInputChange(e.target.value, e.target.name)} // Usamos el manejador para actualizar los valores
+                readOnly={true}
               />
             </div>
           ))}
           <div className="col-span-full">
             <Label htmlFor="description">Descripción de las modificaciones</Label>
-            <Input id="description" name="description"   onChange={(e) => handleInputChange(e.target.value, e.target.name)}// name y value desde el evento
+            <Input id="description" name="description"   onChange={(e) => handleInputChange(e.target.value, e.target.name)} readOnly={true}// name y value desde el evento
               />
           </div>
           {modificacionesDiseñador.map((item, index) => (
@@ -391,7 +392,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectDiseñador${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectDiseñador${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectDiseñador${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -420,7 +421,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectInvestigacion${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectInvestigacion${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectInvestigacion${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -450,7 +451,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectCalidad${index + 1}`}
-                  onValueChange={(value) => handleInputChange(value, `miSelectCalidad${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectCalidad${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -480,7 +481,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectAuditorias${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectAuditorias${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectAuditorias${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -510,7 +511,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectQuimico${index + 1}`}
-                  onValueChange={(value) => handleInputChange(value, `miSelectQuimico${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectQuimico${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -540,7 +541,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectIngenieria${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectIngenieria${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectIngenieria${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -561,6 +562,7 @@ export function DocumentSigningForm() {
                 id={`image-${index}`}
                 name={`image-${index}`}
                 onChange={handleImageChange} // Manejar el cambio
+                disabled={true}
               />
               <label htmlFor={`image-${index}`}>
                 <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
@@ -593,7 +595,7 @@ export function DocumentSigningForm() {
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
                   name={`miSelectGerenteMkt${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectGerenteMkt${index + 1}`)} // También pasamos la clave dinámica al manejador
+                  onValueChange={(value) => handleInputChange(value, `miSelectGerenteMkt${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -620,7 +622,7 @@ export function DocumentSigningForm() {
         <div style={{display:"flex", gap:"2rem"}}>
           <div>
             <Label htmlFor="value">Valor ($)</Label>
-            <Input id="value" name="value" type="number"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento
+            <Input id="value" name="value" type="number"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} readOnly={true} // name y value desde el evento
             />
           </div>
             </div>
@@ -639,7 +641,7 @@ export function DocumentSigningForm() {
         <div style={{display:"flex", gap:"2rem"}}>
           <div>
             <Label htmlFor="inventory">Inventario (pzs)</Label>
-            <Input id="inventory" name="inventory" type="number"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} // name y value desde el evento 
+            <Input id="inventory" name="inventory" type="number"  onChange={(e) => handleInputChange(e.target.value, e.target.name)} readOnly={true} // name y value desde el evento 
             />
           </div>
             </div>
