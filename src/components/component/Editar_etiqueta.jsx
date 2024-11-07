@@ -476,39 +476,15 @@ export function EditarEtiqueta() {
           </CardContent>
           
         </Card>
-            {session && session.user.email==="o.rivera@nutriton.com.mx"?(
-
-            
+        
         <Card>
-      <CardHeader>
-        <CardTitle>Tipo</CardTitle>
-      </CardHeader>
-      <CardContent>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Select
-                id="dropdown"
-                value={formulario.tipo}
-                onValueChange={handleDropdownChange}
-              >
-                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
-                  <SelectValue placeholder="Seleccionar tipo de etiqueta" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Interna">Interna</SelectItem>
-                  <SelectItem value="Maquilas">Maquilas</SelectItem>
-                </SelectContent>
-              </Select>
-        </div>
-      </CardContent>
-    </Card>
-):(<Card>
-  <CardHeader>
-  <CardTitle>Tipo</CardTitle> 
-  <CardContent>
-    <br />    <Label>{formulario.tipo}</Label>
-    </CardContent>     
-  </CardHeader>
-</Card>) }
+          <CardHeader>
+          <CardTitle>Tipo</CardTitle> 
+          <CardContent>
+            <br />    <Label>{formulario.tipo}</Label>
+            </CardContent>     
+          </CardHeader>
+        </Card>
 
 {session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
         <Card>
