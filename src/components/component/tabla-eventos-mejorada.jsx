@@ -385,7 +385,7 @@ export function TablaEventosMejorada() {
       {currentPage > 3 && (
         <>
           <button onClick={() => paginate(1)}>1</button>
-          <span style={{ marginRight: "1rem" }}>...</span>
+          <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
         </>
       )}
 
@@ -404,7 +404,7 @@ export function TablaEventosMejorada() {
 
       {currentPage < totalPages - 2 && (
         <>
-          <span style={{ marginRight: "1rem" }}>...</span>
+          <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
           <button onClick={() => paginate(totalPages)}>{totalPages}</button>
         </>
       )}

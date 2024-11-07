@@ -403,12 +403,10 @@ export function EditarEtiqueta() {
   }
   
   const handleSave =async()=>{
-
     if (session) {
       const userEmail1 = session.user.email;
   
-      // Definir los destinatarios y orden
-      const emailFlow1 = {
+      let emailFlow1 = {
         "o.rivera@nutriton.com.mx": "investigacionproductos@nutriton.com.mx",
         "investigacionproductos@nutriton.com.mx": "calidad@nutriton.com.mx",
         "calidad@nutriton.com.mx": "r.contreras@nutriton.com.mx",
@@ -419,11 +417,17 @@ export function EditarEtiqueta() {
         "marketing@nutriton.com.mx": "j.perez@nutriton.com.mx"
       };
   
-      // Verificar el correo del usuario actual y enviar el aviso al siguiente
+      // Ajustar emailFlow si tipo es "Maquilas"
+      if (formulario.tipo && formulario.tipo == "Maquilas") {
+        emailFlow1["j.perez@nutriton.com.mx"] = "maquilas@nutriton.com.mx";
+      }
+  
+      // Buscar el siguiente destinatario
       const nextRecipient = emailFlow1[userEmail1];
+  
+      // Solo si existe un siguiente destinatario
       if (nextRecipient) {
         try {
-          // Hacer la petición a la API para enviar el correo
           const response = await fetch('/api/send-mailEdit', {
             method: 'POST',
             headers: {
@@ -444,6 +448,8 @@ export function EditarEtiqueta() {
         } catch (error) {
           console.error('Error al enviar la petición:', error);
         }
+      } else {
+        console.error("No se encontró un destinatario siguiente en el flujo de correos para el correo:", userEmail1);
       }
     }
   };
@@ -545,7 +551,7 @@ export function EditarEtiqueta() {
         <Card>
         <CardHeader>
           <CardTitle>Diseñador gráfico</CardTitle>
-          <CardDescription>Orlando o Alex</CardDescription>
+          <CardDescription>Orlando Rivera o Alejandro Garcilita</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -608,7 +614,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Investigación y Desarrollo de Nuevos Productos</CardTitle>
-          <CardDescription>Pedro</CardDescription>
+          <CardDescription>Pedro Marin</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -639,7 +645,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Calidad</CardTitle>
-          <CardDescription>Blanca o Carmen</CardDescription>
+          <CardDescription>Blanca Solano o Carmen Álvarez</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -670,7 +676,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Auditorías</CardTitle>
-          <CardDescription>Rosy o Janeth</CardDescription>
+          <CardDescription>Rosa Contreras o Janette Alvarado</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -701,7 +707,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Químico o Formulador</CardTitle>
-          <CardDescription>Carlos o Fernanda</CardDescription>
+          <CardDescription>Carlos Corona o Fernanda Cruz</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -732,7 +738,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Ingeniería de Productos</CardTitle>
-          <CardDescription>Jania o Roger</CardDescription>
+          <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -788,7 +794,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Gerente de Marketing</CardTitle>
-          <CardDescription>Tania o Martha</CardDescription>
+          <CardDescription>Tania Álvarez o Lizbeth Uribe</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -819,7 +825,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Compras</CardTitle>
-          <CardDescription>Karla</CardDescription>
+          <CardDescription>Karla Bayardo</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -838,7 +844,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Planeación</CardTitle>
-          <CardDescription>Jaret</CardDescription>
+          <CardDescription>Jaret Pérez</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

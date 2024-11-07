@@ -333,7 +333,7 @@ export function DocumentSigningForm() {
         <Card>
         <CardHeader>
           <CardTitle>Diseñador gráfico</CardTitle>
-          <CardDescription>Orlando o Alex</CardDescription>
+          <CardDescription>Orlando Rivera o Alejandro Garcilita</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -388,7 +388,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Investigación y Desarrollo de Nuevos Productos</CardTitle>
-          <CardDescription>Pedro</CardDescription>
+          <CardDescription>Pedro Marin</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -418,7 +418,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Calidad</CardTitle>
-          <CardDescription>Blanca o Carmen</CardDescription>
+          <CardDescription>Blanca Solano o Carmen Álvarez</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -448,7 +448,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Auditorías</CardTitle>
-          <CardDescription>Rosy o Janeth</CardDescription>
+          <CardDescription>Rosa Contreras o Janette Alvarado</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -478,7 +478,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Químico o Formulador</CardTitle>
-          <CardDescription>Carlos o Fernanda</CardDescription>
+          <CardDescription>Carlos Corona o Fernanda Cruz</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -508,7 +508,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Ingeniería de Productos</CardTitle>
-          <CardDescription>Jania o Roger</CardDescription>
+          <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -561,7 +561,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Gerente de Marketing</CardTitle>
-          <CardDescription>Tania o Martha</CardDescription>
+          <CardDescription>Tania Álvarez o Lizbeth Uribe</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -591,7 +591,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Compras</CardTitle>
-          <CardDescription>Karla</CardDescription>
+          <CardDescription>Karla Bayardo</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -610,7 +610,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Planeación</CardTitle>
-          <CardDescription>Jaret</CardDescription>
+          <CardDescription>Jaret Pérez</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
