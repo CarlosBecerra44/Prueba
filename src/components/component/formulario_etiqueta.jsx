@@ -146,24 +146,46 @@ export function DocumentSigningForm() {
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
     }
-   try{
-      const res= fetch('/api/send-mail',{
-        method: 'POST',
-        headers: {
-             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
-            'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
-            'o.rivera@nutriton.com.mx'], // Añadir tus correos específicos
-          subject: 'Nueva etiqueta',
-          message: 'Se ha guardado un nuevo formulario de etiqueta. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
-        }),
-      });
-   }catch (error){
-      console.error(error);
-      alert(error);
-   }
+
+    if(formulario.tipo && formulario.tipo == "Maquilas") {
+      try{
+        const res= fetch('/api/send-mail',{
+          method: 'POST',
+          headers: {
+               'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
+              'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
+              'o.rivera@nutriton.com.mx', 'maquilas@nutriton.com.mx'], // Añadir tus correos específicos
+            subject: 'Nueva etiqueta de maquilas',
+            message: 'Se ha guardado un nuevo formulario de etiqueta de maquilas. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
+          }),
+        });
+     }catch (error){
+        console.error(error);
+        alert(error);
+     }
+    } else {
+      try{
+        const res= fetch('/api/send-mail',{
+          method: 'POST',
+          headers: {
+               'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
+              'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
+              'o.rivera@nutriton.com.mx'], // Añadir tus correos específicos
+            subject: 'Nueva etiqueta interna',
+            message: 'Se ha guardado un nuevo formulario de etiqueta interna. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
+          }),
+        });
+     }catch (error){
+        console.error(error);
+        alert(error);
+     }
+    }
   };
     
   const handleFileChange = (event) => {
