@@ -250,7 +250,7 @@ export function EditarEtiqueta() {
       }
     });
     
-    if (formulario.tipo === "Maquilas" && verificarCamposMaquilas()) {
+    if (formulario.tipo == "Maquilas" && verificarCamposMaquilas()) {
       contadorInicial++;
     }
     return contadorInicial;
@@ -476,7 +476,7 @@ export function EditarEtiqueta() {
           </CardContent>
           
         </Card>
-        
+
         <Card>
           <CardHeader>
           <CardTitle>Tipo</CardTitle> 
