@@ -6,6 +6,7 @@ import { Navbarv1 as Inicio } from "@/components/navbar";
 import { SessionProvider } from "next-auth/react";
 const inter = Inter({ subsets: ["latin"] });
 import {  } from "@/components/component/breadcrumbItem";
+import NotificationBell from "@/components/component/notificationBell";
 import { Label } from "recharts";
 /*export const metadata = {
   title: "AIONET",
@@ -50,6 +51,18 @@ export default function RootLayout({ children}) {
 
   {/* Contenido Principal */}
   <div style={{ marginLeft: '250px', width: 'calc(100% - 250px)', padding: '1rem', overflowX: 'auto', boxSizing: 'border-box' }}>
+  <header
+        style={{
+          display: "flex",
+          justifyContent: "flex-end", // Alinea los elementos al extremo derecho
+          alignItems: "center",
+          height: "60px", // Altura fija para el encabezado
+          padding: "0 20px", // Espaciado interno
+          backgroundColor: "rgb(248 249 250 / 0%);", // Fondo claro
+        }}
+      >
+        <NotificationBell />
+      </header>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {children}
     </div>

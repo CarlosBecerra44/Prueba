@@ -13,8 +13,7 @@ export default async function handler(req, res) {
       JOIN 
         departamentos d 
       ON 
-        u.departamento_id= d.id 
-      
+        u.departamento_id= d.id AND u.eliminado = 0
       ORDER BY 
         u.id ASC
     `;

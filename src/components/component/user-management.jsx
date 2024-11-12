@@ -78,7 +78,10 @@ const formSections = [
 export function UserManagementTable() {
   const [selectedSections, setSelectedSections] = useState([])
   const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [employeeNumber, setEmployeeNumber] = useState('');
+  const [position, setPosition] = useState('');
   const [selectedPermission, setSelectedPermission] = useState("")
   const [selectedPermission1, setSelectedPermission1] = useState("")
   const [password, setPassword] = useState('');
@@ -87,31 +90,69 @@ export function UserManagementTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [roleFilter, setRoleFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [selectedChanges, setSelectedChanges] = useState({});
   const [isChangeOptionsDialogOpen, setIsChangeOptionsDialogOpen] = useState(false)
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState("todos")
   const [error, setError] = useState('');
   const [dpto, setSelectedDepartamento] = useState('');
+  const [role, setSelectedRole] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
-  // Filtrado de usuarios por nombre y rol
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const filteredUsers = users
-  .filter(users => 
-      (statusFilter === "todos" || users.nombre === statusFilter) &&
-      Object.values(users)
+    .filter(user => 
+      (statusFilter === "todos" || user.rol === statusFilter) &&
+      Object.values(user)
         .filter(value => value !== null && value !== undefined)  // Filtra valores nulos o indefinidos
         .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  // Manejo de la eliminación de usuarios (ejemplo)
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter(user => user.id !== userId));
+
+  const handleDelete = async (index) => {
+    try {
+      // Mostrar alerta de confirmación
+      const result = await Swal.fire({
+        title: '¿Deseas eliminar al usuario?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar',
+      });
+
+      // Si el usuario confirma la eliminación
+      if (result.isConfirmed) {
+        const response = await axios.post(`/api/eliminarUsuario?id=${index}`);
+        if (response.status === 200) {
+          await Swal.fire('Eliminado', 'El usuario ha sido eliminado', 'success');
+          window.location.href = "/usuario";
+        } else {
+          Swal.fire('Error', 'Error al eliminar al usuario', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error al eliminar al usuario:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar eliminar al usuario', 'error');
+    }
   };
 
-  // Cambio de rol (ejemplo)
-  const handleChangeRole = (userId, newRole) => {
-    setUsers(users.map(user => user.id === userId ? { ...user, rol: newRole } : user));
+  const handleChangeRoleUser = async (index, rol) => {
+    try {
+      const response = await axios.post(`/api/actualizarRolUsuarios?id=${index}&rol=${rol}`);
+      if (response.status === 200) {
+        await Swal.fire('Actualizado', 'El rol del usuario ha sido actualizado con éxito', 'success');
+      } else {
+        Swal.fire('Error', 'Error al actualizar el rol del usuario', 'error');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el rol del usuario:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el rol del usuario', 'error');
+    }
   };
+
   const openPermissionsDialog = (userId) => {
     setSelectedUserId(userId); // Guardar el ID del usuario seleccionado
     setIsChangeOptionsDialogOpen(false);
@@ -206,6 +247,10 @@ export function UserManagementTable() {
     );
   }
 
+  const handleEditUser = (userId) => {
+    const userToEdit = users.find(user => user.id === userId); // Buscar el usuario en el estado
+    setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -222,7 +267,7 @@ export function UserManagementTable() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, confirmPassword,dpto }),
+        body: JSON.stringify({ name, lastName, email, employeeNumber, position, dpto, password, confirmPassword, role }),
       });
 
       const data = await res.json();
@@ -238,6 +283,44 @@ export function UserManagementTable() {
       console.log(err);
     }
   };
+
+  const handleSubmitUpdate = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const res = await fetch('/api/actualizarUsuario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: selectedUser.id,  
+          nombre: selectedUser.nombre,  
+          apellidos: selectedUser.apellidos, 
+          correo: selectedUser.correo,  
+          numero_empleado: selectedUser.numero_empleado, 
+          puesto: selectedUser.puesto,  
+          departamento_id: selectedUser.departamento_id,  
+          rol: selectedUser.rol,
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        setError(data.message || 'Hubo un problema al actualizar el usuario');
+        return;
+      }
+  
+      window.location.href = '/usuario';  // O la página donde deseas redirigir después de actualizar
+  
+    } catch (err) {
+      console.error('Error en la actualización:', err);
+      setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
+    }
+  };
+  
+
   const saveSelections = async () => {
     if (!selectedUserId) return; // Validación para asegurarnos que tenemos el ID
     const selectedData = [];
@@ -303,9 +386,7 @@ export function UserManagementTable() {
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
         <a href="/inicio" className="hover:underline">Inicio</a>
         <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/usuarios" className="hover:underline">Usuarios</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <span>Administrador</span>
+        <a href="/usuario" className="hover:underline">Administrador de usuarios</a>
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Administrador de usuarios</h1>
@@ -321,15 +402,16 @@ export function UserManagementTable() {
               className="pl-8"
             />
           </div>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by role" />
+              <SelectValue placeholder="Filtrar por rol" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">Todos Roles</SelectItem>
-              <SelectItem value="Admin">Admin</SelectItem>
+              <SelectItem value="todos">Todos los roles</SelectItem>
+              <SelectItem value="Administrador">Administrador</SelectItem>
+              <SelectItem value="Estándar">Estándar</SelectItem>
               <SelectItem value="Editor">Editor</SelectItem>
-              <SelectItem value="Viewer">Viewer</SelectItem>
+              <SelectItem value="Lector">Lector</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -347,12 +429,24 @@ export function UserManagementTable() {
             <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre</Label>
+                <Label htmlFor="name" className="text-right">Nombre(s)</Label>
                 <Input id="name" className="col-span-3" required value={name} onChange={(e) => setName(e.target.value)}/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">Correo</Label>
-                <Input id="email" type="email" className="col-span-3" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Label htmlFor="lastName" className="text-right">Apellidos</Label>
+                <Input id="lastName" className="col-span-3" required value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">Correo electrónico</Label>
+                <Input id="email" type="email" className="col-span-3" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
+                <Input id="employeeNumber" className="col-span-3" required value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="position" className="text-right">Puesto</Label>
+                <Input id="position" className="col-span-3" required value={position} onChange={(e) => setPosition(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="departamento" className="text-right">Departamento</Label>
@@ -361,20 +455,21 @@ export function UserManagementTable() {
                     <SelectValue placeholder="Seleccione el departamento" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">It</SelectItem>
+                    <SelectItem value="1">IT</SelectItem>
                     <SelectItem value="2">Marketing</SelectItem>
-                    <SelectItem value="3">ingenieria_nuevo_producto</SelectItem>
-                    <SelectItem value="4">contabilidad</SelectItem>
-                    <SelectItem value="5">gente_y_cultura</SelectItem>
+                    <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
+                    <SelectItem value="4">Contabilidad</SelectItem>
+                    <SelectItem value="5">Gente y Cultura</SelectItem>
                     <SelectItem value="7">Calidad</SelectItem>
-                    <SelectItem value="8">Planeacion</SelectItem>
+                    <SelectItem value="8">Planeación</SelectItem>
                     <SelectItem value="9">Laboratorio</SelectItem>
                     <SelectItem value="10">Maquilas</SelectItem>
                     <SelectItem value="11">Operaciones</SelectItem>
-                    <SelectItem value="12">Auditorias</SelectItem>
+                    <SelectItem value="12">Auditorías</SelectItem>
                     <SelectItem value="13">Ventas</SelectItem>
-                    <SelectItem value="14">Almacen</SelectItem>
-                    <SelectItem value="15">Compras</SelectItem>
+                    <SelectItem value="14">Almacén</SelectItem>
+                    <SelectItem value="15">Producción</SelectItem>
+                    <SelectItem value="16">Compras</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -388,14 +483,15 @@ export function UserManagementTable() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="role" className="text-right">Rol</Label>
-                <Select>
+                <Select onValueChange={(value) => setSelectedRole(value)}>
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder="Seleccione el rol para el usuario" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="viewer">Vista</SelectItem>
+                    <SelectItem value="Administrador">Administrador</SelectItem>
+                    <SelectItem value="Estándar">Estándar</SelectItem>
+                    <SelectItem value="Editor">Editor</SelectItem>
+                    <SelectItem value="Lector">Lector</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -414,8 +510,11 @@ export function UserManagementTable() {
         <TableHeader>
           <TableRow>
           <TableHead>ID</TableHead>
-            <TableHead>Nombre</TableHead>
+            <TableHead>Nombre completo</TableHead>
             <TableHead>Correo</TableHead>
+            <TableHead>Departamento</TableHead>
+            <TableHead>Puesto</TableHead>
+            <TableHead>No. empleado</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -425,30 +524,98 @@ export function UserManagementTable() {
          
             <TableRow key={index}>
               <TableCell>{user.id}</TableCell>
-              <TableCell>{user.nombre}</TableCell>
+              <TableCell>{user.nombre + ' ' + user.apellidos}</TableCell>
               <TableCell>{user.correo}</TableCell>
-              <TableCell>
-                
-                <Select defaultValue={user.role} onValueChange={(value) => handleChangeRole(user.id, value)}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Editor">Editor</SelectItem>
-                    <SelectItem value="Viewer">vista</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableCell>
+              <TableCell>{user.nombre_dpto}</TableCell>
+              <TableCell>{user.puesto}</TableCell>
+              <TableCell>{user.numero_empleado}</TableCell>
+              <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
+                <Dialog>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => handleEditUser(user.id)} variant="outline" size="sm">Editar</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar usuario</DialogTitle>
+              <DialogDescription>Actualiza los detalles necesarios del usuario.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmitUpdate}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Nombre(s)</Label>
+                <Input id="name" className="col-span-3" value={selectedUser?.nombre || ''} onChange={(e) => setSelectedUser({...selectedUser, nombre: e.target.value})}/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="lastName" className="text-right">Apellidos</Label>
+                <Input id="lastName" className="col-span-3" value={selectedUser?.apellidos || ''} onChange={(e) => setSelectedUser({...selectedUser, apellidos: e.target.value})}/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">Correo electrónico</Label>
+                <Input id="email" type="email" className="col-span-3" value={selectedUser?.correo || ''} onChange={(e) => setSelectedUser({...selectedUser, correo: e.target.value})} readOnly={true} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
+                <Input id="employeeNumber" className="col-span-3" value={selectedUser?.numero_empleado || ''} onChange={(e) => setSelectedUser({...selectedUser, numero_empleado: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="position" className="text-right">Puesto</Label>
+                <Input id="position" className="col-span-3" value={selectedUser?.puesto || ''} onChange={(e) => setSelectedUser({...selectedUser, puesto: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="departamento" className="text-right">Departamento</Label>
+                <Select value={selectedUser?.departamento_id || ''} onValueChange={(value) => setSelectedUser({...selectedUser, departamento_id: value})}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el departamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">IT</SelectItem>
+                    <SelectItem value="2">Marketing</SelectItem>
+                    <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
+                    <SelectItem value="4">Contabilidad</SelectItem>
+                    <SelectItem value="5">Gente y Cultura</SelectItem>
+                    <SelectItem value="7">Calidad</SelectItem>
+                    <SelectItem value="8">Planeación</SelectItem>
+                    <SelectItem value="9">Laboratorio</SelectItem>
+                    <SelectItem value="10">Maquilas</SelectItem>
+                    <SelectItem value="11">Operaciones</SelectItem>
+                    <SelectItem value="12">Auditorías</SelectItem>
+                    <SelectItem value="13">Ventas</SelectItem>
+                    <SelectItem value="14">Almacén</SelectItem>
+                    <SelectItem value="15">Producción</SelectItem>
+                    <SelectItem value="16">Compras</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="role" className="text-right">Rol</Label>
+                <Select value={selectedUser?.rol || ''} onValueChange={(value) => setSelectedUser({...selectedUser, rol: value})}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el rol para el usuario" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Administrador">Administrador</SelectItem>
+                    <SelectItem value="Estándar">Estándar</SelectItem>
+                    <SelectItem value="Editor">Editor</SelectItem>
+                    <SelectItem value="Lector">Lector</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Actualizar usuario</Button>
+            </DialogFooter>
+            </form>
+          </DialogContent>
+                  </Dialog>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" onClick={() => openPermissionsDialog(user.id)}>Permisos</Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Editar permisos para: {user.nombre}</DialogTitle>
+                        <DialogTitle>Editar permisos para: {user.nombre + ' ' + user.apellidos}</DialogTitle>
                         <DialogDescription>Ajusta los permisos aquí.</DialogDescription>
                       </DialogHeader>
                       <div className="grid gap-4 py-4">
@@ -492,7 +659,7 @@ export function UserManagementTable() {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
-                  <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id)}>Eliminar</Button>
+                  <Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>
                 </div>
                
               </TableCell>
@@ -501,7 +668,7 @@ export function UserManagementTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="text-center">
-                  No se encontraron etiquetas
+                  No se encontraron usuarios
                 </TableCell>
               </TableRow>
             )}

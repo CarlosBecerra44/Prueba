@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { rol='estandar',name, email, password, confirmPassword,dpto  } = req.body;
+  const { name, lastName, email, employeeNumber, position, dpto, password, confirmPassword, role  } = req.body;
 
   // Validar que las contraseñas coincidan
   if (password !== confirmPassword) {
@@ -27,8 +27,8 @@ export default async function handler(req, res) {
 
     // Guardar el nuevo usuario en la base de datos
     const newUser = await pool.query(
-      'INSERT INTO usuarios (rol,nombre, correo, password, departamento_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [rol,name, email, hashedPassword,dpto]
+      'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [role, name, employeeNumber, dpto, email, hashedPassword, lastName, position]
     );
 console.log({message: 'usuario registrado'});
 
