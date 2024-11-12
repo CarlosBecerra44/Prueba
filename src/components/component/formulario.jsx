@@ -8,11 +8,17 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle, X } from "lucide-react"
 import { maxWidth } from "@mui/system";
+import { getSession } from 'next-auth/react';
+
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
 
 export function EventPlanningForm() {
+  const [idUser, setID] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [departamento, setDepartamento] = useState('');
+  const {data: session,status}=useSession ();
   const [formData, setFormData] = useState({
     evento: "",
     marca: "",
@@ -244,7 +250,10 @@ export function EventPlanningForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Datos del formulario:", formData);
-
+    if (!session) {
+      console.log("No se ha iniciado sesión");
+      return;
+    }
     try {
       const response = await fetch('/api/guardarFormulario', {
         method: 'POST',
@@ -252,7 +261,7 @@ export function EventPlanningForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
-      });
+      });      
       if (response.ok) {
         Swal.fire({
           title: 'Subido',
@@ -269,9 +278,58 @@ export function EventPlanningForm() {
     } catch (error) {
       console.error('Error:', error);
     }
-  };
 
-  const {data: session,status}=useSession ();
+    try {
+      const response2 = await fetch('/api/EnvioEvento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData2: {
+            tipo: 'Alerta estrategia',
+            descripcion: 'estrategia',
+            id: idUser,
+            dpto: departamento
+          },
+        }),
+      });
+    
+      if (response2.ok) {
+        window.location.href = "/marketing/estrategias";
+      } else {
+        Swal.fire('Error', 'Error al subir formulario', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+    
+
+  };
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+          setDepartamento(userData.departamento.nombre);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
+
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">

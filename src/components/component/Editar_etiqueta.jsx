@@ -180,21 +180,7 @@ export function EditarEtiqueta() {
 
    
 
-  /*useEffect (()=>{
-    
-    const fetchPermissions = async () => {
-      try {
-        const response = await axios.get(`/api/permiso`, { params: { id: userId } });
-        console.log(response.data)
-        setPermisos(response.data);
-      } catch (error) {
-        console.error('Error al obtener permisos:', error);
-      }
-    };
 
-    fetchPermissions();
-  
-  }, [userId]);*/
 
   useEffect(() => {
     const fetchPermissions = async () => {
