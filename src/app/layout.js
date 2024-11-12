@@ -51,6 +51,7 @@ export default function RootLayout({ children}) {
 
   {/* Contenido Principal */}
   <div style={{ marginLeft: '250px', width: 'calc(100% - 250px)', padding: '1rem', overflowX: 'auto', boxSizing: 'border-box' }}>
+  {showNavbar && showNavbar3 && showNavbar2 && (
   <header
         style={{
           display: "flex",
@@ -58,11 +59,11 @@ export default function RootLayout({ children}) {
           alignItems: "center",
           height: "60px", // Altura fija para el encabezado
           padding: "0 20px", // Espaciado interno
-          backgroundColor: "rgb(248 249 250 / 0%);", // Fondo claro
+          backgroundColor: "rgb(248 249 250 / 0%)", // Fondo claro
         }}
       >
         <NotificationBell />
-      </header>
+      </header> )}
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {children}
     </div>
