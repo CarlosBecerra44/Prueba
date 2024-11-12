@@ -1,22 +1,83 @@
-// components/NotificationBell.js
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "font-awesome/css/font-awesome.min.css";
+import { getSession } from 'next-auth/react';
 
 export function NotificationBell() {
+  const [notificaciones, setNotificaciones] = useState([]);
   const [hasNotifications, setHasNotifications] = useState(false);
+  const [idUser, setID] = useState('');
 
-  const triggerNotification = () => {
-    toast.success("Tienes una nueva notificación");
-    setHasNotifications(true);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    if (!idUser) return; // Si no hay ID, no ejecuta la consulta
+
+    const fetchNotificaciones = async () => {
+      try {
+        const response = await fetch(`/api/notificaciones?id=${idUser}`);
+        const data = await response.json();
+        setNotificaciones(data); // Almacena las notificaciones
+        setHasNotifications(data.length > 0); // Cambia el estado si hay notificaciones
+      } catch (error) {
+        console.error("Error al cargar notificaciones:", error);
+      }
+    };
+
+    fetchNotificaciones();
+  }, [idUser]); // Se ejecuta solo cuando cambia el ID del usuario
+
+  /*useEffect(() => {
+    const fetchNotificaciones = async () => {
+      try {
+        const response = await fetch(`/api/notificaciones?id=${idUser}`);
+        const data = await response.json();
+        setNotificaciones(data);
+        setHasNotifications(data.length > 0);
+      } catch (error) {
+        console.error("Error al cargar notificaciones:", error);
+      }
+    };
+
+    fetchNotificaciones();
+  }, []);*/
+
+  const mostrarNotificaciones = () => {
+    if (notificaciones.length > 0) {
+      notificaciones.forEach((notificacion) => {
+        toast.info(notificacion.tipo);
+      });
+    } else {
+      toast.info("No tienes nuevas notificaciones");
+    }
   };
 
   return (
     <div style={{ position: "relative" }}>
       <button
-        onClick={triggerNotification}
+        onClick={mostrarNotificaciones}
         style={{
           background: "transparent",
           border: "none",
@@ -30,8 +91,8 @@ export function NotificationBell() {
           <div
             style={{
               position: "absolute",
-              top: "-2px",
-              right: "-2px",
+              top: "-5px",
+              right: "-5px",
               background: "red",
               color: "white",
               borderRadius: "50%",
@@ -43,11 +104,11 @@ export function NotificationBell() {
               alignItems: "center",
             }}
           >
-            1
+            {notificaciones.length}
           </div>
         )}
       </button>
-      <ToastContainer position="top-left" autoClose={5000} />
+      <ToastContainer position="top-right" autoClose={5000} />
     </div>
   );
 }
