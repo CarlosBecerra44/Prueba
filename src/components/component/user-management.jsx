@@ -512,9 +512,12 @@ export function UserManagementTable() {
           <TableHead>ID</TableHead>
             <TableHead>Nombre completo</TableHead>
             <TableHead>Correo</TableHead>
+            <TableHead>No. empleado</TableHead>
             <TableHead>Departamento</TableHead>
             <TableHead>Puesto</TableHead>
-            <TableHead>No. empleado</TableHead>
+            <TableHead>Teléfono</TableHead>
+            <TableHead>Fecha de ingreso</TableHead>
+            <TableHead>Jefe directo</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -525,10 +528,21 @@ export function UserManagementTable() {
             <TableRow key={index}>
               <TableCell>{user.id}</TableCell>
               <TableCell>{user.nombre + ' ' + user.apellidos}</TableCell>
-              <TableCell>{user.correo}</TableCell>
-              <TableCell>{user.nombre_dpto}</TableCell>
-              <TableCell>{user.puesto}</TableCell>
-              <TableCell>{user.numero_empleado}</TableCell>
+              <TableCell>{user.correo || "Usuario sin correo"}</TableCell>
+              <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
+              <TableCell>{user.nombre_dpto || "Sin datos"}</TableCell>
+              <TableCell>{user.puesto || "Sin datos"}</TableCell>
+              <TableCell>{user.telefono || "Sin datos"}</TableCell>
+              <TableCell>
+                {user.fecha_ingreso
+                  ? new Date(user.fecha_ingreso).toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })
+                  : "Sin datos"}
+              </TableCell>
+              <TableCell>{user.jefe_directo || "Sin datos"}</TableCell>
               <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">

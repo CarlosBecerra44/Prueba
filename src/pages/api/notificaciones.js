@@ -5,14 +5,14 @@ export default async function handler(req, res) {
 
     const { id } = req.query;
 
-    console.log("ID USUARIO: " + id)
-
     try {
-      
-
-      const result = await pool.query('SELECT * FROM registroeventos WHERE id_usuario = $1 ORDER BY fecha DESC', [id]);
-
-      // Si usas PostgreSQL (pg)
+      const result = await pool.query(
+        `SELECT ne.id, ne.descripcion, nu.leido, ne.fecha, ne.tipo, nu.id AS id_notificacion
+         FROM notificacion nu
+         JOIN registroeventos ne ON nu.id_evento = ne.id
+         WHERE nu.id_usuario = $1 AND nu.leido = false
+         ORDER BY ne.fecha DESC`,
+          [id]);
       const notificaciones = result.rows || result;
 
       res.status(200).json(notificaciones);

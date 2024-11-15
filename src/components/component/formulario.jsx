@@ -287,8 +287,8 @@ export function EventPlanningForm() {
         },
         body: JSON.stringify({
           formData2: {
-            tipo: 'Alerta estrategia',
-            descripcion: 'estrategia',
+            tipo: 'Alerta de estrategia',
+            descripcion: `<strong>${nombre}</strong> ha subido una nueva estrategia con el nombre: <strong>${formData.evento}</strong>`,
             id: idUser,
             dpto: departamento
           },
@@ -296,15 +296,13 @@ export function EventPlanningForm() {
       });
     
       if (response2.ok) {
-        window.location.href = "/marketing/estrategias";
+        console.log("Notificacion enviada")
       } else {
         Swal.fire('Error', 'Error al subir formulario', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
     }
-    
-
   };
   
   useEffect(() => {
@@ -321,7 +319,8 @@ export function EventPlanningForm() {
         const userData = await response.json();
         if (userData.success) {
           setID(userData.user.id);
-          setDepartamento(userData.departamento.nombre);
+          setDepartamento(userData.user.departamento_id);
+          setNombre(userData.user.nombre);
         } else {
           alert('Error al obtener los datos del usuario');
         }

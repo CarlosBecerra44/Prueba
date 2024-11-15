@@ -10,9 +10,11 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { useSession} from "next-auth/react";
 import styles from '../../../public/CSS/spinner.css';
 import { getSession } from 'next-auth/react';
+import Swal from 'sweetalert2';
 
 export function Perfil() {
   const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
 
@@ -31,6 +33,7 @@ export function Perfil() {
         if (userData.success) {
           setNombre(userData.user.nombre);
           setCorreo(userData.user.correo);
+          setApellidos(userData.user.apellidos);
           // La contraseña generalmente no se prellena por razones de seguridad
         } else {
           alert('Error al obtener los datos del usuario');
@@ -48,15 +51,22 @@ export function Perfil() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nombre, correo, password }),
+      body: JSON.stringify({ nombre, apellidos, correo, password }),
     });
 
     const result = await response.json();
     if (result.success) {
-      alert('Usuario actualizado correctamente');
-      window.location.href = '/perfil';
+      Swal.fire({
+        title: 'Editado',
+        text: 'Se han editado los datos correctamente',
+        icon: 'success',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      }).then(() => {
+        window.location.href = "/perfil";
+      });
     } else {
-      alert('Error: ' + result.message);
+      Swal.fire('Error', 'Error al subir formulario', 'error');
     }
   };
 
@@ -99,7 +109,7 @@ export function Perfil() {
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-semibold">{nombre}</h2>
+              <h2 className="text-xl font-semibold">{nombre + ' ' + apellidos}</h2>
               <p className="text-muted-foreground">{correo}</p>
             </div>
           </div>
@@ -139,6 +149,15 @@ export function Perfil() {
               onChange={(e) => setNombre(e.target.value)} />
           </div>
           <div>
+            <Label htmlFor="apellidos">Apellidos</Label>
+            <Input
+              id="apellidos"
+              type="text"
+              className="w-full mt-1"
+              value={apellidos}
+              onChange={(e) => setApellidos(e.target.value)} />
+          </div>
+          <div>
             <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
@@ -149,7 +168,7 @@ export function Perfil() {
               onChange={(e) => setPassword(e.target.value)} />
             <p className="text-sm text-muted-foreground">Cambia tu contraseña.</p>
           </div>
-          <div>
+          <div hidden>
             <Label htmlFor="notification">Configurar notificaciones</Label>
             <Select id="notification" className="w-full mt-1">
               <SelectTrigger>

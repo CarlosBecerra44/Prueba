@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 
 export function EditarEstrategia() {
   const searchParams = useSearchParams();
@@ -47,6 +48,34 @@ export function EditarEstrategia() {
     piezasDigitales: [],
     dropdownValue: ""
   })
+
+  const [idUser, setID] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [departamento, setDepartamento] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setNombre(userData.user.nombre);
+          setID(userData.user.id);
+          setDepartamento(userData.user.departamento_id);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const [totals, setTotals] = useState({ presupuestado: 0, real: 0 })
   const [roi, setRoi] = useState(0)
@@ -287,6 +316,31 @@ export function EditarEstrategia() {
         });
       } else {
         Swal.fire('Error', 'Error al editar formulario', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+    try {
+      const response2 = await fetch('/api/EnvioEvento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData2: {
+            tipo: 'Alerta de edición de estrategia',
+            descripcion: `<strong>${nombre}</strong> ha editado la estrategia con el siguiente id: <strong>${id}</strong>`,
+            id: idUser,
+            dpto: departamento
+          },
+        }),
+      });
+    
+      if (response2.ok) {
+        console.log("Notificacion enviada")
+      } else {
+        Swal.fire('Error', 'Error al subir formulario', 'error');
       }
     } catch (error) {
       console.error('Error:', error);

@@ -3,13 +3,13 @@ import pool from '@/lib/db'; // Tu conexión a la base de datos
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { nombre, correo, password } = req.body;
+    const { nombre, apellidos, correo, password } = req.body;
 
     try {
       // Encripta la nueva contraseña antes de actualizar
       if(password === "") {
-        const query = 'UPDATE usuarios SET nombre = $1 WHERE correo = $2';
-        const values = [nombre, correo];
+        const query = 'UPDATE usuarios SET nombre = $1, apellidos = $2 WHERE correo = $3';
+        const values = [nombre, apellidos, correo];
         await pool.query(query, values);
 
         return res.status(200).json({ success: true, message: 'Usuario actualizado correctamente' });
@@ -17,8 +17,8 @@ export default async function handler(req, res) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Realiza el update en la base de datos
-        const query = 'UPDATE usuarios SET nombre = $1, password = $2 WHERE correo = $3';
-        const values = [nombre, hashedPassword, correo];
+        const query = 'UPDATE usuarios SET nombre = $1, apellidos = $2, password = $3 WHERE correo = $4';
+        const values = [nombre, apellidos, hashedPassword, correo];
         await pool.query(query, values);
 
         return res.status(200).json({ success: true, message: 'Usuario actualizado correctamente' });

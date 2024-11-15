@@ -34,6 +34,7 @@ export function EditarEtiqueta() {
   const [nombre, setNombre] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
+  const [departamento, setDepartamento] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,6 +52,7 @@ export function EditarEtiqueta() {
           setNombre(userData.user.nombre);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
+          setDepartamento(userData.user.departamento_id);
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -341,6 +343,31 @@ export function EditarEtiqueta() {
       }
     } catch (error) {
       console.error('Error al actualizar etiqueta:', error);
+    }
+
+    try {
+      const response2 = await fetch('/api/EnvioEvento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData2: {
+            tipo: 'Alerta de edición de etiqueta',
+            descripcion: `<strong>${nombre}</strong> ha editado la etiqueta con el siguiente id: <strong>${id}</strong>`,
+            id: idUser,
+            dpto: departamento
+          },
+        }),
+      });
+    
+      if (response2.ok) {
+        console.log("Notificacion enviada")
+      } else {
+        Swal.fire('Error', 'Error al subir formulario', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 

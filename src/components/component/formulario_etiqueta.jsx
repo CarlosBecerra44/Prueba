@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,12 +11,40 @@ import { Textarea } from "@/components/ui/textarea"
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
+import { getSession } from 'next-auth/react';
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
     tipo: "",
    });
   const [nowPdfPreview, setNowPdfPreview] = useState(null);
+  const [idUser, setID] = useState('');
+  const [departamento, setDepartamento] = useState('');
+  const [nombre, setNombre] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+          setDepartamento(userData.user.departamento_id);
+          setNombre(userData.user.nombre);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const handleInputChange = (value,name) => {
     setFormulario((prevData) => ({
@@ -185,6 +213,31 @@ export function DocumentSigningForm() {
         console.error(error);
         alert(error);
      }
+    }
+
+    try {
+      const response2 = await fetch('/api/EnvioEvento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData2: {
+            tipo: 'Alerta de etiqueta',
+            descripcion: `<strong>${nombre}</strong> ha subido una nueva etiqueta de tipo: <strong>${formulario.tipo}</strong>`,
+            id: idUser,
+            dpto: departamento
+          },
+        }),
+      });
+    
+      if (response2.ok) {
+        console.log("Notificacion enviada")
+      } else {
+        Swal.fire('Error', 'Error al subir formulario', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
     

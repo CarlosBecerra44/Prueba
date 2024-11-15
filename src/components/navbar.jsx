@@ -14,6 +14,7 @@ import "../../public/CSS/navbar.css"
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
@@ -33,6 +34,7 @@ export function Navbarv1() {
         const userData = await response.json();
         if (userData.success) {
           setNombre(userData.user.nombre);
+          setApellidos(userData.user.apellidos);
           setDepartamento(userData.departamento.nombre);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
@@ -69,7 +71,7 @@ export function Navbarv1() {
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: 15, name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 16, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
   ];
 
@@ -83,7 +85,7 @@ export function Navbarv1() {
         <div style={{ color: "white" }} className="flex items-center">
           <img src="/icon_user.png" alt="Logo" className="h-8 w-8" />
           <a href="/perfil">
-            <span className="ml-2 font-medium">{nombre}</span>
+            <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
           </a>
         </div>
       </div>

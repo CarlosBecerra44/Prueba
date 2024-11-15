@@ -10,23 +10,21 @@ export default async function handler(req, res) {
   const { formData2 } = req.body;
 
   try {
-      // 1. Guarda el evento en la base de datos
       const result = await pool.query(
-        'INSERT INTO registroeventos (tipo, descripcion, id_usuario) VALUES ($1, $2, $3) RETURNING id',
-        [formData2.tipo, formData2.descripcion, formData2.id]
+        'INSERT INTO registroeventos (tipo, descripcion, id_usuario, id_departamento) VALUES ($1, $2, $3, $4) RETURNING id',
+        [formData2.tipo, formData2.descripcion, formData2.id, formData2.dpto]
       );
   
- // 2. Obtén el id del evento recién creado
  const idEvento = result.rows[0].id;
 
- // 3. Inserta en la tabla notificación utilizando el id del evento, el departamento y el id del usuario
  await pool.query(
-   'INSERT INTO notificacion (id_evento, departamento, id_usuario) VALUES ($1, $2, $3)',
-   [idEvento, formData2.dpto, formData2.id]
- );
+  `INSERT INTO notificacion (id_evento, id_usuario)
+   SELECT $1, id
+   FROM usuarios
+   WHERE departamento_id = $2 AND id != $3`,
+  [idEvento, formData2.dpto, formData2.id]
+);
    
-    
-
     res.status(201).json({ message: 'Evento guardado correctamente' });
   } catch (error) {
     console.error('Error guardando el evento:', error);
