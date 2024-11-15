@@ -71,8 +71,7 @@ export function Navbarv1() {
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: 15, name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
 
   const filteredCategories = categories.filter((category) =>
