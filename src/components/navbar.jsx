@@ -19,6 +19,16 @@ export function Navbarv1() {
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [openMenus, setOpenMenus] = useState([]);
+  const [openSections, setOpenSections] = useState({});
+
+// Función para abrir/cerrar secciones principales y submenús
+const toggleSection = (sectionId) => {
+  setOpenSections((prev) => ({
+    ...prev,
+    [sectionId]: !prev[sectionId], // Cambiar el estado de la sección actual
+  }));
+};
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -47,8 +57,14 @@ export function Navbarv1() {
   }, []);
 
   const { data: session, status } = useSession();
-  const toggleSection = (section) => {
-    setOpenSection(openSection === section ? null : section);
+  
+
+  const toggleMenu = (menuId) => {
+    setOpenMenus((prevOpenMenus) =>
+      prevOpenMenus.includes(menuId)
+        ? prevOpenMenus.filter((id) => id !== menuId) // Cerrar menú
+        : [...prevOpenMenus, menuId] // Abrir menú
+    );
   };
 
   if (!session || !session.user) {
@@ -56,13 +72,38 @@ export function Navbarv1() {
   }
 
   const categories = [
-    { id: 1, name: "Principal", href: "#"},
+    { id: "principal", name: "Principal", href: "#"},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 6, name: "Departamentos", href: "#"},
-    { id: 7, name: "Gente & Cultura", href: "#", icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" /> },
+    { id: "departamentos", name: "Departamentos", href: "#"},
+    {
+      id: 7,
+      name: "Gente & Cultura",
+      href: "#",
+      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />,
+      subMenu: [
+        {
+          id: 1,
+          name: "Papeletas",
+          href: "#",
+          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
+          subMenu: [
+            { id: 101, name: "Faltas", href: "/gente_y_cultura/faltas", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 102, name: "Tiempo por tiempo", href: "/gente_y_cultura/permisos/por_horas", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 103, name: "Permiso", href: "/gente_y_cultura/permisos/por_horas", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 104, name: "Suspensión", href: "/gente_y_cultura/faltas", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
+          ]
+        },
+        {
+          id: 2,
+          name: "Vacaciones",
+          href: "/gente_y_cultura",
+          icon: <VacacionesIcon className="h-6 w-6 text-gray-400" />
+        }
+      ]
+    },
     { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
@@ -70,7 +111,7 @@ export function Navbarv1() {
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 15, name: "Cursos", href: "#"},
+    { id: "cursos", name: "Cursos", href: "#"},
     { id: 16, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
   ];
@@ -103,50 +144,88 @@ export function Navbarv1() {
           />
         </div>
         
-        <nav>
-          {filteredCategories.map((category) => (
-            <div key={category.id} className="group">
-              {category.id === 1 ? (
-                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("principal")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
-                  Principal
-                </div>
-              ) : category.id === 6 ? (
-                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("departamentos")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
-                  Departamentos
-                </div>
-              ) : category.id === 15 ? (
-                <div className="text-gray-400 cursor-pointer flex items-center justify-between py-2" onClick={() => toggleSection("cursos")} style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}>
-                  Cursos
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700" onClick={() => toggleSection(category.id)} style={{ color: "white" }}>
-                    <div className="flex items-center">
-                      {category.icon}
-                      <Link href={category.href} className="ml-2">
-                        {category.name}
-                      </Link>
-                    </div>
-                    {category.subMenu && <span className="text-gray-400">{openSection === category.id ? "-" : "+"}</span>}
-                  </div>
-  
-                  {openSection === category.id && category.subMenu && (
-                    <div className="pl-8" style={{ color: "white" }}>
-                      {category.subMenu.map((subItem) => (
-                        <Link key={subItem.name} href={subItem.href} className="block py-2 px-4 hover:bg-gray-600 flex items-center">
-                          <div style={{ marginRight: "10px" }}>
-                            {subItem.icon}
-                          </div>
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
+         <nav>
+    {filteredCategories.map((category) => (
+      <div key={category.id} className="group">
+        {/* Secciones principales con IDs específicos */}
+        {["principal", "departamentos", "cursos"].includes(category.id) ? (
+          <div
+            className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
+            onClick={() => toggleSection(category.id)}
+            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+          >
+            {category.name}
+          </div>
+        ) : (
+          <div>
+            {/* Menú principal */}
+            <div
+              className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700"
+              onClick={() => toggleSection(category.id)}
+              style={{ color: "white" }}
+            >
+              <div className="flex items-center">
+                {category.icon}
+                <Link href={category.href} className="ml-2">
+                  {category.name}
+                </Link>
+              </div>
+              {category.subMenu && (
+                <span className="text-gray-400">
+                  {openSections[category.id] ? "-" : "+"}
+                </span>
               )}
             </div>
-          ))}
-        </nav>
+
+            {/* Submenús dinámicos */}
+            {openSections[category.id] && category.subMenu && (
+              <div className="pl-8">
+                {category.subMenu.map((subItem) => (
+                  <div key={subItem.id}>
+                    <div
+                      className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-600"
+                      onClick={() => toggleSection(subItem.id)}
+                      style={{ color: "white" }}
+                    >
+                      <div className="flex items-center">
+                        {subItem.icon}
+                        <Link href={subItem.href} className="ml-2">
+                          {subItem.name}
+                        </Link>
+                      </div>
+                      {subItem.subMenu && (
+                        <span className="text-gray-400">
+                          {openSections[subItem.id] ? "-" : "+"}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Segundo nivel de submenús */}
+                    {openSections[subItem.id] && subItem.subMenu && (
+                      <div className="pl-8">
+                        {subItem.subMenu.map((nestedItem) => (
+                          <Link
+                            key={nestedItem.id}
+                            href={nestedItem.href}
+                            className="block py-2 px-4 hover:bg-gray-500 flex items-center"
+                            style={{color: "white"}}
+                          >
+                            <div style={{ marginRight: "10px" }}>{nestedItem.icon}</div>
+                            {nestedItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    ))}
+  </nav>
+
       </div>
   
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
@@ -407,6 +486,127 @@ function UsuariosIcon(props) {
   <path d="M3 21v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2H3z" />
   <circle cx="16" cy="10" r="3" />
   <path d="M12 21v-1.5a4.5 4.5 0 0 1 4.5-4.5h1a4.5 4.5 0 0 1 4.5 4.5V21H12z" />
+</svg>
+  )
+}
+
+function PermisosIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke-width="1.5"
+  stroke="currentColor"
+  class="h-6 w-6 text-gray-400"
+>
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M7 2h8l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z"
+  />
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M15 3v4h4M9 13l2 2 4-4"
+  />
+</svg>
+  )
+}
+
+function VacacionesIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="h-6 w-6 text-gray-400"
+>
+  <circle cx="18" cy="6" r="3" />
+  <line x1="18" y1="1" x2="18" y2="3" />
+  <line x1="18" y1="9" x2="18" y2="11" />
+  <line x1="15" y1="6" x2="13" y2="6" />
+  <line x1="21" y1="6" x2="23" y2="6" />
+  <line x1="16.5" y1="4.5" x2="15.5" y2="3.5" />
+  <line x1="16.5" y1="7.5" x2="15.5" y2="8.5" />
+  <line x1="19.5" y1="4.5" x2="20.5" y2="3.5" />
+  <line x1="19.5" y1="7.5" x2="20.5" y2="8.5" />
+  <path d="M6 10C9 6 15 6 18 10H6z" />
+  <line x1="12" y1="10" x2="12" y2="18" />
+  <path d="M2 20h20" />
+  <path d="M6 18a2 2 0 1 1 4 0" />
+</svg>
+  )
+}
+
+function FaltasIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="h-6 w-6 text-gray-400"
+>
+  <rect x="3" y="4" width="18" height="16" rx="2" ry="2" />
+  <line x1="3" y1="8" x2="21" y2="8" />
+  <line x1="8" y1="12" x2="16" y2="16" />
+  <line x1="16" y1="12" x2="8" y2="16" />
+</svg>
+  )
+}
+
+function TiempoIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="h-6 w-6 text-gray-400"
+>
+  <circle cx="12" cy="12" r="10" />
+  <line x1="12" y1="12" x2="12" y2="8" />
+  <line x1="12" y1="12" x2="16" y2="12" />
+</svg>
+  )
+}
+
+function PermisosSubIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="h-6 w-6 text-gray-400"
+>
+  <rect x="4" y="3" width="16" height="18" rx="2" ry="2" />
+  <line x1="8" y1="7" x2="16" y2="7" />
+  <path d="M8 14l2 2 4-4" />
+</svg>
+  )
+}
+
+function SuspensionesIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10" />
+  <line x1="8" y1="8" x2="16" y2="16" />
+  <line x1="16" y1="8" x2="8" y2="16" />
 </svg>
   )
 }

@@ -2,12 +2,12 @@ import pool from "@/lib/db";
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol } = req.body;
+    const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo } = req.body;
 
     try {
       const result = await pool.query(
-        "UPDATE usuarios SET nombre = $1, apellidos = $2, correo = $3, numero_empleado = $4, puesto = $5, departamento_id = $6, rol = $7 WHERE id = $8",
-        [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, id]
+        "UPDATE usuarios SET nombre = $1, apellidos = $2, correo = $3, numero_empleado = $4, puesto = $5, departamento_id = $6, rol = $7, telefono = $8, fecha_ingreso = $9, jefe_directo = $10 WHERE id = $11",
+        [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, id]
       );
 
       if (result.rowCount > 0) {
