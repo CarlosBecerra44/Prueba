@@ -82,6 +82,9 @@ export function UserManagementTable() {
   const [email, setEmail] = useState('');
   const [employeeNumber, setEmployeeNumber] = useState('');
   const [position, setPosition] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [entryDate, setEntryDate] = useState('');
+  const [directBoss, setDirectBoss] = useState('');
   const [selectedPermission, setSelectedPermission] = useState("")
   const [selectedPermission1, setSelectedPermission1] = useState("")
   const [password, setPassword] = useState('');
@@ -96,10 +99,12 @@ export function UserManagementTable() {
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState("todos")
   const [error, setError] = useState('');
-  const [dpto, setSelectedDepartamento] = useState('');
+  //const [dpto, setSelectedDepartamento] = useState('');
   const [role, setSelectedRole] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
+  const [filteredUsersDpto, setFilteredUsers] = useState([]);
 
   const filteredUsers = users
     .filter(user => 
@@ -218,6 +223,34 @@ export function UserManagementTable() {
     }
     
   }, [selectedUserId]);
+
+  useEffect(() => {
+    if (!users || users.length === 0) {
+      console.log("No hay usuarios disponibles para filtrar.");
+      return;
+    }
+  
+    if (!selectedDepartamento) {
+      console.log("Ningún departamento seleccionado, usuarios filtrados vacíos.");
+      setFilteredUsers([]);
+      return;
+    }
+  
+    const filtered = users.filter(
+      (usuario) => usuario.departamento_id === selectedDepartamento
+    );
+  
+    console.log("Usuarios filtrados antes de actualizar el estado:", filtered);
+    setFilteredUsers(filtered);
+  }, [selectedDepartamento, users]);
+
+  useEffect(() => {
+    if (selectedUser?.departamento_id) {
+      setFilteredUsers(users.filter(user => user.departamento_id === selectedUser.departamento_id));
+    } else {
+      setFilteredUsers([]);
+    }
+  }, [selectedUser?.departamento_id, users]);
   
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -250,6 +283,12 @@ export function UserManagementTable() {
   const handleEditUser = (userId) => {
     const userToEdit = users.find(user => user.id === userId); // Buscar el usuario en el estado
     setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
+    console.log(userToEdit.fecha_ingreso)
+  };
+
+  const formatDate = (isoDate) => {
+    if (!isoDate) return '';
+    return isoDate.split('T')[0]; // Extraer "YYYY-MM-DD"
   };
   
   const handleSubmit = async (e) => {
@@ -267,7 +306,7 @@ export function UserManagementTable() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, lastName, email, employeeNumber, position, dpto, password, confirmPassword, role }),
+        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss }),
       });
 
       const data = await res.json();
@@ -276,7 +315,21 @@ export function UserManagementTable() {
         setError(data.message);
         return;
       }
-      window.location.href = "/usuario";
+
+      if (res.ok) {
+        Swal.fire({
+          title: 'Creado',
+          text: 'El usuario ha sido creado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/usuario";
+        });
+  
+      } else {
+        Swal.fire('Error', 'Error al crear al usuario', 'error');
+      }
     } catch (err) {
       console.error('Error en el registro:', err);
       setError('Hubo un problema con el registro. Por favor, intenta nuevamente.');
@@ -300,6 +353,9 @@ export function UserManagementTable() {
           correo: selectedUser.correo,  
           numero_empleado: selectedUser.numero_empleado, 
           puesto: selectedUser.puesto,  
+          telefono: selectedUser.telefono,  
+          fecha_ingreso: selectedUser.fecha_ingreso,  
+          jefe_directo: selectedUser.jefe_directo,  
           departamento_id: selectedUser.departamento_id,  
           rol: selectedUser.rol,
         }),
@@ -311,9 +367,21 @@ export function UserManagementTable() {
         setError(data.message || 'Hubo un problema al actualizar el usuario');
         return;
       }
+
+      if (res.ok) {
+        Swal.fire({
+          title: 'Actualizado',
+          text: 'Los datos del usuario se han actualizado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/usuario";
+        });
   
-      window.location.href = '/usuario';  // O la página donde deseas redirigir después de actualizar
-  
+      } else {
+        Swal.fire('Error', 'Error al actualizar los datos del usuario', 'error');
+      }
     } catch (err) {
       console.error('Error en la actualización:', err);
       setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
@@ -429,11 +497,11 @@ export function UserManagementTable() {
             <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre(s)</Label>
+                <Label htmlFor="name" className="text-right">Nombre(s)*</Label>
                 <Input id="name" className="col-span-3" required value={name} onChange={(e) => setName(e.target.value)}/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lastName" className="text-right">Apellidos</Label>
+                <Label htmlFor="lastName" className="text-right">Apellidos*</Label>
                 <Input id="lastName" className="col-span-3" required value={lastName} onChange={(e) => setLastName(e.target.value)}/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -441,16 +509,32 @@ export function UserManagementTable() {
                 <Input id="email" type="email" className="col-span-3" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
-                <Input id="employeeNumber" className="col-span-3" required value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} />
+                <Label htmlFor="employeeNumber" className="text-right">No. empleado*</Label>
+                <Input id="employeeNumber" type="number" className="col-span-3" required value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="position" className="text-right">Puesto</Label>
+                <Label htmlFor="position" className="text-right">Puesto*</Label>
                 <Input id="position" className="col-span-3" required value={position} onChange={(e) => setPosition(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="departamento" className="text-right">Departamento</Label>
-                <Select onValueChange={(value) => setSelectedDepartamento(value)}>
+                <Label htmlFor="phoneNumber" className="text-right">Teléfono</Label>
+                <Input id="phoneNumber" type="number" className="col-span-3" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="entryDate" className="text-right">Fecha de ingreso*</Label>
+                <Input id="entryDate" type="date" className="col-span-3" required value={entryDate} onChange={(e) => setEntryDate(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="departamento" className="text-right">
+                  Departamento
+                </Label>
+                <Select
+                  value={selectedDepartamento}
+                  onValueChange={(value) => {
+                    setSelectedDepartamento(value); // Actualizar departamento seleccionado
+                    setDirectBoss(""); // Reiniciar el jefe directo
+                  }}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Seleccione el departamento" />
                   </SelectTrigger>
@@ -474,11 +558,36 @@ export function UserManagementTable() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">Contraseña</Label>
+                <Label htmlFor="directBoss" className="text-right">
+                  Jefe Directo
+                </Label>
+                <Select
+                  value={directBoss}
+                  onValueChange={(value) => setDirectBoss(value)}
+                  disabled={filteredUsersDpto.length === 0} // Deshabilitar si no hay usuarios disponibles
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el jefe directo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredUsersDpto.length > 0 ? (
+                      filteredUsersDpto.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre + " " + user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay usuarios disponibles en este departamento</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">Contraseña*</Label>
                 <Input id="password" type="password" className="col-span-3" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="confirmPassword" className="text-right"> Confirmar Contraseña</Label>
+                <Label htmlFor="confirmPassword" className="text-right"> Confirmar Contraseña*</Label>
                 <Input id="confirmPassword" type="password" className="col-span-3" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -542,7 +651,16 @@ export function UserManagementTable() {
                     })
                   : "Sin datos"}
               </TableCell>
-              <TableCell>{user.jefe_directo || "Sin datos"}</TableCell>
+              <TableCell>
+                {
+                  user.jefe_directo
+                    ? (() => {
+                        const jefe = currentUsers.find(u => u.id === user.jefe_directo);
+                        return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+                      })()
+                    : "Sin datos"
+                }
+              </TableCell>
               <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -571,15 +689,32 @@ export function UserManagementTable() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
-                <Input id="employeeNumber" className="col-span-3" value={selectedUser?.numero_empleado || ''} onChange={(e) => setSelectedUser({...selectedUser, numero_empleado: e.target.value})} />
+                <Input id="employeeNumber" type="number" className="col-span-3" value={selectedUser?.numero_empleado || ''} onChange={(e) => setSelectedUser({...selectedUser, numero_empleado: e.target.value})} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="position" className="text-right">Puesto</Label>
                 <Input id="position" className="col-span-3" value={selectedUser?.puesto || ''} onChange={(e) => setSelectedUser({...selectedUser, puesto: e.target.value})} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phoneNumber" className="text-right">Teléfono</Label>
+                <Input id="phoneNumber" type="number" className="col-span-3" value={selectedUser?.telefono || ''} onChange={(e) => setSelectedUser({...selectedUser, telefono: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="entryDate" className="text-right">Fecha de ingreso</Label>
+                <Input id="entryDate" type="date" className="col-span-3" value={formatDate(selectedUser?.fecha_ingreso)} onChange={(e) => setSelectedUser({...selectedUser, fecha_ingreso: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="departamento" className="text-right">Departamento</Label>
-                <Select value={selectedUser?.departamento_id || ''} onValueChange={(value) => setSelectedUser({...selectedUser, departamento_id: value})}>
+                <Select
+                  value={selectedUser?.departamento_id || ''} // Usar el valor del departamento del usuario seleccionado
+                  onValueChange={(value) => {
+                    setSelectedUser((prevUser) => ({
+                      ...prevUser,
+                      departamento_id: value, // Actualizar el departamento del usuario seleccionado
+                      jefe_directo: "", // Reiniciar el jefe directo
+                    }));
+                  }}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Seleccione el departamento" />
                   </SelectTrigger>
@@ -599,6 +734,37 @@ export function UserManagementTable() {
                     <SelectItem value="14">Almacén</SelectItem>
                     <SelectItem value="15">Producción</SelectItem>
                     <SelectItem value="16">Compras</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="directBoss" className="text-right">
+                  Jefe Directo
+                </Label>
+                <Select
+                  value={selectedUser?.jefe_directo || ''} // Usar el jefe directo del usuario seleccionado
+                  onValueChange={(value) =>
+                    setSelectedUser((prevUser) => ({
+                      ...prevUser,
+                      jefe_directo: value, // Actualizar el jefe directo del usuario seleccionado
+                    }))
+                  }
+                  disabled={filteredUsersDpto.length === 0} // Deshabilitar si no hay usuarios disponibles
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el jefe directo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredUsersDpto.length > 0 ? (
+                      filteredUsersDpto.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre + ' ' + user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay usuarios disponibles en este departamento</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -669,7 +835,7 @@ export function UserManagementTable() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Cambiar cotraseña</Button>
+                        <Button type="submit">Cambiar contraseña</Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -681,7 +847,7 @@ export function UserManagementTable() {
                     ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   No se encontraron usuarios
                 </TableCell>
               </TableRow>
