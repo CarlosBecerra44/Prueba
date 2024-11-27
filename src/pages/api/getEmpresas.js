@@ -4,22 +4,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
    
     try {
-      const query = `
-      SELECT 
-        u.*, 
-        d.nombre AS nombre_dpto, d.id AS id_dpto, e.formulario AS empresa_usuario
-      FROM 
-        usuarios u
-      JOIN 
-        departamentos d 
-      ON 
-        u.departamento_id= d.id AND u.eliminado = 0
-      JOIN 
-        empresas e
-      ON u.empresa_id = e.id
-      ORDER BY 
-        u.id ASC
-    `;
+      const query = "SELECT * FROM empresas WHERE eliminado = 0"
       const result = await pool.query(query);
 
       if (result.rows.length > 0) {

@@ -15,37 +15,44 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
+        empresa: { label: "Empresa", type: "text" },
         correo: { label: "Correo", type: "text" },
+        numero: { label: "Número de empleado", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const { correo, password } = credentials;
-         
+        const { empresa, correo, numero, password } = credentials;
+      
+        if ((!empresa && !correo) || (!empresa && !numero)) {
+          throw new Error("Debes proporcionar correo o número de empleado junto con la empresa a la que perteneces");
+        }
+      
+        const field = correo ? "correo" : "numero_empleado";
+        const value = correo || numero;
+      
         try {
-          // Consulta a la base de datos para obtener el usuario
-          const query = 'SELECT * FROM usuarios WHERE correo = $1';
-          const values = [correo];
-          const result = await pool.query(query, values);
-
+          const query = `SELECT * FROM usuarios WHERE ${field} = $1 AND empresa_id = $2`;
+          const result = await pool.query(query, [value, empresa]);
+      
           if (result.rows.length > 0) {
             const user = result.rows[0];
-
-            // Verifica la contraseña encriptada
+      
+            // Verifica la contraseña
             const isPasswordValid = await bcrypt.compare(password, user.password);
-
             if (isPasswordValid) {
-              // Retorna el usuario si la autenticación es exitosa
-              return { id: user.id, name: user.nombre, email: user.correo };
+              return { id: user.id, name: user.nombre, email: user.correo, rol: user.rol };
             } else {
-              throw new Error('Contraseña incorrecta');
+              throw new Error("Contraseña incorrecta");
             }
           } else {
-            throw new Error('Usuario no encontrado');
+            throw new Error("Usuario no encontrado");
           }
         } catch (error) {
+          console.error("Error en la autorización:", error.message);
           throw new Error(error.message);
         }
       }
+            
     })
   ],
   pages: {
@@ -59,17 +66,21 @@ export default NextAuth({
         token.name = user.name;
         token.email = user.email;
         token.id = user.id;
+        token.rol = user.rol; // Incluye el rol en el token JWT
       }
       return token;
-    },
+    }
+    ,
     async session({ session, token }) {
       if (session.user) {
         session.user.name = token.name;
         session.user.email = token.email;
-        
+        session.user.id = token.id;
+        session.user.rol = token.rol; // Incluye el rol en la sesión
       }
       return session;
-    },
+    }
+    ,
     async signIn({ user, account }) {
       if (account.provider === 'google') {
         // Verifica si el usuario ya existe en la base de datos

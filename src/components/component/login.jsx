@@ -6,41 +6,52 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import Link from "next/link";
 import { useState  } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function Login() {
+  const [empresa, setEmpresa] = useState('');
   const [correo, setEmail] = useState('');
+  const [numero, setNumero] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  
 
-    const result =await signIn("credentials", {
-redirect: false,
-correo,
-password,
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Verifica si se usará correo o número de empleado
+  const loginField = correo || numero;
+
+  // Valida que haya al menos un campo (correo o número) y la contraseña
+  if (!loginField || !password) {
+    setError("Correo o número de empleado, y contraseña son requeridos.");
+    return;
+  }
+
+  try {
+    // Llama a NextAuth para iniciar sesión con credenciales
+    const result = await signIn("credentials", {
+      redirect: false, // Evita redirigir automáticamente
+      empresa,          // Envía el correo si está definido
+      correo,          // Envía el correo si está definido
+      numero,          // Envía el número de empleado si está definido
+      password,        // Envía la contraseña
     });
-    if (result.error) {
-      setError("Error en inicio de sesión"+ result.error);
-      
-    }else{
-      window.location.href= "/inicio";
+
+    if (result?.error) {
+      // Muestra el mensaje de error proporcionado por NextAuth
+      setError(result.error);
+    } else {
+      // Redirige al inicio si la autenticación es exitosa
+      window.location.href = "/inicio";
     }
-
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ correo, password }),
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      setError(data.message);
-    }
-  };
+  } catch (error) {
+    setError("Error al intentar iniciar sesión. Intente nuevamente.");
+    console.error(error);
+  }
+};
+  
 
   return (
     <div className="fixed inset-0 flex justify-center items-center">
@@ -50,6 +61,26 @@ password,
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+          <Label htmlFor="empresa">Empresa</Label>
+            <Select
+              id="empresa"
+              name="empresa"
+              value={empresa}
+              onValueChange={(value) => {
+                setEmpresa(value); // Actualizar departamento seleccionado
+              }}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Selecciona la empresa a la que perteneces" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Asesoría y desarrollo de productos naturistas...</SelectItem>
+                <SelectItem value="2">Eren natural</SelectItem>
+                <SelectItem value="3">Inik creativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
@@ -57,7 +88,25 @@ password,
               value={correo}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="juana@example.com"
-              required
+              style={{marginBottom: "1rem"}}
+            />
+ 
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase" style={{marginBottom: "1rem"}}>
+            <span className="bg-background px-2 text-muted-foreground">O continua con número de empleado</span>
+          </div>
+        </div>
+        <Label>Número empleado</Label>
+                   <Input
+              id="numero"
+              type="number"
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
+              placeholder="1234"
+              
             />
           </div>
           <div className="space-y-2">
