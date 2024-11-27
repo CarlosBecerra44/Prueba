@@ -33,7 +33,6 @@ const handleSubmit = async (e) => {
     // Llama a NextAuth para iniciar sesión con credenciales
     const result = await signIn("credentials", {
       redirect: false, // Evita redirigir automáticamente
-      empresa,          // Envía el correo si está definido
       correo,          // Envía el correo si está definido
       numero,          // Envía el número de empleado si está definido
       password,        // Envía la contraseña
@@ -60,26 +59,6 @@ const handleSubmit = async (e) => {
           <img src="/logo.png" alt="" />
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-          <Label htmlFor="empresa">Empresa</Label>
-            <Select
-              id="empresa"
-              name="empresa"
-              value={empresa}
-              onValueChange={(value) => {
-                setEmpresa(value); // Actualizar departamento seleccionado
-              }}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Selecciona la empresa a la que perteneces" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Asesoría y desarrollo de productos naturistas...</SelectItem>
-                <SelectItem value="2">Eren natural</SelectItem>
-                <SelectItem value="3">Inik creativo</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
             <Input

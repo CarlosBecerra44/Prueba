@@ -15,24 +15,23 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        empresa: { label: "Empresa", type: "text" },
         correo: { label: "Correo", type: "text" },
         numero: { label: "Número de empleado", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const { empresa, correo, numero, password } = credentials;
+        const { correo, numero, password } = credentials;
       
-        if ((!empresa && !correo) || (!empresa && !numero)) {
-          throw new Error("Debes proporcionar correo o número de empleado junto con la empresa a la que perteneces");
+        if (!numero && !correo) {
+          throw new Error("Debes proporcionar correo o número de empleado");
         }
       
         const field = correo ? "correo" : "numero_empleado";
         const value = correo || numero;
       
         try {
-          const query = `SELECT * FROM usuarios WHERE ${field} = $1 AND empresa_id = $2`;
-          const result = await pool.query(query, [value, empresa]);
+          const query = `SELECT * FROM usuarios WHERE ${field} = $1`;
+          const result = await pool.query(query, [value]);
       
           if (result.rows.length > 0) {
             const user = result.rows[0];
