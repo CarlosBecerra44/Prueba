@@ -4,7 +4,7 @@ function page() {
   return (
     <Suspense>
       <div>
-          <EditForm />
+          <Tabla />
         </div>
     </Suspense>
   );
