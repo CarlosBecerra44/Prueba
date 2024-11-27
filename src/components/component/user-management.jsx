@@ -85,6 +85,7 @@ export function UserManagementTable() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [entryDate, setEntryDate] = useState('');
   const [directBoss, setDirectBoss] = useState('');
+  const [company, setCompany] = useState('');
   const [selectedPermission, setSelectedPermission] = useState("")
   const [selectedPermission1, setSelectedPermission1] = useState("")
   const [password, setPassword] = useState('');
@@ -306,7 +307,7 @@ export function UserManagementTable() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss }),
+        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company }),
       });
 
       const data = await res.json();
@@ -357,6 +358,7 @@ export function UserManagementTable() {
           fecha_ingreso: selectedUser.fecha_ingreso,  
           jefe_directo: selectedUser.jefe_directo,  
           departamento_id: selectedUser.departamento_id,  
+          empresa_id: selectedUser.empresa_id,  
           rol: selectedUser.rol,
         }),
       });
@@ -454,7 +456,9 @@ export function UserManagementTable() {
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
         <a href="/inicio" className="hover:underline">Inicio</a>
         <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/usuario" className="hover:underline">Administrador de usuarios</a>
+        <a href="/usuario" className="font-bold hover:underline text-primary">Administrador de usuarios</a>
+        <ChevronRight className="mx-2 h-4 w-4" />
+        <a href="/usuario/empresas" className="hover:underline">Administrador de empresas</a>
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Administrador de usuarios</h1>
@@ -583,6 +587,26 @@ export function UserManagementTable() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="company" className="text-right">
+                  Empresa
+                </Label>
+                <Select
+                  value={company}
+                  onValueChange={(value) => {
+                    setCompany(value); // Actualizar departamento seleccionado
+                  }}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione la empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Asesoría y desarrollo...</SelectItem>
+                    <SelectItem value="2">Eren</SelectItem>
+                    <SelectItem value="3">Inik</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="password" className="text-right">Contraseña*</Label>
                 <Input id="password" type="password" className="col-span-3" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
@@ -627,6 +651,7 @@ export function UserManagementTable() {
             <TableHead>Teléfono</TableHead>
             <TableHead>Fecha de ingreso</TableHead>
             <TableHead>Jefe directo</TableHead>
+            <TableHead>Empresa</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -661,6 +686,7 @@ export function UserManagementTable() {
                     : "Sin datos"
                 }
               </TableCell>
+              <TableCell>{user.empresa_usuario.nombre || "Sin datos"}</TableCell>
               <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -765,6 +791,29 @@ export function UserManagementTable() {
                     ) : (
                       <SelectItem disabled>No hay usuarios disponibles en este departamento</SelectItem>
                     )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="company" className="text-right">
+                  Empresa
+                </Label>
+                <Select
+                  value={selectedUser?.empresa_id || ''}
+                  onValueChange={(value) =>
+                    setSelectedUser((prevUser) => ({
+                      ...prevUser,
+                      empresa_id: value, // Actualizar el jefe directo del usuario seleccionado
+                    }))
+                  }
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione la empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Asesoría y desarrollo...</SelectItem>
+                    <SelectItem value="2">Eren</SelectItem>
+                    <SelectItem value="3">Inik</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

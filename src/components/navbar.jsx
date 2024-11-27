@@ -90,7 +90,7 @@ const toggleSection = (sectionId) => {
           href: "#",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
-            { id: 101, name: "Faltas", href: "/gente_y_cultura/faltas", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 101, name: "Faltas", href: "/gente_y_cultura/faltasUsuario", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
             { id: 102, name: "Tiempo por tiempo", href: "/gente_y_cultura/permisos/por_horas", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
             { id: 103, name: "Permiso", href: "/gente_y_cultura/permisos/por_horas", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
             { id: 104, name: "Suspensión", href: "/gente_y_cultura/faltas", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
@@ -101,6 +101,15 @@ const toggleSection = (sectionId) => {
           name: "Vacaciones",
           href: "/gente_y_cultura",
           icon: <VacacionesIcon className="h-6 w-6 text-gray-400" />
+        },
+        {
+          id: 3,
+          name: "Usuarios",
+          href: "/usuario",
+          icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
+          subMenu: [
+            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
+          ]
         }
       ]
     },
@@ -112,8 +121,7 @@ const toggleSection = (sectionId) => {
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
     { id: "cursos", name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -486,6 +494,22 @@ function UsuariosIcon(props) {
   <path d="M3 21v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2H3z" />
   <circle cx="16" cy="10" r="3" />
   <path d="M12 21v-1.5a4.5 4.5 0 0 1 4.5-4.5h1a4.5 4.5 0 0 1 4.5 4.5V21H12z" />
+</svg>
+  )
+}
+
+function EmpresasIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="7" height="18" rx="1" ry="1"></rect>
+  <rect x="14" y="7" width="7" height="14" rx="1" ry="1"></rect>
+  <path d="M10 22v-2a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+  <line x1="6" y1="8" x2="8" y2="8"></line>
+  <line x1="6" y1="12" x2="8" y2="12"></line>
+  <line x1="6" y1="16" x2="8" y2="16"></line>
+  <line x1="17" y1="10" x2="19" y2="10"></line>
+  <line x1="17" y1="14" x2="19" y2="14"></line>
+  <line x1="17" y1="18" x2="19" y2="18"></line>
 </svg>
   )
 }

@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import Link from "next/link";
 import { useState  } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function Login() {
+  const [empresa, setEmpresa] = useState('');
   const [correo, setEmail] = useState('');
   const [numero, setNumero] = useState('');
   const [password, setPassword] = useState('');
@@ -31,6 +33,7 @@ const handleSubmit = async (e) => {
     // Llama a NextAuth para iniciar sesión con credenciales
     const result = await signIn("credentials", {
       redirect: false, // Evita redirigir automáticamente
+      empresa,          // Envía el correo si está definido
       correo,          // Envía el correo si está definido
       numero,          // Envía el número de empleado si está definido
       password,        // Envía la contraseña
@@ -58,6 +61,26 @@ const handleSubmit = async (e) => {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+          <Label htmlFor="empresa">Empresa</Label>
+            <Select
+              id="empresa"
+              name="empresa"
+              value={empresa}
+              onValueChange={(value) => {
+                setEmpresa(value); // Actualizar departamento seleccionado
+              }}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Selecciona la empresa a la que perteneces" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Asesoría y desarrollo de productos naturistas...</SelectItem>
+                <SelectItem value="2">Eren natural</SelectItem>
+                <SelectItem value="3">Inik creativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
@@ -65,14 +88,14 @@ const handleSubmit = async (e) => {
               value={correo}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="juana@example.com"
-              
+              style={{marginBottom: "1rem"}}
             />
  
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
+          <div className="relative flex justify-center text-xs uppercase" style={{marginBottom: "1rem"}}>
             <span className="bg-background px-2 text-muted-foreground">O continua con número de empleado</span>
           </div>
         </div>
@@ -86,7 +109,6 @@ const handleSubmit = async (e) => {
               
             />
           </div>
-          <br />
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
             <Input

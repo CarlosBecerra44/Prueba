@@ -15,23 +15,24 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
+        empresa: { label: "Empresa", type: "text" },
         correo: { label: "Correo", type: "text" },
         numero: { label: "Número de empleado", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const { correo, numero, password } = credentials;
+        const { empresa, correo, numero, password } = credentials;
       
-        if (!correo && !numero) {
-          throw new Error("Debes proporcionar correo o número de empleado.");
+        if ((!empresa && !correo) || (!empresa && !numero)) {
+          throw new Error("Debes proporcionar correo o número de empleado junto con la empresa a la que perteneces");
         }
       
         const field = correo ? "correo" : "numero_empleado";
         const value = correo || numero;
       
         try {
-          const query = `SELECT * FROM usuarios WHERE ${field} = $1`;
-          const result = await pool.query(query, [value]);
+          const query = `SELECT * FROM usuarios WHERE ${field} = $1 AND empresa_id = $2`;
+          const result = await pool.query(query, [value, empresa]);
       
           if (result.rows.length > 0) {
             const user = result.rows[0];
@@ -41,10 +42,10 @@ export default NextAuth({
             if (isPasswordValid) {
               return { id: user.id, name: user.nombre, email: user.correo, rol: user.rol };
             } else {
-              throw new Error("Contraseña incorrecta.");
+              throw new Error("Contraseña incorrecta");
             }
           } else {
-            throw new Error("Usuario no encontrado.");
+            throw new Error("Usuario no encontrado");
           }
         } catch (error) {
           console.error("Error en la autorización:", error.message);
