@@ -1,9 +1,12 @@
 import { TablaPermisosFaltaUsuario as Tabla } from "@/components/component/tablaPermisosFaltaUsuario";
+import { Suspense } from 'react'
 function page() {
   return (
-    <div>
-      <Tabla />
-    </div>
+    <Suspense>
+      <div>
+        <Tabla />
+      </div>
+    </Suspense>
   );
 }
 
