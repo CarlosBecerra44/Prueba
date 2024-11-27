@@ -90,25 +90,25 @@ const toggleSection = (sectionId) => {
           href: "#",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
-            { id: 101, name: "Faltas", href: "/gente_y_cultura/faltasUsuario", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 102, name: "Tiempo por tiempo", href: "/gente_y_cultura/permisos/por_horas", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 103, name: "Permiso", href: "/gente_y_cultura/permisos/por_horas", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 104, name: "Suspensión", href: "/gente_y_cultura/faltas", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 101, name: "Faltas", href: "#", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 102, name: "Tiempo por tiempo", href: "#", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 103, name: "Permiso", href: "#", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 104, name: "Suspensión", href: "#", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
           ]
         },
         {
           id: 2,
           name: "Vacaciones",
-          href: "/gente_y_cultura",
+          href: "#",
           icon: <VacacionesIcon className="h-6 w-6 text-gray-400" />
         },
         {
           id: 3,
           name: "Usuarios",
-          href: "/usuario",
+          href: "#",
           icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
-            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 301, name: "Empresas", href: "#", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
           ]
         }
       ]
