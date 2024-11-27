@@ -1,13 +1,13 @@
-import { TablaPermisosFalta as TablaPermisos } from "@/components/component/tablaPermisosFalta";
+import { EditarEstrategia as EditForm } from "@/components/component/editar_formulario";
 import { Suspense } from 'react'
 function page() {
-  return (
-    <Suspense>
-      <div>
-          <TablaPermisos />
+      return (
+        <Suspense>
+        <div>
+          <EditForm />
         </div>
-    </Suspense>
-  );
+        </Suspense>
+      );
 }
 
 export default page;
