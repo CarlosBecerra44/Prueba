@@ -420,19 +420,19 @@ export function EditarEtiqueta() {
       const userEmail1 = session.user.email;
   
       let emailFlow1 = {
-        "o.rivera@nutriton.com.mx": "investigacionproductos@nutriton.com.mx",
-        "investigacionproductos@nutriton.com.mx": "calidad@nutriton.com.mx",
-        "calidad@nutriton.com.mx": "r.contreras@nutriton.com.mx",
-        "r.contreras@nutriton.com.mx": "investigacion@nutriton.com.mx",
-        "investigacion@nutriton.com.mx": "j.leyva@nutriton.com.mx",
-        "j.leyva@nutriton.com.mx": "l.torres@nutriton.com.mx",
-        "l.torres@nutriton.com.mx": "marketing@nutriton.com.mx",
-        "marketing@nutriton.com.mx": "j.perez@nutriton.com.mx"
+        "o.rivera@aionsuplementos.com": "p.gomez@aionsuplementos.com",
+        "p.gomez@aionsuplementos.com": "b.solano@aionsuplementos.com",
+        "b.solano@aionsuplementos.com": "r.contreras@aionsuplementos.com",
+        "r.contreras@aionsuplementos.com": "investigacion@nutriton.com.mx",
+        "investigacion@nutriton.com.mx": "j.leyva@aionsuplementos.com",
+        "j.leyva@aionsuplementos.com": "l.torres@aionsuplementos.com",
+        "l.torres@aionsuplementos.com": "t.alvarez@aionsuplementos.com",
+        "t.alvarez@aionsuplementos.com": "j.pérez@aionsuplementos.com"
       };
   
       // Ajustar emailFlow si tipo es "Maquilas"
       if (formulario.tipo && formulario.tipo == "Maquilas") {
-        emailFlow1["j.perez@nutriton.com.mx"] = "maquilas@nutriton.com.mx";
+        emailFlow1["j.pérez@aionsuplementos.com"] = "r.barberena@aionsuplementos.com";
       }
   
       // Buscar el siguiente destinatario
@@ -499,7 +499,7 @@ export function EditarEtiqueta() {
           </CardHeader>
         </Card>
 
-{session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" ?(
         <Card>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>

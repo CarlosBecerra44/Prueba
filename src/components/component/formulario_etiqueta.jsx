@@ -183,9 +183,9 @@ export function DocumentSigningForm() {
                'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
-              'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
-              'o.rivera@nutriton.com.mx', 'maquilas@nutriton.com.mx', 'auxiliarcompras@nutriton.com.mx'], // Añadir tus correos específicos
+            emails: ['b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 'j.leyva@aionsuplementos.com',
+              'l.torres@aionsuplementos.com','t.alvarez@aionsuplementos.com','j.pérez@aionsuplementos.com',' investigacion@nutriton.com.mx','p.gomez@aionsuplementos.com',
+              'o.rivera@aionsuplementos.com', 'r.barberena@aionsuplementos.com', 'k.bayardo@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta de maquilas',
             message: 'Se ha guardado un nuevo formulario de etiqueta de maquilas. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -202,9 +202,9 @@ export function DocumentSigningForm() {
                'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            emails: ['calidad@nutriton.com.mx', 'r.contreras@nutriton.com.mx', 'j.leyva@nutriton.com.mx',
-              'l.torres@nutriton.com.mx','marketing@nutriton.com.mx','j.perez@nutriton.com.mx',' investigacion@nutriton.com.mx','investigacionproductos@nutriton.com.mx',
-              'o.rivera@nutriton.com.mx', 'auxiliarcompras@nutriton.com.mx'], // Añadir tus correos específicos
+            emails: ['b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 'j.leyva@aionsuplementos.com',
+              'l.torres@aionsuplementos.com','t.alvarez@aionsuplementos.com','j.pérez@aionsuplementos.com',' investigacion@nutriton.com.mx','p.gomez@aionsuplementos.com',
+              'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta interna',
             message: 'Se ha guardado un nuevo formulario de etiqueta interna. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -329,7 +329,7 @@ export function DocumentSigningForm() {
             </div>
           </CardContent>
         </Card>
-{session && session.user.email==="o.rivera@nutriton.com.mx"?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"?(
         <Card>
       <CardHeader>
         <CardTitle>Tipo</CardTitle>
@@ -369,7 +369,7 @@ export function DocumentSigningForm() {
   </CardHeader>
 </Card>) }
 
-{session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" ?(
         <Card hidden>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
