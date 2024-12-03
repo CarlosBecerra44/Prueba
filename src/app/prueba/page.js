@@ -1,4 +1,4 @@
-import { SubirArchivo as Sub } from "@/components/component/Recordatorios_correos";
+import { SubirArchivo as Sub } from "@/components/Emails/Components/Recordatorios_correos";
 
 function Contact() {
   return (

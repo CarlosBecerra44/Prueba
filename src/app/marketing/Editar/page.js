@@ -1,4 +1,4 @@
-import EditarEtiqueta from '@/components/component/Editar_etiqueta';
+import EditarEtiqueta from '@/components/Marketing label/Components/Editar_etiqueta';
 import { Suspense } from 'react';
 function page() {
     

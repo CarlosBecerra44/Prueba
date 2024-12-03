@@ -44,6 +44,7 @@
     "framer-motion": "^11.5.4",
     "googleapis": "^144.0.0",
     "html2canvas": "^1.4.1",
+    "install": "^0.13.0",
     "jspdf": "^2.5.1",
     "lucide-react": "^0.414.0",
     "multer": "^1.4.5-lts.1",
@@ -52,6 +53,10 @@
     "nodemailer": "^6.9.15",
     "pg": "^8.12.0",
     "react": "^18.3.1",
+<<<<<<< Updated upstream
+=======
+    "react-day-picker": "^9.4.1",
+>>>>>>> Stashed changes
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
     "react-native": "^0.75.2",

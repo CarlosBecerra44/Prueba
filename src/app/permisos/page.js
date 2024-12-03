@@ -1,4 +1,4 @@
-import { TablaPermisos as Pe } from "@/components/component/tabla_permisos_individuales";
+import { TablaPermisos as Pe } from "@/components/Gente & Cultura Permission/Components/tabla_permisos_individuales";
 import { Suspense } from 'react';
 function page() {
     

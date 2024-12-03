@@ -1,4 +1,4 @@
-import { Perfil as Profile } from "@/components/component/perfil";
+import { Perfil as Profile } from "@/components/Users/Components/perfil";
 
 function Contact() {
   return (

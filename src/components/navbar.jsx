@@ -23,7 +23,7 @@ export function Navbarv1() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

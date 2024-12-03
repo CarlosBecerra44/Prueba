@@ -1,4 +1,4 @@
-import { TablaEventosMejorada as Etiquetas } from "@/components/component/tabla_etiqueta";
+import { TablaEventosMejorada as Etiquetas } from "@/components/Marketing label/Components/tabla_etiqueta";
 function page() {
     
       return (
