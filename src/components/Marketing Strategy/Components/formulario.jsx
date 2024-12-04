@@ -275,10 +275,6 @@ export function EventPlanningForm() {
     } catch (error) {
       console.error('Error:', error);
     }
-<<<<<<< Updated upstream:src/components/component/formulario.jsx
-  };
-=======
-
     try {
       const response2 = await fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
@@ -328,7 +324,6 @@ export function EventPlanningForm() {
     };
     fetchUserData();
   }, []);
->>>>>>> Stashed changes:src/components/Marketing Strategy/Components/formulario.jsx
 
   const {data: session,status}=useSession ();
   if (status === "loading") {

@@ -356,8 +356,6 @@ export function EditarEtiqueta() {
     } catch (error) {
       console.error('Error al actualizar etiqueta:', error);
     }
-<<<<<<< Updated upstream:src/components/component/Editar_etiqueta.jsx
-=======
 
     try {
       const response2 = await fetch('/api/Reminder/EnvioEvento', {
@@ -383,7 +381,6 @@ export function EditarEtiqueta() {
     } catch (error) {
       console.error('Error:', error);
     }
->>>>>>> Stashed changes:src/components/Marketing label/Components/Editar_etiqueta.jsx
   };
 
   if (status === "loading") {
