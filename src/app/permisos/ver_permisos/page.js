@@ -1,4 +1,4 @@
-import { VisualizarPermiso as VerPermiso } from "@/components/component/ver_permisos";
+import { VisualizarPermiso as VerPermiso } from "@/components/Gente & Cultura Permission/Components/ver_permisos";
 import { Suspense } from 'react';
 function page() {
       return (

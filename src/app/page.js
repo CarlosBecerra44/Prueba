@@ -1,5 +1,5 @@
 
-import { Login as In } from "@/components/component/login";
+import { Login as In } from "@/components/Login/Components/login";
 
 function Home() {
   return (

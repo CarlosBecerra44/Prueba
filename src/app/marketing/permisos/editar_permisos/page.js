@@ -1,4 +1,4 @@
-import { EditarPermiso as EditPermiso } from "@/components/component/editar_permiso";
+import { EditarPermiso as EditPermiso } from "@/components/Gente & Cultura Permission/Components/editar_permiso";
 import { Suspense } from "react";
 function page() {
       return (

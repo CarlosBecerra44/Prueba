@@ -1,4 +1,4 @@
-import { CourseDashboard as Cu } from "@/components/component/course-dashboard";
+import { CourseDashboard as Cu } from "@/components/Cursos/Components/course-dashboard";
 function page() {
   return (
     <div>

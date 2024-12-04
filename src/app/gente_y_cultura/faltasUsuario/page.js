@@ -1,4 +1,4 @@
-import { TablaPermisosFaltaUsuario as EditForm } from "@/components/component/tabla_permisos_faltas_usuario";
+import { EditarEstrategia as EditForm } from "@/components/Marketing Strategy/Components/editar_formulario";
 import { Suspense } from 'react'
 function page() {
       return (

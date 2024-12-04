@@ -1,4 +1,4 @@
-import { TablaPermisos as Pe } from "@/components/component/tabla_permisos";
+import { TablaPermisos as Pe } from "@/components/Gente & Cultura Permission/Components/tabla_permisos";
 function page() {
     
       return (

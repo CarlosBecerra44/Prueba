@@ -1,5 +1,5 @@
-import { ExploradorArchivos as EA } from "@/components/component/explorador_archivos";
-import { MultiFileUploadModalComponent as Multi } from "@/components/component/multi-file-upload-modal"
+import { ExploradorArchivos as EA } from "@/components/FTP/Components/explorador_archivos";
+import { MultiFileUploadModalComponent as Multi } from "@/components/FTP/Components/multi-file-upload-modal"
 import { Suspense } from "react";
 function page() {
     return (

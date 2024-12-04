@@ -1,5 +1,5 @@
 'use client'
-import { TablaEventosMejorada as Ta } from "@/components/component/tabla-eventos-mejorada";
+import { TablaEventosMejorada as Ta } from "@/components/Marketing Strategy/Components/tabla-eventos-mejorada";
 function Estrategias() {
     
       return (

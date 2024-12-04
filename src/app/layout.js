@@ -5,8 +5,8 @@ import "./globals.css";
 import { Navbarv1 as Inicio } from "@/components/navbar";
 import { SessionProvider } from "next-auth/react";
 const inter = Inter({ subsets: ["latin"] });
-import {  } from "@/components/component/breadcrumbItem";
-import NotificationBell from "@/components/component/notificationBell";
+
+import NotificationBell from "@/components/Reminder/Components/notificationBell";
 import { Label } from "recharts";
 /*export const metadata = {
   title: "AIONET",
