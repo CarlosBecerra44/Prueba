@@ -329,7 +329,7 @@ export function DocumentSigningForm() {
             </div>
           </CardContent>
         </Card>
-{session && session.user.email==="o.rivera@aionsuplementos.com"?(
+{session && session.user.email==="o.rivera@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card>
       <CardHeader>
         <CardTitle>Tipo</CardTitle>
@@ -369,7 +369,7 @@ export function DocumentSigningForm() {
   </CardHeader>
 </Card>) }
 
-{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card hidden>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
