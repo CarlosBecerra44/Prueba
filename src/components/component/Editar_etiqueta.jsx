@@ -499,7 +499,7 @@ export function EditarEtiqueta() {
           </CardHeader>
         </Card>
 
-{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
