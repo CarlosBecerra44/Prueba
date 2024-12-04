@@ -10,6 +10,13 @@ export default async function handler(req, res) {
 
   const { name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company } = req.body;
 
+  const correo = email || null;
+  const rol = role || "Estándar";
+  const telefono = phoneNumber || null;
+  const departamento = selectedDepartamento || null;
+  const jefe_directo = directBoss || null;
+  const empresa = company || null;
+  
   // Validar que las contraseñas coincidan
   if (password !== confirmPassword) {
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
@@ -28,7 +35,7 @@ export default async function handler(req, res) {
     // Guardar el nuevo usuario en la base de datos
     const newUser = await pool.query(
       'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto, telefono, fecha_ingreso, jefe_directo, empresa_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
-      [role, name, employeeNumber, selectedDepartamento, email, hashedPassword, lastName, position, phoneNumber, entryDate, directBoss, company]
+      [rol, name, employeeNumber, departamento, correo, hashedPassword, lastName, position, telefono, entryDate, jefe_directo, empresa]
     );
 
     console.log({message: 'usuario registrado'});

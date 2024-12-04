@@ -21,9 +21,6 @@ import withReactContent from 'sweetalert2-react-content';
 import * as XLSX from "xlsx";
 import styles from '../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
-import PDFDocument from './pdf'; // Importa el componente que creamos
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { pdf } from '@react-pdf/renderer';
 
 const MySwal = withReactContent(Swal);
 
@@ -58,32 +55,6 @@ export function TablaPermisosFalta() {
     }
     fetchEventos()
   }, [])
-
-  const handleDownload = async (evento) => {
-    try {
-      // Generar el documento PDF
-      const blob = await pdf(<PDFDocument evento={evento.formulario} />).toBlob();
-      
-      // Crear una URL temporal para el Blob
-      const url = URL.createObjectURL(blob);
-      
-      // Crear un elemento <a> temporal para iniciar la descarga
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `planificacion-evento-${evento.id}.pdf`;
-      
-      // Añadir el elemento al DOM y desencadenar el clic
-      document.body.appendChild(a);
-      a.click();
-      
-      // Limpiar el DOM y revocar la URL temporal
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error al generar o descargar el PDF:', error);
-      Swal.fire('Error', 'Ocurrió un error al generar el PDF', 'error');
-    }
-  };  
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -179,25 +150,6 @@ export function TablaPermisosFalta() {
         .filter(value => value !== null && value !== undefined)  // Filtra valores nulos o indefinidos
         .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     );
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      filteredEventos.map((evento) => ({
-        Evento: evento.evento,
-        Marca: evento.marca,
-        Lugar: evento.lugar,
-        Fecha: evento.fecha,
-        Estatus: evento.estatus,
-        "Gasto Presupuesto Total": evento.gastoPresupuesto,
-        "Gasto Real Total": evento.gastoReal,
-        "Venta Total": evento.ventaTotal,
-        ROI: evento.roi,
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Estrategias");
-    XLSX.writeFile(workbook, "estrategias.xlsx");
-  };
   
   const {data: session,status}=useSession ();
   if (status === "loading") {
@@ -231,16 +183,6 @@ export function TablaPermisosFalta() {
 
   return (
     <div className="container mx-auto">
-      <div style={{ display:"flex" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          style={{ background: "rgb(31 41 55)", marginBottom: "15px" }}
-          onClick={exportToExcel}
-        >
-          Exportar a Excel
-        </Button>
-      </div>
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
@@ -387,7 +329,7 @@ export function TablaPermisosFalta() {
       </button>
     </div>
     </div>
-  )
+  );
 }
 
 function SearchIcon(props) {

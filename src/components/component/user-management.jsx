@@ -530,7 +530,7 @@ export function UserManagementTable() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="departamento" className="text-right">
-                  Departamento
+                  Departamento*
                 </Label>
                 <Select
                   value={selectedDepartamento}
@@ -588,7 +588,7 @@ export function UserManagementTable() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="company" className="text-right">
-                  Empresa
+                  Empresa*
                 </Label>
                 <Select
                   value={company}
@@ -630,7 +630,7 @@ export function UserManagementTable() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Agregar usuario</Button>
+              <Button type="submit" disabled={!name || !lastName || !employeeNumber || !position || !entryDate || !selectedDepartamento || !company || !password || !confirmPassword} >Agregar usuario</Button>
             </DialogFooter>
             </form>
           </DialogContent>
@@ -680,7 +680,7 @@ export function UserManagementTable() {
                 {
                   user.jefe_directo
                     ? (() => {
-                        const jefe = currentUsers.find(u => u.id === user.jefe_directo);
+                        const jefe = users.find(u => u.id === user.jefe_directo);
                         return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
                       })()
                     : "Sin datos"
