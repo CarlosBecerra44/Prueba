@@ -8,13 +8,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusCircle, X } from "lucide-react"
 import { maxWidth } from "@mui/system";
-<<<<<<< Updated upstream:src/components/component/formulario.jsx
-import styles from '../../../public/CSS/spinner.css';
-=======
 import { getSession } from 'next-auth/react';
 
 import styles from '../../../../public/CSS/spinner.css';
->>>>>>> Stashed changes:src/components/Marketing Strategy/Components/formulario.jsx
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
 
@@ -275,9 +271,6 @@ export function EventPlanningForm() {
     } catch (error) {
       console.error('Error:', error);
     }
-<<<<<<< Updated upstream:src/components/component/formulario.jsx
-  };
-=======
 
     try {
       const response2 = await fetch('/api/Reminder/EnvioEvento', {
@@ -328,7 +321,6 @@ export function EventPlanningForm() {
     };
     fetchUserData();
   }, []);
->>>>>>> Stashed changes:src/components/Marketing Strategy/Components/formulario.jsx
 
   const {data: session,status}=useSession ();
   if (status === "loading") {

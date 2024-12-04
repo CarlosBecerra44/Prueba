@@ -74,8 +74,6 @@ export function NotificationBell() {
     }
   };
 
-<<<<<<< Updated upstream:src/components/component/notificationBell.jsx
-=======
   const marcarComoLeida = async (idNotificacion) => {
     try {
       await fetch(`/api/Reminder/marcarLeida`, {
@@ -93,7 +91,6 @@ export function NotificationBell() {
     }
   };
 
->>>>>>> Stashed changes:src/components/Reminder/Components/notificationBell.jsx
   return (
     <div style={{ position: "relative" }}>
       <button
