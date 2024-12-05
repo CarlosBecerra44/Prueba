@@ -119,7 +119,7 @@ export function EditarEtiqueta() {
 
   const modificacionesIngenieíaNProducto = [
     'Dimensiones', 'Sustrato',
-    'Impresión interior/exterior', 'Acabado',
+    'Impresión', 'Acabado',
     'Rollo',
   ];
 
