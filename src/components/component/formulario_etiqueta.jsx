@@ -294,7 +294,7 @@ export function DocumentSigningForm() {
 
   const modificacionesIngenieíaNProducto = [
     'Dimensiones', 'Sustrato',
-    'Impresión interior/exterior', 'Acabado',
+    'Impresión', 'Acabado',
     'Rollo',
   ];
 
