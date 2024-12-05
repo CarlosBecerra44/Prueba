@@ -733,22 +733,41 @@ export function EditarEtiqueta() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
           {modificacionesIngenieíaNProducto.map((item, index) => (
               <div key={item}>
-                <Label>{item}</Label>
-                {/* Usamos la clave dinámica `miSelectX` para cada select */}
-                <Select 
-                  name={`miSelectIngenieria${index + 1}`} 
-                  value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
-                  onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
-                  disabled={!tienePermiso('Ingeniería de Productos', item)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                {item === "Impresión" ? (
+                  <div>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                      onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
+                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Interior">Interior</SelectItem>
+                        <SelectItem value="Exterior">Exterior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                      onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
+                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="si">Sí</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) }
               </div>
               
             ))}
