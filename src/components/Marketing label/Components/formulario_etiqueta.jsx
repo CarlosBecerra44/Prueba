@@ -26,7 +26,7 @@ export function DocumentSigningForm() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export function DocumentSigningForm() {
 
     if(formulario.tipo && formulario.tipo == "Maquilas") {
       try{
-        const res= fetch('/api/send-mail',{
+        const res= fetch('/api/Emails/send-mail',{
           method: 'POST',
           headers: {
                'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export function DocumentSigningForm() {
      }
     } else {
       try{
-        const res= fetch('/api/send-mail',{
+        const res= fetch('/api/Emails/send-mail',{
           method: 'POST',
           headers: {
                'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ export function DocumentSigningForm() {
     }
 
     try {
-      const response2 = await fetch('/api/EnvioEvento', {
+      const response2 = await fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -294,7 +294,7 @@ export function DocumentSigningForm() {
 
   const modificacionesIngenieíaNProducto = [
     'Dimensiones', 'Sustrato',
-    'Impresión interior/exterior', 'Acabado',
+    'Impresión', 'Acabado',
     'Rollo',
   ];
 
@@ -329,7 +329,7 @@ export function DocumentSigningForm() {
             </div>
           </CardContent>
         </Card>
-{session && session.user.email==="o.rivera@aionsuplementos.com"?(
+{session && session.user.email==="o.rivera@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card>
       <CardHeader>
         <CardTitle>Tipo</CardTitle>
@@ -369,7 +369,7 @@ export function DocumentSigningForm() {
   </CardHeader>
 </Card>) }
 
-{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card hidden>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
@@ -590,22 +590,40 @@ export function DocumentSigningForm() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
           {modificacionesIngenieíaNProducto.map((item, index) => (
               <div key={item}>
-                <Label>{item}</Label>
-                {/* Usamos la clave dinámica `miSelectX` para cada select */}
-                <Select 
-                  name={`miSelectIngenieria${index + 1}`} 
-                  onValueChange={(value) => handleInputChange(value, `miSelectIngenieria${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                {item === "Impresión" ? (
+                  <div>
+                    <Label>{item}</Label>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      onValueChange={(value) => handleInputChange(value, `miSelectIngenieria${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Interior">Interior</SelectItem>
+                        <SelectItem value="Exterior">Exterior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <Label>{item}</Label>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      onValueChange={(value) => handleInputChange(value, `miSelectIngenieria${index + 1}`)} disabled={true} // También pasamos la clave dinámica al manejador
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="si">Sí</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-              
             ))}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, index) => (

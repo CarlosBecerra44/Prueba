@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -153,7 +152,7 @@ export function EmpresasTabla() {
 
       // Si el usuario confirma la eliminación
       if (result.isConfirmed) {
-        const response = await axios.post(`/api/eliminarEmpresa?id=${index}`);
+        const response = await axios.post(`/api/Company/eliminarEmpresa?id=${index}`);
         if (response.status === 200) {
           await Swal.fire('Eliminada', 'La empresa ha sido eliminada', 'success');
           window.location.href = "/usuario/empresas";
@@ -204,7 +203,7 @@ export function EmpresasTabla() {
     const fetchUsers = async () => {
       setLoading(true); // Iniciar carga
       try {
-        const response = await axios.get('/api/getEmpresas');
+        const response = await axios.get('/api/Company/getEmpresas');
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
@@ -222,7 +221,7 @@ export function EmpresasTabla() {
       if (selectedUserId) {
         setLoading(true); // Iniciar carga
         try {
-          const response = await fetch(`/api/registroPermiso?id=${selectedUserId}`);
+          const response = await fetch(`/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`);
           if (response.ok) {
             const data = await response.json();
             
@@ -337,7 +336,7 @@ export function EmpresasTabla() {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/registrarEmpresa', {
+      const res = await fetch('/api/Company/registrarEmpresa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -377,7 +376,7 @@ export function EmpresasTabla() {
     e.preventDefault();
   
     try {
-      const res = await fetch('/api/actualizarEmpresa', {
+      const res = await fetch('/api/Company/actualizarEmpresa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -432,7 +431,7 @@ export function EmpresasTabla() {
       }
     });   
   
-    const response = await fetch(`/api/registroPermiso?id=${selectedUserId}`, {
+    const response = await fetch(`/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

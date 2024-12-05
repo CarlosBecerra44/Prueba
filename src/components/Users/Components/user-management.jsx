@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -131,7 +130,7 @@ export function UserManagementTable() {
 
       // Si el usuario confirma la eliminación
       if (result.isConfirmed) {
-        const response = await axios.post(`/api/eliminarUsuario?id=${index}`);
+        const response = await axios.post(`/api/Users/eliminarUsuario?id=${index}`);
         if (response.status === 200) {
           await Swal.fire('Eliminado', 'El usuario ha sido eliminado', 'success');
           window.location.href = "/usuario";
@@ -182,7 +181,7 @@ export function UserManagementTable() {
     const fetchUsers = async () => {
       setLoading(true); // Iniciar carga
       try {
-        const response = await axios.get('/api/getUsers');
+        const response = await axios.get('/api/Users/getUsers');
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
@@ -200,7 +199,7 @@ export function UserManagementTable() {
       if (selectedUserId) {
         setLoading(true); // Iniciar carga
         try {
-          const response = await fetch(`/api/registroPermiso?id=${selectedUserId}`);
+          const response = await fetch(`/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`);
           if (response.ok) {
             const data = await response.json();
             
@@ -302,7 +301,7 @@ export function UserManagementTable() {
     }
 
     try {
-      const res = await fetch('/api/registroMaster', {
+      const res = await fetch('/api/Users/registroMaster', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -342,7 +341,7 @@ export function UserManagementTable() {
     e.preventDefault();
   
     try {
-      const res = await fetch('/api/actualizarUsuario', {
+      const res = await fetch('/api/Users/actualizarUsuario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -407,7 +406,7 @@ export function UserManagementTable() {
       }
     });   
   
-    const response = await fetch(`/api/registroPermiso?id=${selectedUserId}`, {
+    const response = await fetch(`/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

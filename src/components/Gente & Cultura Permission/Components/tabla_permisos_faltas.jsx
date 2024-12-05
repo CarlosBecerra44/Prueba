@@ -19,7 +19,7 @@ import Link from "next/link"
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import * as XLSX from "xlsx";
-import styles from '../../../public/CSS/spinner.css';
+import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 
 const MySwal = withReactContent(Swal);
@@ -47,7 +47,7 @@ export function TablaPermisosFalta() {
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const response = await axios.get('/api/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
+        const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
       } catch (error) {
         console.error('Error al obtener eventos:', error)

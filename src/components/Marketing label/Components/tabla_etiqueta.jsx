@@ -59,7 +59,7 @@ export function TablaEventosMejorada() {
   
       if (nuevoEstatus) {
         // Realizar la petición para cambiar el estatus
-        const response = await axios.post('/api/cambiarEstatusFormularioEtiqueta', {
+        const response = await axios.post('/api/MarketingLabel/cambiarEstatusFormularioEtiqueta', {
           id,
           nuevoEstatus
         });
@@ -98,7 +98,7 @@ export function TablaEventosMejorada() {
 
       // Si el usuario confirma la eliminación
       if (result.isConfirmed) {
-        const response = await axios.post(`/api/eliminarFormularioEtiqueta?id=${index}`);
+        const response = await axios.post(`/api/MarketingLabel/eliminarFormularioEtiqueta?id=${index}`);
         if (response.status === 200) {
           await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
           window.location.href = "/marketing/etiquetas/tabla_general";
@@ -177,7 +177,7 @@ export function TablaEventosMejorada() {
   // Acción que contiene los botones
   const renderAccion = (index) => (
     <div style={{ display: 'flex', gap: '1px' }}>
-      {session && session.user.email === "o.rivera@aionsuplementos.com" || session.user.email === "p.gomez@aionsuplementos.com" ? (<Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px" }}>
+      {session && session.user.email === "o.rivera@aionsuplementos.com" || session.user.email === "p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ? (<Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px" }}>
         <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -192,7 +192,7 @@ export function TablaEventosMejorada() {
         </Button>
       </Link>
 
-      {session && session.user.email === "o.rivera@aionsuplementos.com" || session.user.email === "p.gomez@aionsuplementos.com" ? (<Button onClick={() => handleChangeStatus(index)} style={{ width: "1px", height: "40px" }}>
+      {session && session.user.email === "o.rivera@aionsuplementos.com" || session.user.email === "p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ? (<Button onClick={() => handleChangeStatus(index)} style={{ width: "1px", height: "40px" }}>
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="rgb(31 41 55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw">
         <polyline points="23 4 23 10 17 10"></polyline>
         <polyline points="1 20 1 14 7 14"></polyline>
@@ -235,7 +235,7 @@ export function TablaEventosMejorada() {
   return (
 
     <div className="container mx-auto">
-      {session && session.user.email==="o.rivera@aionsuplementos.com" ?(
+      {session && session.user.email==="o.rivera@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
       <a href="/marketing/etiquetas">
         <Button variant="contained" color="secondary" style={{ background: "rgb(31 41 55)", padding: "5px", marginBottom: "10px" }}>+</Button>
       </a>

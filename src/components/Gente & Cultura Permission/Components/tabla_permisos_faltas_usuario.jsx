@@ -22,7 +22,7 @@ import {
 import axios from "axios"
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import styles from '../../../public/CSS/spinner.css';
+import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import React from 'react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -116,7 +116,7 @@ export function TablaPermisosFaltaUsuario() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export function TablaPermisosFaltaUsuario() {
           
           // Si tienes el ID del jefe directo, hacer una nueva solicitud para obtener su nombre y apellido
           if (userData.user.jefe_directo) {
-            const jefeResponse = await fetch('/api/getUserById', {  // Suponiendo que tienes una API para esto
+            const jefeResponse = await fetch('/api/Users/getUserById', {  // Suponiendo que tienes una API para esto
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export function TablaPermisosFaltaUsuario() {
       }
 
       try {
-        const response = await axios.get(`/api/getFaltas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
+        const response = await axios.get(`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
       } catch (error) {
         console.error('Error al obtener eventos:', error)
@@ -203,7 +203,7 @@ export function TablaPermisosFaltaUsuario() {
 
   const handleEditForm = async (index) => {
     try {
-      const response = await fetch(`/api/obtenerFormularioFaltas?id=${index}`);
+      const response = await fetch(`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`);
       const data = await response.json();
       setFormData(data);
     } catch (error) {
@@ -231,7 +231,7 @@ export function TablaPermisosFaltaUsuario() {
 
         // Si el usuario confirma la eliminación
         if (result.isConfirmed) {
-          const response = await axios.post(`/api/eliminarFormularioFaltas?id=${index}`);
+          const response = await axios.post(`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`);
           if (response.status === 200) {
             await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
             window.location.href = "/gente_y_cultura/faltasUsuario";
@@ -341,7 +341,7 @@ export function TablaPermisosFaltaUsuario() {
       return;
     }
     try {
-      const response = await fetch(`/api/guardarFormularioFaltas?id=${idUser}`, {
+      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -373,7 +373,7 @@ export function TablaPermisosFaltaUsuario() {
       return;
     }
     try {
-      const response = await fetch(`/api/guardarFormularioFaltas?id=${idUser}`, {
+      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -476,7 +476,7 @@ export function TablaPermisosFaltaUsuario() {
           </CardHeader>
           <div className="grid gap-4 py-4">
             <div className="flex items-center space-x-2">
-              <Checkbox id="Editar" onCheckedChange={openModal} style={{marginLeft: "30px"}}  />
+              <Checkbox id="Editar" value="Faltas" onCheckedChange={openModal} style={{marginLeft: "30px"}}  />
               <Label htmlFor="Editar">Faltas</Label>
             </div>
             <div className="flex items-center space-x-2">

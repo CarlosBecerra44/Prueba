@@ -22,7 +22,7 @@ export function Perfil() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export function Perfil() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch('/api/update', {
+    const response = await fetch('/api/Users/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

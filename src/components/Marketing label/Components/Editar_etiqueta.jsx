@@ -34,13 +34,14 @@ export function EditarEtiqueta() {
   const [nombre, setNombre] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
+  const [departamento, setDepartamento] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
         const response = await fetch('/api/Users/getUser', {
-          method: 'POST', 
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -51,6 +52,7 @@ export function EditarEtiqueta() {
           setNombre(userData.user.nombre);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
+          setDepartamento(userData.user.departamento_id);
         } else {
           alert('Error al obtener los datos del usuario');
         }
@@ -180,21 +182,7 @@ export function EditarEtiqueta() {
 
    
 
-  /*useEffect (()=>{
-    
-    const fetchPermissions = async () => {
-      try {
-        const response = await axios.get(`/api/permiso`, { params: { id: userId } });
-        console.log(response.data)
-        setPermisos(response.data);
-      } catch (error) {
-        console.error('Error al obtener permisos:', error);
-      }
-    };
 
-    fetchPermissions();
-  
-  }, [userId]);*/
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -432,19 +420,25 @@ export function EditarEtiqueta() {
       const userEmail1 = session.user.email;
   
       let emailFlow1 = {
-        "o.rivera@nutriton.com.mx": "investigacionproductos@nutriton.com.mx",
-        "investigacionproductos@nutriton.com.mx": "calidad@nutriton.com.mx",
-        "calidad@nutriton.com.mx": "r.contreras@nutriton.com.mx",
-        "r.contreras@nutriton.com.mx": "investigacion@nutriton.com.mx",
-        "investigacion@nutriton.com.mx": "j.leyva@nutriton.com.mx",
-        "j.leyva@nutriton.com.mx": "l.torres@nutriton.com.mx",
-        "l.torres@nutriton.com.mx": "marketing@nutriton.com.mx",
-        "marketing@nutriton.com.mx": "j.perez@nutriton.com.mx"
+        "o.rivera@aionsuplementos.com": "p.gomez@aionsuplementos.com",
+        "a.garcilita@aionsuplementos.com": "p.gomez@aionsuplementos.com",
+        "p.gomez@aionsuplementos.com": ["b.solano@aionsuplementos.com", "c.alvarez@aionsuplementos.com"],
+        "b.solano@aionsuplementos.com": ["r.contreras@aionsuplementos.com", "j.alvarado@aionsuplementos.com"],
+        "c.alvarez@aionsuplementos.com": ["r.contreras@aionsuplementos.com", "j.alvarado@aionsuplementos.com"],
+        "r.contreras@aionsuplementos.com": ["j.corona@aionsuplementos.com", "f.cruz@aionsuplementos.com"],
+        "j.alvarado@aionsuplementos.com": ["j.corona@aionsuplementos.com", "f.cruz@aionsuplementos.com"],
+        "j.corona@aionsuplementos.com": ["j.leyva@aionsuplementos.com", "r.castellanos@aionsuplementos.com"],
+        "f.cruz@aionsuplementos.com": ["j.leyva@aionsuplementos.com", "r.castellanos@aionsuplementos.com"],
+        "j.leyva@aionsuplementos.com": "l.torres@aionsuplementos.com",
+        "r.castellanos@aionsuplementos.com": "l.torres@aionsuplementos.com",
+        "l.torres@aionsuplementos.com": ["t.alvarez@aionsuplementos.com", "m.uribe@aionsuplementos.com"],
+        "t.alvarez@aionsuplementos.com": "j.pérez@aionsuplementos.com",
+        "m.uribe@aionsuplementos.com": "j.pérez@aionsuplementos.com"
       };
   
       // Ajustar emailFlow si tipo es "Maquilas"
       if (formulario.tipo && formulario.tipo == "Maquilas") {
-        emailFlow1["j.perez@nutriton.com.mx"] = "maquilas@nutriton.com.mx";
+        emailFlow1["j.pérez@aionsuplementos.com"] = "r.barberena@aionsuplementos.com";
       }
   
       // Buscar el siguiente destinatario
@@ -453,7 +447,7 @@ export function EditarEtiqueta() {
       // Solo si existe un siguiente destinatario
       if (nextRecipient) {
         try {
-          const response = await fetch('/api/send-mailEdit', {
+          const response = await fetch('/api/Emails/send-mailEdit', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -511,7 +505,7 @@ export function EditarEtiqueta() {
           </CardHeader>
         </Card>
 
-{session && session.user.email==="o.rivera@nutriton.com.mx"||session.user.email==="investigacionproductos@nutriton.com.mx" ?(
+{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
         <Card>
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
@@ -743,24 +737,43 @@ export function EditarEtiqueta() {
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
-          {modificacionesIngenieíaNProducto.map((item, index) => (
+        {modificacionesIngenieíaNProducto.map((item, index) => (
               <div key={item}>
-                <Label>{item}</Label>
-                {/* Usamos la clave dinámica `miSelectX` para cada select */}
-                <Select 
-                  name={`miSelectIngenieria${index + 1}`} 
-                  value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
-                  onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
-                  disabled={!tienePermiso('Ingeniería de Productos', item)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                {item === "Impresión" ? (
+                  <div>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                      onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
+                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Interior">Interior</SelectItem>
+                        <SelectItem value="Exterior">Exterior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <Select 
+                      name={`miSelectIngenieria${index + 1}`} 
+                      value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
+                      onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
+                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="si">Sí</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) }
               </div>
               
             ))}
