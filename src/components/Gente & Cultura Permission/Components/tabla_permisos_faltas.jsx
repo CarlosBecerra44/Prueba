@@ -49,6 +49,7 @@ export function TablaPermisosFalta() {
       try {
         const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
+        console.log(response.data)
       } catch (error) {
         console.error('Error al obtener eventos:', error)
       }
@@ -90,13 +91,13 @@ export function TablaPermisosFalta() {
 
     return {
       id: evento.id,
-      nombre: evento.formulario.evento,
+      nombre: evento.nombre + " " + evento.apellidos,
       fecha_subida: evento.fecha_subida,
       fecha_actualizacion: evento.fecha_actualizacion,
-      numero_empleado: evento.formulario.evento,
-      departamento: evento.formulario.marca,
-      puesto: evento.formulario.lugar,
-      jefe_directo: evento.formulario.fecha,
+      numero_empleado: evento.numero_empleado,
+      departamento: evento.nombre_departamento,
+      puesto: evento.puesto,
+      jefe_directo: evento.jefe_directo,
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
@@ -227,7 +228,7 @@ export function TablaPermisosFalta() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
-                  <TableCell>{evento.evento || 'Sin nombre especificado'}</TableCell>
+                  <TableCell>{evento.nombre || 'Sin nombre especificado'}</TableCell>
                   <TableCell>{evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {
                         day: '2-digit',
@@ -252,10 +253,10 @@ export function TablaPermisosFalta() {
                         hour12: false, // Cambiar a true si prefieres formato de 12 horas
                       })}`
                     : "Sin datos"}</TableCell>
-                  <TableCell>{evento.fecha || 'Sin número de empleado especificado'}</TableCell>
-                  <TableCell>{evento.fecha || 'Sin departamento especificado'}</TableCell>
-                  <TableCell>{evento.fecha || 'Sin puesto especificado'}</TableCell>
-                  <TableCell>{evento.fecha || 'Sin jefe directo especificado'}</TableCell>
+                  <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
+                  <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
+                  <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
+                  <TableCell>{evento.jefe_directo || 'Sin jefe directo especificado'}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {

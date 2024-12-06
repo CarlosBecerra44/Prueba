@@ -72,6 +72,7 @@ export function TablaPermisosFaltaUsuario() {
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
+  const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
 
   const openModal = () => {
     setFormData({
@@ -89,6 +90,7 @@ export function TablaPermisosFaltaUsuario() {
   };
 
   const openModalForms = () => {
+    setTipoFormulario2("");
     setFormularioPrincipalAbierto(true); // Abrir el formulario
   };
 
@@ -96,8 +98,16 @@ export function TablaPermisosFaltaUsuario() {
     setFormularioAbierto(false); // Cerrar el formulario
   };
 
+  const closeModalEdit = () => {
+    setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
+  };
+
   const closeModalForms = () => {
     setFormularioPrincipalAbierto(false); // Cerrar el formulario
+  };
+
+  const closeModalFormsEdit = () => {
+    setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
 
   const [formData, setFormData] = useState({
@@ -171,6 +181,10 @@ export function TablaPermisosFaltaUsuario() {
     setModalOpen(false)
   }
 
+  const handleCheckboxChange = (value) => {
+    setTipoFormulario2(value);
+  };
+
   const encabezados = [
     "Tipo",
     "Departamento",
@@ -205,12 +219,12 @@ export function TablaPermisosFaltaUsuario() {
     try {
       const response = await fetch(`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`);
       const data = await response.json();
-      setFormData(data);
+      setFormData(data.formulario);
+      setTipoFormulario2(data.tipo);
+      setFormularioPrincipalAbiertoEdit(true);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
     }
-
-    setEditModalOpen(true)
   }; 
 
   // Función para extraer los datos relevantes
@@ -434,22 +448,6 @@ export function TablaPermisosFaltaUsuario() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div className="w-full sm:w-1/3">
-          <Label htmlFor="status-filter" className="mb-2 block">Seleccione el tipo de incidencia</Label>
-          <Select onValueChange={setTipoFormulario2} defaultValue={tipoFormulario2}>
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Seleccionar tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Faltas">Faltas</SelectItem>
-              <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
-              <SelectItem value="Permiso">Permiso</SelectItem>
-              <SelectItem value="Suspension">Suspensión</SelectItem>
-              <SelectItem value="Vacaciones">Vacaciones</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <Button
           variant="contained"
           color="secondary"
@@ -457,8 +455,6 @@ export function TablaPermisosFaltaUsuario() {
             background: "rgb(31 41 55)",
             padding: "10px 15px",
             whiteSpace: "nowrap",
-            marginTop: "20px",
-            marginLeft: "10px",
           }}
           onClick={openModalForms}
         >
@@ -476,13 +472,64 @@ export function TablaPermisosFaltaUsuario() {
           </CardHeader>
           <div className="grid gap-4 py-4">
             <div className="flex items-center space-x-2">
-              <Checkbox id="Editar" value="Faltas" onCheckedChange={openModal} style={{marginLeft: "30px"}}  />
-              <Label htmlFor="Editar">Faltas</Label>
+              <Checkbox
+                id="Faltas"
+                checked={tipoFormulario2 === "Faltas"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Faltas" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Faltas">Faltas</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="delete-records"  onCheckedChange={() => handlePermissionChange("delete-records")} style={{marginLeft: "30px"}}  />
-              <Label htmlFor="delete-records">Visualizar 
-              </Label>
+              <Checkbox
+                id="Tiempo por tiempo"
+                checked={tipoFormulario2 === "Tiempo por tiempo"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Tiempo por tiempo" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Tiempo por tiempo">Tiempo por tiempo</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Permiso"
+                checked={tipoFormulario2 === "Permiso"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Permiso" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Permiso">Permiso</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Suspension"
+                checked={tipoFormulario2 === "Suspension"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Suspension" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Suspension">Suspensión</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Vacaciones"
+                checked={tipoFormulario2 === "Vacaciones"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Vacaciones" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Vacaciones">Vacaciones</Label>
             </div>
           </div>
         </Card>
@@ -932,109 +979,473 @@ export function TablaPermisosFaltaUsuario() {
         </div>
       )}
 
-<Dialog open={isEditModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="border-none p-0">
-        <Card className="w-full max-w-lg">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmitEdit}>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="motivo">Días</Label>
-            <Input
-              id="dias"
-              name="dias"
-              type="number"
-              value={formData.dias}
-              onChange={handleChange}
-              placeholder="Dias que faltó"
-              readOnly={true} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-            {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="motivo">Observaciones</Label>
-            <Textarea
-              id="motivo"
-              name="motivo"
-              value={formData.motivo}
-              onChange={handleChange}
-              className="min-h-[100px]"
-              placeholder="Coloca tus observaciones aquí..."
-              readOnly={true} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="comprobante">Comprobante</Label>
-            <div className="flex items-center space-x-2">
-              {formData.comprobante ? (
-                // Si hay un valor recuperado, mostrarlo como texto
-                <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-              ) : (
-                // Si no hay un valor recuperado, permitir la subida de archivo
-                <>
-                  <Input
-                    id="comprobante"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
-                      }));
-                    }}
-                    required
-                    className="hidden"
-                  />
-                  <Button2
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("comprobante").click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG)
-                  </Button2>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="space-y-2" hidden>
-            <Label>¿La falta es justificada?</Label>
-            <RadioGroup
-              value={formData.justificada}
-              onValueChange={handleChange}
-              className="flex space-x-4">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="si" id="justificada-si" />
-                <Label htmlFor="justificada-si">Sí</Label>
+{formularioPrincipalAbiertoEdit && (
+  <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalFormsEdit}>
+    <DialogContent className="border-none p-0">
+      <Card className="w-full max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">
+            {tipoFormulario2}
+          </CardTitle>
+          <DialogDescription className="text-center">
+            Formulario para: {tipoFormulario2}
+          </DialogDescription>
+        </CardHeader>
+        <div className="grid gap-4 py-4">
+        {tipoFormulario2 === "Faltas" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias que faltó" />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="justificada-no" />
-                <Label htmlFor="justificada-no">No</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
-            </RadioGroup>
-          </div>
-          <div className="space-y-2" hidden>
-            <Label htmlFor="pagada">¿La falta es pagada?</Label>
-            <Select value={formData.pagada} onValueChange={handleChange}>
-              <SelectTrigger id="pagada">
-                <SelectValue placeholder="Selecciona una opción" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="si">Sí, es pagada</SelectItem>
-                <SelectItem value="no">No es pagada</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </form>
-    </Card>
-        </DialogContent>
-      </Dialog>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..."
+                  readOnly={true} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="comprobante">Comprobante</Label>
+                <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    // Si hay un valor recuperado, mostrarlo como texto
+                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                  ) : (
+                    // Si no hay un valor recuperado, permitir la subida de archivo
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Tiempo por tiempo" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="horas">Horas</Label>
+                <Input
+                  id="horas"
+                  name="horas"
+                  type="number"
+                  value={formData.horas}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Horas..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="comprobante">Comprobante</Label>
+                    <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    // Si hay un valor recuperado, mostrarlo como texto
+                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                  ) : (
+                    // Si no hay un valor recuperado, permitir la subida de archivo
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Permiso" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+            <div className="space-y-2">
+                <Label>Tipo de permiso</Label>
+                <RadioGroup
+                  onValueChange={(value) => handleChange2({ name: "conSueldo", value })}
+                  value={formData.conSueldo}
+                  disabled={true}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Con sueldo</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">Sin sueldo</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="comprobante">Comprobante</Label>
+                <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    // Si hay un valor recuperado, mostrarlo como texto
+                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                  ) : (
+                    // Si no hay un valor recuperado, permitir la subida de archivo
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Suspension" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Vacaciones" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+        </div>
+      </Card>
+    </DialogContent>
+  </Dialog>
+)}
 
 <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
@@ -1073,9 +1484,9 @@ export function TablaPermisosFaltaUsuario() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Completado">Completado</SelectItem>
+              <SelectItem value="Autorizado">Autorizado</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="En progreso">En progreso</SelectItem>
+              <SelectItem value="No autorizado">No autorizado</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -1097,7 +1508,7 @@ export function TablaPermisosFaltaUsuario() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
-                  <TableCell>{evento.tipo || 'Sin tipo especificado'}</TableCell>
+                  <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>

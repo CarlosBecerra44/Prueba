@@ -5,13 +5,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
   
-  const { formData } = req.body;
+  const { formData, tipoFormulario2 } = req.body;
   const { id } = req.query;
   const estatus = "Pendiente"
 
   try {
     // Guardar el formulario en la base de datos
-    await pool.query('INSERT INTO formularios_faltas (formulario, id_usuario, estatus, archivo) VALUES ($1, $2, $3, $4)', [JSON.stringify(formData), id, estatus, formData.comprobante]);
+    await pool.query('INSERT INTO formularios_faltas (formulario, id_usuario, estatus, archivo, tipo) VALUES ($1, $2, $3, $4, $5)', [JSON.stringify(formData), id, estatus, formData.comprobante, tipoFormulario2]);
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {
