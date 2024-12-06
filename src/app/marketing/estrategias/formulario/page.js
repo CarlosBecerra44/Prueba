@@ -1,4 +1,4 @@
-import { EventPlanningForm as Form } from "@/components/component/formulario";
+import { EventPlanningForm as Form } from "@/components/Marketing Strategy/Components/formulario";
 function page() {
     
       return (

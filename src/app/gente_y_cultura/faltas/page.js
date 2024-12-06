@@ -1,4 +1,4 @@
-import { EditarEstrategia as EditForm } from "@/components/component/editar_formulario";
+import { TablaPermisosFalta as EditForm } from "@/components/Gente & Cultura Permission/Components/tabla_permisos_faltas";
 import { Suspense } from 'react'
 function page() {
       return (

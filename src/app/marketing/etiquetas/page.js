@@ -1,4 +1,4 @@
-import { DocumentSigningForm as Eti } from "@/components/component/formulario_etiqueta";
+import { DocumentSigningForm as Eti } from "@/components/Marketing label/Components/formulario_etiqueta";
 function page() {
     
       return (

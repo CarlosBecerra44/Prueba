@@ -1,4 +1,4 @@
-import { FormularioIncidenciasJsx as Form } from "@/components/component/formulario-incidencias";
+import { FormularioIncidenciasJsx as Form } from "@/components/Gente & Cultura Permission/Components/formulario-incidencias";
 function page() {
   return (
     <div>

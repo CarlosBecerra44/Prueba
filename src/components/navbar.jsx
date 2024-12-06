@@ -34,7 +34,7 @@ const toggleSection = (sectionId) => {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -87,28 +87,17 @@ const toggleSection = (sectionId) => {
         {
           id: 1,
           name: "Papeletas",
-          href: "#",
+          href: "/gente_y_cultura/faltasUsuario",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
-          subMenu: [
-            { id: 101, name: "Faltas", href: "#", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 102, name: "Tiempo por tiempo", href: "#", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 103, name: "Permiso", href: "#", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
-            { id: 104, name: "Suspensión", href: "#", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
-          ]
         },
+
         {
           id: 2,
-          name: "Vacaciones",
-          href: "#",
-          icon: <VacacionesIcon className="h-6 w-6 text-gray-400" />
-        },
-        {
-          id: 3,
           name: "Usuarios",
-          href: "#",
+          href: "/usuario",
           icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
-            { id: 301, name: "Empresas", href: "#", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
           ]
         }
       ]

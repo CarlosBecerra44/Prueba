@@ -1,4 +1,4 @@
-import { Registro as Registrarse } from "@/components/component/registro";
+import { Registro as Registrarse } from "@/components/Login/Components/registro";
 
 function Contact() {
   return (

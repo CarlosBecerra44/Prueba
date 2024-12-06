@@ -1,4 +1,4 @@
-import { EmpresasTabla as Empresas } from "@/components/component/empresasTabla";
+import { EmpresasTabla as Empresas } from "@/components/Company/Components/empresasTabla";
 import { Suspense } from 'react'
 function Usuario() {
   return (
