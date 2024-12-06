@@ -10,7 +10,7 @@ import { getSession } from 'next-auth/react';
 import styles from '../../public/CSS/spinner.css';
 import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 import "../../public/CSS/navbar.css"
-
+import {useUser} from "@/pages/api/hooks";
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-
+  const { user, isLoading, isAdmin } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -102,7 +102,7 @@ const toggleSection = (sectionId) => {
         }
       ]
     },
-    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
+    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }]   },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
     { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
@@ -129,6 +129,9 @@ const toggleSection = (sectionId) => {
       </div>
   
       {/* Sección de contenido desplazable */}
+      {isAdmin && ( <div>
+          
+       
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
@@ -142,8 +145,8 @@ const toggleSection = (sectionId) => {
         </div>
         
          <nav>
-    {filteredCategories.map((category) => (
-      <div key={category.id} className="group">
+          {filteredCategories.map((category) => (
+        <div key={category.id} className="group">
         {/* Secciones principales con IDs específicos */}
         {["principal", "departamentos", "cursos"].includes(category.id) ? (
           <div
@@ -215,16 +218,20 @@ const toggleSection = (sectionId) => {
                     )}
                   </div>
                 ))}
+                
               </div>
             )}
+            
           </div>
         )}
+        
       </div>
+      
     ))}
   </nav>
 
       </div>
-  
+      </div>)}
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
         <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
           Cerrar sesión

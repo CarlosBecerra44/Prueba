@@ -6,8 +6,9 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { useSession,  signOut } from "next-auth/react";
 import styles from '../../../../public/CSS/spinner.css';
-
+import {useUser} from "@/pages/api/hooks";
 export function Principal() {
+  const { user, isLoading, isAdmin } = useUser();
   const [currentIndex, setCurrentIndex] = useState(0)
   const images = [
     {
@@ -70,9 +71,16 @@ export function Principal() {
   }
 
   return (
-    (<main className="grid flex-1 gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+    ( 
+      
+    <main className="grid flex-1 gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+         {!isAdmin && (
+        <div>
+        
           <section>
-          <div className="relative w-full mx-auto">
+          <div className="relative w-full mx-auto"> 
+         
+      
       <div className="overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-in-out"
@@ -119,6 +127,7 @@ export function Principal() {
       </div>
     </div>
           </section>
+        
           <section>
             <Card>
               <CardHeader>
@@ -252,8 +261,13 @@ export function Principal() {
               </CardContent>
             </Card>
           </section>
+          </div>
+      )}
         </main>
+
+        
     )
+    
   );
 }
 
