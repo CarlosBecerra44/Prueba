@@ -46,6 +46,14 @@ export function DocumentSigningForm() {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (nowPdfPreview) {
+        URL.revokeObjectURL(nowPdfPreview); // Liberar la URL del objeto
+      }
+    };
+  }, [nowPdfPreview]);
+
   const handleInputChange = (value,name) => {
     setFormulario((prevData) => ({
       ...prevData,
@@ -142,7 +150,7 @@ export function DocumentSigningForm() {
     
   
     try {
-      const response = await fetch('../api/GuardarEtiquetas', {
+      const response = await fetch('../api/MarketingLabel/GuardarEtiquetas', {
         method: 'POST',
         // Eliminar el encabezado 'Content-Type' para que fetch lo maneje automáticamente al enviar FormData
         body: formData, // Enviar el FormData directamente
@@ -183,9 +191,12 @@ export function DocumentSigningForm() {
                'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            emails: ['b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 'j.leyva@aionsuplementos.com',
-              'l.torres@aionsuplementos.com','t.alvarez@aionsuplementos.com','j.pérez@aionsuplementos.com',' investigacion@nutriton.com.mx','p.gomez@aionsuplementos.com',
-              'o.rivera@aionsuplementos.com', 'r.barberena@aionsuplementos.com', 'k.bayardo@aionsuplementos.com'], // Añadir tus correos específicos
+            emails: ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
+              'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
+              't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
+              'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'r.barberena@aionsuplementos.com', 
+              'k.bayardo@aionsuplementos.com', 'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com',
+              'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta de maquilas',
             message: 'Se ha guardado un nuevo formulario de etiqueta de maquilas. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -202,9 +213,12 @@ export function DocumentSigningForm() {
                'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            emails: ['b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 'j.leyva@aionsuplementos.com',
-              'l.torres@aionsuplementos.com','t.alvarez@aionsuplementos.com','j.pérez@aionsuplementos.com',' investigacion@nutriton.com.mx','p.gomez@aionsuplementos.com',
-              'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com'], // Añadir tus correos específicos
+            emails: ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
+              'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
+              't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
+              'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com', 
+              'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com',
+              'm.uribe@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta interna',
             message: 'Se ha guardado un nuevo formulario de etiqueta interna. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -244,9 +258,8 @@ export function DocumentSigningForm() {
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setNowPdfPreview(e.target?.result);
-      reader.readAsDataURL(file);
+      const pdfUrl = URL.createObjectURL(file); // Crear una URL de objeto para el archivo
+      setNowPdfPreview(pdfUrl); // Establecer la URL para la previsualización
     }
   };
 

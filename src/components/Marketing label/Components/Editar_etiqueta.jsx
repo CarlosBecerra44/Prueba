@@ -119,7 +119,7 @@ export function EditarEtiqueta() {
 
   const modificacionesIngenieíaNProducto = [
     'Dimensiones', 'Sustrato',
-    'Impresión interior/exterior', 'Acabado',
+    'Impresión', 'Acabado',
     'Rollo',
   ];
 
@@ -741,6 +741,7 @@ export function EditarEtiqueta() {
               <div key={item}>
                 {item === "Impresión" ? (
                   <div>
+                    <Label>{item}</Label>
                     <Select 
                       name={`miSelectIngenieria${index + 1}`} 
                       value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
@@ -758,6 +759,7 @@ export function EditarEtiqueta() {
                   </div>
                 ) : (
                   <div>
+                    <Label>{item}</Label>
                     <Select 
                       name={`miSelectIngenieria${index + 1}`} 
                       value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`

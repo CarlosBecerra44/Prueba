@@ -5,7 +5,7 @@ import fs from 'fs';
 
 export const config = {
   api: {
-    bodyParser: false, // Deshabilitar bodyParser para que formidable maneje el form-data
+    bodyParser: false, // Deshabilitar bodyParser para usar formidable
   },
 };
 
@@ -16,16 +16,9 @@ async function subirArchivoFtp(fileStream, remoteFileName) {
     await client.access({
       host: "ftp.aionnet.net", // Dirección del servidor FTP
       user: "aionnetx",        // Usuario FTP
-      password: "Mxxnatura2536//",  // Contraseña FTP
-      secure: false            // Usa 'true' si el servidor FTP requiere conexión segura
+      password: "Mxxnatura2536//", // Contraseña FTP
+      secure: false,           // Usa 'true' si el servidor FTP requiere conexión segura
     });
-
-    /*await client.access({
-      host: "192.168.1.87", // Dirección del servidor FTP
-      user: "pruebas",        // Usuario FTP
-      password: "NutriAdmin2035",  // Contraseña FTP
-      secure: false            // Usa 'true' si el servidor FTP requiere conexión segura
-    });*/
 
     // Cambia al directorio deseado
     await client.ensureDir("/uploads");
@@ -45,44 +38,50 @@ async function subirArchivoFtp(fileStream, remoteFileName) {
 export default async function guardarFormulario(req, res) {
   if (req.method === 'POST') {
     const form = formidable({
-      keepExtensions: true, // Mantener la extensión del archivo
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024, // Permitir hasta 10 MB
     });
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
+        if (err.message.includes('maxFileSize')) {
+          return res.status(413).json({ success: false, message: 'El archivo es demasiado grande. Máximo permitido: 50 MB' });
+        }
         console.error('Error al procesar el archivo:', err);
         return res.status(500).json({ success: false, message: 'Error al procesar el archivo' });
       }
 
-      // Verificar el contenido de 'files'
+      console.log('Fields:', fields);
       console.log('Files:', files);
 
-      const pdfFile = files.nowPdf && files.nowPdf[0];
+      const pdfFile = files.nowPdf;
       if (!pdfFile) {
         return res.status(400).json({ success: false, message: 'Archivo PDF no encontrado' });
       }
 
-      const fileStream = fs.createReadStream(pdfFile.filepath || pdfFile.path);
+      const filePath = pdfFile.filepath || pdfFile.path;
       const remoteFileName = pdfFile.originalFilename || pdfFile.name;
 
+      console.log('PDF File Path:', filePath);
+
       try {
-        // Subir el archivo directamente al servidor FTP
+        // Leer el archivo directamente desde su ubicación temporal
+        const fileStream = fs.createReadStream(filePath);
+
+        // Subir al FTP
         await subirArchivoFtp(fileStream, remoteFileName);
 
-        // Ruta final en el servidor FTP
         const ftpPath = `/uploads/${remoteFileName}`;
-
-        // Guardar los datos en la base de datos
         const result = await pool.query(
           'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
           [fields, ftpPath, false, 'Pendiente']
         );
 
-        console.log(result.rows);
+        console.log('Resultado de la base de datos:', result.rows);
         res.status(200).json(result.rows);
       } catch (error) {
-        console.error('Error al guardar en la base de datos o al subir el archivo al FTP:', error);
-        return res.status(500).json({ success: false, message: 'Error al guardar en la base de datos o al subir el archivo' });
+        console.error('Error al procesar la solicitud:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
       }
     });
   } else {
