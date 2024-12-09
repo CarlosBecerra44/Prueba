@@ -47,7 +47,7 @@ const formSections = [
     id: 'Ingeniería de Productos', 
     name: 'Ingeniería de Productos',
     changeOptions: ['Dimensiones', 'Sustrato',
-    'Impresión interior/exterior', 'Acabado',
+    'Impresión', 'Acabado',
     'Rollo','Seleccionar imágenes']
   },
   { 

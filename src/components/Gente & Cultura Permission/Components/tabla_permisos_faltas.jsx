@@ -256,7 +256,16 @@ export function TablaPermisosFalta() {
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
-                  <TableCell>{evento.jefe_directo || 'Sin jefe directo especificado'}</TableCell>
+                  <TableCell>
+                {
+                  evento.jefe_directo
+                    ? (() => {
+                        const jefe = users.find(u => u.id === evento.jefe_directo);
+                        return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+                      })()
+                    : "Sin datos"
+                }
+              </TableCell>
                   <TableCell
                     style={{
                       color: (() => {
