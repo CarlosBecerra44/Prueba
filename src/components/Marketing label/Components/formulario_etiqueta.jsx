@@ -196,7 +196,7 @@ export function DocumentSigningForm() {
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'r.barberena@aionsuplementos.com', 
               'k.bayardo@aionsuplementos.com', 'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com',
-              'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com'], // Añadir tus correos específicos
+              'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta de maquilas',
             message: 'Se ha guardado un nuevo formulario de etiqueta de maquilas. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -218,7 +218,7 @@ export function DocumentSigningForm() {
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com', 
               'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com',
-              'm.uribe@aionsuplementos.com'], // Añadir tus correos específicos
+              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com'], // Añadir tus correos específicos
             subject: 'Nueva etiqueta interna',
             message: 'Se ha guardado un nuevo formulario de etiqueta interna. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
           }),
@@ -718,7 +718,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Planeación</CardTitle>
-          <CardDescription>Jaret Pérez</CardDescription>
+          <CardDescription>Jaret Pérez o Verónica Rivera</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
