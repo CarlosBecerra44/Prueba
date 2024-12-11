@@ -892,10 +892,14 @@ export function EditarEtiqueta() {
                       // Verificar si el campo de nombre tiene al menos un carácter
                       if (e.target.value.trim() !== '') {
                         // Establecer la fecha actual en el campo correspondiente
-                        const today = new Date().toISOString().split("T")[0];
+                        const today = new Date();
+                        const localDate = today.getFullYear() + '-' +
+                          String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                          String(today.getDate()).padStart(2, '0');
+                          
                         setFormulario((prev) => ({
                           ...prev,
-                          [`fecha_autorizacion-${index}`]: today,
+                          [`fecha_autorizacion-${index}`]: localDate,
                         }));
                       }
 

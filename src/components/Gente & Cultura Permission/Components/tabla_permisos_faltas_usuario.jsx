@@ -73,6 +73,7 @@ export function TablaPermisosFaltaUsuario() {
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
+  const [file, setFile] = useState(null); // Estado para abrir el formulario
 
   const openModal = () => {
     setFormData({
@@ -340,6 +341,20 @@ export function TablaPermisosFaltaUsuario() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Tipo de archivo no permitido');
+        return;
+      }
+  
+      setFormData((prev) => ({ ...prev, comprobante: file.name }));
+    }
+  };  
+
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -369,14 +384,41 @@ export function TablaPermisosFaltaUsuario() {
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/gente_y_cultura/faltasUsuario";
-        });
+        })
       } else {
         Swal.fire('Error', 'Error al subir formulario', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
+    }
+
+    const formDataToSend = new FormData();
+    const fileInput = document.getElementById('comprobante');
+  
+    // Verificar si se ha seleccionado un archivo
+    if (fileInput.files.length === 0) {
+      console.error('No se ha seleccionado un archivo');
+      return;
+    }
+  
+    // Añadir el archivo al FormData
+    formDataToSend.append('comprobante', fileInput.files[0]);
+    console.log('Archivo a enviar:', fileInput.files[0]);  // Verifica el archivo
+
+    try {
+      const response = await fetch('/api/Gente&CulturaPermission/subirPDFPapeletas', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        console.log('Archivo subido exitosamente', result);
+      } else {
+        console.error('Error al subir el archivo', result);
+      }
+    } catch (error) {
+      console.error('Error en la solicitud', error);
     }
   };
 
@@ -576,29 +618,23 @@ export function TablaPermisosFaltaUsuario() {
               <div className="space-y-2">
                 <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
-                  <Input
+                <input
                     id="comprobante"
+                    name="comprobante"  // Asegúrate que sea "comprobante"
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
-                      }));
-                    }}
+                    onChange={handleFileChange}
                     required
                     className="hidden"
                   />
-                  <Button2
+                  <button
                     type="button"
-                    variant="outline"
                     onClick={() => document.getElementById("comprobante").click()}
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Subir archivo (PDF, JPG, PNG)
-                  </Button2>
+                  </button>
                   {formData.comprobante && (
                     <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
                   )}
@@ -1544,9 +1580,9 @@ export function TablaPermisosFaltaUsuario() {
                     style={{
                       color: (() => {
                         switch (evento.estatus) {
-                          case 'Autorizado':
+                          case 'Autorizada':
                             return 'green';
-                          case 'No autorizado':
+                          case 'No autorizada':
                             return 'red';
                           case 'Pendiente':
                             return 'orange';

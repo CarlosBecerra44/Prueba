@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
     const query = `
       SELECT 
-        f.*, u.*, d.nombre AS nombre_departamento
+        f.*, u.*, f.id AS id_papeleta, d.nombre AS nombre_departamento
       FROM 
         formularios_faltas f
       JOIN 
