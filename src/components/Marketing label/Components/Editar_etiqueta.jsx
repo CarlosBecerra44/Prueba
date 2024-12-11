@@ -860,7 +860,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Planeación</CardTitle>
-          <CardDescription>Jaret Pérez</CardDescription>
+          <CardDescription>Jaret Pérez o Verónica Rivera</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
