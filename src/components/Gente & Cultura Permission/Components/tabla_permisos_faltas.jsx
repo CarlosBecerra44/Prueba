@@ -52,8 +52,13 @@ export function TablaPermisosFalta() {
   const itemsPerPage = 10;
   const [users, setUsers] = useState([]);
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
+  const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
+  const [departamento, setDepartamento] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState("");
   const [index, setIndex] = useState(0);
+  const [estatus, setEstatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [formData, setFormData] = useState({
     dias: "",
     horas: "",
@@ -127,6 +132,17 @@ export function TablaPermisosFalta() {
     }))
   }
 
+  const handleChangeEstatus = ({ name, value }) => {
+    console.log("Cambiando estatus:", name, value); // Depuración
+    if (name === "estatus") {
+      setEstatus(value); // Actualiza el estado
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        estatus: value
+      })); // Actualiza el estado
+    }
+  };
+
   const handleChange2 = ({ name, value }) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -142,8 +158,25 @@ export function TablaPermisosFalta() {
       setTipoFormulario2(data.tipo);
       setFormularioPrincipalAbiertoEdit(true);
       setIndex(index);
+      setEstatus(data.estatus);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
+    }
+  };
+
+  const handleChangeStatus = async (index, estatus) => {
+    try {
+      const response = await axios.post(`/api/Gente&CulturaAbsence/actualizarEstatusPapeletas?id=${index}&estatus=${estatus}`);
+      if (response.status === 200) {
+        await Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado con éxito', 'success').then(() => {
+          window.location.href = "/gente_y_cultura/faltas";
+        });
+      } else {
+        Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estatus de la papeleta:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la papeleta', 'error');
     }
   };
 
@@ -277,11 +310,16 @@ export function TablaPermisosFalta() {
   const filteredEventos = eventos
     .map(extractData)
     .filter(evento => 
-      (statusFilter === "todos" || evento.estatus === statusFilter) &&
+      (statusFilter === "todos" || evento.estatus === statusFilter) && // Filtro por estatus
+      (tipoFormulario === "todos" || evento.tipo === tipoFormulario) && // Filtro por tipo de formulario
+      (departamento === "todos" || evento.departamento === departamento) && // Filtro por tipo de formulario
       Object.values(evento)
-        .filter(value => value !== null && value !== undefined)  // Filtra valores nulos o indefinidos
-        .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+        .filter(value => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
+        .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase())) && // Filtro por término de búsqueda
+      (!startDate || new Date(evento.fecha_subida) >= new Date(startDate)) && // Filtro por fecha de inicio
+      (!endDate || new Date(evento.fecha_subida) <= new Date(endDate)) // Filtro por fecha de fin
+  );
+
   
   const {data: session,status}=useSession ();
   if (status === "loading") {
@@ -305,20 +343,40 @@ export function TablaPermisosFalta() {
     );
   }
 
-  const handleChangeSelect = async (event) => {
-    const newEstatus = event.target.value;
-   
-
-    try {
-      // Llamada a la API para actualizar el estatus en la base de datos
-      await axios.put(`/api/eventos/${evento.id}`, { nuevoEstatus: newEstatus });
-      console.log('Estatus actualizado correctamente');
-    } catch (error) {
-      console.error('Error al actualizar el estatus:', error);
-      // Opcional: Revertir el cambio en el UI si falla la actualización
-    
-    }
-  };
+  const exportToExcel = () => {
+    const timezoneFormatter = new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'America/Mexico_City', // Cambia a tu zona horaria
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // Cambia a true si prefieres formato de 12 horas
+    });
+  
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredEventos.map((evento) => ({
+        Tipo: evento.tipo,
+        Nombre_completo: evento.nombre + " " + evento.apellidos,
+        Fecha_subida: evento.fecha_subida
+          ? timezoneFormatter.format(new Date(evento.fecha_subida))
+          : "Sin datos",
+        Fecha_último_movimiento: evento.fecha_actualizacion
+          ? timezoneFormatter.format(new Date(evento.fecha_actualizacion))
+          : "Sin datos",
+        Numero_empleado: evento.numero_empleado,
+        Departamento: evento.departamento,
+        Puesto: evento.puesto,
+        Jefe_directo: evento.jefe_directo,
+        Estatus: evento.estatus,
+      }))
+    );
+  
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Papeletas de incidencias");
+    XLSX.writeFile(workbook, "incidencias.xlsx");
+  };  
 
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
@@ -330,6 +388,16 @@ export function TablaPermisosFalta() {
 
   return (
     <div className="container mx-auto">
+      <div style={{ display:"flex" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ background: "rgb(31 41 55)", marginBottom: "10px" }}
+          onClick={exportToExcel}
+        >
+          Exportar a Excel
+        </Button>
+      </div>
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
@@ -341,6 +409,68 @@ export function TablaPermisosFalta() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+        <div>
+          <Label htmlFor="status-filter" className="mb-2 block">Fecha inicio</Label>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            placeholder="Fecha inicio"
+            style={{width:"150px"}}
+          />
+        </div>
+        <div>
+          <Label htmlFor="status-filter" className="mb-2 block">Fecha fin</Label>
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            placeholder="Fecha fin"
+            style={{width:"150px"}}
+          />
+        </div>
+        <div className="w-full sm:w-1/3">
+          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
+          <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
+            <SelectTrigger id="status-filter">
+              <SelectValue placeholder="Seleccionar tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="Faltas">Faltas</SelectItem>
+              <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
+              <SelectItem value="Permiso">Permiso</SelectItem>
+              <SelectItem value="Suspension">Suspensión</SelectItem>
+              <SelectItem value="Vacaciones">Vacaciones</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-full sm:w-1/3">
+          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por departamento</Label>
+          <Select onValueChange={setDepartamento} defaultValue={departamento}>
+            <SelectTrigger id="status-filter">
+              <SelectValue placeholder="Seleccionar departamento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="IT">IT</SelectItem>
+              <SelectItem value="Marketing">Marketing</SelectItem>
+              <SelectItem value="Ingeniería Nuevo Producto">Ingeniería Nuevo Producto</SelectItem>
+              <SelectItem value="Contabilidad">Contabilidad</SelectItem>
+              <SelectItem value="Gente y Cultura">Gente y Cultura</SelectItem>
+              <SelectItem value="Calidad">Calidad</SelectItem>
+              <SelectItem value="Planeación">Planeación</SelectItem>
+              <SelectItem value="Laboratorio">Laboratorio</SelectItem>
+              <SelectItem value="Maquilas">Maquilas</SelectItem>
+              <SelectItem value="Operaciones">Operaciones</SelectItem>
+              <SelectItem value="Auditorías">Auditorías</SelectItem>
+              <SelectItem value="Ventas">Ventas</SelectItem>
+              <SelectItem value="Almacén">Almacén</SelectItem>
+              <SelectItem value="Producción">Producción</SelectItem>
+              <SelectItem value="Compras">Compras</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="w-full sm:w-1/3">
           <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
@@ -407,10 +537,15 @@ export function TablaPermisosFalta() {
                 <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -420,7 +555,7 @@ export function TablaPermisosFalta() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -469,12 +604,13 @@ export function TablaPermisosFalta() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
-                <Select value={formData.estatus} onValueChange={(value) => handleChange2({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus">
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
                     <SelectItem value="No autorizada">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -531,14 +667,19 @@ export function TablaPermisosFalta() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="comprobante">Comprobante</Label>
-                    <div className="flex items-center space-x-2">
+              <div className="space-y-2">
+                <Label htmlFor="comprobante">Comprobante</Label>
+                <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -548,9 +689,10 @@ export function TablaPermisosFalta() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
+                        required
                         className="hidden"
                       />
                       <Button2
@@ -567,41 +709,14 @@ export function TablaPermisosFalta() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
-                <Select value={formData.estatus} onValueChange={(value) => handleChange2({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus">
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
                     <SelectItem value="No autorizada">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -668,10 +783,15 @@ export function TablaPermisosFalta() {
                 <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -681,7 +801,7 @@ export function TablaPermisosFalta() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -701,41 +821,14 @@ export function TablaPermisosFalta() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
-                <Select value={formData.estatus} onValueChange={(value) => handleChange2({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus">
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
                     <SelectItem value="No autorizada">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -783,41 +876,14 @@ export function TablaPermisosFalta() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
-                <Select value={formData.estatus} onValueChange={(value) => handleChange2({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus">
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
                     <SelectItem value="No autorizada">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -865,41 +931,26 @@ export function TablaPermisosFalta() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Label htmlFor="pagada">¿Las vacaciones son pagadas?</Label>
                 <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
                   <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="si">Sí, son pagadas</SelectItem>
+                    <SelectItem value="no">No son pagadas</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
-                <Select value={formData.estatus} onValueChange={(value) => handleChange2({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus">
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
                     <SelectItem value="No autorizada">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -990,11 +1041,11 @@ export function TablaPermisosFalta() {
                       })(),
                     }}
                   >
-                    <Select value={evento.estatus} onValueChange={handleChangeSelect}>
-                      <SelectTrigger id="estatus">
+                    <Select className="w-full min-w-[200px] max-w-[300px]" value={evento.estatus} onValueChange={(value) => handleChangeStatus(evento.id_papeleta, value)}>
+                      <SelectTrigger id="estatus" className="w-full min-w-[200px] max-w-[300px]">
                         <SelectValue placeholder="Selecciona una opción" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="w-full min-w-[200px] max-w-[300px]">
                         <SelectItem value="Autorizada">Autorizada</SelectItem>
                         <SelectItem value="Pendiente">Pendiente</SelectItem>
                         <SelectItem value="No autorizada">No autorizada</SelectItem>

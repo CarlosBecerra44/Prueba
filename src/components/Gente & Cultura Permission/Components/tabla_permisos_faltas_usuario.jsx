@@ -40,6 +40,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getSession } from 'next-auth/react';
 import { Checkbox } from "@/components/ui/checkbox"
+import '../../../../public/CSS/spinner.css';
 
 const MySwal = withReactContent(Swal);
 
@@ -369,58 +370,71 @@ export function TablaPermisosFaltaUsuario() {
       console.log("No se ha iniciado sesión");
       return;
     }
+  
     try {
+      // Subir el formulario
       const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ formData, tipoFormulario2 }), // Enviar todo el objeto formData como JSON
-      });      
+        body: JSON.stringify({ formData, tipoFormulario2 }),
+      });
+  
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
-          text: 'Se ha creado correctamente',
-          icon: 'success',
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          title: "Subido",
+          text: "Se ha creado correctamente",
+          icon: "success",
+          timer: 3000,
           showConfirmButton: false,
-        })
+        });
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire("Error", "Error al subir formulario", "error");
+        return;
       }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-
-    const formDataToSend = new FormData();
-    const fileInput = document.getElementById('comprobante');
   
-    // Verificar si se ha seleccionado un archivo
-    if (fileInput.files.length === 0) {
-      console.error('No se ha seleccionado un archivo');
-      return;
-    }
-  
-    // Añadir el archivo al FormData
-    formDataToSend.append('comprobante', fileInput.files[0]);
-    console.log('Archivo a enviar:', fileInput.files[0]);  // Verifica el archivo
-
-    try {
-      const response = await fetch('/api/Gente&CulturaPermission/subirPDFPapeletas', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        console.log('Archivo subido exitosamente', result);
-      } else {
-        console.error('Error al subir el archivo', result);
+      // Subir el archivo al FTP
+      const fileInput = document.getElementById("comprobante");
+      if (fileInput.files.length === 0) {
+        console.error("No se ha seleccionado un archivo");
+        return;
       }
+  
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+  
+      reader.onload = async (e) => {
+        const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
+  
+        try {
+          const ftpResponse = await fetch("/api/Gente&CulturaPermission/subirPDFPapeletas", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileContent: base64File, // Enviar el archivo en Base64
+            }),
+          });
+  
+          const ftpResult = await ftpResponse.json();
+          if (ftpResponse.ok) {
+            console.log("Archivo subido al FTP exitosamente", ftpResult);
+          } else {
+            console.error("Error al subir el archivo al FTP", ftpResult);
+          }
+        } catch (ftpError) {
+          console.error("Error en la solicitud de FTP", ftpError);
+        }
+      };
+  
+      reader.readAsDataURL(file); // Leer el archivo como base64
     } catch (error) {
-      console.error('Error en la solicitud', error);
+      console.error("Error en el formulario:", error);
     }
-  };
+  };  
 
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
@@ -456,35 +470,52 @@ export function TablaPermisosFaltaUsuario() {
 
   const renderDatePicker = (label, date, handleChange, name, readOnly = false) => (
     <div className="space-y-2">
-      <Label>{label}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button2
-            variant="outline"
-            className={cn(
-              "w-full justify-start text-left font-normal",
-              !date && "text-muted-foreground"
-            )}
-            disabled={readOnly} // Desactiva el botón si es readOnly
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date
-              ? format(date, "PPP", { locale: es })
-              : <span>Selecciona una fecha</span>}
-          </Button2>
-        </PopoverTrigger>
-        {!readOnly && (
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => handleChange({ target: { name, value: selectedDate } })}
-              initialFocus
-            />
-          </PopoverContent>
+  <Label>{label}</Label>
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button2
+        variant="outline"
+        className={cn(
+          "w-full justify-start text-left font-normal",
+          !date && "text-muted-foreground"
         )}
-      </Popover>
-    </div>
+        disabled={readOnly}
+      >
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        {date
+          ? format(date, "PPP", { locale: es })
+          : <span>Selecciona una fecha</span>}
+      </Button2>
+    </PopoverTrigger>
+    {!readOnly && (
+      <PopoverContent className="w-auto p-4 min-w-[320px]">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(selectedDate) =>
+            handleChange({ target: { name, value: selectedDate } })
+          }
+          initialFocus
+          className="grid grid-cols-7 gap-1"
+          render={{
+            header: () => (
+              <div className="grid grid-cols-7 text-center text-sm font-medium text-gray-700">
+                <span>Su</span>
+                <span>Mo</span>
+                <span>Tu</span>
+                <span>We</span>
+                <span>Th</span>
+                <span>Fr</span>
+                <span>Sa</span>
+              </div>
+            ),
+          }}
+        />
+      </PopoverContent>
+    )}
+  </Popover>
+</div>
+
   )    
 
   return (
@@ -627,14 +658,15 @@ export function TablaPermisosFaltaUsuario() {
                     required
                     className="hidden"
                   />
-                  <button
+                  <Button2
                     type="button"
+                    variant="outline"
                     onClick={() => document.getElementById("comprobante").click()}
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     Subir archivo (PDF, JPG, PNG)
-                  </button>
+                  </Button2>
                   {formData.comprobante && (
                     <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
                   )}
@@ -722,17 +754,12 @@ export function TablaPermisosFaltaUsuario() {
               <div className="space-y-2">
                 <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
-                  <Input
+                <input
                     id="comprobante"
+                    name="comprobante"  // Asegúrate que sea "comprobante"
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
-                      }));
-                    }}
+                    onChange={handleFileChange}
                     required
                     className="hidden"
                   />
@@ -837,17 +864,12 @@ export function TablaPermisosFaltaUsuario() {
               <div className="space-y-2">
                 <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
-                  <Input
+                <input
                     id="comprobante"
+                    name="comprobante"  // Asegúrate que sea "comprobante"
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
-                      }));
-                    }}
+                    onChange={handleFileChange}
                     required
                     className="hidden"
                   />

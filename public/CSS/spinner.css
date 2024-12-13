@@ -46,3 +46,14 @@
     border-radius: 4px;
     border: 2px solid #2d3748; /* Opcional: para crear un espacio alrededor del thumb */
   }
+
+  .calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* Asegura 7 columnas iguales */
+    gap: 0.5rem; /* Espaciado entre días */
+  }
+  
+  .calendar-cell {
+    text-align: center; /* Centra el texto en cada celda */
+    padding: 0.5rem; /* Espaciado interno uniforme */
+  }

@@ -90,15 +90,27 @@ const toggleSection = (sectionId) => {
           href: "/gente_y_cultura/faltasUsuario",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
         },
-
         {
           id: 2,
+          name: "Autorizar papeletas",
+          href: "/gente_y_cultura/faltas",
+          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />,
+        },
+
+        {
+          id: 3,
           name: "Usuarios",
           href: "/usuario",
           icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
             { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
           ]
+        },
+        {
+          id: 4,
+          name: "Vacantes",
+          href: "/gente_y_cultura/vacantes",
+          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />,
         }
       ]
     },
@@ -623,6 +635,16 @@ function SuspensionesIcon(props) {
   <circle cx="12" cy="12" r="10" />
   <line x1="8" y1="8" x2="16" y2="16" />
   <line x1="16" y1="8" x2="8" y2="16" />
+</svg>
+  )
+}
+
+function VacantesIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+  <circle cx="12" cy="7" r="4" />
+  <path d="M4 20c0-4 4-6 8-6s8 2 8 6H4z" />
+  <path d="M22 7h2v2h-2v2h-2V9h-2V7h2V5h2v2z" />
 </svg>
   )
 }
