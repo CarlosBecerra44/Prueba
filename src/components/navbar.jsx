@@ -141,7 +141,6 @@ const toggleSection = (sectionId) => {
       </div>
   
       {/* Sección de contenido desplazable */}
-      {isAdmin && ( 
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
@@ -239,7 +238,7 @@ const toggleSection = (sectionId) => {
       
     ))}
   </nav>
-      </div>)}
+      </div>
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
         <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
           Cerrar sesión

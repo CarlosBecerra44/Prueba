@@ -383,11 +383,13 @@ export function TablaPermisosFaltaUsuario() {
   
       if (response.ok) {
         Swal.fire({
-          title: "Subido",
-          text: "Se ha creado correctamente",
-          icon: "success",
-          timer: 3000,
+          title: 'Subido',
+          text: 'Se ha creado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/gente_y_cultura/faltasUsuario";
         });
       } else {
         Swal.fire("Error", "Error al subir formulario", "error");
@@ -1542,9 +1544,9 @@ export function TablaPermisosFaltaUsuario() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Autorizado">Autorizado</SelectItem>
+              <SelectItem value="Autorizada">Autorizada</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="No autorizado">No autorizado</SelectItem>
+              <SelectItem value="No autorizada">No autorizada</SelectItem>
             </SelectContent>
           </Select>
         </div>

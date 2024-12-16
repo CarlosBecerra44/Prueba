@@ -480,9 +480,9 @@ export function TablaPermisosFalta() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Completado">Completado</SelectItem>
+              <SelectItem value="Autorizada">Autorizada</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="En progreso">En progreso</SelectItem>
+              <SelectItem value="No autorizada">No autorizada</SelectItem>
             </SelectContent>
           </Select>
         </div>
