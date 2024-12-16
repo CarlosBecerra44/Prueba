@@ -15,6 +15,9 @@ import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
 
 export function EventPlanningForm() {
+  const [idUser, setID] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [departamento, setDepartamento] = useState('');
   const [formData, setFormData] = useState({
     evento: "",
     marca: "",

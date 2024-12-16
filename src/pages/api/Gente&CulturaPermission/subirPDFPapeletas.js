@@ -1,31 +1,41 @@
-import formidable from "formidable";
-import fs from "fs";
-import path from "path";
+import { Client } from "basic-ftp";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "POST") {
-    const form = new formidable.IncomingForm({ uploadDir: "/uploads", keepExtensions: true });
+    try {
+      const { fileName, fileContent } = req.body; // `fileContent` debe ser una cadena Base64
 
-    form.parse(req, (err, fields, files) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send("Error al procesar el formulario");
-      }
+      const client = new Client();
+      client.ftp.verbose = true;
 
-      // Aquí puedes manejar los datos y el archivo subido
-      console.log("Datos del formulario:", fields);
-      console.log("Archivo subido:", files.comprobante);
+      // Configurar acceso FTP
+      await client.access({
+        host: "ftp.aionnet.net", // Dirección del servidor FTP
+        user: "aionnetx",        // Usuario FTP
+        password: "Mxxnatura2536//", // Contraseña FTP
+        secure: false,           // Usa 'true' si el servidor FTP requiere conexión segura
+      });
 
-      res.status(200).send("Formulario recibido correctamente");
-    });
+      // Convertir el contenido Base64 a un Buffer
+      const buffer = Buffer.from(fileContent, "base64");
+
+      // Crear un stream desde el buffer
+      const { Readable } = require("stream");
+      const bufferStream = new Readable();
+      bufferStream.push(buffer);
+      bufferStream.push(null); // Indicar fin del stream
+
+      // Subir el archivo al FTP directamente desde el stream
+      await client.uploadFrom(bufferStream, `/uploads/${fileName}`);
+
+      client.close();
+      res.status(200).json({ message: "Archivo subido correctamente al FTP" });
+    } catch (error) {
+      console.error("Error al subir al FTP:", error);
+      res.status(500).json({ error: "No se pudo subir el archivo al FTP" });
+    }
   } else {
     res.setHeader("Allow", ["POST"]);
-    res.status(405).end("Método no permitido");
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

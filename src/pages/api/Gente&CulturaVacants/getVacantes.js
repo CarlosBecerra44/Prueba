@@ -8,22 +8,14 @@ export default async function handler(req, res) {
 
   try {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
-    const query = `
-      SELECT 
-        f.*, u.*, f.id AS id_papeleta, d.nombre AS nombre_departamento
-      FROM 
-        formularios_faltas f
-      JOIN 
-        usuarios u
-      ON 
-        f.id_usuario = u.id AND f.eliminado = 0
-      JOIN 
-        departamentos d
-      ON u.departamento_id = d.id
-      ORDER BY 
-        f.fecha_subida DESC
-    `;
-    const result = await pool.query(query);
+    const result = await pool.query(`
+        SELECT vacantes.*, departamentos.nombre
+        FROM vacantes
+        INNER JOIN departamentos 
+        ON departamentos.id = CAST(vacantes.gerencia AS INT)
+        WHERE vacantes.eliminado = 0
+        ORDER BY vacantes.id DESC
+      `);
     const eventos = result.rows;
 
     // Retorna los eventos en formato JSON

@@ -10,7 +10,7 @@ import { getSession } from 'next-auth/react';
 import styles from '../../public/CSS/spinner.css';
 import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 import "../../public/CSS/navbar.css"
-
+import {useUser} from "@/pages/api/hooks";
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-
+  const { user, isLoading, isAdmin } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -90,19 +90,31 @@ const toggleSection = (sectionId) => {
           href: "/gente_y_cultura/faltasUsuario",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
         },
-
         {
           id: 2,
+          name: "Autorizar papeletas",
+          href: "/gente_y_cultura/faltas",
+          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />,
+        },
+
+        {
+          id: 3,
           name: "Usuarios",
           href: "/usuario",
           icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
           subMenu: [
             { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
           ]
+        },
+        {
+          id: 4,
+          name: "Vacantes",
+          href: "/gente_y_cultura/vacantes",
+          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />,
         }
       ]
     },
-    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
+    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }]   },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
     { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
@@ -142,8 +154,8 @@ const toggleSection = (sectionId) => {
         </div>
         
          <nav>
-    {filteredCategories.map((category) => (
-      <div key={category.id} className="group">
+          {filteredCategories.map((category) => (
+        <div key={category.id} className="group">
         {/* Secciones principales con IDs específicos */}
         {["principal", "departamentos", "cursos"].includes(category.id) ? (
           <div
@@ -215,16 +227,18 @@ const toggleSection = (sectionId) => {
                     )}
                   </div>
                 ))}
+                
               </div>
             )}
+            
           </div>
         )}
+        
       </div>
+      
     ))}
   </nav>
-
       </div>
-  
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
         <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
           Cerrar sesión
@@ -620,6 +634,16 @@ function SuspensionesIcon(props) {
   <circle cx="12" cy="12" r="10" />
   <line x1="8" y1="8" x2="16" y2="16" />
   <line x1="16" y1="8" x2="8" y2="16" />
+</svg>
+  )
+}
+
+function VacantesIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+  <circle cx="12" cy="7" r="4" />
+  <path d="M4 20c0-4 4-6 8-6s8 2 8 6H4z" />
+  <path d="M22 7h2v2h-2v2h-2V9h-2V7h2V5h2v2z" />
 </svg>
   )
 }

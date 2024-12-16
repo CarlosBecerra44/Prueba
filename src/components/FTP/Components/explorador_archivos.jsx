@@ -22,7 +22,7 @@ export function ExploradorArchivos() {
   useEffect(() => {
     if (id) {
       // Llama a la API para obtener los archivos en la carpeta especificada
-      fetch(`/api/list-files?folderId=${id}&correo=${session.user.email}`)
+      fetch(`/api/Users/list-files?folderId=${id}&correo=${session.user.email}`)
         .then(response => response.json())
         .then(data => {
           if (data.files) {
@@ -51,7 +51,7 @@ export function ExploradorArchivos() {
   
     selectedFiles.forEach(file => {
       // Llamar a la API para descargar el archivo
-      fetch(`/api/download?fileName=${file}`)
+      fetch(`/api/FTP/download?fileName=${file}`)
         .then(response => response.blob())
         .then(blob => {
           const url = window.URL.createObjectURL(new Blob([blob]));
@@ -74,7 +74,7 @@ export function ExploradorArchivos() {
   
   const listFiles = (type) => {
     if (id) {
-      fetch(`/api/list-files?folderId=${id}&correo=${session.user.email}`)
+      fetch(`/api/Users/list-files?folderId=${id}&correo=${session.user.email}`)
         .then(response => response.json())
         .then(data => {
           if (data.files) {
