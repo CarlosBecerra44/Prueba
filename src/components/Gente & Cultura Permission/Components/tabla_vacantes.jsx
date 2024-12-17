@@ -536,11 +536,11 @@ export function TablaVacantes() {
                     <SelectValue placeholder="Seleccione el proceso actual" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 vacante</SelectItem>
+                    <SelectItem value="1">Vacante</SelectItem>
                     <SelectItem value="2">Vacante próxima a publicarse</SelectItem>
                     <SelectItem value="3">Análisis de perfiles</SelectItem>
                     <SelectItem value="4">En proceso de entrevistas</SelectItem>
-                    <SelectItem value="5">1 contratación</SelectItem>
+                    <SelectItem value="5">Contratación</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -709,11 +709,11 @@ export function TablaVacantes() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">Todos</SelectItem>
-              <SelectItem value="1">1 vacante</SelectItem>
+              <SelectItem value="1">Vacante</SelectItem>
               <SelectItem value="2">Vacante próxima a publicarse</SelectItem>
               <SelectItem value="3">Análisis de perfiles</SelectItem>
               <SelectItem value="4">En proceso de entrevistas</SelectItem>
-              <SelectItem value="5">1 contratación</SelectItem>
+              <SelectItem value="5">Contratación</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -765,11 +765,11 @@ export function TablaVacantes() {
                         <SelectValue placeholder="Selecciona una opción" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">1 vacante</SelectItem>
+                        <SelectItem value="1">Vacante</SelectItem>
                         <SelectItem value="2">Vacante próxima a publicarse</SelectItem>
                         <SelectItem value="3">Análisis de perfiles</SelectItem>
                         <SelectItem value="4">En proceso de entrevistas</SelectItem>
-                        <SelectItem value="5">1 contratación</SelectItem>
+                        <SelectItem value="5">Contratación</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -863,11 +863,11 @@ export function TablaVacantes() {
                     <SelectValue placeholder="Seleccione el proceso actual" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 vacante</SelectItem>
+                    <SelectItem value="1">Vacante</SelectItem>
                     <SelectItem value="2">Vacante próxima a publicarse</SelectItem>
                     <SelectItem value="3">Análisis de perfiles</SelectItem>
                     <SelectItem value="4">En proceso de entrevistas</SelectItem>
-                    <SelectItem value="5">1 contratación</SelectItem>
+                    <SelectItem value="5">Contratación</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
