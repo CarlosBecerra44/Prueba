@@ -47,13 +47,17 @@
     border: 2px solid #2d3748; /* Opcional: para crear un espacio alrededor del thumb */
   }
 
-  .calendar-header {
+  .custom-calendar {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* Asegura 7 columnas iguales */
-    gap: 0.5rem; /* Espaciado entre días */
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    text-align: center;
   }
   
-  .calendar-cell {
-    text-align: center; /* Centra el texto en cada celda */
-    padding: 0.5rem; /* Espaciado interno uniforme */
+  .custom-calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-weight: 600;
+    color: #4a5568; /* Color de texto */
+    text-align: center;
   }
