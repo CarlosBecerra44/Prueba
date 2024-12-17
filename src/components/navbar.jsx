@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isAdmin } = useUser();
+
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -115,12 +115,43 @@ const toggleSection = (sectionId) => {
       ]
     },
     { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }]   },
+    { id: "departamentos", name: "Departamentos", href: "#"},
+    {
+      id: 7,
+      name: "Gente & Cultura",
+      href: "#",
+      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />,
+      subMenu: [
+        {
+          id: 1,
+          name: "Papeletas",
+          href: "#",
+          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
+          subMenu: [
+            { id: 101, name: "Faltas", href: "/gente_y_cultura/faltas", icon: <FaltasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 102, name: "Tiempo por tiempo", href: "/gente_y_cultura/permisos/por_horas", icon: <TiempoIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 103, name: "Permiso", href: "/gente_y_cultura/permisos/por_horas", icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 104, name: "Suspensión", href: "/gente_y_cultura/faltas", icon: <SuspensionesIcon className="h-6 w-6 text-gray-400" /> },
+          ]
+        },
+        {
+          id: 2,
+          name: "Vacaciones",
+          href: "/gente_y_cultura",
+          icon: <VacacionesIcon className="h-6 w-6 text-gray-400" />
+        }
+      ]
+    },
+    { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "inventario", href: "/it/inventario", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, ] },
     { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
+    { id: "cursos", name: "Cursos", href: "#"},
+    { id: 16, name: "Capacitaciones", href: "/capacitacion", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 17, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" /> },
     { id: "cursos", name: "Cursos", href: "#"},
     { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
   ];
@@ -141,6 +172,12 @@ const toggleSection = (sectionId) => {
       </div>
   
       {/* Sección de contenido desplazable */}
+<<<<<<< Updated upstream
+=======
+      {!isAdmin && ( <div>
+          
+       
+>>>>>>> Stashed changes
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
@@ -154,8 +191,8 @@ const toggleSection = (sectionId) => {
         </div>
         
          <nav>
-          {filteredCategories.map((category) => (
-        <div key={category.id} className="group">
+    {filteredCategories.map((category) => (
+      <div key={category.id} className="group">
         {/* Secciones principales con IDs específicos */}
         {["principal", "departamentos", "cursos"].includes(category.id) ? (
           <div
@@ -227,17 +264,14 @@ const toggleSection = (sectionId) => {
                     )}
                   </div>
                 ))}
-                
               </div>
             )}
-            
           </div>
         )}
-        
       </div>
-      
     ))}
   </nav>
+
       </div>
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
         <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
@@ -501,22 +535,6 @@ function UsuariosIcon(props) {
   )
 }
 
-function EmpresasIcon(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="3" y="3" width="7" height="18" rx="1" ry="1"></rect>
-  <rect x="14" y="7" width="7" height="14" rx="1" ry="1"></rect>
-  <path d="M10 22v-2a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
-  <line x1="6" y1="8" x2="8" y2="8"></line>
-  <line x1="6" y1="12" x2="8" y2="12"></line>
-  <line x1="6" y1="16" x2="8" y2="16"></line>
-  <line x1="17" y1="10" x2="19" y2="10"></line>
-  <line x1="17" y1="14" x2="19" y2="14"></line>
-  <line x1="17" y1="18" x2="19" y2="18"></line>
-</svg>
-  )
-}
-
 function PermisosIcon(props) {
   return (
     <svg
@@ -634,16 +652,6 @@ function SuspensionesIcon(props) {
   <circle cx="12" cy="12" r="10" />
   <line x1="8" y1="8" x2="16" y2="16" />
   <line x1="16" y1="8" x2="8" y2="16" />
-</svg>
-  )
-}
-
-function VacantesIcon(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-  <circle cx="12" cy="7" r="4" />
-  <path d="M4 20c0-4 4-6 8-6s8 2 8 6H4z" />
-  <path d="M22 7h2v2h-2v2h-2V9h-2V7h2V5h2v2z" />
 </svg>
   )
 }
