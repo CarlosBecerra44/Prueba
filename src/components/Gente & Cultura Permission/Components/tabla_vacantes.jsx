@@ -114,20 +114,6 @@ export function TablaVacantes() {
     fetchUsers();
   }, []);
 
-  // Obtener eventos desde el backend
-  useEffect(() => {
-    const fetchEventos = async () => {
-      try {
-        const response = await axios.get('/api/Gente&CulturaVacants/getVacantes') // Asegúrate de que esta ruta esté configurada en tu backend
-        setEventos(response.data)
-        console.log(response.data)
-      } catch (error) {
-        console.error('Error al obtener eventos:', error)
-      }
-    }
-    fetchEventos()
-  }, [])
-
   const closeModalEdit = () => {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
@@ -203,13 +189,19 @@ export function TablaVacantes() {
     }
   };
 
-  const handleChangeStatus = async (index, estatus) => {
+  const handleChangeStatus = async (index, nuevoEstatus) => {
     try {
-      const response = await axios.post(`/api/Gente&CulturaVacants/actualizarEstatusVacantes?id=${index}&estatus=${estatus}`);
+      const response = await axios.post(
+        `/api/Gente&CulturaVacants/actualizarEstatusVacantes`,
+        { id: index, estatus: nuevoEstatus } // Envías los datos correctamente
+      );
+  
       if (response.status === 200) {
-        await Swal.fire('Actualizado', 'El estatus de la vacante ha sido actualizado con éxito', 'success').then(() => {
-          window.location.href = "/gente_y_cultura/vacantes";
-        });
+        // Actualizar el estado local sin recargar la página
+        fetchEventos();       
+  
+        // Mostrar mensaje de éxito
+        Swal.fire('Actualizado', 'El estatus de la vacante ha sido actualizado con éxito', 'success');
       } else {
         Swal.fire('Error', 'Error al actualizar el estatus de la vacante', 'error');
       }
@@ -217,7 +209,22 @@ export function TablaVacantes() {
       console.error('Error al actualizar el estatus de la vacante:', error);
       Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la vacante', 'error');
     }
-  };
+  };  
+
+  // Obtener eventos desde el backend
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get('/api/Gente&CulturaVacants/getVacantes') // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data)
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error al obtener eventos:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchEventos();
+  }, []);
 
   const formatDate = (isoDate) => {
     if (!isoDate) return '';
@@ -231,7 +238,7 @@ export function TablaVacantes() {
       return;
     }
     try {
-      const response = await fetch(`/api/Gente&CulturaVacants/guardarVacantes?id=${index}`, {
+      const response = await fetch('/api/Gente&CulturaVacants/guardarVacantes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -255,39 +262,6 @@ export function TablaVacantes() {
       console.error('Error:', error);
     }
   };
-
-  const renderDatePicker = (label, date, handleChange, name, readOnly = false) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button2
-            variant="outline"
-            className={cn(
-              "w-full justify-start text-left font-normal",
-              !date && "text-muted-foreground"
-            )}
-            disabled={readOnly} // Desactiva el botón si es readOnly
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date
-              ? format(date, "PPP", { locale: es })
-              : <span>Selecciona una fecha</span>}
-          </Button2>
-        </PopoverTrigger>
-        {!readOnly && (
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => handleChange({ target: { name, value: selectedDate } })}
-              initialFocus
-            />
-          </PopoverContent>
-        )}
-      </Popover>
-    </div>
-  )   
 
   const handleDelete = async (index) => {
     try {
@@ -650,8 +624,8 @@ export function TablaVacantes() {
                 <Input id="fecha_apertura" type="date" className="col-span-3" required value={fecha_apertura} onChange={(e) => setFechaApertura(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="fecha_ingreso" className="text-right">Fecha de ingreso*</Label>
-                <Input id="fecha_ingreso" type="date" className="col-span-3" required value={fecha_ingreso} onChange={(e) => setFechaIngreso(e.target.value)} />
+                <Label htmlFor="fecha_ingreso" className="text-right">Fecha de ingreso</Label>
+                <Input id="fecha_ingreso" type="date" className="col-span-3" value={fecha_ingreso} onChange={(e) => setFechaIngreso(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="observaciones" className="text-right">Observaciones*</Label>
@@ -659,7 +633,7 @@ export function TablaVacantes() {
               </div>
             </div>
             <DialogFooter>
-              <Button2 type="submit" disabled={!vacante || !cantidad || !gerencia || !proceso_actual || !salarioMin || !salarioMax || !fecha_apertura || !fecha_ingreso || !observaciones} >Agregar vacante</Button2>
+              <Button2 type="submit" disabled={!vacante || !cantidad || !gerencia || !proceso_actual || !salarioMin || !salarioMax || !fecha_apertura || !observaciones} >Agregar vacante</Button2>
             </DialogFooter>
             </form>
           </DialogContent>
@@ -786,8 +760,8 @@ export function TablaVacantes() {
                       })(),
                     }}
                   >
-                    <Select className="w-full min-w-[200px] max-w-[300px]" value={evento.proceso_actual.toString()} onValueChange={(value) => handleChangeStatus(evento.id, value)}>
-                      <SelectTrigger id="proceso_actual" className="w-full min-w-[200px] max-w-[300px]">
+                    <Select className="w-full min-w-[300px] max-w-[400px]" value={evento.proceso_actual.toString()} onValueChange={(value) => handleChangeStatus(evento.id, value)}>
+                      <SelectTrigger id="proceso_actual" className="w-full min-w-[300px] max-w-[400px]">
                         <SelectValue placeholder="Selecciona una opción" />
                       </SelectTrigger>
                       <SelectContent>
@@ -824,8 +798,8 @@ export function TablaVacantes() {
                     </DialogTrigger>
                     <DialogContent>
             <DialogHeader>
-              <DialogTitle>Editar usuario</DialogTitle>
-              <DialogDescription>Actualiza los detalles necesarios del usuario.</DialogDescription>
+              <DialogTitle>Editar vacante</DialogTitle>
+              <DialogDescription>Actualiza los detalles necesarios de la vacante.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitUpdate}>
             <div className="grid gap-4 py-4">
@@ -902,7 +876,7 @@ export function TablaVacantes() {
                 <div className="col-span-3">
                   {!esEditable ? (
                     <Select
-                      value={selectedVacant?.ubicacion}
+                      value={selectedVacant?.ubicacion || ""}
                       onValueChange={(value) => {
                         if (value === "nueva") {
                           setEsEditable(true);
@@ -916,6 +890,12 @@ export function TablaVacantes() {
                         <SelectValue placeholder="Selecciona una ubicación" />
                       </SelectTrigger>
                       <SelectContent>
+                        {/* Agregar dinámicamente la ubicación seleccionada si no está en la lista */}
+                        {!ubicaciones.includes(selectedVacant?.ubicacion) && selectedVacant?.ubicacion && (
+                          <SelectItem value={selectedVacant.ubicacion}>
+                            {selectedVacant.ubicacion}
+                          </SelectItem>
+                        )}
                         {ubicaciones.map((ubic, idx) => (
                           <SelectItem key={idx} value={ubic}>
                             {ubic}

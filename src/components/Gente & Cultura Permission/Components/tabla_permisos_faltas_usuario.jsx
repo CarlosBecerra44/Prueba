@@ -189,12 +189,12 @@ export function TablaPermisosFaltaUsuario() {
 
   const encabezados = [
     "Tipo",
+    "Número de empleado",
     "Departamento",
     "Puesto",
-    "Número de empleado",
+    "Jefe directo",
     "Fecha de subida",
     "Fecha de último movimiento",
-    "Jefe directo",
     "Estatus",
     "Acción"
   ]
@@ -490,7 +490,7 @@ export function TablaPermisosFaltaUsuario() {
       </Button2>
     </PopoverTrigger>
     {!readOnly && (
-      <PopoverContent className="w-auto p-4 min-w-[320px]">
+      <PopoverContent className="p-4 min-w-[320px]">
         <Calendar
           mode="single"
           selected={date}
@@ -1569,9 +1569,10 @@ export function TablaPermisosFaltaUsuario() {
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
                   <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
+                  <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
-                  <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
+                  <TableCell>{evento.jefe_directo || 'Sin jefe directo especificado'}</TableCell>
                   <TableCell>
                     {evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {
@@ -1599,7 +1600,6 @@ export function TablaPermisosFaltaUsuario() {
                       })}`
                     : "Sin datos"}
                   </TableCell>
-                  <TableCell>{evento.jefe_directo || 'Sin jefe directo especificado'}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {

@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
@@ -29,7 +29,6 @@ export function FormularioIncidenciasJsx() {
   const [fechaInicio, setFechaInicio] = useState(null)
   const [fechaFin, setFechaFin] = useState(null)
   const [motivo, setMotivo] = useState('')
-  const [dias, setDias] = useState('')
   const [comprobante, setComprobante] = useState(null)
   const [justificada, setJustificada] = useState('')
   const [pagada, setPagada] = useState('')
@@ -49,48 +48,45 @@ export function FormularioIncidenciasJsx() {
             className={cn(
               "w-full justify-start text-left font-normal",
               !date && "text-muted-foreground"
-            )}>
+            )}
+          >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date ? format(date, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
-          <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            initialFocus
+          />
         </PopoverContent>
       </Popover>
     </div>
   )
 
   return (
-    (<Card className="w-full max-w-lg">
+    <Card className="w-full max-w-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Formulario de incidencias - Faltas</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Formulario de Incidencias - Faltas</CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="motivo">Días</Label>
-            <Input
-              id="dias"
-              type="number"
-              value={dias}
-              onChange={(e) => setDias(e.target.value)}
-              required
-              placeholder="Dias que faltó" />
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderDatePicker("del", fechaInicio, setFechaInicio)}
-            {renderDatePicker("al", fechaFin, setFechaFin)}
+            {renderDatePicker("Fecha de inicio", fechaInicio, setFechaInicio)}
+            {renderDatePicker("Fecha de fin", fechaFin, setFechaFin)}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="motivo">Observaciones</Label>
+            <Label htmlFor="motivo">Motivo de la falta</Label>
             <Textarea
               id="motivo"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               required
               className="min-h-[100px]"
-              placeholder="Coloca tus observaciones aquí..." />
+              placeholder="Describe el motivo de tu falta..."
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="comprobante">Comprobante</Label>
@@ -101,12 +97,14 @@ export function FormularioIncidenciasJsx() {
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => setComprobante(e.target.files?.[0] || null)}
                 required
-                className="hidden" />
+                className="hidden"
+              />
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => document.getElementById('comprobante').click()}
-                className="w-full">
+                className="w-full"
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Subir archivo (PDF, JPG, PNG)
               </Button>
@@ -115,10 +113,7 @@ export function FormularioIncidenciasJsx() {
           </div>
           <div className="space-y-2">
             <Label>¿La falta es justificada?</Label>
-            <RadioGroup
-              value={justificada}
-              onValueChange={setJustificada}
-              className="flex space-x-4">
+            <RadioGroup value={justificada} onValueChange={setJustificada} className="flex space-x-4">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="si" id="justificada-si" />
                 <Label htmlFor="justificada-si">Sí</Label>
@@ -143,9 +138,9 @@ export function FormularioIncidenciasJsx() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full">Enviar</Button>
+          <Button type="submit" className="w-full">Enviar Incidencia</Button>
         </CardFooter>
       </form>
-    </Card>)
-  );
+    </Card>
+  )
 }

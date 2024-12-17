@@ -74,13 +74,13 @@ export function TablaPermisosFalta() {
 
   const encabezados = [
     "Tipo",
-    "Nombre",
-    "Fecha de subida",
-    "Fecha de último movimiento",
     "Número de empleado",
+    "Nombre",
     "Departamento",
     "Puesto",
     "Jefe directo",
+    "Fecha de subida",
+    "Fecha de último movimiento",
     "Estatus",
     "Acción"
   ]
@@ -101,20 +101,20 @@ export function TablaPermisosFalta() {
     
     fetchUsers();
   }, []);
-
-  // Obtener eventos desde el backend
-  useEffect(() => {
-    const fetchEventos = async () => {
-      try {
-        const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
-        setEventos(response.data)
-        console.log(response.data)
-      } catch (error) {
-        console.error('Error al obtener eventos:', error)
-      }
+  
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data)
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error al obtener eventos:', error)
     }
-    fetchEventos()
-  }, [])
+  }
+
+  useEffect(() => {
+    fetchEventos();
+  }, []);
 
   const closeModalEdit = () => {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
@@ -164,13 +164,19 @@ export function TablaPermisosFalta() {
     }
   };
 
-  const handleChangeStatus = async (index, estatus) => {
+  const handleChangeStatus = async (index, nuevoEstatus) => {
     try {
-      const response = await axios.post(`/api/Gente&CulturaAbsence/actualizarEstatusPapeletas?id=${index}&estatus=${estatus}`);
+      const response = await axios.post(
+        `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
+        { id: index, estatus: nuevoEstatus } // Envías los datos correctamente
+      );
+  
       if (response.status === 200) {
-        await Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado con éxito', 'success').then(() => {
-          window.location.href = "/gente_y_cultura/faltas";
-        });
+        // Actualizar el estado local sin recargar la página
+        fetchEventos();       
+  
+        // Mostrar mensaje de éxito
+        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado con éxito', 'success');
       } else {
         Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
       }
@@ -178,7 +184,7 @@ export function TablaPermisosFalta() {
       console.error('Error al actualizar el estatus de la papeleta:', error);
       Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la papeleta', 'error');
     }
-  };
+  }; 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -987,7 +993,20 @@ export function TablaPermisosFalta() {
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
                   <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
+                  <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre especificado'}</TableCell>
+                  <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
+                  <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
+                  <TableCell>
+                {
+                  evento.jefe_directo
+                    ? (() => {
+                        const jefe = users.find(u => u.id === evento.jefe_directo);
+                        return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+                      })()
+                    : "Sin datos"
+                }
+              </TableCell>
                   <TableCell>{evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {
                         day: '2-digit',
@@ -1012,19 +1031,6 @@ export function TablaPermisosFalta() {
                         hour12: false, // Cambiar a true si prefieres formato de 12 horas
                       })}`
                     : "Sin datos"}</TableCell>
-                  <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
-                  <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
-                  <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
-                  <TableCell>
-                {
-                  evento.jefe_directo
-                    ? (() => {
-                        const jefe = users.find(u => u.id === evento.jefe_directo);
-                        return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
-                      })()
-                    : "Sin datos"
-                }
-              </TableCell>
                   <TableCell
                     style={{
                       color: (() => {
