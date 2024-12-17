@@ -106,7 +106,7 @@ const toggleSection = (sectionId) => {
     },
     { id: 8, name: "Marketing", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }] },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, subMenu: [{ name: "inventario", href: "/it/inventario", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, ] },
     { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
@@ -132,6 +132,12 @@ const toggleSection = (sectionId) => {
       </div>
   
       {/* Sección de contenido desplazable */}
+<<<<<<< Updated upstream
+=======
+      {!isAdmin && ( <div>
+          
+       
+>>>>>>> Stashed changes
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
