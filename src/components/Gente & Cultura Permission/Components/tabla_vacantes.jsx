@@ -973,7 +973,7 @@ export function TablaVacantes() {
               </div>
             </div>
             <DialogFooter>
-              <Button2 type="submit">Actualizar usuario</Button2>
+              <Button2 type="submit">Actualizar vacante</Button2>
             </DialogFooter>
             </form>
           </DialogContent>
