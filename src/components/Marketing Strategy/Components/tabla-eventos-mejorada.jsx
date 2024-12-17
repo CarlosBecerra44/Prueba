@@ -133,7 +133,7 @@ export function TablaEventosMejorada() {
 
         // Si el usuario confirma la eliminación
         if (result.isConfirmed) {
-          const response = await axios.post(`/api/MarketingStrategy/ eliminarFormulario?id=${index}`);
+          const response = await axios.post(`/api/MarketingStrategy/eliminarFormulario?id=${index}`);
           if (response.status === 200) {
             await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
             window.location.href = "/marketing/estrategias";

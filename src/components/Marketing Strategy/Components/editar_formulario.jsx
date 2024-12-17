@@ -57,7 +57,7 @@ export function EditarEstrategia() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch('/api/getUser', {
+        const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export function EditarEstrategia() {
       if (!id) return;
       
       try {
-        const response = await fetch(`/api/obtenerFormulario?id=${id}`);
+        const response = await fetch(`/api/MarketingStrategy/obtenerFormulario?id=${id}`);
         const data = await response.json();
         setFormData(data);
       } catch (error) {
@@ -296,7 +296,7 @@ export function EditarEstrategia() {
     console.log("Datos del formulario:", formData);
 
     try {
-      const response = await fetch(`/api/actualizarFormulario?id=${id}`, {
+      const response = await fetch(`/api/MarketingStrategy/actualizarFormulario?id=${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ export function EditarEstrategia() {
     }
 
     try {
-      const response2 = await fetch('/api/EnvioEvento', {
+      const response2 = await fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
