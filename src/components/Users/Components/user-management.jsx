@@ -479,10 +479,9 @@ export function UserManagementTable() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos los roles</SelectItem>
+              <SelectItem value="Máster">Máster</SelectItem>
               <SelectItem value="Administrador">Administrador</SelectItem>
               <SelectItem value="Estándar">Estándar</SelectItem>
-              <SelectItem value="Editor">Editor</SelectItem>
-              <SelectItem value="Lector">Lector</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -620,10 +619,9 @@ export function UserManagementTable() {
                     <SelectValue placeholder="Seleccione el rol para el usuario" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Administrador">Administrador</SelectItem>
-                    <SelectItem value="Estándar">Estándar</SelectItem>
-                    <SelectItem value="Editor">Editor</SelectItem>
-                    <SelectItem value="Lector">Lector</SelectItem>
+                  <SelectItem value="Máster">Máster</SelectItem>
+                  <SelectItem value="Administrador">Administrador</SelectItem>
+                  <SelectItem value="Estándar">Estándar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -823,10 +821,9 @@ export function UserManagementTable() {
                     <SelectValue placeholder="Seleccione el rol para el usuario" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Administrador">Administrador</SelectItem>
-                    <SelectItem value="Estándar">Estándar</SelectItem>
-                    <SelectItem value="Editor">Editor</SelectItem>
-                    <SelectItem value="Lector">Lector</SelectItem>
+                  <SelectItem value="Máster">Máster</SelectItem>
+                  <SelectItem value="Administrador">Administrador</SelectItem>
+                  <SelectItem value="Estándar">Estándar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

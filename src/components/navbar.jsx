@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isAdmin } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isStandardMkt, isStandard } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -72,62 +72,76 @@ const toggleSection = (sectionId) => {
   }
 
   const categories = [
-    { id: "principal", name: "Principal", href: "#"},
-    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" /> },
-    { id: "departamentos", name: "Departamentos", href: "#"},
+    { id: "principal", name: "Principal", href: "#", roles: ["master", "adminMkt","adminGC","standardMkt","standard"]},
+    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 4, name: "Ver mis permisos", href: '#', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","standardMkt","standard"]},
     {
       id: 7,
       name: "Gente & Cultura",
       href: "#",
-      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />,
+      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"],
       subMenu: [
         {
           id: 1,
           name: "Papeletas",
           href: "/gente_y_cultura/faltasUsuario",
-          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />,
+          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"]
         },
         {
           id: 2,
           name: "Autorizar papeletas",
           href: "/gente_y_cultura/faltas",
-          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />,
+          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"]
         },
 
         {
           id: 3,
           name: "Usuarios",
           href: "/usuario",
-          icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />,
+          icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"],
           subMenu: [
-            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" /> },
+            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
           ]
         },
         {
           id: 4,
           name: "Vacantes",
           href: "/gente_y_cultura/vacantes",
-          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />,
+          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"]
         }
       ]
     },
-    { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" /> }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" /> }]   },
-    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" /> },
-    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" /> },
-    { id: "cursos", name: "Cursos", href: "#"},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" /> }
+    { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
+    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: "cursos", name: "Cursos", href: "#", roles: ["master","adminMkt","adminGC","standardMkt","standard"]},
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] }
   ];
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const hasAccess = (category) => {
+    if (isMaster && category.includes("master")) return true;
+    if (isAdminMkt && category.includes("adminMkt")) return true;
+    if (isStandardMkt && category.includes("standardMkt")) return true;
+    if (isStandard && category.includes("standard")) return true;
+    if (isAdminGC && category.includes("adminGC")) return true;
+
+    return false;
+  };
+
+  const hasSubMenuAccess = (subMenu) => {
+    return subMenu.some((item) => hasAccess(item.roles || []));
+  };
  
   return (
     <div className="flex flex-col w-64 h-screen min-h-screen bg-gray-800 text-white">
@@ -140,7 +154,6 @@ const toggleSection = (sectionId) => {
         </div>
       </div>
   
-      {/* Sección de contenido desplazable */}
       <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
         <div className="relative mb-4">
           <SearchIcon className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
@@ -154,91 +167,99 @@ const toggleSection = (sectionId) => {
         </div>
         
          <nav>
-          {filteredCategories.map((category) => (
-        <div key={category.id} className="group">
-        {/* Secciones principales con IDs específicos */}
-        {["principal", "departamentos", "cursos"].includes(category.id) ? (
-          <div
-            className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
-            onClick={() => toggleSection(category.id)}
-            style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
-          >
-            {category.name}
-          </div>
-        ) : (
-          <div>
-            {/* Menú principal */}
-            <div
-              className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700"
-              onClick={() => toggleSection(category.id)}
-              style={{ color: "white" }}
-            >
-              <div className="flex items-center">
-                {category.icon}
-                <Link href={category.href} className="ml-2">
+          {filteredCategories.map((category) => {
+            if (!hasAccess(category.roles || [])) return null;
+            return (
+              <div key={category.id} className="group">
+              {/* Secciones principales con IDs específicos */}
+              {["principal", "departamentos", "cursos"].includes(category.id) ? (
+                <div
+                  className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
+                  onClick={() => toggleSection(category.id)}
+                  style={{ color: "white", fontWeight: "bold", textDecoration: "underline" }}
+                >
                   {category.name}
-                </Link>
-              </div>
-              {category.subMenu && (
-                <span className="text-gray-400">
-                  {openSections[category.id] ? "-" : "+"}
-                </span>
-              )}
-            </div>
-
-            {/* Submenús dinámicos */}
-            {openSections[category.id] && category.subMenu && (
-              <div className="pl-8">
-                {category.subMenu.map((subItem) => (
-                  <div key={subItem.id}>
-                    <div
-                      className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-600"
-                      onClick={() => toggleSection(subItem.id)}
-                      style={{ color: "white" }}
-                    >
-                      <div className="flex items-center">
-                        {subItem.icon}
-                        <Link href={subItem.href} className="ml-2">
-                          {subItem.name}
-                        </Link>
-                      </div>
-                      {subItem.subMenu && (
-                        <span className="text-gray-400">
-                          {openSections[subItem.id] ? "-" : "+"}
-                        </span>
-                      )}
+                </div>
+              ) : (
+                <div>
+                  {/* Menú principal */}
+                  <div
+                    className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-700"
+                    onClick={() => toggleSection(category.id)}
+                    style={{ color: "white" }}
+                  >
+                    <div className="flex items-center">
+                      {category.icon}
+                      <Link href={category.href} className="ml-2">
+                        {category.name}
+                      </Link>
                     </div>
-
-                    {/* Segundo nivel de submenús */}
-                    {openSections[subItem.id] && subItem.subMenu && (
-                      <div className="pl-8">
-                        {subItem.subMenu.map((nestedItem) => (
-                          <Link
-                            key={nestedItem.id}
-                            href={nestedItem.href}
-                            className="block py-2 px-4 hover:bg-gray-500 flex items-center"
-                            style={{color: "white"}}
-                          >
-                            <div style={{ marginRight: "10px" }}>{nestedItem.icon}</div>
-                            {nestedItem.name}
-                          </Link>
-                        ))}
-                      </div>
+                    {category.subMenu && hasSubMenuAccess(category.subMenu) && (
+                      <span className="text-gray-400">
+                        {openSections[category.id] ? "-" : "+"}
+                      </span>
                     )}
                   </div>
-                ))}
-                
-              </div>
-            )}
-            
-          </div>
-        )}
-        
-      </div>
       
-    ))}
+                  {/* Submenús dinámicos */}
+                  {openSections[category.id] && category.subMenu && (
+                    <div className="pl-8">
+                      {category.subMenu.map((subItem) => {
+                        if (!hasAccess(subItem.roles || [])) return null;
+                        return (
+<div key={subItem.id}>
+                          <div
+                            className="flex items-center justify-between cursor-pointer py-2 px-4 hover:bg-gray-600"
+                            onClick={() => toggleSection(subItem.id)}
+                            style={{ color: "white" }}
+                          >
+                            <div className="flex items-center">
+                              {subItem.icon}
+                              <Link href={subItem.href} className="ml-2">
+                                {subItem.name}
+                              </Link>
+                            </div>
+                            {subItem.subMenu && (
+                              <span className="text-gray-400">
+                                {openSections[subItem.id] ? "-" : "+"}
+                              </span>
+                            )}
+                          </div>
+      
+                          {/* Segundo nivel de submenús */}
+                          {openSections[subItem.id] && subItem.subMenu && (
+                            <div className="pl-8">
+                              {subItem.subMenu.map((nestedItem) => (
+                                <Link
+                                  key={nestedItem.id}
+                                  href={nestedItem.href}
+                                  className="block py-2 px-4 hover:bg-gray-500 flex items-center"
+                                  style={{color: "white"}}
+                                >
+                                  <div style={{ marginRight: "10px" }}>{nestedItem.icon}</div>
+                                  {nestedItem.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        )   
+          })}
+                      
+                    </div>
+                  )}
+                  
+                </div>
+              )}
+              
+            </div>
+            )
+           
+          }
+    )}
   </nav>
       </div>
+      
       <div style={{ borderTopWidth: "2px", marginRight: "6px" }} className="mt-auto p-4 border-gray-700">
         <Button onClick={() => signOut({ callbackUrl: 'https://aionnet.vercel.app/' })} className="w-full" style={{ color: "black", background: "white" }}>
           Cerrar sesión
