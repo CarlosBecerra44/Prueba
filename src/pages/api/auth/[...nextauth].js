@@ -39,7 +39,7 @@ export default NextAuth({
             // Verifica la contraseña
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (isPasswordValid) {
-              return { id: user.id, name: user.nombre, email: user.correo, rol: user.rol };
+              return { id: user.id, name: user.nombre, email: user.correo, rol: user.rol, departamento: user.departamento_id, idPermiso: user.id_permiso };
             } else {
               throw new Error("Contraseña incorrecta");
             }
@@ -65,8 +65,11 @@ export default NextAuth({
         token.name = user.name;
         token.email = user.email;
         token.id = user.id;
-        token.rol = user.rol; // Incluye el rol en el token JWT
+        token.rol = user.rol;
+        token.departamento = user.departamento;
+        token.idPermiso = user.idPermiso;
       }
+      console.log("JWT Token:", token);
       return token;
     }
     ,
@@ -75,8 +78,11 @@ export default NextAuth({
         session.user.name = token.name;
         session.user.email = token.email;
         session.user.id = token.id;
-        session.user.rol = token.rol; // Incluye el rol en la sesión
+        session.user.rol = token.rol;
+        session.user.departamento_id = token.departamento;
+        session.user.id_permiso = token.idPermiso;
       }
+      console.log("Session Token:", token);
       return session;
     }
     ,

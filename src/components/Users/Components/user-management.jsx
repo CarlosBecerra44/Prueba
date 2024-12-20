@@ -13,6 +13,7 @@ import { ChevronRight, Search, UserPlus, X } from "lucide-react"
 import { useSession,  signOut } from "next-auth/react";
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import {useUser} from "@/pages/api/hooks";
 
 
 const formSections = [
@@ -105,6 +106,7 @@ export function UserManagementTable() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
+  const { user, isLoading, isMaster, isAdminGC, rol } = useUser();
 
   const filteredUsers = users
     .filter(user => 
@@ -279,6 +281,18 @@ export function UserManagementTable() {
       </div>
     );
   }
+
+  /*console.log("Rol del usuario:", rol);
+
+  if (!isMaster) {
+    return (
+      //window.location.href = "/paginas_error",
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className={styles.spinner} />
+        <p className="ml-3">No tienes acceso a esta vista</p>
+      </div>
+    );
+  }*/
 
   const handleEditUser = (userId) => {
     const userToEdit = users.find(user => user.id === userId); // Buscar el usuario en el estado
@@ -708,7 +722,7 @@ export function UserManagementTable() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">Correo electrónico</Label>
-                <Input id="email" type="email" className="col-span-3" value={selectedUser?.correo || ''} onChange={(e) => setSelectedUser({...selectedUser, correo: e.target.value})} readOnly={true} />
+                <Input id="email" type="email" className="col-span-3" value={selectedUser?.correo || ''} onChange={(e) => setSelectedUser({...selectedUser, correo: e.target.value})} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
