@@ -653,16 +653,12 @@ export function UserManagementTable() {
       <Table>
         <TableHeader>
           <TableRow>
-          <TableHead>ID</TableHead>
+            <TableHead>No. empleado</TableHead>
             <TableHead>Nombre completo</TableHead>
             <TableHead>Correo</TableHead>
-            <TableHead>No. empleado</TableHead>
             <TableHead>Departamento</TableHead>
             <TableHead>Puesto</TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead>Fecha de ingreso</TableHead>
             <TableHead>Jefe directo</TableHead>
-            <TableHead>Empresa</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -671,22 +667,11 @@ export function UserManagementTable() {
           {currentUsers.length >0 ?( currentUsers.map((user,index) => (
          
             <TableRow key={index}>
-              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
               <TableCell>{user.nombre + ' ' + user.apellidos}</TableCell>
               <TableCell>{user.correo || "Usuario sin correo"}</TableCell>
-              <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
               <TableCell>{user.nombre_dpto || "Sin datos"}</TableCell>
               <TableCell>{user.puesto || "Sin datos"}</TableCell>
-              <TableCell>{user.telefono || "Sin datos"}</TableCell>
-              <TableCell>
-                {user.fecha_ingreso
-                  ? new Date(user.fecha_ingreso).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })
-                  : "Sin datos"}
-              </TableCell>
               <TableCell>
                 {
                   user.jefe_directo
@@ -697,7 +682,6 @@ export function UserManagementTable() {
                     : "Sin datos"
                 }
               </TableCell>
-              <TableCell>{user.empresa_usuario.nombre || "Sin datos"}</TableCell>
               <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -906,7 +890,7 @@ export function UserManagementTable() {
                     ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No se encontraron usuarios
                 </TableCell>
               </TableRow>
