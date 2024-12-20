@@ -339,9 +339,13 @@ export function TablaEventosMejorada() {
                   >
                     {evento.estatus || 'Sin estatus especificado'}
                   </TableCell>
-                  <TableCell>{evento.gastoPresupuesto}</TableCell>
-                  <TableCell>{evento.gastoReal}</TableCell>
-                  <TableCell>{evento.ventaTotal || 'Sin venta total especificada'}</TableCell>
+                  <TableCell>{"$" + evento.gastoPresupuesto.toLocaleString('es-MX')}</TableCell>
+                  <TableCell>{"$" + evento.gastoReal.toLocaleString('es-MX')}</TableCell>
+                  <TableCell>
+                    {evento.ventaTotal
+                      ? "$" + Number(evento.ventaTotal).toLocaleString('es-MX')
+                      : "Sin venta total especificada"}
+                  </TableCell>
                   <TableCell
                     style={{
                       color: (() => {
