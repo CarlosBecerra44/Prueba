@@ -18,34 +18,60 @@ export async function middleware(req) {
   const idPermiso = token.idPermiso || null; // Asegúrate de incluir idPermiso en el token
   const departamento = token.departamento || null;
 
-  // Definiciones de roles
-  const isMaster = rol === "Máster";
-  const isAdminMkt = rol === "Administrador" && idPermiso !== null;
-  const isAdminGC = rol === "Administrador" && departamento === 5;
-  const isStandardMkt = rol === "Estándar" && idPermiso !== null;
-  const isStandard = rol === "Estándar";
+  // Roles y su estado (booleanos)
+  const roles = {
+    isMaster: rol === "Máster",
+    isAdminMkt: rol === "Administrador" && idPermiso !== null,
+    isAdminGC: rol === "Administrador" && departamento === "5",
+    isStandardMkt: rol === "Estándar" && idPermiso !== null,
+    isStandard: rol === "Estándar",
+  };
 
   // Mapa de roles y rutas permitidas
   const roleRoutes = {
     isMaster: "*", // Puede acceder a todas las rutas
-    isAdminMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/estrategias", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas"],
-    isAdminGC: ["/inicio", "/perfil", "/gente_y_cultura/faltas", "/gente_y_cultura/faltasUsuario", "/usuario", "/usuario/empresas", "/gente_y_cultura/vacantes"],
-    isStandardMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas"],
+    isAdminMkt: [
+      "/inicio",
+      "/perfil",
+      "/gente_y_cultura/faltasUsuario",
+      "/marketing/estrategias",
+      "/marketing/etiquetas/tabla_general",
+      "/marketing/Editar",
+      "/marketing/etiquetas",
+    ],
+    isAdminGC: [
+      "/inicio",
+      "/perfil",
+      "/gente_y_cultura/faltas",
+      "/gente_y_cultura/faltasUsuario",
+      "/usuario",
+      "/usuario/empresas",
+      "/gente_y_cultura/vacantes",
+    ],
+    isStandardMkt: [
+      "/inicio",
+      "/perfil",
+      "/gente_y_cultura/faltasUsuario",
+      "/marketing/etiquetas/tabla_general",
+      "/marketing/Editar",
+      "/marketing/etiquetas",
+    ],
     isStandard: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario"],
   };
 
   // Permitir acceso total para Máster
-  if (isMaster) {
+  if (roles.isMaster) {
     return NextResponse.next();
   }
 
   // Determinar las rutas permitidas según el rol
   const allowedRoutes = Object.entries(roleRoutes)
-    .filter(([key]) => eval(key)) // Evalúa si el rol es verdadero
+    .filter(([key]) => roles[key]) // Evalúa si el rol es verdadero
     .flatMap(([, routes]) => routes);
 
   // Verificar si la ruta actual está permitida
-  const isAuthorized = allowedRoutes.includes("*") || 
+  const isAuthorized =
+    allowedRoutes.includes("*") ||
     allowedRoutes.some((route) => currentPath.startsWith(route));
 
   if (!isAuthorized) {
