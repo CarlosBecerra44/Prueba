@@ -69,7 +69,6 @@ export default NextAuth({
         token.departamento = user.departamento;
         token.idPermiso = user.idPermiso;
       }
-      console.log("JWT Token:", token);
       return token;
     }
     ,
@@ -82,7 +81,6 @@ export default NextAuth({
         session.user.departamento_id = token.departamento;
         session.user.id_permiso = token.idPermiso;
       }
-      console.log("Session Token:", token);
       return session;
     }
     ,
