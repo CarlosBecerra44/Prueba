@@ -164,8 +164,8 @@ export function DocumentSigningForm() {
         console.log("Formulario completo:", formulario);
         if (response.ok) {
           Swal.fire({
-            title: 'Subido',
-            text: 'Se ha creado correctamente',
+            title: 'Creada',
+            text: 'La etiqueta se ha creado correctamente',
             icon: 'success',
             timer: 3000, // La alerta desaparecerá después de 1.5 segundos
             showConfirmButton: false,
@@ -173,7 +173,7 @@ export function DocumentSigningForm() {
             window.location.href = "/marketing/etiquetas/tabla_general";
           });
         } else {
-          Swal.fire('Error', 'Error al subir formulario', 'error');
+          Swal.fire('Error', 'Error al crear la etiqueta', 'error');
         }
  
       } else {
@@ -248,7 +248,7 @@ export function DocumentSigningForm() {
       if (response2.ok) {
         console.log("Notificacion enviada")
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al enviar la alerta de creación de nueva etiqueta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);

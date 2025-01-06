@@ -43,14 +43,14 @@ export function TablaEventosMejorada() {
     try {
       // Mostrar una alerta para que el usuario seleccione el nuevo estatus
       const { value: nuevoEstatus } = await Swal.fire({
-        title: 'Selecciona el nuevo estatus',
+        title: 'Nuevo estatus de la etiqueta',
         input: 'select',
         inputOptions: {
           Completado: 'Completado',
           Pendiente: 'Pendiente',
           Rechazado: 'Rechazado'
         },
-        inputPlaceholder: 'Selecciona el nuevo estatus',
+        inputPlaceholder: 'Selecciona el nuevo estatus de la etiqueta',
         showCancelButton: true,
         inputValidator: (value) => {
           return !value ? 'Debes seleccionar un estatus' : null;
@@ -65,7 +65,7 @@ export function TablaEventosMejorada() {
         });
   
         if (response.status === 200) {
-          Swal.fire('Éxito', 'El estatus ha sido actualizado', 'success');
+          Swal.fire('Actualizado', 'El estatus de la etiqueta ha sido actualizado correctamente', 'success');
           // Aquí podrías actualizar la lista de eventos para reflejar el cambio
           setEventos((prevEventos) =>
             prevEventos.map((evento) =>
@@ -73,12 +73,12 @@ export function TablaEventosMejorada() {
             )
           );
         } else {
-          Swal.fire('Error', 'No se pudo actualizar el estatus', 'error');
+          Swal.fire('Error', 'No se pudo actualizar el estatus de la etiqueta', 'error');
         }
       }
     } catch (error) {
       console.error('Error al cambiar el estatus:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar cambiar el estatus', 'error');
+      Swal.fire('Error', 'Ocurrió un error al intentar cambiar el estatus de la etiqueta', 'error');
     }
   };  
 
@@ -86,7 +86,7 @@ export function TablaEventosMejorada() {
     try {
       // Mostrar alerta de confirmación
       const result = await Swal.fire({
-        title: '¿Deseas eliminar el formulario?',
+        title: '¿Deseas eliminar la etiqueta?',
         text: 'No podrás revertir esta acción',
         icon: 'warning',
         showCancelButton: true,
@@ -100,15 +100,15 @@ export function TablaEventosMejorada() {
       if (result.isConfirmed) {
         const response = await axios.post(`/api/MarketingLabel/eliminarFormularioEtiqueta?id=${index}`);
         if (response.status === 200) {
-          await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
+          await Swal.fire('Eliminada', 'La etiqueta ha sido eliminada correctamente', 'success');
           window.location.href = "/marketing/etiquetas/tabla_general";
         } else {
-          Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+          Swal.fire('Error', 'Error al eliminar la etiqueta', 'error');
         }
       }
     } catch (error) {
-      console.error('Error al eliminar el formulario:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
+      console.error('Error al eliminar la etiqueta:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar eliminar la etiqueta', 'error');
     }
   };
   // Obtener eventos desde el backend

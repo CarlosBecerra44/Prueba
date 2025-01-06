@@ -260,8 +260,8 @@ export function EventPlanningForm() {
       });
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
-          text: 'Se ha creado correctamente',
+          title: 'Creada',
+          text: 'La estrategia se ha creado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
@@ -269,7 +269,7 @@ export function EventPlanningForm() {
           window.location.href = "/marketing/estrategias";
         });
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al crear la estrategia', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -294,7 +294,7 @@ export function EventPlanningForm() {
       if (response2.ok) {
         console.log("Notificacion enviada")
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al enviar la alerta de creación de nueva estrategia', 'error');
       }
     } catch (error) {
       console.error('Error:', error);

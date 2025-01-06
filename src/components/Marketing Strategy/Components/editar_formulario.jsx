@@ -306,8 +306,8 @@ export function EditarEstrategia() {
 
       if (response.ok) {
         Swal.fire({
-          title: 'Editado',
-          text: 'Se ha editado correctamente',
+          title: 'Actualizada',
+          text: 'La estrategia se ha actualizado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
@@ -315,7 +315,7 @@ export function EditarEstrategia() {
           window.location.href = "/marketing/estrategias";
         });
       } else {
-        Swal.fire('Error', 'Error al editar formulario', 'error');
+        Swal.fire('Error', 'Error al actualizar la estrategia', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -340,7 +340,7 @@ export function EditarEstrategia() {
       if (response2.ok) {
         console.log("Notificacion enviada")
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al enviar la alerta de edición de estrategia', 'error');
       }
     } catch (error) {
       console.error('Error:', error);

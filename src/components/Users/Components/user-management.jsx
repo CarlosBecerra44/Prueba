@@ -134,7 +134,7 @@ export function UserManagementTable() {
       if (result.isConfirmed) {
         const response = await axios.post(`/api/Users/eliminarUsuario?id=${index}`);
         if (response.status === 200) {
-          await Swal.fire('Eliminado', 'El usuario ha sido eliminado', 'success');
+          await Swal.fire('Eliminado', 'El usuario ha sido eliminado correctamente', 'success');
           window.location.href = "/usuario";
         } else {
           Swal.fire('Error', 'Error al eliminar al usuario', 'error');
@@ -430,8 +430,8 @@ export function UserManagementTable() {
   
     if (response.ok) {
       Swal.fire({
-        title: 'Subido',
-        text: 'Se ha creado correctamente el permiso',
+        title: 'Creado',
+        text: 'Se ha creado correctamente el permiso para el usuario',
         icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
@@ -440,7 +440,7 @@ export function UserManagementTable() {
       });
 
     } else {
-      Swal.fire('Error', 'Error al cargar permiso ', 'error');
+      Swal.fire('Error', 'Error al crear el permiso para el usuario', 'error');
     }
   };
   

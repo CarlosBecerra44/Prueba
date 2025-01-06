@@ -57,8 +57,8 @@ export function Perfil() {
     const result = await response.json();
     if (result.success) {
       Swal.fire({
-        title: 'Editado',
-        text: 'Se han editado los datos correctamente',
+        title: 'Actualizado',
+        text: 'Los datos se han actualizado correctamente',
         icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
@@ -66,7 +66,7 @@ export function Perfil() {
         window.location.href = "/perfil";
       });
     } else {
-      Swal.fire('Error', 'Error al subir formulario', 'error');
+      Swal.fire('Error', 'Error al actualizar los datos', 'error');
     }
   };
 

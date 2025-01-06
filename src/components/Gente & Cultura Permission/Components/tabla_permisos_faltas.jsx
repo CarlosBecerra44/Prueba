@@ -176,7 +176,7 @@ export function TablaPermisosFalta() {
         fetchEventos();       
   
         // Mostrar mensaje de éxito
-        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado con éxito', 'success');
+        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado correctamente', 'success');
       } else {
         Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
       }
@@ -198,7 +198,7 @@ export function TablaPermisosFalta() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
+        body: JSON.stringify({ formData, estatus }), // Enviar todo el objeto formData como JSON
       });      
       if (response.ok) {
         Swal.fire({
@@ -211,7 +211,7 @@ export function TablaPermisosFalta() {
           window.location.href = "/gente_y_cultura/faltas";
         });
       } else {
-        Swal.fire('Error', 'Error al actualizar formulario', 'error');
+        Swal.fire('Error', 'Error al actualizar la papeleta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -257,7 +257,7 @@ export function TablaPermisosFalta() {
       try {
         // Mostrar alerta de confirmación
         const result = await Swal.fire({
-          title: '¿Deseas eliminar el formulario?',
+          title: '¿Deseas eliminar la papeleta?',
           text: 'No podrás revertir esta acción',
           icon: 'warning',
           showCancelButton: true,
@@ -271,15 +271,15 @@ export function TablaPermisosFalta() {
         if (result.isConfirmed) {
           const response = await axios.post(`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`);
           if (response.status === 200) {
-            await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
+            await Swal.fire('Eliminado', 'La papeleta ha sido eliminada correctamente', 'success');
             window.location.href = "/gente_y_cultura/faltas";
           } else {
-            Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+            Swal.fire('Error', 'Error al eliminar la papeleta', 'error');
           }
         }
       } catch (error) {
-        console.error('Error al eliminar el formulario:', error);
-        Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
+        console.error('Error al eliminar la papeleta:', error);
+        Swal.fire('Error', 'Ocurrió un error al intentar eliminar la papeleta', 'error');
       }
     };
 

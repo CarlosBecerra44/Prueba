@@ -177,7 +177,7 @@ export function TablaVacantes() {
       setGerencia(data.gerencia);
       setProcesoActual(data.proceso_actual);
       setUbicacion(data.ubicacion);
-      const salario = data.salario; // Ejemplo: "2000-5000"
+      const salario = data.salario;
       const [salarioMin, salarioMax] = salario.split("-");
       setSalarioMin(salarioMin);
       setSalarioMax(salarioMax);
@@ -247,8 +247,8 @@ export function TablaVacantes() {
       });      
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
-          text: 'La vacante se ha guardado correctamente',
+          title: 'Creada',
+          text: 'La vacante ha sido creada correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
@@ -256,7 +256,7 @@ export function TablaVacantes() {
           window.location.href = "/gente_y_cultura/vacantes";
         });
       } else {
-        Swal.fire('Error', 'Error al guardar la vacante', 'error');
+        Swal.fire('Error', 'Error al crear la vacante', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -281,7 +281,7 @@ export function TablaVacantes() {
       if (result.isConfirmed) {
         const response = await axios.post(`/api/Gente&CulturaVacants/eliminarVacantes?id=${index}`);
         if (response.status === 200) {
-          await Swal.fire('Eliminado', 'La vacante ha sido eliminada', 'success');
+          await Swal.fire('Eliminado', 'La vacante ha sido eliminada correctamente', 'success');
           window.location.href = "/gente_y_cultura/vacantes";
         } else {
           Swal.fire('Error', 'Error al eliminar la vacante', 'error');
@@ -399,7 +399,7 @@ export function TablaVacantes() {
 
       if (res.ok) {
         Swal.fire({
-          title: 'Actualizado',
+          title: 'Actualizada',
           text: 'Los datos de la vacante se han actualizado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos

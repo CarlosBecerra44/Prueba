@@ -383,7 +383,7 @@ export function TablaPermisosFaltaUsuario() {
   
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
+          title: 'Creado',
           text: 'Se ha creado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
@@ -392,7 +392,7 @@ export function TablaPermisosFaltaUsuario() {
           window.location.href = "/gente_y_cultura/faltasUsuario";
         });
       } else {
-        Swal.fire("Error", "Error al subir formulario", "error");
+        Swal.fire("Error", "Error al crear la papeleta", "error");
         return;
       }
   
@@ -454,7 +454,7 @@ export function TablaPermisosFaltaUsuario() {
       });      
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
+          title: 'Creado',
           text: 'Se ha creado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
@@ -463,7 +463,7 @@ export function TablaPermisosFaltaUsuario() {
           window.location.href = "/gente_y_cultura/faltasUsuario";
         });
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al crear la papeleta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -1572,7 +1572,11 @@ export function TablaPermisosFaltaUsuario() {
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
-                  <TableCell>{evento.jefe_directo || 'Sin jefe directo especificado'}</TableCell>
+                  <TableCell>
+                    {evento.jefe_directo && evento.jefe_directo.trim() !== "" 
+                      ? evento.jefe_directo 
+                      : 'Sin jefe directo especificado'}
+                  </TableCell>
                   <TableCell>
                     {evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {

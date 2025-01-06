@@ -121,7 +121,7 @@ export function TablaEventosMejorada() {
       try {
         // Mostrar alerta de confirmación
         const result = await Swal.fire({
-          title: '¿Deseas eliminar el formulario?',
+          title: '¿Deseas eliminar la estrategia?',
           text: 'No podrás revertir esta acción',
           icon: 'warning',
           showCancelButton: true,
@@ -135,15 +135,15 @@ export function TablaEventosMejorada() {
         if (result.isConfirmed) {
           const response = await axios.post(`/api/MarketingStrategy/eliminarFormulario?id=${index}`);
           if (response.status === 200) {
-            await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
+            await Swal.fire('Eliminada', 'La estrategia ha sido eliminada correctamente', 'success');
             window.location.href = "/marketing/estrategias";
           } else {
-            Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+            Swal.fire('Error', 'Error al eliminar la estrategia', 'error');
           }
         }
       } catch (error) {
-        console.error('Error al eliminar el formulario:', error);
-        Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
+        console.error('Error al eliminar la estrategia:', error);
+        Swal.fire('Error', 'Ocurrió un error al intentar eliminar la estrategia', 'error');
       }
     };
 

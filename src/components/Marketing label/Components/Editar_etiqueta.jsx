@@ -330,8 +330,8 @@ export function EditarEtiqueta() {
 
       if (response.ok) {
         Swal.fire({
-          title: 'Editado',
-          text: 'Se ha editado correctamente',
+          title: 'Actualizada',
+          text: 'La etiqueta se ha actualizado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
@@ -339,10 +339,10 @@ export function EditarEtiqueta() {
           window.location.href = "/marketing/etiquetas/tabla_general";
         });
       } else {
-        Swal.fire('Error', 'Error al editar formulario', 'error');
+        Swal.fire('Error', 'Error al actualizar la etiqueta', 'error');
       }
     } catch (error) {
-      console.error('Error al actualizar etiqueta:', error);
+      console.error('Error al actualizar la etiqueta:', error);
     }
 
     try {
@@ -364,7 +364,7 @@ export function EditarEtiqueta() {
       if (response2.ok) {
         console.log("Notificacion enviada")
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al enviar la alerta de edición de etiqueta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
