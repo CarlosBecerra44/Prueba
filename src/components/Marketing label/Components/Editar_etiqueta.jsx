@@ -733,7 +733,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Ingeniería de Productos</CardTitle>
-          <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
+          <CardDescription>Jania Leyva, Roger Castellanos o Emanuel Moya</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
