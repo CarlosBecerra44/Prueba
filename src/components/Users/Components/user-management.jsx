@@ -107,6 +107,8 @@ export function UserManagementTable() {
   const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
   const { user, isLoading, isMaster, isAdminGC, rol } = useUser();
+  const [nuevaContraseña, setNuevaContraseña] = useState('');
+  const [confirmarContraseña, setConfirmarContraseña] = useState('');
 
   const filteredUsers = users
     .filter(user => 
@@ -443,6 +445,62 @@ export function UserManagementTable() {
       Swal.fire('Error', 'Error al crear el permiso para el usuario', 'error');
     }
   };
+
+  const handleChangePassword = async (index) => {
+    if (nuevaContraseña !== confirmarContraseña) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Las contraseñas no coinciden',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });  
+      return; // Detener ejecución si hay un error
+    }    
+  
+    try {
+      // Enviar petición al servidor para cambiar la contraseña
+      const response = await fetch('/api/Users/cambiarPassword', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: index, // ID del usuario seleccionado
+          nuevaContraseña,
+        }),
+      });
+  
+      if (!response.ok) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al cambiar la contraseña',
+          icon: 'error',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false,
+        });
+      }
+  
+      Swal.fire({
+        title: 'Actualizada',
+        text: 'La contraseña ha sido actualizada correctamente',
+        icon: 'success',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      }).then(() => {
+        window.location.href = "/usuario";
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al intentar cambiar la contraseña',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });
+    }
+  };  
   
   const removeSection = (sectionId) => {
     setSelectedSections(prev => prev.filter(id => id !== sectionId))
@@ -870,15 +928,15 @@ export function UserManagementTable() {
                       <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                           <Label htmlFor="new-password" className="text-right">Nueva contraseña</Label>
-                          <Input id="new-password" type="password" className="col-span-3" />
+                          <Input id="new-password" type="password" className="col-span-3" value={nuevaContraseña} onChange={(e) => setNuevaContraseña(e.target.value)} />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                           <Label htmlFor="confirm-password" className="text-right">Confirmar contraseña</Label>
-                          <Input id="confirm-password" type="password" className="col-span-3" />
+                          <Input id="confirm-password" type="password" className="col-span-3" value={confirmarContraseña} onChange={(e) => setConfirmarContraseña(e.target.value)}/>
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Cambiar contraseña</Button>
+                        <Button type="submit" onClick={() => handleChangePassword(user.id)}>Cambiar contraseña</Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
