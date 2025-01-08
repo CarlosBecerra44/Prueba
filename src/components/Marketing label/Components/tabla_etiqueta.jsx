@@ -351,7 +351,16 @@ export function TablaEventosMejorada() {
                   ) : (
                     <TableCell>{evento.firmas ? evento.firmas + '/10' : "0/10"}</TableCell>
                   )}
-                  <TableCell style={{color: "#aea600"}}>{renderNombres(evento.formulario)}</TableCell>
+                  <TableCell style={{
+                      color: (() => {
+                        switch (renderNombres(evento.formulario)) {
+                          case '':
+                            return 'green';
+                          default:
+                            return '#aea600'; // color por defecto
+                        }
+                      })(),
+                    }}>{renderNombres(evento.formulario) || "Firmas completadas"}</TableCell>
                   <TableCell>{renderAccion(evento.id)}</TableCell>
                 </TableRow>
               ))
