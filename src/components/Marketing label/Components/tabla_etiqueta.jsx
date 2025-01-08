@@ -36,6 +36,7 @@ export function TablaEventosMejorada() {
     "Fecha último movimiento",
     "Estatus",
     "Firmas",
+    "Pendientes por firmar",
     "Acción"
   ]
 
@@ -124,6 +125,36 @@ export function TablaEventosMejorada() {
     fetchEventos()
   }, [])
 
+  const renderNombres = (evento) => {
+    const nombresPorDefecto = {
+      DirMkt: "Directora de Marketing",
+      GerMaq: "Gerente de maquilas",
+      IYD: "Investigación y desarrollo de nuevos productos",
+      IP: "Ingeniería de productos",
+      GerMkt: "Gerente de marketing",
+      Diseñador: "Diseñador gráfico",
+      GerCal: "Gerente de calidad",
+      GerAud: "Gerente auditorías",
+      Quimico: "Químico",
+      Planeacion: "Planeación",
+      Maquilas: "Maquilas"
+    };
+
+    return Object.keys(nombresPorDefecto)
+    .filter((key, index, arr) => {
+      // Excluir el último elemento si el tipo no es "Maquilas"
+      if (evento.datos_formulario.tipo !== "Maquilas" && index === arr.length - 1) return false;
+      const verifierKey = `verifier-${index}`;
+      const authorizeKey = `authorize-${index}`;
+
+      // Incluir solo los nombres cuya firma no existe o está vacía
+      const pendingToSign = evento.datos_formulario?.[verifierKey] && evento.datos_formulario?.[authorizeKey];
+      return !pendingToSign; // Excluir si existe un valor en verifier
+    })
+    .map((key) => nombresPorDefecto[key])
+    .join(", ");
+  };
+
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
     const fechaCompleta = evento.fecha_envio;
@@ -160,7 +191,8 @@ export function TablaEventosMejorada() {
       descripcion: evento.datos_formulario.description,
       fechaUltimoMovimiento: fechaFormateada2,
       estatus: evento.estatus,
-      firmas: evento.firmas
+      firmas: evento.firmas,
+      formulario: evento
     }
   }
 
@@ -319,12 +351,13 @@ export function TablaEventosMejorada() {
                   ) : (
                     <TableCell>{evento.firmas ? evento.firmas + '/10' : "0/10"}</TableCell>
                   )}
+                  <TableCell style={{color: "#aea600"}}>{renderNombres(evento.formulario)}</TableCell>
                   <TableCell>{renderAccion(evento.id)}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center">
+                <TableCell colSpan={10} className="text-center">
                   No se encontraron etiquetas
                 </TableCell>
               </TableRow>
