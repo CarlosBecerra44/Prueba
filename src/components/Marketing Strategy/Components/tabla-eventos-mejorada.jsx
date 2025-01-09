@@ -33,20 +33,20 @@ export function TablaEventosMejorada() {
   const [eventos, setEventos] = useState([])
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
 
-  const encabezados = [
-    "Evento",
-    "Marca",
-    "Lugar",
-    "Fecha",
-    "Estatus",
-    "Gasto/Presupuesto Total",
-    "Gasto Real Total",
-    "Venta Total",
-    "ROI",
-    "Acción"
-  ]
-
+  const encabezados = {
+    Evento: "evento",
+    Marca: "marca",
+    Lugar: "lugar",
+    Fecha: "fecha",
+    Estatus: "estatus",
+    "Gasto/Presupuesto Total": "gastoPresupuesto",
+    "Gasto Real Total": "gastoReal",
+    "Venta Total": "ventaTotal",
+    ROI: "roi"
+  }
+    
   // Obtener eventos desde el backend
   useEffect(() => {
     const fetchEventos = async () => {
@@ -174,28 +174,28 @@ export function TablaEventosMejorada() {
             </Button>
           </Link>
           <Button
-  style={{ width: "1px", height: "40px" }}
-  onClick={() => handleDownload(evento)}
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24px"
-    height="24px"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="rgb(31 41 55)"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="feather feather-file-text"
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="16" y1="13" x2="8" y2="13"></line>
-    <line x1="16" y1="17" x2="8" y2="17"></line>
-    <polyline points="10 9 9 9 8 9"></polyline>
-  </svg>
-</Button>
+            style={{ width: "1px", height: "40px" }}
+            onClick={() => handleDownload(evento)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgb(31 41 55)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="feather feather-file-text"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </Button>
         </div>
       ),
     }
@@ -210,6 +210,53 @@ export function TablaEventosMejorada() {
         .filter(value => value !== null && value !== undefined)  // Filtra valores nulos o indefinidos
         .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+  const getCalculatedValue = (row, field) => {
+    if (field === "gastoPresupuesto") {
+      return parseFloat(row.gastoPresupuesto || "0") || 0;
+    }
+  
+    if (field === "gastoReal") {
+      return parseFloat(row.gastoReal || "0") || 0;
+    }
+  
+    if (field === "ventaTotal") {
+      return parseFloat(row.ventaTotal || "0") || 0;
+    }
+  
+    return row[field] || "";
+  };    
+
+  const sortData = (data) => {
+    if (!sortConfig.field) return data;
+  
+    return [...data].sort((a, b) => {
+      const valueA = getCalculatedValue(a, sortConfig.field);
+      const valueB = getCalculatedValue(b, sortConfig.field);
+
+      // Ordenar números
+      if (typeof valueA === "number" && typeof valueB === "number") {
+        return sortConfig.direction === "asc" ? valueA - valueB : valueB - valueA;
+      }
+  
+      // Ordenar cadenas
+      if (typeof valueA === "string" && typeof valueB === "string") {
+        return sortConfig.direction === "asc"
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+  
+      return 0; // Si no es comparable
+    });
+  };
+        
+
+  const handleSort = (field) => {
+    setSortConfig((prevConfig) => ({
+      field,
+      direction: prevConfig.field === field && prevConfig.direction === "asc" ? "desc" : "asc",
+    }));
+  };    
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -253,9 +300,10 @@ export function TablaEventosMejorada() {
   }
 
   // Paginación
+  const sortedEventos = sortData(filteredEventos);
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
-  const currentEventos = filteredEventos.slice(indexOfFirstEvento, indexOfLastEvento);
+  const currentEventos = sortedEventos.slice(indexOfFirstEvento, indexOfLastEvento);
   const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -305,11 +353,24 @@ export function TablaEventosMejorada() {
           <TableCaption>Estrategias vigentes</TableCaption>
           <TableHeader>
             <TableRow>
-              {encabezados.map((encabezado, index) => (
-                <TableHead key={index} className="whitespace-nowrap">
-                  {encabezado}
-                </TableHead>
-              ))}
+              {Object.keys(encabezados).map((encabezado, index) => {
+                const field = encabezados[encabezado]; // Usa la clave mapeada
+                return (
+                  <TableHead
+                    key={index}
+                    className="cursor-pointer"
+                    onClick={() => handleSort(field)} // Pasa la clave correcta a handleSort
+                  >
+                    {encabezado}{" "}
+                    {sortConfig.field === field
+                      ? sortConfig.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : ""}
+                  </TableHead>
+                );
+              })}
+              <TableHead>Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -339,13 +400,9 @@ export function TablaEventosMejorada() {
                   >
                     {evento.estatus || 'Sin estatus especificado'}
                   </TableCell>
-                  <TableCell>{"$" + evento.gastoPresupuesto.toLocaleString('es-MX')}</TableCell>
-                  <TableCell>{"$" + evento.gastoReal.toLocaleString('es-MX')}</TableCell>
-                  <TableCell>
-                    {evento.ventaTotal
-                      ? "$" + Number(evento.ventaTotal).toLocaleString('es-MX')
-                      : "Sin venta total especificada"}
-                  </TableCell>
+                  <TableCell>{"$" + getCalculatedValue(evento, "gastoPresupuesto").toLocaleString("es-MX")}</TableCell>
+                  <TableCell>{"$" + getCalculatedValue(evento, "gastoReal").toLocaleString("es-MX")}</TableCell>
+                  <TableCell>{"$" + getCalculatedValue(evento, "ventaTotal").toLocaleString("es-MX")}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {
