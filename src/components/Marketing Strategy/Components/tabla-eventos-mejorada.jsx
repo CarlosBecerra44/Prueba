@@ -223,6 +223,10 @@ export function TablaEventosMejorada() {
     if (field === "ventaTotal") {
       return parseFloat(row.ventaTotal || "0") || 0;
     }
+
+    if (field === "roi") {
+      return parseFloat(row.roi?.replace("%", "") || "0") || 0; // Manejar porcentaje vacío
+    }
   
     return row[field] || "";
   };    
@@ -403,8 +407,7 @@ export function TablaEventosMejorada() {
                   <TableCell>{"$" + getCalculatedValue(evento, "gastoPresupuesto").toLocaleString("es-MX")}</TableCell>
                   <TableCell>{"$" + getCalculatedValue(evento, "gastoReal").toLocaleString("es-MX")}</TableCell>
                   <TableCell>{"$" + getCalculatedValue(evento, "ventaTotal").toLocaleString("es-MX")}</TableCell>
-                  <TableCell
-                    style={{
+                  <TableCell style={{
                       color: (() => {
                         const roiFixed = parseFloat(evento.roi); // Convertir a número para comparación
                         if (roiFixed >= 50.00) {
@@ -417,10 +420,7 @@ export function TablaEventosMejorada() {
                           return 'black'; // color por defecto
                         }
                       })(),
-                    }}
-                  >
-                    {evento.roi}
-                  </TableCell>
+                    }}>{getCalculatedValue(evento, "roi") + "%"}</TableCell>
                   <TableCell>{evento.accion ? evento.accion(evento.id) : "N/A"}</TableCell>
                 </TableRow>
               ))
