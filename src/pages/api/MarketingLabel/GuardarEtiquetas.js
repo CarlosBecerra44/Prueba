@@ -39,7 +39,7 @@ export default async function guardarFormulario(req, res) {
   if (req.method === 'POST') {
     const form = formidable({
       keepExtensions: true,
-      maxFileSize: 10 * 1024 * 1024, // Permitir hasta 10 MB
+      maxFileSize: 50 * 1024 * 1024, // Permitir hasta 10 MB
     });
 
     form.parse(req, async (err, fields, files) => {
