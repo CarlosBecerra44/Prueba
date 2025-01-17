@@ -20,9 +20,7 @@ export default async function handler(req, res) {
       ON 
           f.id_usuario = u.id 
           AND f.eliminado = 0 
-          AND f.estatus = 'Autorizada' 
-          AND DATE_PART('week', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('week', CURRENT_DATE)
-          AND DATE_PART('year', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('year', CURRENT_DATE)
+          AND f.estatus = 'Autorizada'
       JOIN 
           departamentos d
       ON 
