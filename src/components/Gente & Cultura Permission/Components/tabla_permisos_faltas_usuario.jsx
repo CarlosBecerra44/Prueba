@@ -1127,8 +1127,27 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
-              <div>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                 <Label style={{fontSize: 17}}>Plan de trabajo</Label>
+                <div style={{marginLeft: "10px"}}>
+                  <Tooltip
+                    title={
+                      `<p style="margin:0;padding:5px;text-align:justify;">INSTRUCCIONES PARA EL LLENADO DEL FORMULARIO:</p>
+                      <ul style="margin:0;padding:5px;text-align:justify;">
+                        <li style="margin-bottom:5px;"><strong>FECHA:</strong> Fecha de actividad, se debe seguir un consecutivo.</li>
+                        <li style="margin-bottom:5px;"><strong>ACTIVIDAD:</strong> Corresponde al nombre corto que el proponente le designe a la actividad.</li>
+                        <li style="margin-bottom:5px;"><strong>DESCRIPCIÓN DE ACTIVIDAD ELABORADA:</strong> Describa las actividades requeridas para el cumplimiento del objetivo del proyecto. Una actividad se entiende como el conjunto de acciones que se llevan a cabo para cumplir una meta, que consiste en la ejecución de ciertos procesos o tareas (mediante la utilización de los recursos humanos, materiales, técnicos, y financieros) asignados a la actividad con un costo determinado.</li>
+                        <li style="margin-bottom:5px;"><strong>PERSONA A LA QUE SE LE DIÓ RESPUESTA (SOLO DE DAR SEGUIMIENTO A PETICIÓN):</strong> Indique el nombre del miembro del equipo de trabajo quien se le dio respuesta con la actividad. Solo en caso de que se tenga, puesto que si es una actividad individual sin relación a otra área, este espacio se deja en blanco.</li>
+                        <li style="margin-bottom:5px;"><strong>TIEMPO DE RESPUESTA:</strong> Indique el tiempo de respuesta que se requirió para las actividades. Los resultados son productos que se logran con la ejecución de actividades. Varias actividades pueden permitir el logro de un resultado.</li>
+                        <li style="margin-bottom:5px;"><strong>COMENTARIOS (SI SE DEJA PENDIENTE, SE REQUIERE APOYO DE ALGÚN OTRA ÁREA, ETC.):</strong> Son observaciones, pendientes que pueden quedar en otra área, o en la nuestra.</li>
+                        <li><strong>RECUERDE:</strong> Las actividades propuestas deben estar orientadas al cumplimiento del objeto de la convocatoria.</li>
+                      </ul>`
+                    }
+                    arrow
+                  >
+                    <HelpIcon style={{ cursor: 'pointer', fontSize: 20 }} />
+                  </Tooltip>
+                </div>
               </div>
               <div className="grid grid-cols-7 gap-1">
                 <div>
@@ -1282,7 +1301,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.fechaInicio || !formData.fechaFin || !formData.planTrabajo.otros.fechaActividad}>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>

@@ -28,10 +28,10 @@ export async function middleware(req) {
   // Mapa de roles y rutas permitidas
   const roleRoutes = {
     isMaster: "*", // Puede acceder a todas las rutas
-    isAdminMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/estrategias", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas"],
-    isAdminGC: ["/inicio", "/perfil", "/gente_y_cultura/faltas", "/gente_y_cultura/faltasUsuario", "/usuario", "/usuario/empresas", "/gente_y_cultura/vacantes"],
-    isStandardMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas"],
-    isStandard: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario"],
+    isAdminMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/estrategias", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas", "/permisos"],
+    isAdminGC: ["/inicio", "/perfil", "/gente_y_cultura/faltas", "/gente_y_cultura/faltasUsuario", "/usuario", "/usuario/empresas", "/gente_y_cultura/vacantes", "/permisos"],
+    isStandardMkt: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/marketing/etiquetas/tabla_general", "/marketing/Editar", "/marketing/etiquetas", "/permisos"],
+    isStandard: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario", "/permisos"],
   };
 
   // Permitir acceso total para Máster
