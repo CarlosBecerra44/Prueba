@@ -69,7 +69,8 @@ export function TablaPermisosFalta() {
     justificada: "",
     pagada: "",
     conSueldo: "",
-    estatus: ""
+    estatus: "",
+    horaFormulario: "",
   });
 
   const encabezados = [
@@ -79,6 +80,7 @@ export function TablaPermisosFalta() {
     "Departamento",
     "Puesto",
     "Jefe directo",
+    "Empresa",
     "Fecha de subida",
     "Fecha de último movimiento",
     "Estatus",
@@ -293,6 +295,7 @@ export function TablaPermisosFalta() {
       departamento: evento.nombre_departamento,
       puesto: evento.puesto,
       jefe_directo: evento.jefe_directo,
+      empresa: evento.empresa_id,
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
@@ -316,7 +319,7 @@ export function TablaPermisosFalta() {
   const filteredEventos = eventos
     .map(extractData)
     .filter(evento => 
-      (statusFilter === "todos" || evento.estatus === statusFilter) && // Filtro por estatus
+      //(statusFilter === "todos" || evento.estatus === statusFilter) && // Filtro por estatus
       (tipoFormulario === "todos" || evento.tipo === tipoFormulario) && // Filtro por tipo de formulario
       (departamento === "todos" || evento.departamento === departamento) && // Filtro por tipo de formulario
       Object.values(evento)
@@ -375,6 +378,7 @@ export function TablaPermisosFalta() {
         Departamento: evento.departamento,
         Puesto: evento.puesto,
         Jefe_directo: evento.jefe_directo,
+        empresa: evento.empresa,
         Estatus: evento.estatus,
       }))
     );
@@ -383,6 +387,20 @@ export function TablaPermisosFalta() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Papeletas de incidencias");
     XLSX.writeFile(workbook, "incidencias.xlsx");
   };  
+
+  const verTPapeletas = () => {
+    const fetchPapeletas = async () => {
+      try {
+        const response = await axios.get('/api/Gente&CulturaAbsence/getTodasPapeletas') // Asegúrate de que esta ruta esté configurada en tu backend
+        setEventos(response.data)
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+
+    fetchPapeletas();
+  }
 
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
@@ -398,10 +416,18 @@ export function TablaPermisosFalta() {
         <Button
           variant="contained"
           color="primary"
-          style={{ background: "rgb(31 41 55)", marginBottom: "10px" }}
+          style={{ background: "rgb(31 41 55)", marginBottom: "15px", gap: "10px" }}
           onClick={exportToExcel}
-        >
+        ><ExportIcon className="h-4 w-4" />
           Exportar a Excel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ background: "rgb(31 41 55)", marginBottom: "15px", marginLeft: "70px", gap: "10px" }}
+          onClick={verTPapeletas}
+        ><PermisosIcon className="h-4 w-4" />
+          Ver todas las papeletas
         </Button>
       </div>
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -445,6 +471,7 @@ export function TablaPermisosFalta() {
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="Faltas">Faltas</SelectItem>
+              <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
               <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
               <SelectItem value="Permiso">Permiso</SelectItem>
               <SelectItem value="Suspension">Suspensión</SelectItem>
@@ -478,7 +505,7 @@ export function TablaPermisosFalta() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-full sm:w-1/3">
+        <div className="w-full sm:w-1/3" hidden>
           <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
           <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
             <SelectTrigger id="status-filter">
@@ -607,6 +634,59 @@ export function TablaPermisosFalta() {
                     <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="estatus">Estatus</Label>
+                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
+                  <SelectTrigger id="estatus" name="estatus">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Autorizada">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
+            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+        {tipoFormulario2 === "Llegada tarde / Salida antes" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="horaFormulario">Hora</Label>
+                <Input
+                  id="horaFormulario"
+                  name="horaFormulario"
+                  type="time"
+                  value={formData.horaFormulario}
+                  onChange={handleChange} />
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                  {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio")}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estatus">Estatus</Label>
@@ -998,15 +1078,25 @@ export function TablaPermisosFalta() {
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
                   <TableCell>
-                {
-                  evento.jefe_directo
-                    ? (() => {
-                        const jefe = users.find(u => u.id === evento.jefe_directo);
-                        return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
-                      })()
-                    : "Sin datos"
-                }
-              </TableCell>
+                    {
+                      evento.jefe_directo
+                        ? (() => {
+                            const jefe = users.find(u => u.id === evento.jefe_directo);
+                            return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+                          })()
+                        : "Sin datos"
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {
+                      evento.empresa
+                        ? (() => {
+                            const empresa = users.find(u => u.empresa_id === evento.empresa);
+                            return empresa ? `${empresa.empresa_usuario.nombre}` : "Sin datos";
+                          })()
+                        : "Sin datos"
+                    }
+                  </TableCell>
                   <TableCell>{evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {
                         day: '2-digit',
@@ -1063,7 +1153,7 @@ export function TablaPermisosFalta() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   No se encontraron permisos
                 </TableCell>
               </TableRow>
@@ -1133,6 +1223,52 @@ function SearchIcon(props) {
       <path d="m21 21-4.3-4.3" />
     </svg>)
   );
+}
+
+function ExportIcon(props) {
+  return (
+    (<svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      stroke-width="2" 
+      stroke-linecap="round" 
+      stroke-linejoin="round" 
+      width="20" 
+      height="20"
+    >
+      <path d="M3 12v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <polyline points="8 6 12 2 16 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+    
+    )
+  );
+}
+
+function PermisosIcon(props) {
+  return (
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke-width="1.5"
+  stroke="currentColor"
+  class="h-6 w-6 text-gray-400"
+>
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M7 2h8l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z"
+  />
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M15 3v4h4M9 13l2 2 4-4"
+  />
+</svg>
+  )
 }
 
 function Spinner() {

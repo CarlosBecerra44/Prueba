@@ -832,7 +832,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Compras</CardTitle>
-          <CardDescription>Karla Bayardo</CardDescription>
+          <CardDescription>Karla Bayardo o Emanuel Moya</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -875,7 +875,7 @@ export function EditarEtiqueta() {
           <CardContent className="space-y-6">
             {verifiers.map((verifier, index) => (
               <div key={index} className="space-y-4">
-                <Label htmlFor={`verifier-${index}`}>{verifier}</Label>
+                <Label style={{fontSize: 16}} htmlFor={`verifier-${index}`}>{verifier}</Label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input id={`verifier-${index}`} name={`verifier-${index}`} placeholder="Nombre" onChange={(e) => {
                       handleInputChange(e); // Llama a tu manejador de cambios

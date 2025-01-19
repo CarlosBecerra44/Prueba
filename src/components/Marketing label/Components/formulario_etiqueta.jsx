@@ -129,108 +129,71 @@ export function DocumentSigningForm() {
     console.log(formulario);
   
     const formData = new FormData();
-    
+  
     // Añadir todos los datos del formulario
     for (const key in formulario) {
       if (Array.isArray(formulario[key])) {
         formData.append(key, JSON.stringify(formulario[key]));
-         // Asegurarse de que los arrays se envíen como JSON
       } else {
         formData.append(key, formulario[key]);
       }
     }
-
+  
     // Añadir el archivo PDF
     const fileInput = document.querySelector('#nowPdf');
     if (fileInput && fileInput.files.length > 0) {
       formData.append('nowPdf', fileInput.files[0]);
     }
-
-
-    
   
     try {
-      const response = await fetch('../api/MarketingLabel/GuardarEtiquetas', {
+      // 1. Guardar el formulario en la base de datos
+      const guardarFormulario = fetch('/api/MarketingLabel/GuardarEtiquetas', {
         method: 'POST',
-        // Eliminar el encabezado 'Content-Type' para que fetch lo maneje automáticamente al enviar FormData
-        body: formData, // Enviar el FormData directamente
-        
+        body: formData,
       });
   
-      if (response.ok) {
-        const data = await response.json();
-        
-        console.log(`Formulario guardado con ID: ${JSON.stringify(data[0].id)}`);
-        console.log("Formulario completo:", formulario);
-        if (response.ok) {
-          Swal.fire({
-            title: 'Creada',
-            text: 'La etiqueta se ha creado correctamente',
-            icon: 'success',
-            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-            showConfirmButton: false,
-          }).then(() => {
-            window.location.href = "/marketing/etiquetas/tabla_general";
+      // 2. Subir el archivo al FTP
+      const subirArchivoFTP = (async () => {
+        if (fileInput && fileInput.files.length > 0) {
+          const response = await fetch('/api/FTP/upload', {
+            method: 'POST',
+            body: formData,
           });
-        } else {
-          Swal.fire('Error', 'Error al crear la etiqueta', 'error');
+          
+          if (!response.ok) Swal.fire('Error', 'Error al subir archivo al servidor FTP', 'error');
         }
- 
-      } else {
-        console.log('Error al guardar formulario');
-      }
-    } catch (error) {
-      console.error('Error al enviar el formulario:', error);
-    }
-
-    if(formulario.tipo && formulario.tipo == "Maquilas") {
-      try{
-        const res= fetch('/api/Emails/send-mail',{
-          method: 'POST',
-          headers: {
-               'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            emails: ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
+      })();
+  
+      // 3. Enviar correos electrónicos
+      const enviarCorreos = fetch('/api/Emails/send-mail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emails: formulario.tipo === 'Maquilas'
+            ? ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
               'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'r.barberena@aionsuplementos.com', 
               'k.bayardo@aionsuplementos.com', 'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com',
-              'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com'], // Añadir tus correos específicos
-            subject: 'Nueva etiqueta de maquilas',
-            message: 'Se ha guardado un nuevo formulario de etiqueta de maquilas. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
-          }),
-        });
-     }catch (error){
-        console.error(error);
-        alert(error);
-     }
-    } else {
-      try{
-        const res= fetch('/api/Emails/send-mail',{
-          method: 'POST',
-          headers: {
-               'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            emails: ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
+              'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com',
+              'e.moya@aionsuplementos.com', 'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com',
+              'j.rodriguez@aionsuplementos.com'] // Lista de correos para maquilas
+            : ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
               'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com', 
               'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com',
-              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com'], // Añadir tus correos específicos
-            subject: 'Nueva etiqueta interna',
-            message: 'Se ha guardado un nuevo formulario de etiqueta interna. Favor de revisarlo con este enlace: https://aionnet.vercel.app/marketing/etiquetas/tabla_general',
-          }),
-        });
-     }catch (error){
-        console.error(error);
-        alert(error);
-     }
-    }
-
-    try {
-      const response2 = await fetch('/api/Reminder/EnvioEvento', {
+              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com',
+              'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'], // Lista de correos para etiqueta interna
+          subject: formulario.tipo === 'Maquilas' ? 'Nueva etiqueta de maquilas' : 'Nueva etiqueta interna',
+          message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas/tabla_general`,
+        }),
+      });
+  
+      // 4. Enviar notificación de alerta
+      const enviarNotificacion = fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -244,16 +207,34 @@ export function DocumentSigningForm() {
           },
         }),
       });
-    
-      if (response2.ok) {
-        console.log("Notificacion enviada")
+  
+      // Ejecutar todas las tareas en paralelo
+      const results = await Promise.all([
+        guardarFormulario,
+        subirArchivoFTP,
+        enviarCorreos,
+        enviarNotificacion,
+      ]);
+  
+      const [formResponse] = results; // Extraer la respuesta del guardado de formulario
+      if (formResponse.ok) {
+        Swal.fire({
+          title: 'Creada',
+          text: 'La etiqueta se ha creado correctamente',
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/marketing/etiquetas/tabla_general";
+        });
       } else {
-        Swal.fire('Error', 'Error al enviar la alerta de creación de nueva etiqueta', 'error');
+        Swal.fire('Error', 'Error al crear la etiqueta', 'error');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error al enviar el formulario:', error);
+      Swal.fire('Error', 'Error al procesar el formulario', 'error');
     }
-  };
+  };  
     
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -699,7 +680,7 @@ export function DocumentSigningForm() {
       <Card>
         <CardHeader>
           <CardTitle>Compras</CardTitle>
-          <CardDescription>Karla Bayardo</CardDescription>
+          <CardDescription>Karla Bayardo o Emanuel Moya</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

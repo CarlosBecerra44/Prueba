@@ -10,7 +10,29 @@ export default async function handler(req, res) {
 
   try {
     // Consulta para obtener los eventos desde la tabla 'Prueba2'
-    const result = await pool.query('SELECT * FROM formularios_faltas WHERE id_usuario = $1 AND eliminado = 0 ORDER BY fecha_actualizacion DESC', [id]);
+    const query = `
+      SELECT 
+          f.*, 
+          u.*, 
+          f.id AS id_papeleta, 
+          d.nombre AS nombre_departamento
+      FROM 
+          formularios_faltas f
+      JOIN 
+          usuarios u
+      ON 
+          f.id_usuario = u.id 
+          AND f.eliminado = 0 
+      JOIN 
+          departamentos d
+      ON 
+          u.departamento_id = d.id
+      WHERE 
+          f.id_usuario = $1 AND f.eliminado = 0
+      ORDER BY 
+          f.fecha_actualizacion DESC;
+    `;
+    const result = await pool.query(query, [id]);
     const eventos = result.rows;
 
     // Retorna los eventos en formato JSON

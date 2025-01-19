@@ -1,70 +1,82 @@
-import { IncomingForm } from 'formidable';
-import fs from 'fs';
-import path from 'path';
+import formidable from 'formidable';
 import { Client } from 'basic-ftp';
+import fs from 'fs';
 
 export const config = {
   api: {
-    bodyParser: false, // Disable bodyParser to handle file uploads with formidable
+    bodyParser: false, // Deshabilitar bodyParser para usar formidable
   },
 };
 
-export default async function handler(req, res) {
+// Función para subir el archivo directamente al servidor FTP
+async function subirArchivoFtp(fileStream, remoteFileName) {
+  const client = new Client();
+  try {
+    await client.access({
+      host: "ftp.aionnet.net", // Dirección del servidor FTP
+      user: "aionnetx",        // Usuario FTP
+      password: "Mxxnatura2536//", // Contraseña FTP
+      secure: false,           // Usa 'true' si el servidor FTP requiere conexión segura
+    });
+
+    // Cambia al directorio deseado
+    await client.ensureDir("/uploads");
+
+    // Sube el archivo usando el stream directamente
+    await client.uploadFrom(fileStream, remoteFileName);
+
+    console.log('Archivo subido correctamente al servidor FTP');
+  } catch (err) {
+    console.error('Error al subir el archivo al servidor FTP:', err);
+    throw err;
+  } finally {
+    client.close();
+  }
+}
+
+export default async function guardarFormulario(req, res) {
   if (req.method === 'POST') {
-    const { folderId } = req.query;
-    const client = new Client();
-    client.ftp.verbose = true; // Opcional: para ver más logs
-
-    const uploadDir = path.join(process.cwd(), `/`);
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
-
-    const form = new IncomingForm({
-      uploadDir: uploadDir, // Guardar temporalmente los archivos aquí
-      keepExtensions: true, // Mantener las extensiones de los archivos subidos
+    const form = formidable({
+      keepExtensions: true,
+      maxFileSize: 50 * 1024 * 1024, // Permitir hasta 10 MB
     });
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error('Error al procesar el formulario:', err);
-        return res.status(500).json({ error: 'Error al procesar el formulario' });
+        if (err.message.includes('maxFileSize')) {
+          return res.status(413).json({ success: false, message: 'El archivo es demasiado grande. Máximo permitido: 50 MB' });
+        }
+        console.error('Error al procesar el archivo:', err);
+        return res.status(500).json({ success: false, message: 'Error al procesar el archivo' });
       }
 
+      console.log('Fields:', fields);
+      console.log('Files:', files);
+
+      const pdfFile = files.nowPdf;
+      if (!pdfFile) {
+        return res.status(400).json({ success: false, message: 'Archivo PDF no encontrado' });
+      }
+
+      const filePath = pdfFile.filepath || pdfFile.path;
+      const remoteFileName = pdfFile.originalFilename || pdfFile.name;
+
+      console.log('PDF File Path:', filePath);
+
       try {
-        const fileArray = Array.isArray(files.file) ? files.file : [files.file]; // Cambié 'files.file' para coincidir con 'file' desde el frontend
+        // Leer el archivo directamente desde su ubicación temporal
+        const fileStream = fs.createReadStream(filePath);
 
-        await client.access({
-          host: "192.168.1.87",
-          user: "pruebas@nutriton.com.mx",
-          password: "NutriAdmin2035",
-          secure: false,
-        });
+        // Subir al FTP
+        await subirArchivoFtp(fileStream, remoteFileName);
 
-        for (const file of fileArray) {
-          const filePath = file.filepath; // La propiedad correcta en formidable es 'filepath'
-
-          if (!filePath) {
-            return res.status(400).json({ error: 'Ruta del archivo no disponible' });
-          }
-
-          if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ error: 'Archivo no encontrado' });
-          }
-
-          const remoteFilePath = path.join(`/${folderId}`, file.originalFilename);
-          await client.uploadFrom(filePath, remoteFilePath);
-        }
-
-        res.status(200).json({ message: "Archivo(s) subido(s) exitosamente" });
-      } catch (err) {
-        console.error("Error subiendo archivo(s):", err);
-        res.status(500).json({ error: "Error al subir archivo(s)" });
-      } finally {
-        client.close();
+        res.status(200).json({ success: true, message: 'Archivo subido correctamente al servidor FTP.' });
+      } catch (error) {
+        console.error('Error al procesar la solicitud:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
       }
     });
   } else {
-    res.status(405).json({ error: "Método no permitido" });
+    res.status(405).json({ message: 'Método no permitido' });
   }
 }

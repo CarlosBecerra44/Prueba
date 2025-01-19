@@ -1,10 +1,10 @@
-import { TablaPermisosFaltaUsuario as EditForm } from "@/components/Gente & Cultura Permission/Components/tabla_permisos_faltas_usuario";
+import { AutorizarPapeletas as Auto } from "@/components/Gente & Cultura Permission/Components/autorizar_papeletas";
 import { Suspense } from 'react'
 function page() {
       return (
         <Suspense>
         <div>
-          <EditForm />
+          <Auto />
         </div>
         </Suspense>
       );

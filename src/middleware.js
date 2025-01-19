@@ -38,6 +38,7 @@ export async function middleware(req) {
       "/marketing/etiquetas/tabla_general",
       "/marketing/Editar",
       "/marketing/etiquetas",
+      "/permisos",
     ],
     isAdminGC: [
       "/inicio",
@@ -47,6 +48,7 @@ export async function middleware(req) {
       "/usuario",
       "/usuario/empresas",
       "/gente_y_cultura/vacantes",
+      "/permisos",
     ],
     isStandardMkt: [
       "/inicio",
@@ -55,8 +57,14 @@ export async function middleware(req) {
       "/marketing/etiquetas/tabla_general",
       "/marketing/Editar",
       "/marketing/etiquetas",
+      "/permisos",
     ],
-    isStandard: ["/inicio", "/perfil", "/gente_y_cultura/faltasUsuario"],
+    isStandard: [
+      "/inicio", 
+      "/perfil", 
+      "/gente_y_cultura/faltasUsuario",
+      "/permisos",
+    ],
   };
 
   // Permitir acceso total para Máster

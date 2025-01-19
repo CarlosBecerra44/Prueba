@@ -44,12 +44,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getSession } from 'next-auth/react';
 import { Checkbox } from "@/components/ui/checkbox"
 import '../../../../public/CSS/spinner.css';
-import Link from "next/link"
 import { PlusCircle, X } from "lucide-react"
+import Link from "next/link"
 
 const MySwal = withReactContent(Swal);
 
-export function TablaPermisosFaltaUsuario() {
+export function AutorizarPapeletas() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [eventos, setEventos] = useState([])
@@ -57,6 +57,13 @@ export function TablaPermisosFaltaUsuario() {
   const itemsPerPage = 10;
   const [isModalOpen, setModalOpen] = useState(false)
   const [isEditModalOpen, setEditModalOpen] = useState(false)
+  const [fechaInicio, setFechaInicio] = useState(null)
+  const [fechaFin, setFechaFin] = useState(null)
+  const [motivo, setMotivo] = useState('')
+  const [dias, setDias] = useState('')
+  const [comprobante, setComprobante] = useState(null)
+  const [justificada, setJustificada] = useState('')
+  const [pagada, setPagada] = useState('')
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [departamento, setDepartamento] = useState('');
@@ -71,8 +78,14 @@ export function TablaPermisosFaltaUsuario() {
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
+  const [formularioPrincipalAbiertoTrab, setFormularioPrincipalAbiertoTrab] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
+  const [file, setFile] = useState(null); // Estado para abrir el formulario
   const [allUsers, setAllUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isButtonLoaded, setIsButtonLoaded] = useState(false);
+  const [autorizar, setAutorizar] = useState(false);
 
   const openModal = () => {
     setFormData({
@@ -86,17 +99,34 @@ export function TablaPermisosFaltaUsuario() {
       pagada: "",
       conSueldo: "",
       horaFormulario: "",
-      fechaFormulario: null,
-      planTrabajo: {
+      productos: {
+        producto: { numero: "", nombre: "", cantidadP: "", cantidadT: "" },
+        otros: []
+      },
+      personal: {
+        trabajador: { numero: "", nombre: "", area: "" },
         otros: []
       },
     });
     setFormularioAbierto(true); // Abrir el formulario
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsButtonLoaded(true);
+    }, 1);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const openModalForms = () => {
     setTipoFormulario2("");
     setFormularioPrincipalAbierto(true); // Abrir el formulario
+  };
+
+  const openModalFormsWorkers = () => {
+    setTipoFormulario2("");
+    setFormularioPrincipalAbiertoTrab(true); // Abrir el formulario
   };
 
   const closeModal = () => {
@@ -109,6 +139,10 @@ export function TablaPermisosFaltaUsuario() {
 
   const closeModalForms = () => {
     setFormularioPrincipalAbierto(false); // Cerrar el formulario
+  };
+
+  const closeModalFormsWorkers = () => {
+    setFormularioPrincipalAbiertoTrab(false); // Cerrar el formulario
   };
 
   const closeModalFormsEdit = () => {
@@ -126,8 +160,12 @@ export function TablaPermisosFaltaUsuario() {
     pagada: "",
     conSueldo: "",
     horaFormulario: "",
-    fechaFormulario: null,
-    planTrabajo: {
+    productos: {
+      producto: { numero: "", nombre: "", cantidadP: "", cantidadT: "" },
+      otros: []
+    },
+    personal: {
+      trabajador: { numero: "", nombre: "", area: "" },
       otros: []
     },
   })
@@ -178,6 +216,56 @@ export function TablaPermisosFaltaUsuario() {
     fetchUserData();
   }, []);  
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!idUser) {
+        // Si el idUser no está disponible, no hacemos la solicitud
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/api/Users/getBossUsers?id=${idUser}`);
+        if (response.data.success) {
+          console.log(JSON.stringify(response.data.users))
+          setUsers(response.data.users);
+        } else {
+          console.error('Error al obtener los usuarios:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los usuarios:', error);
+      }
+    };
+    
+    fetchUsers();
+  }, [idUser]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('/api/Users/getUsers');
+        if (response.data.success) {
+          setAllUsers(response.data.users);
+        } else {
+          console.error('Error al obtener los usuarios:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los usuarios:', error);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get(`/api/Gente&CulturaAbsence/autorizarPapeletas?id=${idUser}&departamento=${departamento}`) // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data)
+      console.log(response.data)
+    } catch (error) {
+      console.error('Error al obtener eventos:', error)
+    }
+  }
+
   const handleOpenModal = () => {
     setModalOpen(true)
   }
@@ -218,6 +306,7 @@ export function TablaPermisosFaltaUsuario() {
       try {
         const response = await axios.get(`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
+        console.log("EVENTOS RECUPERADOS: " + JSON.stringify(response.data))
       } catch (error) {
         console.error('Error al obtener eventos:', error)
       }
@@ -236,6 +325,72 @@ export function TablaPermisosFaltaUsuario() {
       console.error('Error al obtener el formulario:', error);
     }
   }; 
+
+  const autorizarPapeletas = () => {
+    const fetchPapeletas = async () => {
+      try {
+        const response = await axios.get(`/api/Gente&CulturaAbsence/autorizarPapeletas?id=${idUser}&departamento=${departamento}`)
+        setEventos(response.data)
+        console.log("AUTORIZAR PAPELETAS: " + JSON.stringify(response.data))
+        setAutorizar(true)
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+    fetchPapeletas()
+  }
+
+  const verPapeletasEspeciales = () => {
+    const fetchPapeletas = async () => {
+      try {
+        const response = await axios.get(`/api/Gente&CulturaAbsence/getFaltas?departamento=${departamento}`) // Asegúrate de que esta ruta esté configurada en tu backend
+        setEventos(response.data)
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+    fetchPapeletas()
+  }
+
+  const añadirPersonal = () => {
+    setFormData(prevData => ({
+      ...prevData,
+      personal: {
+        ...prevData.personal,
+        otros: [...prevData.personal.otros, { numero: "", nombre: "", area: "" }]
+      }
+    }))
+  }
+
+  const eliminarPersonal = (index) => {
+    setFormData(prevData => ({
+      ...prevData,
+      personal: {
+        ...prevData.personal,
+        otros: prevData.personal.otros.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  const añadirProducto = () => {
+    setFormData(prevData => ({
+      ...prevData,
+      productos: {
+        ...prevData.productos,
+        otros: [...prevData.productos.otros, { numero: "", nombre: "", cantidadP: "", cantidadT: "" }]
+      }
+    }))
+  }
+
+  const eliminarProducto = (index) => {
+    setFormData(prevData => ({
+      ...prevData,
+      productos: {
+        ...prevData.productos,
+        otros: prevData.productos.otros.filter((_, i) => i !== index)
+      }
+    }))
+  }
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -258,7 +413,7 @@ export function TablaPermisosFaltaUsuario() {
           const response = await axios.post(`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`);
           if (response.status === 200) {
             await Swal.fire('Eliminada', 'La papeleta ha sido eliminada correctamente', 'success');
-            window.location.href = "/permisos";
+            window.location.href = "/gente_y_cultura/faltasUsuario";
           } else {
             Swal.fire('Error', 'Error al eliminar la papeleta', 'error');
           }
@@ -283,11 +438,16 @@ export function TablaPermisosFaltaUsuario() {
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
-          <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
-            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Button>
+          {autorizar ? (
+              <div hidden></div>
+            ) : (
+              <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
+                <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Button>
+            )
+          }
           <Button style={{ width: "1px", height: "40px"}} onClick={() => handleEditForm(index)}>
             <VisualizeIcon />
           </Button>
@@ -308,7 +468,7 @@ export function TablaPermisosFaltaUsuario() {
     );
   
   const {data: session,status}=useSession ();
-  if (status === "loading") {
+  if (status === "loading" || !isButtonLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -358,40 +518,27 @@ export function TablaPermisosFaltaUsuario() {
     }
   };  
 
-  const añadirTrabajo = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      planTrabajo: {
-        otros: [...prevData.planTrabajo.otros, { fechaActividad: null, actividad: "", descripcion: "", persona: "", tiempoRespuesta: "", comentarios: "" }]
+  const handleChangeStatus = async (index, nuevoEstatus) => {
+    try {
+      const response = await axios.post(
+        `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
+        { id: index, estatus: nuevoEstatus } // Envías los datos correctamente
+      );
+  
+      if (response.status === 200) {
+        // Actualizar el estado local sin recargar la página
+        fetchEventos();       
+  
+        // Mostrar mensaje de éxito
+        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado correctamente', 'success');
+      } else {
+        Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
       }
-    }))
-  }
-
-  const eliminarTrabajo = (index) => {
-    setFormData(prevData => ({
-      ...prevData,
-      planTrabajo: {
-        otros: prevData.planTrabajo.otros.filter((_, i) => i !== index)
-      }
-    }))
-  }
-
-  const handleTrabajoChange = (e, index, field) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => {
-      const nuevosOtros = [...prevState.planTrabajo.otros];
-      nuevosOtros[index] = {
-        ...nuevosOtros[index],
-        [field || name]: value,
-      };
-      return {
-        ...prevState,
-        planTrabajo: {
-          otros: nuevosOtros,
-        },
-      };
-    });
-  };  
+    } catch (error) {
+      console.error('Error al actualizar el estatus de la papeleta:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la papeleta', 'error');
+    }
+  }; 
 
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
@@ -426,7 +573,7 @@ export function TablaPermisosFaltaUsuario() {
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/permisos";
+          window.location.href = "/gente_y_cultura/faltasUsuario";
         });
       } else {
         Swal.fire("Error", "Error al crear la papeleta", "error");
@@ -497,7 +644,7 @@ export function TablaPermisosFaltaUsuario() {
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/permisos";
+          window.location.href = "/gente_y_cultura/faltasUsuario";
         });
       } else {
         Swal.fire('Error', 'Error al crear la papeleta', 'error');
@@ -507,9 +654,16 @@ export function TablaPermisosFaltaUsuario() {
     }
   };
 
-  const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => (
-    <div className={removeSpacing ? "" : "space-y-2"}>
-    <Label>{label}</Label>
+  const renderDatePicker = (label, date, handleChange, name, readOnly = false) => (
+    <div className="space-y-2">
+      <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+        <Label>{label}</Label>
+        <div style={{marginLeft: "10px"}}>
+          <Tooltip title="Información adicional" arrow>
+            <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+          </Tooltip>
+        </div>
+      </div>
   <Popover>
     <PopoverTrigger asChild>
       <Button2
@@ -560,7 +714,7 @@ export function TablaPermisosFaltaUsuario() {
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
         <Button
           variant="contained"
           color="secondary"
@@ -576,14 +730,63 @@ export function TablaPermisosFaltaUsuario() {
         >
           <PermisosIcon className="h-4 w-4" />AGREGAR PAPELETA
         </Button>
+        {users.length > 0 && isButtonLoaded && (
+          <div style={{display: "flex", alignItems: "center", gap: "70px"}}>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{
+                background: "rgb(31 41 55)",
+                padding: "10px 15px",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px", 
+              }}
+              onClick={openModalFormsWorkers}
+            >
+              <PermisosIcon className="h-4 w-4" />AGREGAR PAPELETA TRABAJADOR
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{
+                background: "rgb(31 41 55)",
+                padding: "10px 15px",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+              onClick={autorizarPapeletas}
+            >
+              <PermisosIcon className="h-4 w-4" />AUTORIZAR PAPELETAS TRABAJADORES
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{
+                background: "rgb(31 41 55)",
+                padding: "10px 15px",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+              onClick={verPapeletasEspeciales}
+            >
+              <PermisosIcon className="h-4 w-4" />VER PAPELETAS ESPECIALES
+            </Button>
+          </div> 
+        )}
       </div><br />
       {formularioPrincipalAbierto && (
             <Dialog open={formularioPrincipalAbierto} onOpenChange={closeModalForms}>
             <DialogContent className="border-none p-0">
             <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Nueva papeleta</CardTitle>
-            <DialogDescription className="text-center">Selecciona el tipo de papeleta</DialogDescription>
+            <CardTitle className="text-2xl font-bold text-center">Nueva incidencia</CardTitle>
+            <DialogDescription className="text-center">Selecciona el tipo de incidencia</DialogDescription>
           </CardHeader>
           <div className="grid gap-4 py-4">
             <div className="flex items-center space-x-2">
@@ -632,19 +835,7 @@ export function TablaPermisosFaltaUsuario() {
                 }}
                 style={{ marginLeft: "30px" }}
               />
-              <Label htmlFor="Permiso">Permiso</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Home Office"
-                checked={tipoFormulario2 === "Home Office"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Home Office" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Home Office">Home Office</Label>
+              <Label htmlFor="Permiso">Permiso / Home Office</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -676,6 +867,57 @@ export function TablaPermisosFaltaUsuario() {
           </Dialog>
           )}
 
+      {formularioPrincipalAbiertoTrab && (
+            <Dialog open={formularioPrincipalAbiertoTrab} onOpenChange={closeModalFormsWorkers}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Nueva incidencia para un trabajador asignado</CardTitle>
+            <DialogDescription className="text-center">Selecciona el tipo de incidencia a aplicar al trabajador</DialogDescription>
+          </CardHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Horas extras"
+                checked={tipoFormulario2 === "Horas extras"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Horas extras" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Horas extras">Horas extras</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Bonos / Comisiones"
+                checked={tipoFormulario2 === "Bonos / Comisiones"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Bonos / Comisiones" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Bonos / Comisiones">Bonos / Comisiones</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Aumento sueldo"
+                checked={tipoFormulario2 === "Aumento sueldo"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange(checked ? "Aumento sueldo" : "");
+                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</Label>
+            </div>
+          </div>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+
       {/* Mostrar formulario basado en el tipo seleccionado */}
       {formularioAbierto && tipoFormulario2 && (
         <div>
@@ -689,23 +931,39 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Días</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="dias"
                   name="dias"
                   type="number"
                   onChange={handleChange}
                   required
-                  placeholder="Dias..."/>
+                  placeholder="Dias que faltó"
+                  title="Dias que faltaste y que debes de colocar" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Coloca algun comentario u observación que creas" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
+                  title="Coloca tus observaciones sobre la falta que tuviste"
                   name="motivo"
                   onChange={handleChange}
                   required
@@ -714,12 +972,9 @@ export function TablaPermisosFaltaUsuario() {
               </div>
               <div className="space-y-2">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
+                  <Label htmlFor="comprobante">Comprobante</Label>
                   <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube tu justificante. Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
+                    <Tooltip title="Si el comprobante es del IMSS, se pagan 4 horas, de lo contrario la falta no se paga." arrow>
                       <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
                     </Tooltip>
                   </div>
@@ -777,7 +1032,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -795,7 +1050,14 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivo">Hora</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Hora</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="horaFormulario"
                   name="horaFormulario"
@@ -807,7 +1069,14 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
                   name="motivo"
@@ -845,7 +1114,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.horaFormulario || !formData.fechaInicio || !formData.motivo}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -866,7 +1135,7 @@ export function TablaPermisosFaltaUsuario() {
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <Label htmlFor="motivo">Días</Label>
                   <div style={{marginLeft: "10px"}}>
-                    <Tooltip title="1 día de trabajo equivale a 8 horas de trabajo." arrow>
+                    <Tooltip title="Información adicional" arrow>
                       <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
                     </Tooltip>
                   </div>
@@ -880,7 +1149,14 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Dias..." />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="horas">Horas</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="horas">Horas</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="horas"
                   name="horas"
@@ -894,7 +1170,14 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
                   name="motivo"
@@ -904,7 +1187,14 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2">
                 <input
                     id="comprobante"
@@ -958,7 +1248,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.horas || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -970,8 +1260,8 @@ export function TablaPermisosFaltaUsuario() {
             <DialogContent className="border-none p-0">
             <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
-            <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo</DialogDescription>
+            <CardTitle className="text-2xl font-bold text-center">Permiso / Home Office</CardTitle>
+            <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo, o petición de home office</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
@@ -1006,10 +1296,21 @@ export function TablaPermisosFaltaUsuario() {
                     <RadioGroupItem value="no" id="justificada-no" />
                     <Label htmlFor="justificada-no">Sin goce de sueldo</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="home" id="home" />
+                    <Label htmlFor="home">Home office</Label>
+                  </div>
                 </RadioGroup>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Días</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="dias"
                   name="dias"
@@ -1023,7 +1324,14 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
                   name="motivo"
@@ -1034,11 +1342,33 @@ export function TablaPermisosFaltaUsuario() {
               </div>
               <div className="space-y-2">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <Label htmlFor="motivo">Formato home office</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`
+                        `<p style="margin:0;padding:5px;text-align:justify;">En caso de haber seleccionado la opción de <strong>home office</strong>, 
+                        es necesario descargar el formato que se adjunta en este apartado y subirlo ya llenado en el apartado de <strong>comprobante</strong> 
+                        de este formulario.</p>`
                       } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Link href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=Formato Home Office.xlsx`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline">
+                  <Button2 className="w-full">Descargar Formato Home Office</Button2>
+                  </Link>
+                  
+                    
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
                       <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
                     </Tooltip>
                   </div>
@@ -1096,212 +1426,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.conSueldo || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Home Office" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1600px", // Límite del ancho
-              height: "65vh", // Ajusta la altura
-              maxHeight: "65vh", // Límite de la altura
-              padding: "30px", // Margen interno
-              marginLeft: "120px"
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Home Office</CardTitle>
-            <DialogDescription className="text-center">Solicitar permiso para realizar home office</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div>
-                <Label style={{fontSize: 17}}>Periodo</Label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label style={{fontSize: 17}}>Plan de trabajo</Label>
-                <div style={{marginLeft: "10px"}}>
-                  <Tooltip
-                    title={
-                      `<p style="margin:0;padding:5px;text-align:justify;">INSTRUCCIONES PARA EL LLENADO DEL FORMULARIO:</p>
-                      <ul style="margin:0;padding:5px;text-align:justify;">
-                        <li style="margin-bottom:5px;"><strong>FECHA:</strong> Fecha de actividad, se debe seguir un consecutivo.</li>
-                        <li style="margin-bottom:5px;"><strong>ACTIVIDAD:</strong> Corresponde al nombre corto que el proponente le designe a la actividad.</li>
-                        <li style="margin-bottom:5px;"><strong>DESCRIPCIÓN DE ACTIVIDAD ELABORADA:</strong> Describa las actividades requeridas para el cumplimiento del objetivo del proyecto. Una actividad se entiende como el conjunto de acciones que se llevan a cabo para cumplir una meta, que consiste en la ejecución de ciertos procesos o tareas (mediante la utilización de los recursos humanos, materiales, técnicos, y financieros) asignados a la actividad con un costo determinado.</li>
-                        <li style="margin-bottom:5px;"><strong>PERSONA A LA QUE SE LE DIÓ RESPUESTA (SOLO DE DAR SEGUIMIENTO A PETICIÓN):</strong> Indique el nombre del miembro del equipo de trabajo quien se le dio respuesta con la actividad. Solo en caso de que se tenga, puesto que si es una actividad individual sin relación a otra área, este espacio se deja en blanco.</li>
-                        <li style="margin-bottom:5px;"><strong>TIEMPO DE RESPUESTA:</strong> Indique el tiempo de respuesta que se requirió para las actividades. Los resultados son productos que se logran con la ejecución de actividades. Varias actividades pueden permitir el logro de un resultado.</li>
-                        <li style="margin-bottom:5px;"><strong>COMENTARIOS (SI SE DEJA PENDIENTE, SE REQUIERE APOYO DE ALGÚN OTRA ÁREA, ETC.):</strong> Son observaciones, pendientes que pueden quedar en otra área, o en la nuestra.</li>
-                        <li><strong>RECUERDE:</strong> Las actividades propuestas deben estar orientadas al cumplimiento del objeto de la convocatoria.</li>
-                      </ul>`
-                    }
-                    arrow
-                  >
-                    <HelpIcon style={{ cursor: 'pointer', fontSize: 20 }} />
-                  </Tooltip>
-                </div>
-              </div>
-              <div className="grid grid-cols-7 gap-1">
-                <div>
-                  {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario")}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="actividad">Actividad</Label>
-                  <Input
-                    id="actividad"
-                    name="actividad"
-                    type="text"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="descripcion">Descripción</Label>
-                  <Input
-                    id="descripcion"
-                    name="descripcion"
-                    type="text"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="persona">Persona respuesta</Label>
-                  <Input
-                    id="persona"
-                    name="persona"
-                    type="text"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tiempoRespuesta">Tiempo de respuesta</Label>
-                  <Input
-                    id="tiempoRespuesta"
-                    name="tiempoRespuesta"
-                    type="text"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comentarios">Comentarios</Label>
-                  <Input
-                    id="comentarios"
-                    name="comentarios"
-                    type="text"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.planTrabajo.otros.map((otro, index) => (
-               <div key={index} className="grid grid-cols-7 gap-1">
-               <div>
-                {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", false, true)}
-              </div>
-               <div>
-                 <Input
-                   id={`actividad-${index}`}
-                   name={`actividad-${index}`}
-                   type="text"
-                   onChange={(e) => handleChange(e, index, "actividad")}
-                   required
-                 />
-               </div>
-               <div className="col-span-2">
-                 <Input
-                   id={`descripcion-${index}`}
-                   name={`descripcion-${index}`}
-                   type="text"
-                   onChange={(e) => handleChange(e, index, "descripcion")}
-                   required
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`persona-${index}`}
-                   name={`persona-${index}`}
-                   type="text"
-                   onChange={(e) => handleChange(e, index, "persona")}
-                   required
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`tiempoRespuesta-${index}`}
-                   name={`tiempoRespuesta-${index}`}
-                   type="text"
-                   onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
-                   required
-                 />
-               </div>
-               <div>
-               <div className="flex items-center">
-               <Input
-                    id={`comentarios-${index}`}
-                    name={`comentarios-${index}`}
-                    type="text"
-                    style={{width: "170px"}}
-                    onChange={(e) => handleChange(e, index, "comentarios")}
-                    required
-                  />
-                      <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarTrabajo(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-               </div>
-             </div>
-              ))}
-              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirTrabajo} className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>
-            </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.fechaInicio || !formData.fechaFin || !formData.planTrabajo.otros.fechaActividad}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1319,7 +1444,14 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Días</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="dias"
                   name="dias"
@@ -1333,7 +1465,14 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
                   name="motivo"
@@ -1371,7 +1510,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1388,7 +1527,14 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Días</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="dias"
                   name="dias"
@@ -1402,7 +1548,14 @@ export function TablaPermisosFaltaUsuario() {
                 {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Observaciones</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Textarea
                   id="motivo"
                   name="motivo"
@@ -1413,7 +1566,505 @@ export function TablaPermisosFaltaUsuario() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
+            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Horas extras" && (
+            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
+            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "70%", // Ajusta el ancho
+              maxWidth: "900px", // Límite del ancho
+              height: "90vh", // Ajusta la altura
+              maxHeight: "90vh", // Límite de la altura
+              padding: "30px", // Margen interno
+            }}>
+            <Card className="w-full xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Horas extras</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
+                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="horaInicio">Hora de inicio</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="horaInicio"
+                      name="horaInicio"
+                      type="time"
+                      style={{width: "385px"}}
+                      onChange={handleChange}
+                      required
+                      placeholder="Hora de inicio..." />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="horaFin">Hora de fin</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="horaFin"
+                      name="horaFin"
+                      type="time"
+                      style={{width: "385px"}}
+                      onChange={handleChange}
+                      required
+                      placeholder="Hora de fin..." />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Motivo del tiempo extra</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  onChange={handleChange}
+                  required
+                  className="min-h-[100px]"
+                  placeholder="Coloca el motivo del tiempo extra aquí..." />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="no">No. de orden</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="no"
+                      name="no"
+                      type="number"
+                      style={{width: "80px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="nombreProducto">Nombre del producto</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="nombreProducto"
+                      name="nombreProducto"
+                      type="text"
+                      style={{width: "310px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="cantidadProgramada">Cantidad programada</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="cantidadProgramada"
+                      name="cantidadProgramada"
+                      type="number"
+                      style={{width: "80px", marginLeft: "40px"
+                      }}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="cantidadTerminada">Cantidad terminada</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="cantidadTerminada"
+                      name="cantidadTerminada"
+                      type="number"
+                      style={{width: "80px", marginLeft: "30px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.productos.otros.map((otro, index) => (
+               <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+               <div className="space-y-2">
+                 <Input
+                     id="no"
+                     name="no"
+                     type="number"
+                     style={{width: "80px"}}
+                     onChange={handleChange}
+                     required />
+               </div>
+               <div className="space-y-2">
+                 <Input
+                     id="nombreProducto"
+                     name="nombreProducto"
+                     type="text"
+                     style={{width: "310px", marginLeft: "35px"}}
+                     onChange={handleChange}
+                     required />
+               </div>
+               <div className="space-y-2">
+                 <Input
+                     id="cantidadProgramada"
+                     name="cantidadProgramada"
+                     type="number"
+                     style={{width: "80px", marginLeft: "40px"
+                     }}
+                     onChange={handleChange}
+                     required />
+               </div>
+               <div className="space-y-2">
+               <div className="flex items-center">
+                  <Input
+                      id="cantidadTerminada"
+                      name="cantidadTerminada"
+                      type="number"
+                      style={{width: "80px", marginLeft: "82px"}}
+                      onChange={handleChange}
+                      required />
+                      <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => eliminarProducto(index)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+               </div>
+             </div>
+              ))}
+              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirProducto} className="mt-2">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Agregar producto
+              </Button>
+            </div>
+              <div>
+                <Label style={{fontSize: 17}}>Personal que se autoriza</Label>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="no">No.</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="no"
+                      name="no"
+                      type="number"
+                      style={{width: "80px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="nombreProducto">Nombre</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="nombreProducto"
+                      name="nombreProducto"
+                      type="text"
+                      style={{width: "350px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="cantidadProgramada">Área</Label>
+                    <div style={{marginLeft: "10px"}}>
+                      <Tooltip title="Información adicional" arrow>
+                        <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Input
+                      id="cantidadProgramada"
+                      name="cantidadProgramada"
+                      type="text"
+                      style={{width: "340px"
+                      }}
+                      onChange={handleChange}
+                      required />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.personal.otros.map((otro, index) => (
+                <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+                <div className="space-y-2">
+                  <Input
+                      id="no"
+                      name="no"
+                      type="number"
+                      style={{width: "80px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                      id="nombreProducto"
+                      name="nombreProducto"
+                      type="text"
+                      style={{width: "350px"}}
+                      onChange={handleChange}
+                      required />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                  <Input
+                      id="cantidadProgramada"
+                      name="cantidadProgramada"
+                      type="text"
+                      style={{width: "270px"
+                      }}
+                      onChange={handleChange}
+                      required />
+                      <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => eliminarPersonal(index)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              ))}
+              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirPersonal} className="mt-2">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Agregar personal
+              </Button>
+            </div>
+            </CardContent>
+            <CardFooter>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
+            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Bonos / Comisiones" && (
+            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Bonos / Comisiones</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Nombre del colaborador a aplicar ajuste</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  onChange={handleChange}
+                  required />
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Puesto</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  onChange={handleChange}
+                  required />
+              </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Aplica por</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+              <Select
+                id="dropdown"
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "500px" }}>
+                  <SelectValue placeholder="Seleccionar motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="modificacion">Modificación a perfil de puesto</SelectItem>
+                  <SelectItem value="cambio">Cambio de puesto</SelectItem>
+                  <SelectItem value="desempeño">Desempeño</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio")}
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Comentarios adicionales</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  onChange={handleChange}
+                  required
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus comentarios adicionales aquí..." />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
+            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Aumento sueldo" && (
+            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Aumento de sueldo / Cambio de puesto / Cambio de área</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Nombre del colaborador a aplicar ajuste</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="text"
+                  onChange={handleChange}
+                  required />
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Puesto</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="text"
+                  onChange={handleChange}
+                  required />
+              </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Aplica por</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+              <Select
+                id="dropdown"
+              >
+                <SelectTrigger id="dropdown" style={{ maxWidth: "500px" }}>
+                  <SelectValue placeholder="Seleccionar motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="modificacion">Modificación a perfil de puesto - Competencias</SelectItem>
+                  <SelectItem value="cambio">Cambio de puesto</SelectItem>
+                  <SelectItem value="desempeño">Desempeño</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio")}
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Comentarios adicionales</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="Información adicional" arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  onChange={handleChange}
+                  required
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus comentarios adicionales aquí..." />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button2 type="submit" className="w-full">Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1472,17 +2123,7 @@ export function TablaPermisosFaltaUsuario() {
                   readOnly={true} />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
+                <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     // Si hay un valor recuperado, mostrarlo como texto
@@ -1557,7 +2198,6 @@ export function TablaPermisosFaltaUsuario() {
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
-            <DialogDescription className="text-center">Autorización para llegar tarde o salir temprano</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
@@ -1628,14 +2268,7 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Días</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title="1 día de trabajo equivale a 8 horas de trabajo." arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
+                <Label htmlFor="motivo">Días</Label>
                 <Input
                   id="dias"
                   name="dias"
@@ -1746,30 +2379,11 @@ export function TablaPermisosFaltaUsuario() {
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
-            <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
             <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label>Tipo de permiso</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip
-                      title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
-                        <ul style="margin:0;padding:5px;text-align:justify;">
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
-                          <li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
-                        </ul>`
-                      }
-                      arrow
-                    >
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
+                <Label>Tipo de permiso</Label>
                 <RadioGroup
                   onValueChange={(value) => handleChange2({ name: "conSueldo", value })}
                   value={formData.conSueldo}
@@ -1812,16 +2426,7 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Comprobante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
+                <Label htmlFor="comprobante">Comprobante</Label>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     // Si hay un valor recuperado, mostrarlo como texto
@@ -1889,194 +2494,12 @@ export function TablaPermisosFaltaUsuario() {
             </DialogContent>
           </Dialog>
           )}
-          {tipoFormulario2 === "Home Office" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1600px", // Límite del ancho
-              height: "65vh", // Ajusta la altura
-              maxHeight: "65vh", // Límite de la altura
-              padding: "30px", // Margen interno
-              marginLeft: "120px"
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Home Office</CardTitle>
-            <DialogDescription className="text-center">Solicitar permiso para realizar home office</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div>
-                <Label style={{fontSize: 17}}>Periodo</Label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
-              </div>
-              <div>
-                <Label style={{fontSize: 17}}>Plan de trabajo</Label>
-              </div>
-              <div className="grid grid-cols-7 gap-1">
-                <div>
-                  {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario", true)}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="actividad">Actividad</Label>
-                  <Input
-                    id="actividad"
-                    name="actividad"
-                    type="text"
-                    value={formData.actividad}
-                    onChange={handleChange}
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="descripcion">Descripción</Label>
-                  <Input
-                    id="descripcion"
-                    name="descripcion"
-                    type="text"
-                    value={formData.descripcion}
-                    onChange={handleChange}
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="persona">Persona respuesta</Label>
-                  <Input
-                    id="persona"
-                    name="persona"
-                    type="text"
-                    value={formData.persona}
-                    onChange={handleChange}
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tiempoRespuesta">Tiempo de respuesta</Label>
-                  <Input
-                    id="tiempoRespuesta"
-                    name="tiempoRespuesta"
-                    type="text"
-                    value={formData.tiempoRespuesta}
-                    onChange={handleChange}
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comentarios">Comentarios</Label>
-                  <Input
-                    id="comentarios"
-                    name="comentarios"
-                    type="text"
-                    value={formData.comentarios}
-                    onChange={handleChange}
-                    readOnly={true}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.planTrabajo.otros.map((otro, index) => (
-               <div key={index} className="grid grid-cols-7 gap-1">
-               <div>
-                {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", true, true)}
-              </div>
-               <div>
-                 <Input
-                   id={`actividad-${index}`}
-                   name={`actividad-${index}`}
-                   type="text"
-                   value={formData[`actividad-${index}`]}
-                   onChange={(e) => handleChange(e, index, "actividad")}
-                   readOnly={true}
-                 />
-               </div>
-               <div className="col-span-2">
-                 <Input
-                   id={`descripcion-${index}`}
-                   name={`descripcion-${index}`}
-                   type="text"
-                   value={formData[`descripcion-${index}`]}
-                   onChange={(e) => handleChange(e, index, "descripcion")}
-                   readOnly={true}
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`persona-${index}`}
-                   name={`persona-${index}`}
-                   type="text"
-                   value={formData[`persona-${index}`]}
-                   onChange={(e) => handleChange(e, index, "persona")}
-                   readOnly={true}
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`tiempoRespuesta-${index}`}
-                   name={`tiempoRespuesta-${index}`}
-                   type="text"
-                   value={formData[`tiempoRespuesta-${index}`]}
-                   onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
-                   readOnly={true}
-                 />
-               </div>
-               <div>
-               <div>
-               <Input
-                    id={`comentarios-${index}`}
-                    name={`comentarios-${index}`}
-                    type="text"
-                    value={formData[`comentarios-${index}`]}
-                    onChange={(e) => handleChange(e, index, "comentarios")}
-                    readOnly={true}
-                  />
-                  </div>
-               </div>
-             </div>
-              ))}
-            </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
           {tipoFormulario2 === "Suspension" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
             <DialogContent className="border-none p-0">
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
-            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
@@ -2210,7 +2633,6 @@ export function TablaPermisosFaltaUsuario() {
               <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
               <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
               <SelectItem value="Permiso">Permiso</SelectItem>
-              <SelectItem value="Home Office">Home Office</SelectItem>
               <SelectItem value="Suspension">Suspensión</SelectItem>
               <SelectItem value="Vacaciones">Vacaciones</SelectItem>
             </SelectContent>
@@ -2291,24 +2713,54 @@ export function TablaPermisosFaltaUsuario() {
                       })}`
                     : "Sin datos"}
                   </TableCell>
-                  <TableCell
-                    style={{
-                      color: (() => {
-                        switch (evento.estatus) {
-                          case 'Autorizada':
-                            return 'green';
-                          case 'No autorizada':
-                            return 'red';
-                          case 'Pendiente':
-                            return 'orange';
-                          default:
-                            return 'black'; // color por defecto
-                        }
-                      })(),
-                    }}
-                  >
-                    {evento.estatus}
-                  </TableCell>
+                  {autorizar ? (
+                    <TableCell
+                      style={{
+                        color: (() => {
+                          switch (evento.estatus) {
+                            case 'Autorizada':
+                              return 'green';
+                            case 'No autorizada':
+                              return 'red';
+                            case 'Pendiente':
+                              return 'orange';
+                            default:
+                              return 'black'; // color por defecto
+                          }
+                        })(),
+                      }}
+                    >
+                      <Select className="w-full min-w-[200px] max-w-[300px]" value={evento.estatus} onValueChange={(value) => handleChangeStatus(evento.id_papeleta, value)}>
+                        <SelectTrigger id="estatus" className="w-full min-w-[200px] max-w-[300px]">
+                          <SelectValue placeholder="Selecciona una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="w-full min-w-[200px] max-w-[300px]">
+                          <SelectItem value="Autorizada">Autorizada</SelectItem>
+                          <SelectItem value="Pendiente">Pendiente</SelectItem>
+                          <SelectItem value="No autorizada">No autorizada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  ) : (
+                    <TableCell
+                      style={{
+                        color: (() => {
+                          switch (evento.estatus) {
+                            case 'Autorizada':
+                              return 'green';
+                            case 'No autorizada':
+                              return 'red';
+                            case 'Pendiente':
+                              return 'orange';
+                            default:
+                              return 'black'; // color por defecto
+                          }
+                        })(),
+                      }}
+                    >
+                      {evento.estatus}
+                    </TableCell>
+                  )}
                   <TableCell>{evento.accion ? evento.accion(evento.id_papeleta) : "N/A"}</TableCell>
                 </TableRow>
               ))

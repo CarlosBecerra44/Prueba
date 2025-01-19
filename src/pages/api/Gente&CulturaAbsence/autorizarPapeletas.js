@@ -6,6 +6,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
+  const { id, departamento } = req.query;
+
   try {
     const query = `
       SELECT 
@@ -19,18 +21,16 @@ export default async function handler(req, res) {
           usuarios u
       ON 
           f.id_usuario = u.id 
-          AND f.eliminado = 0 
-          AND f.estatus = 'Autorizada' 
-          AND DATE_PART('week', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('week', CURRENT_DATE)
-          AND DATE_PART('year', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('year', CURRENT_DATE)
       JOIN 
           departamentos d
       ON 
           u.departamento_id = d.id
+      WHERE 
+          f.id_usuario != $1 AND d.nombre = $2 AND f.eliminado = 0 AND f.estatus = 'Pendiente'
       ORDER BY 
-          f.fecha_subida DESC;
+          f.fecha_actualizacion DESC;
     `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, [id, departamento]);
     const eventos = result.rows;
 
     // Retorna los eventos en formato JSON
