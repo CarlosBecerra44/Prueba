@@ -1,9 +1,9 @@
 {
     "functions": {
-      "api/FTP/upload.js": {
+      "src/pages/api/FTP/upload.js": {
         "maxDuration": 60
       },
-      "api/MarketingLabel/GuardarEtiquetas.js": {
+      "src/pages/api/MarketingLabel/GuardarEtiquetas.js": {
         "maxDuration": 60
       }
     }
