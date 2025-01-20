@@ -186,6 +186,7 @@ export function UserManagementTable() {
       setLoading(true); // Iniciar carga
       try {
         const response = await axios.get('/api/Users/getUsers');
+        const response = await axios.get('/api/Users/getUsers');
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
@@ -317,6 +318,7 @@ export function UserManagementTable() {
     }
 
     try {
+      const res = await fetch('/api/Users/registroMaster', {
       const res = await fetch('/api/Users/registroMaster', {
         method: 'POST',
         headers: {

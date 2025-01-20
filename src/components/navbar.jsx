@@ -15,6 +15,7 @@ export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
@@ -45,6 +46,7 @@ const toggleSection = (sectionId) => {
         if (userData.success) {
           setNombre(userData.user.nombre);
           setApellidos(userData.user.apellidos);
+          setApellidos(userData.user.apellidos);
           setDepartamento(userData.departamento.nombre);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
@@ -57,6 +59,14 @@ const toggleSection = (sectionId) => {
   }, []);
 
   const { data: session, status } = useSession();
+  
+
+  const toggleMenu = (menuId) => {
+    setOpenMenus((prevOpenMenus) =>
+      prevOpenMenus.includes(menuId)
+        ? prevOpenMenus.filter((id) => id !== menuId) // Cerrar menú
+        : [...prevOpenMenus, menuId] // Abrir menú
+    );
   
 
   const toggleMenu = (menuId) => {
@@ -149,6 +159,7 @@ const toggleSection = (sectionId) => {
         <div style={{ color: "white" }} className="flex items-center">
           <img src="/icon_user.png" alt="Logo" className="h-8 w-8" />
           <a href="/perfil">
+            <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
             <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
           </a>
         </div>
