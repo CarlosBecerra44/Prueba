@@ -23,6 +23,7 @@ export async function middleware(req) {
     isMaster: rol === "Máster",
     isAdminMkt: rol === "Administrador" && idPermiso !== null,
     isAdminGC: rol === "Administrador" && departamento === "5",
+    isITMember: rol !== "Máster" && departamento === "1",
     isStandardMkt: rol === "Estándar" && idPermiso !== null,
     isStandard: rol === "Estándar",
   };
@@ -49,6 +50,13 @@ export async function middleware(req) {
       "/usuario/empresas",
       "/gente_y_cultura/vacantes",
       "/permisos",
+    ],
+    isITMember: [
+      "/inicio", 
+      "/perfil", 
+      "/gente_y_cultura/faltasUsuario",
+      "/permisos",
+      "/it/inventario",
     ],
     isStandardMkt: [
       "/inicio",

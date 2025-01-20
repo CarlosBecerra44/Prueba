@@ -52,6 +52,7 @@ export function useUser() {
     isMaster: (rol === "Máster"),
     isAdminMkt: (rol === "Administrador" && idPermiso !== null),
     isAdminGC: (rol === "Administrador" && departamento === "Gente y Cultura"),
+    isITMember: (rol !== "Máster" && departamento === "IT"),
     isStandardMkt: (rol === "Estándar" && idPermiso !== null),
     isStandard: (rol === "Estándar")
   };
