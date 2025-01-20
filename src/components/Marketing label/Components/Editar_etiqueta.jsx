@@ -154,8 +154,13 @@ export function EditarEtiqueta() {
           ...data,
           selectedImages: prueba, // Manejamos como objeto, esté o no parseado
           ...Array.from({ length: verifiers.length }, (_, index) => ({
-            [`readOnly-${index}`]: !!data[`verifier-${index}`], [`readOnlyComments-${index}`]: !!data[`comments-${index}`]  // Establecer readOnly si ya hay valor
-          })).reduce((acc, curr) => ({ ...acc, ...curr }), {}) // Combina los estados en un solo objeto
+            [`readOnly-${index}`]: !!data[`verifier-${index}`], // Marcar readOnly si ya tiene valor
+            [`readOnlyComments-${index}`]: !!data[`comments-${index}`] || (!data[`comments-${index}`] && data[`authorize-${index}`] === "si"), // Lo mismo para comentarios
+            [`selectDisabled-${index}`]: !!data[`authorize-${index}`], // Desactivar el Select si ya tiene valor
+          })).reduce((acc, curr) => ({ ...acc, ...curr }), {}), // Combina los estados en un solo objeto
+            [`readOnly-10`]: !!data[`verifier-10`], // Marcar readOnly si ya tiene valor
+            [`readOnlyComments-10`]: !!data[`comments-10`] || (!data[`comments-10`] && data[`authorize-10`] === "si"), // Lo mismo para comentarios
+            [`selectDisabled-10`]: !!data[`authorize-10`], // Desactivar el Select si ya tiene valor
         }));
 
         setLoading(false); // Datos listos
@@ -169,20 +174,6 @@ export function EditarEtiqueta() {
     fetchData();
  
   }, [id]); 
-
-  useEffect(() => {
-    if (formulario.tipo === "Maquilas") {
-      // Verifica si hay un valor recuperado y establece el estado de readOnly
-      setFormulario((prev) => ({
-        ...prev,
-        [`readOnly-10`]: !!prev[`verifier-10`], // Establece readOnly si ya hay valor
-      }));
-    }
-  }, [formulario.tipo]);  
-
-   
-
-
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -330,8 +321,8 @@ export function EditarEtiqueta() {
 
       if (response.ok) {
         Swal.fire({
-          title: 'Editado',
-          text: 'Se ha editado correctamente',
+          title: 'Actualizada',
+          text: 'La etiqueta se ha actualizado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
@@ -339,10 +330,10 @@ export function EditarEtiqueta() {
           window.location.href = "/marketing/etiquetas/tabla_general";
         });
       } else {
-        Swal.fire('Error', 'Error al editar formulario', 'error');
+        Swal.fire('Error', 'Error al actualizar la etiqueta', 'error');
       }
     } catch (error) {
-      console.error('Error al actualizar etiqueta:', error);
+      console.error('Error al actualizar la etiqueta:', error);
     }
 
     try {
@@ -364,7 +355,7 @@ export function EditarEtiqueta() {
       if (response2.ok) {
         console.log("Notificacion enviada")
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al enviar la alerta de edición de etiqueta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -733,7 +724,7 @@ export function EditarEtiqueta() {
       <Card>
         <CardHeader>
           <CardTitle>Ingeniería de Productos</CardTitle>
-          <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
+          <CardDescription>Jania Leyva, Roger Castellanos o Emanuel Moya</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -908,16 +899,6 @@ export function EditarEtiqueta() {
                       }
                     }}
                    value={formulario[`verifier-${index}`] || ''} 
-                   
-                   onBlur={(e) => {
-                    // Convertir a readOnly cuando el campo pierde el foco y no está vacío
-                    if (e.target.value.trim() !== '') {
-                      setFormulario((prev) => ({
-                        ...prev,
-                        [`readOnly-${index}`]: true, // Establecemos un estado de readOnly dinámico
-                      }));
-                    }
-                  }}
                   readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnly-${index}`] || false}
                    />
                   <div style={{width:"9rem"}} className="flex items-center space-x-4">
@@ -944,7 +925,7 @@ export function EditarEtiqueta() {
                         setContadorFirmas((prev) => prev + 1);
                       }
                     }}
-                    disabled={!tienePermiso('Verificación', verifier) || formulario[`authorize-${index}`] === 'si' || formulario[`authorize-${index}`] === 'no'} // Se desactiva si tiene un valor
+                    disabled={!tienePermiso('Verificación', verifier) || formulario[`selectDisabled-${index}`]} // Se desactiva si tiene un valor
                     >
                     <SelectTrigger>
                       <SelectValue placeholder={"Seleccionar"} />
@@ -966,15 +947,6 @@ export function EditarEtiqueta() {
                     placeholder="Ingrese sus comentarios aquí"
                     className="w-full"
                     onChange={handleInputChange}
-                    onBlur={(e) => {
-                      // Convertir a readOnly cuando el campo pierde el foco y no está vacío
-                      if (e.target.value.trim() !== '') {
-                        setFormulario((prev) => ({
-                          ...prev,
-                          [`readOnlyComments-${index}`]: true, // Establecemos un estado de readOnly dinámico
-                        }));
-                      }
-                    }}
                     readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnlyComments-${index}`] || false}
                     value={formulario[`comments-${index}`] || ''}  // name y value desde el evento
                     required={formulario.commentsRequired?.[`comments-${index}`]}
@@ -986,7 +958,7 @@ export function EditarEtiqueta() {
                 <div className="space-y-4">
                 <Label htmlFor={'verifier-10'}>Maquilas</Label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Input id={`verifier-10`} name={`verifier-10`} placeholder="Nombre" onChange={(e) => {
+                <Input id={'verifier-10'} name={'verifier-10'} placeholder="Nombre" onChange={(e) => {
                       handleInputChange(e); // Llama a tu manejador de cambios
                       
                       // Verificar si el campo de nombre tiene al menos un carácter
@@ -995,7 +967,7 @@ export function EditarEtiqueta() {
                         const today = new Date().toISOString().split("T")[0];
                         setFormulario((prev) => ({
                           ...prev,
-                          [`fecha_autorizacion-10`]: today,
+                          ['fecha_autorizacion-10']: today,
                         }));
                       }
 
@@ -1003,36 +975,26 @@ export function EditarEtiqueta() {
                         setContadorFirmas((prev) => prev + 1);
                       }
                     }}
-                   value={formulario[`verifier-10`] || ''} 
-                   
-                   onBlur={(e) => {
-                    // Convertir a readOnly cuando el campo pierde el foco y no está vacío
-                    if (e.target.value.trim() !== '') {
-                      setFormulario((prev) => ({
-                        ...prev,
-                        [`readOnly-10`]: true, // Establecemos un estado de readOnly dinámico
-                      }));
-                    }
-                  }}
-                  readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnly-10`] || false}
+                   value={formulario['verifier-10'] || ''} 
+                  readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario['readOnly-10'] || false}
                    />
                   <div style={{width:"9rem"}} className="flex items-center space-x-4">
                   <Select 
-                    name={`authorize-10`} 
-                    value={formulario[`authorize-10`]} // Usamos la clave dinámica en `formulario`
+                    name={'authorize-10'} 
+                    value={formulario['authorize-10']} // Usamos la clave dinámica en `formulario`
                     onValueChange={(value) => {
-                      handleSelectChange(value, `authorize-10`);
+                      handleSelectChange(value, 'authorize-10');
                       // Cambiar el campo de comentarios a obligatorio si el valor es "no"
                       if (value === 'no') {
                         setFormulario((prev) => ({
                           ...prev,
-                          [`comments-10`]: prev[`comments-10`] || '', // Mantener el valor actual
-                          commentsRequired: { ...prev.commentsRequired, [`comments-10`]: true }, // Hacer que sea obligatorio
+                          ['comments-10']: prev['comments-10'] || '', // Mantener el valor actual
+                          commentsRequired: { ...prev.commentsRequired, ['comments-10']: true }, // Hacer que sea obligatorio
                         }));
                       } else {
                         setFormulario((prev) => ({
                           ...prev,
-                          commentsRequired: { ...prev.commentsRequired, [`comments-10`]: false }, // No obligatorio
+                          commentsRequired: { ...prev.commentsRequired, ['comments-10']: false }, // No obligatorio
                         }));
                       }
 
@@ -1040,7 +1002,7 @@ export function EditarEtiqueta() {
                         setContadorFirmas((prev) => prev + 1);
                       }
                     }}
-                    disabled={!tienePermiso('Verificación', 'Maquilas') || formulario[`authorize-10`] === 'si' || formulario[`authorize-10`] === 'no'} // Se desactiva si tiene un valor
+                    disabled={!tienePermiso('Verificación', 'Maquilas') || formulario['selectDisabled-10']} // Se desactiva si tiene un valor
                     >
                         <SelectTrigger>
                           <SelectValue placeholder={"Seleccionar"}/>
@@ -1062,15 +1024,6 @@ export function EditarEtiqueta() {
                     placeholder="Ingrese sus comentarios aquí"
                     className="w-full"
                     onChange={handleInputChange}
-                    onBlur={(e) => {
-                      // Convertir a readOnly cuando el campo pierde el foco y no está vacío
-                      if (e.target.value.trim() !== '') {
-                        setFormulario((prev) => ({
-                          ...prev,
-                          [`readOnlyComments-10`]: true, // Establecemos un estado de readOnly dinámico
-                        }));
-                      }
-                    }}
                     readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnlyComments-10`] || false}
                     value={formulario[`comments-10`] || ''}  // name y value desde el evento
                     required={formulario.commentsRequired?.[`comments-10`]}

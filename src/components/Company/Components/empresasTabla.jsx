@@ -353,7 +353,7 @@ export function EmpresasTabla() {
 
       if (res.ok) {
         Swal.fire({
-          title: 'Creado',
+          title: 'Creada',
           text: 'La empresa ha sido creada correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
@@ -441,7 +441,7 @@ export function EmpresasTabla() {
   
     if (response.ok) {
       Swal.fire({
-        title: 'Subido',
+        title: 'Creado',
         text: 'Se ha creado correctamente el permiso',
         icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos

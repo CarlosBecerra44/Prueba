@@ -15,7 +15,6 @@ export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
-  const [apellidos, setApellidos] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
@@ -46,7 +45,6 @@ const toggleSection = (sectionId) => {
         if (userData.success) {
           setNombre(userData.user.nombre);
           setApellidos(userData.user.apellidos);
-          setApellidos(userData.user.apellidos);
           setDepartamento(userData.departamento.nombre);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
@@ -59,14 +57,6 @@ const toggleSection = (sectionId) => {
   }, []);
 
   const { data: session, status } = useSession();
-  
-
-  const toggleMenu = (menuId) => {
-    setOpenMenus((prevOpenMenus) =>
-      prevOpenMenus.includes(menuId)
-        ? prevOpenMenus.filter((id) => id !== menuId) // Cerrar menú
-        : [...prevOpenMenus, menuId] // Abrir menú
-    );
   
 
   const toggleMenu = (menuId) => {
@@ -126,7 +116,7 @@ const toggleSection = (sectionId) => {
     },
     { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }] },
     { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","standardMkt","standard"] },
@@ -159,7 +149,6 @@ const toggleSection = (sectionId) => {
         <div style={{ color: "white" }} className="flex items-center">
           <img src="/icon_user.png" alt="Logo" className="h-8 w-8" />
           <a href="/perfil">
-            <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
             <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
           </a>
         </div>
@@ -676,6 +665,14 @@ function VacantesIcon(props) {
   <circle cx="12" cy="7" r="4" />
   <path d="M4 20c0-4 4-6 8-6s8 2 8 6H4z" />
   <path d="M22 7h2v2h-2v2h-2V9h-2V7h2V5h2v2z" />
+</svg>
+  )
+}
+
+function InventarioIcon(props) {
+  return (
+    <svg class="w-[25px] h-[25px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13h3.439a.991.991 0 0 1 .908.6 3.978 3.978 0 0 0 7.306 0 .99.99 0 0 1 .908-.6H20M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6M4 13l2-9h12l2 9M9 7h6m-7 3h8"/>
 </svg>
   )
 }

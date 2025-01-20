@@ -243,7 +243,7 @@ export function TablaPermisosFaltaUsuario() {
       try {
         // Mostrar alerta de confirmación
         const result = await Swal.fire({
-          title: '¿Deseas eliminar el formulario?',
+          title: '¿Deseas eliminar la papeleta?',
           text: 'No podrás revertir esta acción',
           icon: 'warning',
           showCancelButton: true,
@@ -260,12 +260,12 @@ export function TablaPermisosFaltaUsuario() {
             await Swal.fire('Eliminada', 'La papeleta ha sido eliminada correctamente', 'success');
             window.location.href = "/permisos";
           } else {
-            Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+            Swal.fire('Error', 'Error al eliminar la papeleta', 'error');
           }
         }
       } catch (error) {
-        console.error('Error al eliminar el formulario:', error);
-        Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
+        console.error('Error al eliminar la papeleta:', error);
+        Swal.fire('Error', 'Ocurrió un error al intentar eliminar la papeleta', 'error');
       }
     };
 
@@ -420,7 +420,7 @@ export function TablaPermisosFaltaUsuario() {
   
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
+          title: 'Creado',
           text: 'Se ha creado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
@@ -429,7 +429,7 @@ export function TablaPermisosFaltaUsuario() {
           window.location.href = "/permisos";
         });
       } else {
-        Swal.fire("Error", "Error al subir formulario", "error");
+        Swal.fire("Error", "Error al crear la papeleta", "error");
         return;
       }
   
@@ -491,7 +491,7 @@ export function TablaPermisosFaltaUsuario() {
       });      
       if (response.ok) {
         Swal.fire({
-          title: 'Subido',
+          title: 'Creado',
           text: 'Se ha creado correctamente',
           icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
@@ -500,7 +500,7 @@ export function TablaPermisosFaltaUsuario() {
           window.location.href = "/permisos";
         });
       } else {
-        Swal.fire('Error', 'Error al subir formulario', 'error');
+        Swal.fire('Error', 'Error al crear la papeleta', 'error');
       }
     } catch (error) {
       console.error('Error:', error);

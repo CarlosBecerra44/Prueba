@@ -36,6 +36,7 @@ export function TablaEventosMejorada() {
     "Fecha último movimiento",
     "Estatus",
     "Firmas",
+    "Pendientes por firmar",
     "Acción"
   ]
 
@@ -43,14 +44,14 @@ export function TablaEventosMejorada() {
     try {
       // Mostrar una alerta para que el usuario seleccione el nuevo estatus
       const { value: nuevoEstatus } = await Swal.fire({
-        title: 'Selecciona el nuevo estatus',
+        title: 'Nuevo estatus de la etiqueta',
         input: 'select',
         inputOptions: {
           Completado: 'Completado',
           Pendiente: 'Pendiente',
           Rechazado: 'Rechazado'
         },
-        inputPlaceholder: 'Selecciona el nuevo estatus',
+        inputPlaceholder: 'Selecciona el nuevo estatus de la etiqueta',
         showCancelButton: true,
         inputValidator: (value) => {
           return !value ? 'Debes seleccionar un estatus' : null;
@@ -65,7 +66,7 @@ export function TablaEventosMejorada() {
         });
   
         if (response.status === 200) {
-          Swal.fire('Éxito', 'El estatus ha sido actualizado', 'success');
+          Swal.fire('Actualizado', 'El estatus de la etiqueta ha sido actualizado correctamente', 'success');
           // Aquí podrías actualizar la lista de eventos para reflejar el cambio
           setEventos((prevEventos) =>
             prevEventos.map((evento) =>
@@ -73,12 +74,12 @@ export function TablaEventosMejorada() {
             )
           );
         } else {
-          Swal.fire('Error', 'No se pudo actualizar el estatus', 'error');
+          Swal.fire('Error', 'No se pudo actualizar el estatus de la etiqueta', 'error');
         }
       }
     } catch (error) {
       console.error('Error al cambiar el estatus:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar cambiar el estatus', 'error');
+      Swal.fire('Error', 'Ocurrió un error al intentar cambiar el estatus de la etiqueta', 'error');
     }
   };  
 
@@ -86,7 +87,7 @@ export function TablaEventosMejorada() {
     try {
       // Mostrar alerta de confirmación
       const result = await Swal.fire({
-        title: '¿Deseas eliminar el formulario?',
+        title: '¿Deseas eliminar la etiqueta?',
         text: 'No podrás revertir esta acción',
         icon: 'warning',
         showCancelButton: true,
@@ -100,15 +101,15 @@ export function TablaEventosMejorada() {
       if (result.isConfirmed) {
         const response = await axios.post(`/api/MarketingLabel/eliminarFormularioEtiqueta?id=${index}`);
         if (response.status === 200) {
-          await Swal.fire('Eliminado', 'El formulario ha sido eliminado', 'success');
+          await Swal.fire('Eliminada', 'La etiqueta ha sido eliminada correctamente', 'success');
           window.location.href = "/marketing/etiquetas/tabla_general";
         } else {
-          Swal.fire('Error', 'Error al eliminar el formulario', 'error');
+          Swal.fire('Error', 'Error al eliminar la etiqueta', 'error');
         }
       }
     } catch (error) {
-      console.error('Error al eliminar el formulario:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar eliminar el formulario', 'error');
+      console.error('Error al eliminar la etiqueta:', error);
+      Swal.fire('Error', 'Ocurrió un error al intentar eliminar la etiqueta', 'error');
     }
   };
   // Obtener eventos desde el backend
@@ -123,6 +124,36 @@ export function TablaEventosMejorada() {
     }
     fetchEventos()
   }, [])
+
+  const renderNombres = (evento) => {
+    const nombresPorDefecto = {
+      DirMkt: "Directora de Marketing",
+      GerMaq: "Gerente de maquilas",
+      IYD: "Investigación y desarrollo de nuevos productos",
+      IP: "Ingeniería de productos",
+      GerMkt: "Gerente de marketing",
+      Diseñador: "Diseñador gráfico",
+      GerCal: "Gerente de calidad",
+      GerAud: "Gerente auditorías",
+      Quimico: "Químico",
+      Planeacion: "Planeación",
+      Maquilas: "Maquilas"
+    };
+
+    return Object.keys(nombresPorDefecto)
+    .filter((key, index, arr) => {
+      // Excluir el último elemento si el tipo no es "Maquilas"
+      if (evento.datos_formulario.tipo !== "Maquilas" && index === arr.length - 1) return false;
+      const verifierKey = `verifier-${index}`;
+      const authorizeKey = `authorize-${index}`;
+
+      // Incluir solo los nombres cuya firma no existe o está vacía
+      const pendingToSign = evento.datos_formulario?.[verifierKey] && evento.datos_formulario?.[authorizeKey];
+      return !pendingToSign; // Excluir si existe un valor en verifier
+    })
+    .map((key) => nombresPorDefecto[key])
+    .join(", ");
+  };
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -160,7 +191,8 @@ export function TablaEventosMejorada() {
       descripcion: evento.datos_formulario.description,
       fechaUltimoMovimiento: fechaFormateada2,
       estatus: evento.estatus,
-      firmas: evento.firmas
+      firmas: evento.firmas,
+      formulario: evento
     }
   }
 
@@ -319,12 +351,22 @@ export function TablaEventosMejorada() {
                   ) : (
                     <TableCell>{evento.firmas ? evento.firmas + '/10' : "0/10"}</TableCell>
                   )}
+                  <TableCell style={{
+                      color: (() => {
+                        switch (renderNombres(evento.formulario)) {
+                          case '':
+                            return 'green';
+                          default:
+                            return '#aea600'; // color por defecto
+                        }
+                      })(),
+                    }}>{renderNombres(evento.formulario) || "Firmas completadas"}</TableCell>
                   <TableCell>{renderAccion(evento.id)}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center">
+                <TableCell colSpan={10} className="text-center">
                   No se encontraron etiquetas
                 </TableCell>
               </TableRow>

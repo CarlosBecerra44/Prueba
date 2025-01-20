@@ -136,7 +136,7 @@ export function UserManagementTable() {
       if (result.isConfirmed) {
         const response = await axios.post(`/api/Users/eliminarUsuario?id=${index}`);
         if (response.status === 200) {
-          await Swal.fire('Eliminado', 'El usuario ha sido eliminado', 'success');
+          await Swal.fire('Eliminado', 'El usuario ha sido eliminado correctamente', 'success');
           window.location.href = "/usuario";
         } else {
           Swal.fire('Error', 'Error al eliminar al usuario', 'error');
@@ -185,7 +185,6 @@ export function UserManagementTable() {
     const fetchUsers = async () => {
       setLoading(true); // Iniciar carga
       try {
-        const response = await axios.get('/api/Users/getUsers');
         const response = await axios.get('/api/Users/getUsers');
         if (response.data.success) {
           setUsers(response.data.users);
@@ -319,7 +318,6 @@ export function UserManagementTable() {
 
     try {
       const res = await fetch('/api/Users/registroMaster', {
-      const res = await fetch('/api/Users/registroMaster', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -434,8 +432,8 @@ export function UserManagementTable() {
   
     if (response.ok) {
       Swal.fire({
-        title: 'Subido',
-        text: 'Se ha creado correctamente el permiso',
+        title: 'Creado',
+        text: 'Se ha creado correctamente el permiso para el usuario',
         icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
@@ -444,7 +442,7 @@ export function UserManagementTable() {
       });
 
     } else {
-      Swal.fire('Error', 'Error al cargar permiso ', 'error');
+      Swal.fire('Error', 'Error al crear el permiso para el usuario', 'error');
     }
   };
 
@@ -713,16 +711,12 @@ export function UserManagementTable() {
       <Table>
         <TableHeader>
           <TableRow>
-          <TableHead>ID</TableHead>
+            <TableHead>No. empleado</TableHead>
             <TableHead>Nombre completo</TableHead>
             <TableHead>Correo</TableHead>
-            <TableHead>No. empleado</TableHead>
             <TableHead>Departamento</TableHead>
             <TableHead>Puesto</TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead>Fecha de ingreso</TableHead>
             <TableHead>Jefe directo</TableHead>
-            <TableHead>Empresa</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -731,22 +725,11 @@ export function UserManagementTable() {
           {currentUsers.length >0 ?( currentUsers.map((user,index) => (
          
             <TableRow key={index}>
-              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
               <TableCell>{user.nombre + ' ' + user.apellidos}</TableCell>
               <TableCell>{user.correo || "Usuario sin correo"}</TableCell>
-              <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
               <TableCell>{user.nombre_dpto || "Sin datos"}</TableCell>
               <TableCell>{user.puesto || "Sin datos"}</TableCell>
-              <TableCell>{user.telefono || "Sin datos"}</TableCell>
-              <TableCell>
-                {user.fecha_ingreso
-                  ? new Date(user.fecha_ingreso).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })
-                  : "Sin datos"}
-              </TableCell>
               <TableCell>
                 {
                   user.jefe_directo
@@ -757,7 +740,6 @@ export function UserManagementTable() {
                     : "Sin datos"
                 }
               </TableCell>
-              <TableCell>{user.empresa_usuario.nombre || "Sin datos"}</TableCell>
               <TableCell>{user.rol}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -966,7 +948,7 @@ export function UserManagementTable() {
                     ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No se encontraron usuarios
                 </TableCell>
               </TableRow>

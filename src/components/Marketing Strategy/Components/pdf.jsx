@@ -205,7 +205,7 @@ const PDFDocument = ({ evento }) => {
             </View>
           </View>
           <Text style={{fontSize:10}}>Resultado de venta: {evento.resultadoVenta}</Text>
-          <Text style={{ fontSize:10 }}>ROI: <Text style={{ color: roi < 0.00 ? 'red' : roi > 0.00 && roi < 50.00 ? 'orange' : 'green' }}> {roi.toFixed(2)}%</Text>
+          <Text style={{ fontSize:10 }}>ROI: <Text style={{ color: roi < 0.00 ? 'red' : roi > 0.00 && roi < 50.00 ? 'orange' : roi >= 50.00 ? 'green' : 'black' }}> {roi.toFixed(2)}%</Text>
           </Text>
         </View>
 
