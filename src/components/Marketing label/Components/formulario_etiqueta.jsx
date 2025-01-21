@@ -163,7 +163,7 @@ export function DocumentSigningForm() {
         : Promise.resolve(); // No subir archivo si no existe*/
   
       // 3. Enviar correos electrónicos
-      const enviarCorreos = fetch('/api/Emails/send-mail', {
+      /*const enviarCorreos = fetch('/api/Emails/send-mail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -204,13 +204,11 @@ export function DocumentSigningForm() {
             dpto: departamento,
           },
         }),
-      });
+      });*/
   
       // Ejecutar todas las tareas en paralelo
       const [formResponse] = await Promise.all([
         guardarFormulario,
-        enviarCorreos,
-        enviarNotificacion,
       ]);
   
       // Validar la respuesta de guardar el formulario
