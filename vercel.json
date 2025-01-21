@@ -1,11 +1,9 @@
 {
-    "functions": {
-      "src/pages/api/FTP/upload.js": {
-        "maxDuration": 60
-      },
-      "src/pages/api/MarketingLabel/GuardarEtiquetas.js": {
-        "maxDuration": 60
-      }
+  "functions": {
+    "src/pages/api/*": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "maxRequestSize": 104857600
     }
   }
-  
+}
