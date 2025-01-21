@@ -128,41 +128,39 @@ export function DocumentSigningForm() {
     e.preventDefault();
     console.log(formulario);
   
-    const formData = new FormData();
-  
-    // Añadir todos los datos del formulario
-    for (const key in formulario) {
-      if (Array.isArray(formulario[key])) {
-        formData.append(key, JSON.stringify(formulario[key]));
-      } else {
-        formData.append(key, formulario[key]);
-      }
-    }
-  
-    // Añadir el archivo PDF
-    const fileInput = document.querySelector('#nowPdf');
-    if (fileInput && fileInput.files.length > 0) {
-      formData.append('nowPdf', fileInput.files[0]);
-    }
-  
     try {
       // 1. Guardar el formulario en la base de datos
+      const formData1 = new FormData();
+      for (const key in formulario) {
+        if (Array.isArray(formulario[key])) {
+          formData1.append(key, JSON.stringify(formulario[key]));
+        } else if (formulario[key] != null) {
+          formData1.append(key, formulario[key]);
+        }
+      }
+
+      const fileInput1 = document.querySelector('#nowPdf');
+    if (fileInput1 && fileInput1.files.length > 0) {
+      formData1.append('nowPdf', fileInput1.files[0]);
+    }
+  
       const guardarFormulario = fetch('/api/MarketingLabel/GuardarEtiquetas', {
         method: 'POST',
-        body: formData,
+        body: formData1,
       });
   
       // 2. Subir el archivo al FTP
-      const subirArchivoFTP = (async () => {
-        if (fileInput && fileInput.files.length > 0) {
-          const response = await fetch('/api/FTP/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (!response.ok) Swal.fire('Error', 'Error al subir archivo al servidor FTP', 'error');
-        }
-      })();
+      /*const fileInput = document.querySelector('#nowPdf');
+      const subirArchivoFTP = fileInput && fileInput.files.length > 0
+        ? (() => {
+            const formData2 = new FormData();
+            formData2.append('nowPdf', fileInput.files[0]);
+            return fetch('/api/FTP/upload', {
+              method: 'POST',
+              body: formData2,
+            });
+          })()
+        : Promise.resolve(); // No subir archivo si no existe*/
   
       // 3. Enviar correos electrónicos
       const enviarCorreos = fetch('/api/Emails/send-mail', {
@@ -179,14 +177,14 @@ export function DocumentSigningForm() {
               'k.bayardo@aionsuplementos.com', 'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com',
               'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com',
               'e.moya@aionsuplementos.com', 'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com',
-              'j.rodriguez@aionsuplementos.com'] // Lista de correos para maquilas
+              'j.rodriguez@aionsuplementos.com']
             : ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
               'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com', 
-              'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com',
-              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com',
-              'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'], // Lista de correos para etiqueta interna
+              'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com', 
+              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com', 
+              'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'],
           subject: formulario.tipo === 'Maquilas' ? 'Nueva etiqueta de maquilas' : 'Nueva etiqueta interna',
           message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas/tabla_general`,
         }),
@@ -203,20 +201,19 @@ export function DocumentSigningForm() {
             tipo: 'Alerta de etiqueta',
             descripcion: `<strong>${nombre}</strong> ha subido una nueva etiqueta de tipo: <strong>${formulario.tipo}</strong>`,
             id: idUser,
-            dpto: departamento
+            dpto: departamento,
           },
         }),
       });
   
       // Ejecutar todas las tareas en paralelo
-      const results = await Promise.all([
+      const [formResponse] = await Promise.all([
         guardarFormulario,
-        subirArchivoFTP,
         enviarCorreos,
         enviarNotificacion,
       ]);
   
-      const [formResponse] = results; // Extraer la respuesta del guardado de formulario
+      // Validar la respuesta de guardar el formulario
       if (formResponse.ok) {
         Swal.fire({
           title: 'Creada',
@@ -234,7 +231,7 @@ export function DocumentSigningForm() {
       console.error('Error al enviar el formulario:', error);
       Swal.fire('Error', 'Error al procesar el formulario', 'error');
     }
-  };  
+  };    
     
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
