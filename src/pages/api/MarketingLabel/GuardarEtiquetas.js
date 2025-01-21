@@ -1,4 +1,4 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que pool esté configurado correctamente
 import formidable from 'formidable';
 
 export const config = {
@@ -7,45 +7,54 @@ export const config = {
   },
 };
 
-export default async function guardarFormulario(req, res) {
-  if (req.method === 'POST') {
-    const form = formidable({
-      keepExtensions: true,
-      maxFileSize: 50 * 1024 * 1024, // Permitir hasta 50 MB
-    });
-
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error('Error al procesar el archivo:', err);
-        return res.status(500).json({ success: false, message: 'Error al procesar el archivo.' });
-      }
-
-      //console.log('Fields:', fields);
-      //console.log('Files:', files);
-
-      const pdfFile = files.nowPdf;
-      if (!pdfFile) {
-        return res.status(400).json({ success: false, message: 'Archivo PDF no encontrado.' });
-      }
-
-      const pdfNombre = pdfFile.originalFilename || pdfFile.name; // Nombre del archivo PDF
-      const rutaPdf = `/uploads/${pdfNombre}`
-
-      try {
-        // Insertar en la base de datos
-        const result = await pool.query(
-          'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
-          [fields, rutaPdf, false, 'Pendiente']
-        );
-
-        console.log('Resultado de la base de datos:', result.rows);
-        res.status(200).json({ success: true, data: result.rows });
-      } catch (error) {
-        console.error('Error al guardar en la base de datos:', error);
-        res.status(500).json({ success: false, message: 'Error interno del servidor.' });
-      }
-    });
-  } else {
-    res.status(405).json({ success: false, message: 'Método no permitido.' });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método no permitido' });
   }
+
+  const form = formidable({
+    keepExtensions: true,
+    maxFileSize: 50 * 1024 * 1024, // Límite de tamaño de archivo (50MB)
+  });
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error('Error al procesar el formulario:', err);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al procesar el formulario',
+      });
+    }
+
+    // Si la URL ya fue enviada desde el frontend, solo procesamos la base de datos
+    const fileUrl = fields.fileUrl; // URL del archivo PDF que se pasa desde el frontend
+    if (!fileUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL del archivo PDF no proporcionada.',
+      });
+    }
+
+    // Guardar la información en la base de datos
+    try {
+      const result = await pool.query(
+        'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
+        [JSON.stringify(fields), fileUrl, false, 'Pendiente'] // Guardar los datos como JSON en la base de datos
+      );
+
+      console.log('Resultado de la base de datos:', result.rows);
+
+      res.status(200).json({
+        success: true,
+        message: 'Formulario guardado correctamente.',
+        formularioGuardado: result.rows[0], // Retornar la fila guardada en la base de datos
+      });
+    } catch (error) {
+      console.error('Error al procesar la solicitud:', error);
+      res.status(500).json({
+        success: false,
+        message: `Error al procesar la solicitud: ${error.message}`,
+      });
+    }
+  });
 }

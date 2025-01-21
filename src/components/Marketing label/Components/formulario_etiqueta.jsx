@@ -12,6 +12,7 @@ import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
 import { getSession } from 'next-auth/react';
+import { put } from '@vercel/blob';
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
@@ -128,41 +129,41 @@ export function DocumentSigningForm() {
     e.preventDefault();
     console.log(formulario);
   
-    const formData = new FormData();
-  
-    // Añadir todos los datos del formulario
-    for (const key in formulario) {
-      if (Array.isArray(formulario[key])) {
-        formData.append(key, JSON.stringify(formulario[key]));
-      } else {
-        formData.append(key, formulario[key]);
-      }
-    }
-  
-    // Añadir el archivo PDF
-    const fileInput = document.querySelector('#nowPdf');
-    if (fileInput && fileInput.files.length > 0) {
-      formData.append('nowPdf', fileInput.files[0]);
-    }
-  
     try {
-      // 1. Guardar el formulario en la base de datos
+      // 1. Subir el archivo a Vercel Blob
+      const fileInput = document.querySelector('#nowPdf');
+      let fileUrl = null;
+  
+      if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+  
+        const { url } = await put(file.name, file.stream(), {
+          access: 'public', // El archivo será público
+          token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
+        });
+  
+        console.log(`Archivo subido a Vercel Blob: ${url}`);
+        fileUrl = url; // Guardar la URL del archivo subido
+      }
+  
+      // 2. Guardar el formulario en la base de datos
+      const formData = new FormData();
+      for (const key in formulario) {
+        if (Array.isArray(formulario[key])) {
+          formData.append(key, JSON.stringify(formulario[key]));
+        } else if (formulario[key] != null) {
+          formData.append(key, formulario[key]);
+        }
+      }
+  
+      if (fileUrl) {
+        formData.append('fileUrl', fileUrl); // Añadir la URL del archivo subido
+      }
+  
       const guardarFormulario = fetch('/api/MarketingLabel/GuardarEtiquetas', {
         method: 'POST',
         body: formData,
       });
-  
-      // 2. Subir el archivo al FTP
-      const subirArchivoFTP = (async () => {
-        if (fileInput && fileInput.files.length > 0) {
-          const response = await fetch('/api/FTP/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (!response.ok) Swal.fire('Error', 'Error al subir archivo al servidor FTP', 'error');
-        }
-      })();
   
       // 3. Enviar correos electrónicos
       const enviarCorreos = fetch('/api/Emails/send-mail', {
@@ -179,14 +180,14 @@ export function DocumentSigningForm() {
               'k.bayardo@aionsuplementos.com', 'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com',
               'r.castellanos@aionsuplementos.com', 'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com',
               'e.moya@aionsuplementos.com', 'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com',
-              'j.rodriguez@aionsuplementos.com'] // Lista de correos para maquilas
+              'j.rodriguez@aionsuplementos.com']
             : ['a.garcilita@aionsuplementos.com', 'b.solano@aionsuplementos.com', 'r.contreras@aionsuplementos.com', 
               'j.leyva@aionsuplementos.com', 'c.alvarez@aionsuplementos.com', 'l.torres@aionsuplementos.com',
               't.alvarez@aionsuplementos.com', 'j.pérez@aionsuplementos.com', 'j.corona@aionsuplementos.com',
               'p.gomez@aionsuplementos.com', 'o.rivera@aionsuplementos.com', 'k.bayardo@aionsuplementos.com', 
-              'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com',
-              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com',
-              'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'], // Lista de correos para etiqueta interna
+              'j.alvarado@aionsuplementos.com', 'f.cruz@aionsuplementos.com', 'r.castellanos@aionsuplementos.com', 
+              'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com', 
+              'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'],
           subject: formulario.tipo === 'Maquilas' ? 'Nueva etiqueta de maquilas' : 'Nueva etiqueta interna',
           message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas/tabla_general`,
         }),
@@ -203,21 +204,20 @@ export function DocumentSigningForm() {
             tipo: 'Alerta de etiqueta',
             descripcion: `<strong>${nombre}</strong> ha subido una nueva etiqueta de tipo: <strong>${formulario.tipo}</strong>`,
             id: idUser,
-            dpto: departamento
+            dpto: departamento,
           },
         }),
       });
   
       // Ejecutar todas las tareas en paralelo
-      const results = await Promise.all([
+      const [formResponse, emailResponse, notificationResponse] = await Promise.all([
         guardarFormulario,
-        subirArchivoFTP,
         enviarCorreos,
         enviarNotificacion,
       ]);
   
-      const [formResponse] = results; // Extraer la respuesta del guardado de formulario
-      if (formResponse.ok) {
+      // Validar la respuesta de guardar el formulario
+      if (formResponse.ok && emailResponse.ok && notificationResponse.ok) {
         Swal.fire({
           title: 'Creada',
           text: 'La etiqueta se ha creado correctamente',

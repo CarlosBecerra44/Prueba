@@ -1,39 +1,63 @@
 import { Client } from 'basic-ftp';
 
 export default async function handler(req, res) {
-  const { pdf } = req.query; // Nombre del archivo PDF
-
-  if (!pdf) {
-    return res.status(400).json({ message: 'El nombre del archivo PDF es necesario' });
-  }
-
-  const client = new Client();
   try {
-    await client.access({
-      host: "ftp.aionnet.net",  // Dirección del servidor FTP
-      user: "aionnetx",         // Usuario FTP
-      password: "Mxxnatura2536//", // Contraseña FTP
-      secure: false
-    });
+    const { pdf } = req.query;
 
-    /*await client.access({
-      host: "192.168.1.87", // Dirección del servidor FTP
-      user: "pruebas",        // Usuario FTP
-      password: "NutriAdmin2035",  // Contraseña FTP
-      secure: false            // Usa 'true' si el servidor FTP requiere conexión segura
-    });*/
+    if (!pdf) {
+      return res.status(400).json({
+        success: false,
+        message: 'Parámetro "pdf" es requerido.',
+      });
+    }
 
-    // Usamos un WritableStream para enviar el archivo directamente al cliente
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${pdf}"`);
+    // Si el archivo comienza con "/uploads", procesarlo desde el servidor FTP
+    if (pdf.startsWith('/uploads')) {
+      const client = new Client();
 
-    // Usar downloadTo para escribir el archivo en la respuesta directamente
-    await client.downloadTo(res, `${pdf}`);
+      try {
+        await client.access({
+          host: "ftp.aionnet.net",  // Dirección del servidor FTP
+          user: "aionnetx",         // Usuario FTP
+          password: "Mxxnatura2536//", // Contraseña FTP
+          secure: false,
+        });
 
+        // Configurar encabezados para la respuesta
+        const fileName = pdf.split('/').pop(); // Obtiene el nombre completo del archivo
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+
+        // Descargar archivo desde el servidor FTP directamente al cliente
+        await client.downloadTo(res, pdf);
+        client.close();
+      } catch (ftpError) {
+        console.error('Error al descargar archivo desde el FTP:', ftpError);
+        return res.status(500).json({
+          success: false,
+          message: 'Error al descargar el archivo desde el FTP.',
+        });
+      }
+    } else {
+      // Si el archivo no comienza con "/uploads", asumir que es una URL Blob
+
+      // Extraer el nombre del archivo desde la URL
+      const fileName = pdf.split('/').pop(); // Obtiene el nombre completo del archivo
+      const baseName = fileName.split('-')[0]; // Obtiene la parte antes del guion
+
+      // Configurar encabezados para la redirección
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${baseName}.pdf"`);
+
+      // Redirigir al cliente a la URL pública del archivo
+      return res.redirect(pdf);
+    }
   } catch (err) {
-    console.error('Error al acceder al archivo desde el servidor FTP:', err);
-    return res.status(500).json({ message: 'Error al acceder al archivo PDF' });
-  } finally {
-    client.close();
+    console.error('Error al manejar la solicitud del archivo PDF:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al manejar la solicitud del archivo PDF.',
+    });
   }
 }
