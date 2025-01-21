@@ -1,38 +1,60 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que pool esté configurado correctamente
+import formidable from 'formidable';
+
+export const config = {
+  api: {
+    bodyParser: false, // Deshabilitar bodyParser para usar formidable
+  },
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  try {
-    const { datosFormulario, pdfUrl } = req.body;
+  const form = formidable({
+    keepExtensions: true,
+    maxFileSize: 50 * 1024 * 1024, // Límite de tamaño de archivo (50MB)
+  });
 
-    if (!datosFormulario || !pdfUrl) {
-      return res.status(400).json({
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error('Error al procesar el formulario:', err);
+      return res.status(500).json({
         success: false,
-        message: 'Los datos del formulario o la URL del PDF no están completos.',
+        message: 'Error al procesar el formulario',
       });
     }
 
-    // Guardar información en la base de datos
-    const result = await pool.query(
-      'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
-      [JSON.stringify(datosFormulario), pdfUrl, false, 'Pendiente']
-    );
+    // Si la URL ya fue enviada desde el frontend, solo procesamos la base de datos
+    const fileUrl = fields.fileUrl; // URL del archivo PDF que se pasa desde el frontend
+    if (!fileUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL del archivo PDF no proporcionada.',
+      });
+    }
 
-    console.log('Resultado de la base de datos:', result.rows);
+    // Guardar la información en la base de datos
+    try {
+      const result = await pool.query(
+        'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
+        [JSON.stringify(fields), fileUrl, false, 'Pendiente'] // Guardar los datos como JSON en la base de datos
+      );
 
-    res.status(200).json({
-      success: true,
-      message: 'Formulario guardado correctamente.',
-      data: result.rows[0], // Devolver el registro guardado
-    });
-  } catch (error) {
-    console.error('Error al procesar la solicitud:', error);
-    res.status(500).json({
-      success: false,
-      message: `Error al procesar la solicitud: ${error.message}`,
-    });
-  }
+      console.log('Resultado de la base de datos:', result.rows);
+
+      res.status(200).json({
+        success: true,
+        message: 'Formulario guardado correctamente.',
+        formularioGuardado: result.rows[0], // Retornar la fila guardada en la base de datos
+      });
+    } catch (error) {
+      console.error('Error al procesar la solicitud:', error);
+      res.status(500).json({
+        success: false,
+        message: `Error al procesar la solicitud: ${error.message}`,
+      });
+    }
+  });
 }

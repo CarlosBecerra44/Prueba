@@ -243,6 +243,7 @@ export function DocumentSigningForm() {
   
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
+  
         const { url } = await put(file.name, file.stream(), {
           access: 'public', // El archivo será público
           token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
@@ -252,23 +253,65 @@ export function DocumentSigningForm() {
         fileUrl = url; // Guardar la URL del archivo subido
       }
   
-      // 2. Preparar los datos para enviar al backend
-      const payload = {
-        datosFormulario: formulario,
-        pdfUrl: fileUrl, // Añadir la URL del archivo subido
-      };
+      // 2. Guardar el formulario en la base de datos
+      const formData = new FormData();
+      for (const key in formulario) {
+        if (Array.isArray(formulario[key])) {
+          formData.append(key, JSON.stringify(formulario[key]));
+        } else if (formulario[key] != null) {
+          formData.append(key, formulario[key]);
+        }
+      }
   
-      // 3. Enviar los datos al backend
-      const response = await fetch('/api/MarketingLabel/GuardarEtiquetas', {
+      if (fileUrl) {
+        formData.append('fileUrl', fileUrl); // Añadir la URL del archivo subido
+      }
+  
+      const guardarFormulario = fetch('/api/MarketingLabel/GuardarEtiquetas', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      // 3. Enviar correos electrónicos
+      const enviarCorreos = fetch('/api/Emails/send-mail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          emails: formulario.tipo === 'Maquilas'
+            ? ['g.cardenas@aionsuplementos.com']
+            : ['g.cardenas@aionsuplementos.com'],
+          subject: formulario.tipo === 'Maquilas' ? 'Nueva etiqueta de maquilas' : 'Nueva etiqueta interna',
+          message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas/tabla_general`,
+        }),
       });
   
-      // 4. Validar la respuesta del backend
-      if (response.ok) {
+      // 4. Enviar notificación de alerta
+      const enviarNotificacion = fetch('/api/Reminder/EnvioEvento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData2: {
+            tipo: 'Alerta de etiqueta',
+            descripcion: `<strong>${nombre}</strong> ha subido una nueva etiqueta de tipo: <strong>${formulario.tipo}</strong>`,
+            id: idUser,
+            dpto: departamento,
+          },
+        }),
+      });
+  
+      // Ejecutar todas las tareas en paralelo
+      const [formResponse, emailResponse, notificationResponse] = await Promise.all([
+        guardarFormulario,
+        enviarCorreos,
+        enviarNotificacion,
+      ]);
+  
+      // Validar la respuesta de guardar el formulario
+      if (formResponse.ok && emailResponse.ok && notificationResponse.ok) {
         Swal.fire({
           title: 'Creada',
           text: 'La etiqueta se ha creado correctamente',
@@ -276,11 +319,10 @@ export function DocumentSigningForm() {
           timer: 3000,
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = '/marketing/etiquetas/tabla_general';
+          window.location.href = "/marketing/etiquetas/tabla_general";
         });
       } else {
-        const errorData = await response.json();
-        Swal.fire('Error', errorData.message || 'Error al crear la etiqueta', 'error');
+        Swal.fire('Error', 'Error al crear la etiqueta', 'error');
       }
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
