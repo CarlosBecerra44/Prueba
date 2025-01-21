@@ -12,6 +12,7 @@ import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
 import Swal from 'sweetalert2';
 import { getSession } from 'next-auth/react';
+import { put } from '@vercel/blob';
 
 export function DocumentSigningForm() {
   const [formulario, setFormulario] = useState({  selectedImages: Array(8).fill(false),
@@ -124,7 +125,7 @@ export function DocumentSigningForm() {
     );
   }
 
-  const handleSubmit = async (e) => {
+  /*const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formulario);
   
@@ -204,7 +205,7 @@ export function DocumentSigningForm() {
             dpto: departamento,
           },
         }),
-      });*/
+      });
   
       // Ejecutar todas las tareas en paralelo
       const [formResponse] = await Promise.all([
@@ -229,7 +230,63 @@ export function DocumentSigningForm() {
       console.error('Error al enviar el formulario:', error);
       Swal.fire('Error', 'Error al procesar el formulario', 'error');
     }
-  };    
+  };*/
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(formulario);
+  
+    try {
+      // 1. Subir el archivo a Vercel Blob
+      const fileInput = document.querySelector('#nowPdf');
+      let fileUrl = null;
+  
+      if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const { url } = await put(file.name, file.stream(), {
+          access: 'public', // El archivo será público
+          token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
+        });
+  
+        console.log(`Archivo subido a Vercel Blob: ${url}`);
+        fileUrl = url; // Guardar la URL del archivo subido
+      }
+  
+      // 2. Preparar los datos para enviar al backend
+      const payload = {
+        datosFormulario: formulario,
+        pdfUrl: fileUrl, // Añadir la URL del archivo subido
+      };
+  
+      // 3. Enviar los datos al backend
+      const response = await fetch('/api/MarketingLabel/GuardarEtiquetas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // 4. Validar la respuesta del backend
+      if (response.ok) {
+        Swal.fire({
+          title: 'Creada',
+          text: 'La etiqueta se ha creado correctamente',
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = '/marketing/etiquetas/tabla_general';
+        });
+      } else {
+        const errorData = await response.json();
+        Swal.fire('Error', errorData.message || 'Error al crear la etiqueta', 'error');
+      }
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      Swal.fire('Error', 'Error al procesar el formulario', 'error');
+    }
+  };  
     
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
