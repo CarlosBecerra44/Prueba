@@ -86,7 +86,6 @@ export default NextAuth({
         session.user.departamento_id = token.departamento;
         session.user.id_permiso = token.idPermiso;
       }
-      console.log("Sesion: " + JSON.stringify(session))
       return session;
     },
     async signIn({ user, account }) {

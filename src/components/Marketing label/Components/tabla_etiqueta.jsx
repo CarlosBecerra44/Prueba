@@ -19,6 +19,7 @@ import Link from "next/link"
 import Swal from 'sweetalert2';
 import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
+import moment from 'moment-timezone';
 
 export function TablaEventosMejorada() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -160,30 +161,13 @@ export function TablaEventosMejorada() {
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
     const fechaCompleta = evento.fecha_envio;
-    const fecha = new Date(fechaCompleta);
-
-    // Extraer solo la fecha y la hora
-    const fechaFormateada = fecha.toLocaleString("es-ES", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
+    const fecha = moment(fechaCompleta).tz('America/Mexico_City');
+    const fechaFormateada = fecha.format('DD/MM/YYYY HH:mm:ss');
 
     const fechaCompleta2 = evento.fecha_actualizacion;
-    const fecha2 = new Date(fechaCompleta2);
+    const fecha2 = moment(fechaCompleta2).tz('America/Mexico_City');
+    const fechaFormateada2 = fecha2.format('DD/MM/YYYY HH:mm:ss');
 
-    // Extraer solo la fecha y la hora
-    const fechaFormateada2 = fecha2.toLocaleString("es-ES", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
     return {
       id: evento.id,
       tipo: evento.datos_formulario.tipo,
