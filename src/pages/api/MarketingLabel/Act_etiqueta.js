@@ -1,7 +1,6 @@
 import pool from '@/lib/db';
 
 export default async function handler(req, res) {
- 
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
@@ -15,8 +14,7 @@ export default async function handler(req, res) {
   // Obtén el cuerpo de la solicitud directamente
   const formData = req.body;
 
-
-console.log(formData);
+  console.log(formData);
   if (!formData) {
     return res.status(400).json({ message: 'Datos del formulario son requeridos' });
   }
@@ -25,7 +23,10 @@ console.log(formData);
     const estatus = formData.estatus;
     const firmas = formData.firmas;
     // Guardar el formulario en la base de datos
-    await pool.query('UPDATE etiquetas_form SET datos_formulario = $1, estatus = $2, fecha_actualizacion = CURRENT_TIMESTAMP, firmas = $3 WHERE id = $4', [JSON.stringify(formData), estatus, firmas, id]);
+    await pool.query(
+      'UPDATE etiquetas_form SET datos_formulario = ?, estatus = ?, fecha_actualizacion = CURRENT_TIMESTAMP, firmas = ? WHERE id = ?',
+      [JSON.stringify(formData), estatus, firmas, id]
+    );
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {

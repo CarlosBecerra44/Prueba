@@ -28,6 +28,7 @@ export function TablaEventosMejorada() {
   const itemsPerPage = 10;
 
   const encabezados = [
+    "ID",
     "Tipo",
     "Nombre",
     "Articulo",
@@ -118,6 +119,7 @@ export function TablaEventosMejorada() {
       try {
         const response = await axios.get('/api/MarketingLabel/getEtiquetas')
         setEventos(response.data)
+        console.log("Eventos: " + JSON.stringify(response.data))
       } catch (error) {
         console.error('Error al obtener etiquetas:', error)
       }
@@ -316,6 +318,7 @@ export function TablaEventosMejorada() {
             {currentEventos.length > 0 ? (
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
+                  <TableCell>{evento.id || "Sin id especificado"}</TableCell>
                   <TableCell>
                     {Array.isArray(evento.tipo) && evento.tipo.length === 1 && evento.tipo[0] === ""
                       ? "Sin tipo" // Si es un array con un valor vacío, mostrar "Sin tipo"

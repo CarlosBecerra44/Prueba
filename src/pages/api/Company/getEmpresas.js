@@ -1,18 +1,13 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Tu configuración de conexión a la base de datos MySQL
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-   
     try {
-      const query = "SELECT * FROM empresas WHERE eliminado = 0"
-      const result = await pool.query(query);
+      const [rows] = await pool.query("SELECT * FROM empresas WHERE eliminado = 0");
 
-      if (result.rows.length > 0) {
-          const users = result.rows;
-       
-          return res.status(200).json({ success: true, users });
-        }
-      else {
+      if (rows.length > 0) {
+        return res.status(200).json({ success: true, users: rows });
+      } else {
         return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
       }
     } catch (error) {

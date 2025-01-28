@@ -75,7 +75,7 @@ const toggleSection = (sectionId) => {
     { id: "principal", name: "Principal", href: "#", roles: ["master", "adminMkt","adminGC","itMember","standardMkt","standard"]},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 4, name: "Ver mis papeletas", href: '/permisos', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
+    { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
     { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"]},
     {
@@ -87,13 +87,13 @@ const toggleSection = (sectionId) => {
         {
           id: 1,
           name: "Papeletas",
-          href: "/gente_y_cultura/faltasUsuario",
+          href: "/gente_y_cultura/todas_papeletas",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"]
         },
         {
           id: 2,
           name: "Autorizar papeletas",
-          href: "/gente_y_cultura/faltas",
+          href: "/gente_y_cultura/autorizar_papeletas",
           icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"]
         },
 

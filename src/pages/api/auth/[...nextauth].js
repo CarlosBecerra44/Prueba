@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import bcrypt from 'bcrypt';
-import pool from '@/lib/db'; // Tu conexión a la base de datos
+import bcrypt from "bcrypt";
+import pool from "@/lib/db"; // Tu conexión a MySQL
 
 export default NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -11,35 +11,42 @@ export default NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-    
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         correo: { label: "Correo", type: "text" },
         numero: { label: "Número de empleado", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         const { correo, numero, password } = credentials;
-      
+
         if (!numero && !correo) {
           throw new Error("Debes proporcionar correo o número de empleado");
         }
-      
+
         const field = correo ? "correo" : "numero_empleado";
         const value = correo || numero;
-      
+
         try {
-          const query = `SELECT * FROM usuarios WHERE ${field} = $1`;
-          const result = await pool.query(query, [value]);
-      
-          if (result.rows.length > 0) {
-            const user = result.rows[0];
-      
+          const query = `SELECT * FROM usuarios WHERE ${field} = ?`;
+          const [rows] = await pool.query(query, [value]);
+
+          if (rows.length > 0) {
+            const user = rows[0];
+
             // Verifica la contraseña
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (isPasswordValid) {
-              return { id: user.id, name: user.nombre, email: user.correo, rol: user.rol, departamento: user.departamento_id, idPermiso: user.id_permiso };
+              return {
+                id: user.id,
+                name: user.nombre,
+                email: user.correo,
+                rol: user.rol,
+                departamento: user.departamento_id,
+                idPermiso: user.id_permiso,
+              };
             } else {
               throw new Error("Contraseña incorrecta");
             }
@@ -50,14 +57,13 @@ export default NextAuth({
           console.error("Error en la autorización:", error.message);
           throw new Error(error.message);
         }
-      }
-            
-    })
+      },
+    }),
   ],
   pages: {
-    signIn: '/inicio',
-    signOut: '/',
-    error: '/error',
+    signIn: "/inicio",
+    signOut: "/",
+    error: "/error",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -70,8 +76,7 @@ export default NextAuth({
         token.idPermiso = user.idPermiso;
       }
       return token;
-    }
-    ,
+    },
     async session({ session, token }) {
       if (session.user) {
         session.user.name = token.name;
@@ -81,26 +86,23 @@ export default NextAuth({
         session.user.departamento_id = token.departamento;
         session.user.id_permiso = token.idPermiso;
       }
+      console.log("Sesion: " + JSON.stringify(session))
       return session;
-    }
-    ,
+    },
     async signIn({ user, account }) {
-      if (account.provider === 'google') {
+      if (account.provider === "google") {
         // Verifica si el usuario ya existe en la base de datos
-        const query = 'SELECT * FROM usuarios WHERE correo = $1';
-        const values = [user.email];
-        const result = await pool.query(query, values);
+        const query = "SELECT * FROM usuarios WHERE correo = ?";
+        const [rows] = await pool.query(query, [user.email]);
 
-        if (result.rows.length === 0) {
+        if (rows.length === 0) {
           const rol = "estandar";
           // Si el usuario no existe, lo inserta en la base de datos
-          const insertQuery = 'INSERT INTO usuarios (rol, nombre, correo) VALUES ($1, $2, $3)';
-          const insertValues = [rol, user.name, user.email];
-          await pool.query(insertQuery, insertValues);
+          const insertQuery = "INSERT INTO usuarios (rol, nombre, correo) VALUES (?, ?, ?)";
+          await pool.query(insertQuery, [rol, user.name, user.email]);
         }
       }
       return true;
-    }
+    },
   },
 });
- 

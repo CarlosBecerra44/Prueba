@@ -1,4 +1,5 @@
 import { Client } from 'basic-ftp';
+import db from '@/lib/db'; // Asegúrate de que tu conexión a la base de datos esté correctamente configurada
 
 export default async function handler(req, res) {
   try {
@@ -17,9 +18,9 @@ export default async function handler(req, res) {
 
       try {
         await client.access({
-          host: "ftp.aionnet.net",  // Dirección del servidor FTP
-          user: "aionnetx",         // Usuario FTP
-          password: "Mxxnatura2536//", // Contraseña FTP
+          host: "50.6.199.166",  // Dirección del servidor FTP
+          user: "aionnet",         // Usuario FTP
+          password: "$ZkSex&+PSbQ", // Contraseña FTP
           secure: false,
         });
 
