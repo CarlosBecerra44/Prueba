@@ -1,5 +1,5 @@
 // Archivo: src/pages/api/obtenerFormulario.js
-import pool from '@/lib/db';
+import db from '@/lib/db';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -13,8 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await pool.query('SELECT formulario FROM formularios_papeletas WHERE id = $1', [id]);
-    const datos = result.rows[0]?.formulario || {};
+    const [rows] = await db.query('SELECT formulario FROM formularios_papeletas WHERE id = ?', [id]);
+    const datos = rows[0]?.formulario || {};
     res.status(200).json(datos);
   } catch (error) {
     console.error('Error al obtener los datos:', error);

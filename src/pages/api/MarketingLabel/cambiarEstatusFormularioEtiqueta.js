@@ -5,13 +5,13 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      // Suponiendo que estás usando una base de datos relacional como MySQL o Postgres
-      const resultado = await db.query(
-        'UPDATE etiquetas_form SET estatus = $1 WHERE id = $2',
+      // Actualizamos el estatus en la base de datos MySQL
+      const [resultado] = await db.query(
+        'UPDATE etiquetas_form SET estatus = ? WHERE id = ?',
         [nuevoEstatus, id]
       );
 
-      if (resultado.rowCount === 1) {
+      if (resultado.affectedRows === 1) {
         res.status(200).json({ message: 'Estatus actualizado correctamente' });
       } else {
         res.status(404).json({ message: 'Formulario no encontrado' });

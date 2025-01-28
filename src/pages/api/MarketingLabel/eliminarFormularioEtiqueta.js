@@ -1,4 +1,4 @@
-import pool from "@/lib/db"; // Ajusta esto a tu configuración de conexión a la base de datos
+import db from "@/lib/db"; // Ajusta esto a tu configuración de conexión a la base de datos
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -6,13 +6,13 @@ export default async function handler(req, res) {
     console.log(id);
 
     try {
-      // Actualiza la columna 'deleted' (o la que uses) en lugar de eliminar el registro
-      const result = await pool.query(
-        "UPDATE etiquetas_form SET estatus = 'Eliminado' WHERE id = $1",
+      // Actualiza el estatus a 'Eliminado' en lugar de eliminar el registro
+      const [result] = await db.query(
+        "UPDATE etiquetas_form SET estatus = 'Eliminado' WHERE id = ?",
         [id]
       );
 
-      if (result.rowCount > 0) {
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: "Formulario marcado como eliminado correctamente" });
       } else {
         return res.status(404).json({ message: "Formulario no encontrado" });

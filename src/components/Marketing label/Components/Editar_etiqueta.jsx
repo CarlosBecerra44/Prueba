@@ -336,7 +336,7 @@ export function EditarEtiqueta() {
       console.error('Error al actualizar la etiqueta:', error);
     }
 
-    try {
+    /*try {
       const response2 = await fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
         headers: {
@@ -359,7 +359,7 @@ export function EditarEtiqueta() {
       }
     } catch (error) {
       console.error('Error:', error);
-    }
+    }*/
   };
 
   if (status === "loading") {
@@ -560,14 +560,14 @@ export function EditarEtiqueta() {
                   type={field.type || "text"}
                   value={formulario[field.id] || ""}
                   onChange={handleInputChange}
-                  readOnly={!tienePermiso("Diseño", field.id)} // Establece readOnly según los permisos
+                 // Establece readOnly según los permisos
                 />
               </div>
           ))}
           <div className="col-span-full">
             <Label htmlFor="description">Descripción de las modificaciones</Label>
             <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}
-            readOnly={!tienePermiso("Diseño", 'description')}
+            
               />
           </div>
           {modificacionesDiseñador.map((item, index) => (
@@ -578,7 +578,7 @@ export function EditarEtiqueta() {
                   name={`miSelectDiseñador${index + 1}`} 
                   value={formulario[`miSelectDiseñador${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectDiseñador${index + 1}`)}
-                  disabled={!tienePermiso("Diseño", item)}
+                  
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -612,7 +612,7 @@ export function EditarEtiqueta() {
                   name={`miSelectInvestigacion${index + 1}`} 
                   value={formulario[`miSelectInvestigacion${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectInvestigacion${index + 1}`)}
-                  disabled={!tienePermiso('Investigación y Desarrollo de Nuevos Productos', item)}
+                  
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -643,7 +643,7 @@ export function EditarEtiqueta() {
                   name={`miSelectCalidad${index + 1}`} 
                   value={formulario[`miSelectCalidad${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectCalidad${index + 1}`)}
-                  disabled={!tienePermiso('Calidad', item)}
+                  
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -674,7 +674,7 @@ export function EditarEtiqueta() {
                   name={`miSelectAuditorias${index + 1}`} 
                   value={formulario[`miSelectAuditorias${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectAuditorias${index + 1}`)}
-                  disabled={!tienePermiso('Auditorías', item)}
+                  
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -705,7 +705,7 @@ export function EditarEtiqueta() {
                   name={`miSelectQuimico${index + 1}`} 
                   value={formulario[`miSelectQuimico${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectQuimico${index + 1}`)}
-                  disabled={!tienePermiso('Laboratorio', item)}
+                 
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -737,7 +737,7 @@ export function EditarEtiqueta() {
                       name={`miSelectIngenieria${index + 1}`} 
                       value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                       onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
-                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                     
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar" />
@@ -755,7 +755,7 @@ export function EditarEtiqueta() {
                       name={`miSelectIngenieria${index + 1}`} 
                       value={formulario[`miSelectIngenieria${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                       onValueChange={(value) => handleSelectChange(value, `miSelectIngenieria${index + 1}`)}
-                      disabled={!tienePermiso('Ingeniería de Productos', item)}
+                     
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar" />
@@ -779,7 +779,7 @@ export function EditarEtiqueta() {
                 name={`image-${index}`}
                 checked={formulario.selectedImages[index] || false} // Controlar si está seleccionado
                 onChange={handleImageChange} // Manejar el cambio
-                disabled={!tienePermiso('Ingeniería de Productos', 'Seleccionar imágenes')}
+               
               />
               <label htmlFor={`image-${index}`}>
                 <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
@@ -813,7 +813,7 @@ export function EditarEtiqueta() {
                   name={`miSelectGerenteMkt${index + 1}`}
                   value={formulario[`miSelectGerenteMkt${index + 1}`] || ''} // Usamos la clave dinámica en `formulario`
                   onValueChange={(value) => handleSelectChange(value, `miSelectGerenteMkt${index + 1}`)}
-                  disabled={!tienePermiso('Gerente de Marketing', item)}
+                 
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar" />
@@ -840,7 +840,7 @@ export function EditarEtiqueta() {
           <div>
             <Label htmlFor="value">Valor ($)</Label>
             <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value}
-            readOnly={!tienePermiso('Compras', 'Valor')}
+          
             />
           </div>
             </div>
@@ -859,7 +859,7 @@ export function EditarEtiqueta() {
           <div>
             <Label htmlFor="inventory">Inventario (pzs)</Label>
             <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory}
-            readOnly={!tienePermiso('Planeación', 'Inventario')}
+          
             />
           </div>
             </div>
@@ -899,7 +899,7 @@ export function EditarEtiqueta() {
                       }
                     }}
                    value={formulario[`verifier-${index}`] || ''} 
-                  readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnly-${index}`] || false}
+                  readOnly={formulario[`readOnly-${index}`] || false}
                    />
                   <div style={{width:"9rem"}} className="flex items-center space-x-4">
                   <Select 
@@ -925,7 +925,7 @@ export function EditarEtiqueta() {
                         setContadorFirmas((prev) => prev + 1);
                       }
                     }}
-                    disabled={!tienePermiso('Verificación', verifier) || formulario[`selectDisabled-${index}`]} // Se desactiva si tiene un valor
+                    disabled={formulario[`selectDisabled-${index}`]} // Se desactiva si tiene un valor
                     >
                     <SelectTrigger>
                       <SelectValue placeholder={"Seleccionar"} />
@@ -947,7 +947,7 @@ export function EditarEtiqueta() {
                     placeholder="Ingrese sus comentarios aquí"
                     className="w-full"
                     onChange={handleInputChange}
-                    readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnlyComments-${index}`] || false}
+                    readOnly={formulario[`readOnlyComments-${index}`] || false}
                     value={formulario[`comments-${index}`] || ''}  // name y value desde el evento
                     required={formulario.commentsRequired?.[`comments-${index}`]}
                   />
@@ -976,7 +976,7 @@ export function EditarEtiqueta() {
                       }
                     }}
                    value={formulario['verifier-10'] || ''} 
-                  readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario['readOnly-10'] || false}
+                  readOnly={formulario['readOnly-10'] || false}
                    />
                   <div style={{width:"9rem"}} className="flex items-center space-x-4">
                   <Select 
@@ -1002,7 +1002,7 @@ export function EditarEtiqueta() {
                         setContadorFirmas((prev) => prev + 1);
                       }
                     }}
-                    disabled={!tienePermiso('Verificación', 'Maquilas') || formulario['selectDisabled-10']} // Se desactiva si tiene un valor
+                    disabled={formulario['selectDisabled-10']} // Se desactiva si tiene un valor
                     >
                         <SelectTrigger>
                           <SelectValue placeholder={"Seleccionar"}/>
@@ -1024,7 +1024,7 @@ export function EditarEtiqueta() {
                     placeholder="Ingrese sus comentarios aquí"
                     className="w-full"
                     onChange={handleInputChange}
-                    readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnlyComments-10`] || false}
+                    readOnly={formulario[`readOnlyComments-10`] || false}
                     value={formulario[`comments-10`] || ''}  // name y value desde el evento
                     required={formulario.commentsRequired?.[`comments-10`]}
                   />

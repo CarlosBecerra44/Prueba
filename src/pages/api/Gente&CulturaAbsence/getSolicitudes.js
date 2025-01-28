@@ -9,7 +9,6 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
-    // Consulta para obtener los eventos desde la tabla 'Prueba2'
     const query = `
       SELECT 
           f.*, 
@@ -22,15 +21,14 @@ export default async function handler(req, res) {
           usuarios u
       ON 
           f.id_usuario = u.id 
-          AND f.eliminado = 0 
       JOIN 
           departamentos d
       ON 
           u.departamento_id = d.id
       WHERE 
-          f.id_usuario = $1 AND (f.tipo != 'Aumento sueldo' AND f.tipo != 'Horas extras' AND f.tipo != 'Bonos / Comisiones') AND f.eliminado = 0
+          f.id_usuario = $1 AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones') AND f.eliminado = 0
       ORDER BY 
-          f.fecha_actualizacion DESC;
+          f.fecha_subida DESC;
     `;
     const result = await pool.query(query, [id]);
     const eventos = result.rows;

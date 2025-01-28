@@ -1,4 +1,4 @@
-import pool from '@/lib/db'; // Asegúrate de que pool esté configurado correctamente
+import db from '@/lib/db'; // Asegúrate de que db esté configurado correctamente
 import formidable from 'formidable';
 
 export const config = {
@@ -37,17 +37,17 @@ export default async function handler(req, res) {
 
     // Guardar la información en la base de datos
     try {
-      const result = await pool.query(
-        'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES ($1, $2, $3, $4) RETURNING *',
+      const [rows] = await db.query(
+        'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES (?, ?, ?, ?)',
         [JSON.stringify(fields), fileUrl, false, 'Pendiente'] // Guardar los datos como JSON en la base de datos
       );
 
-      console.log('Resultado de la base de datos:', result.rows);
+      console.log('Resultado de la base de datos:', rows);
 
       res.status(200).json({
         success: true,
         message: 'Formulario guardado correctamente.',
-        formularioGuardado: result.rows[0], // Retornar la fila guardada en la base de datos
+        formularioGuardado: rows[0], // Retornar la fila guardada en la base de datos
       });
     } catch (error) {
       console.error('Error al procesar la solicitud:', error);

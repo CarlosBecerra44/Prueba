@@ -1,4 +1,4 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Tu conexión a MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,15 +7,15 @@ export default async function handler(req, res) {
   
   const { id, formulario } = req.body;
   console.log(formulario);
-  console.log("ID: " + id)
+  console.log("ID: " + id);
 
   try {
-    const result = await pool.query(
-      "UPDATE empresas SET formulario = $1 WHERE id = $2",
+    const [result] = await pool.query(
+      "UPDATE empresas SET formulario = ? WHERE id = ?",
       [JSON.stringify(formulario), id]
     );
 
-    if (result.rowCount > 0) {
+    if (result.affectedRows > 0) {
       return res.status(200).json({ message: 'Usuario actualizado exitosamente' });
     } else {
       return res.status(404).json({ message: 'Usuario no encontrado' });

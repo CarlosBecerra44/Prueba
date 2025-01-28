@@ -2,18 +2,20 @@ import pool from "@/lib/db"; // Configuración de tu conexión a la BD
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
-
     const { id } = req.query;
 
     try {
-      const result = await pool.query(
-        `SELECT ne.id, ne.descripcion, nu.leido, ne.fecha, ne.tipo, nu.id AS id_notificacion
-         FROM notificacion nu
-         JOIN registroeventos ne ON nu.id_evento = ne.id
-         WHERE nu.id_usuario = $1 AND nu.leido = false
-         ORDER BY ne.fecha DESC`,
-          [id]);
-      const notificaciones = result.rows || result;
+      const query = `
+        SELECT ne.id, ne.descripcion, nu.leido, ne.fecha, ne.tipo, nu.id AS id_notificacion
+        FROM notificacion nu
+        JOIN registroeventos ne ON nu.id_evento = ne.id
+        WHERE nu.id_usuario = ? AND nu.leido = false
+        ORDER BY ne.fecha DESC
+      `;
+
+      const [result] = await pool.execute(query, [id]);
+
+      const notificaciones = result || [];
 
       res.status(200).json(notificaciones);
     } catch (error) {

@@ -10,10 +10,10 @@ export default async function handler(req, res) {
 
       // Configurar acceso FTP
       await client.access({
-        host: "ftp.aionnet.net", // Dirección del servidor FTP
-        user: "aionnetx",        // Usuario FTP
-        password: "Mxxnatura2536//", // Contraseña FTP
-        secure: false,           // Usa 'true' si el servidor FTP requiere conexión segura
+        host: "50.6.199.166",  // Dirección del servidor FTP
+        user: "aionnet",         // Usuario FTP
+        password: "$ZkSex&+PSbQ", // Contraseña FTP
+        secure: false,
       });
 
       // Convertir el contenido Base64 a un Buffer
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       bufferStream.push(null); // Indicar fin del stream
 
       // Subir el archivo al FTP directamente desde el stream
-      await client.uploadFrom(bufferStream, `/uploads/${fileName}`);
+      await client.uploadFrom(bufferStream, `/uploads/papeletas/${fileName}`);
 
       client.close();
       res.status(200).json({ message: "Archivo subido correctamente al FTP" });

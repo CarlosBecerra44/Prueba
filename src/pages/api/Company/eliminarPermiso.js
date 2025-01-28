@@ -1,13 +1,16 @@
-import pool from "@/lib/db"; // Ajusta esto a tu configuración de conexión a la base de datos
+import pool from "@/lib/db"; // Tu configuración de conexión a la base de datos MySQL
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const { id } = req.query;
 
     try {
-      const result = await pool.query("UPDATE formularios_papeletas SET eliminado = 1 WHERE id = $1", [id]);
+      const [result] = await pool.query(
+        "UPDATE formularios_papeletas SET eliminado = 1 WHERE id = ?",
+        [id]
+      );
 
-      if (result.rowCount > 0) {
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: "Formulario eliminado correctamente" });
       } else {
         return res.status(404).json({ message: "Formulario no encontrado" });

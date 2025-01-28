@@ -119,6 +119,7 @@ export function TablaEventosMejorada() {
       try {
         const response = await axios.get('/api/MarketingLabel/getEtiquetas')
         setEventos(response.data)
+        console.log("Eventos: " + JSON.stringify(response.data))
       } catch (error) {
         console.error('Error al obtener etiquetas:', error)
       }

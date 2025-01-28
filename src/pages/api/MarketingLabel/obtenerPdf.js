@@ -1,4 +1,5 @@
 import { Client } from 'basic-ftp';
+import db from '@/lib/db'; // Asegúrate de que tu conexión a la base de datos esté correctamente configurada
 
 export default async function handler(req, res) {
   try {
