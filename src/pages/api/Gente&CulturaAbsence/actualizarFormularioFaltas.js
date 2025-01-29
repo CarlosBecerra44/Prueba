@@ -1,17 +1,20 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
-  
+
   const { formData, estatus } = req.body;
   const { id } = req.query;
   const estatusForm = formData.estatus ? formData.estatus : estatus;
 
   try {
     // Guardar el formulario en la base de datos
-    await pool.query('UPDATE formularios_faltas SET formulario = $1, estatus = $2, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $3', [JSON.stringify(formData), estatusForm, id]);
+    await pool.execute(
+      'UPDATE formularios_faltas SET formulario = ?, estatus = ?, fecha_actualizacion = NOW() WHERE id = ?',
+      [JSON.stringify(formData), estatusForm, id]
+    );
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {

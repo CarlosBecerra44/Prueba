@@ -1,5 +1,3 @@
-// Archivo: src/pages/api/getPermisos.js
-
 import pool from '@/lib/db';
 
 export default async function handler(req, res) {
@@ -24,14 +22,13 @@ export default async function handler(req, res) {
       ORDER BY 
         fp.id ASC
     `;
-    const result = await pool.query(query);
-    const eventos = result.rows;
+    const [result] = await pool.execute(query);
 
     // **Agregar console.log para depuración**
-    console.log('Eventos con usuarios:', eventos);
+    console.log('Eventos con usuarios:', result);
 
     // Retornar los eventos con los datos del usuario incluidos
-    res.status(200).json(eventos);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });

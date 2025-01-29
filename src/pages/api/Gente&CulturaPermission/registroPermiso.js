@@ -1,4 +1,4 @@
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // O cualquier cliente de MySQL que estés usando
 
 export default async function handler(req, res) {
   const { id: userId } = req.query;
@@ -13,15 +13,15 @@ export default async function handler(req, res) {
       const existingPermisoQuery = `
         SELECT id, seccion, campo FROM permiso
         WHERE id = (
-          SELECT id_permiso FROM usuarios WHERE id = $1
+          SELECT id_permiso FROM usuarios WHERE id = ?
         )
       `;
-      const existingPermisoResult = await pool.query(existingPermisoQuery, [userId]);
+      const [existingPermisoResult] = await pool.execute(existingPermisoQuery, [userId]);
 
-      if (existingPermisoResult.rows.length > 0) {
+      if (existingPermisoResult.length > 0) {
         return res.status(200).json({
           message: 'Permisos existentes encontrados',
-          permiso: existingPermisoResult.rows[0],
+          permiso: existingPermisoResult[0],
         });
       } else {
         return res.status(404).json({ message: 'No se encontraron permisos para este usuario' });
@@ -53,45 +53,45 @@ export default async function handler(req, res) {
       const existingPermisoQuery = `
         SELECT id, seccion, campo FROM permiso
         WHERE id = (
-          SELECT id_permiso FROM usuarios WHERE id = $1
+          SELECT id_permiso FROM usuarios WHERE id = ?
         )
       `;
-      const existingPermisoResult = await pool.query(existingPermisoQuery, [userId]);
+      const [existingPermisoResult] = await pool.execute(existingPermisoQuery, [userId]);
 
-      if (existingPermisoResult.rows.length > 0) {
+      if (existingPermisoResult.length > 0) {
         const permisoQuery = `
-        UPDATE permiso SET seccion = seccion::jsonb || $1::jsonb, campo = campo::jsonb || $2::jsonb WHERE id = (
-          SELECT id_permiso FROM usuarios WHERE id = $3
-        )
-      `;
+          UPDATE permiso 
+          SET seccion = JSON_MERGE(seccion, ?), campo = JSON_MERGE(campo, ?) 
+          WHERE id = (
+            SELECT id_permiso FROM usuarios WHERE id = ?
+          )
+        `;
 
-      const permisoResult = await pool.query(permisoQuery, [seccionJson, campoJson, userId]);
+        await pool.execute(permisoQuery, [seccionJson, campoJson, userId]);
 
-      return res.status(200).json({
-        message: 'Permisos del usuario actualizados correctamente',
-        permisoResult,
-      });
+        return res.status(200).json({
+          message: 'Permisos del usuario actualizados correctamente',
+        });
       } else {
         const permisoQuery = `
-        INSERT INTO permiso (seccion, campo)
-        VALUES ($1, $2)
-        RETURNING id;
-      `;
+          INSERT INTO permiso (seccion, campo)
+          VALUES (?, ?)
+        `;
 
-      const permisoResult = await pool.query(permisoQuery, [seccionJson, campoJson]);
-      const permisoId = permisoResult.rows[0].id;
+        const [permisoResult] = await pool.execute(permisoQuery, [seccionJson, campoJson]);
+        const permisoId = permisoResult.insertId;
 
-      const userQuery = `
-        UPDATE usuarios
-        SET id_permiso = $1
-        WHERE id = $2;
-      `;
-      await pool.query(userQuery, [permisoId, userId]);
+        const userQuery = `
+          UPDATE usuarios
+          SET id_permiso = ?
+          WHERE id = ?
+        `;
+        await pool.execute(userQuery, [permisoId, userId]);
 
-      return res.status(200).json({
-        message: 'Permiso creado y asignado al usuario exitosamente',
-        permisoId,
-      });
+        return res.status(200).json({
+          message: 'Permiso creado y asignado al usuario exitosamente',
+          permisoId,
+        });
       }
     } catch (error) {
       console.error('Error al guardar los datos', error);

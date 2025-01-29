@@ -1,5 +1,5 @@
 // Archivo: src/pages/api/getEstrategias.js
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -26,12 +26,12 @@ export default async function handler(req, res) {
       ON 
           u.departamento_id = d.id
       WHERE 
-          f.id_usuario != $1 AND u.jefe_directo = $1 AND f.eliminado = 0 AND f.estatus = 'Pendiente'
+          f.id_usuario != ? AND u.jefe_directo = ? AND f.eliminado = 0 AND f.estatus = 'Pendiente'
       ORDER BY 
           f.fecha_subida DESC;
     `;
-    const result = await pool.query(query, [id]);
-    const eventos = result.rows;
+    const [result] = await pool.execute(query, [id, id]);
+    const eventos = result;
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);

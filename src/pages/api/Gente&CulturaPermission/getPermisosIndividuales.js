@@ -1,5 +1,3 @@
-// Archivo: src/pages/api/getPermisos.js
-
 import pool from '@/lib/db';
 
 export default async function handler(req, res) {
@@ -8,16 +6,14 @@ export default async function handler(req, res) {
   }
 
   const { id } = req.query;
-  
+
   try {
     // Consulta para obtener los eventos junto con los datos del usuario
-    const query = "SELECT * FROM formularios_papeletas WHERE id_usuario = $1 AND estatus != 'No visible' ORDER BY id ASC";
-    const values = [id];
-    const result = await pool.query(query,values);
-    const eventos = result.rows;
+    const query = "SELECT * FROM formularios_papeletas WHERE id_usuario = ? AND estatus != 'No visible' ORDER BY id ASC";
+    const [result] = await pool.execute(query, [id]);
 
     // Retornar los eventos con los datos del usuario incluidos
-    res.status(200).json(eventos);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });

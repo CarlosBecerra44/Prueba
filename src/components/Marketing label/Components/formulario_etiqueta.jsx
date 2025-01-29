@@ -194,7 +194,7 @@ export function DocumentSigningForm() {
       });
   
       // 4. Enviar notificación de alerta
-      /*const enviarNotificacion = fetch('/api/Reminder/EnvioEvento', {
+      const enviarNotificacion = fetch('/api/Reminder/EnvioEvento', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,16 +207,17 @@ export function DocumentSigningForm() {
             dpto: departamento,
           },
         }),
-      });*/
+      });
   
       // Ejecutar todas las tareas en paralelo
-      const [formResponse, emailResponse] = await Promise.all([
+      const [formResponse, emailResponse, notificationResponse] = await Promise.all([
         guardarFormulario,
         enviarCorreos,
+        enviarNotificacion,
       ]);
   
       // Validar la respuesta de guardar el formulario
-      if (formResponse.ok && emailResponse.ok) {
+      if (formResponse.ok && emailResponse.ok && notificationResponse.ok) {
         Swal.fire({
           title: 'Creada',
           text: 'La etiqueta se ha creado correctamente',

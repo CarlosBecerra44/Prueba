@@ -13,10 +13,13 @@ export default async function handler(req, res) {
 
   const { formData } = req.body;
   console.log(formData);
-  
+
   try {
     // Guardar el formulario en la base de datos
-    await pool.query("UPDATE formularios_papeletas SET formulario = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $2", [JSON.stringify(formData), id]);
+    await pool.execute(
+      "UPDATE formularios_papeletas SET formulario = ?, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ?",
+      [JSON.stringify(formData), id]
+    );
 
     res.status(201).json({ message: 'Formulario guardado correctamente' });
   } catch (error) {

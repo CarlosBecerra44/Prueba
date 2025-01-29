@@ -8,13 +8,13 @@ export default async function handler(req, res) {
 
     try {
       // Ejecuta la consulta SQL para actualizar los datos del usuario
-      const result = await pool.query(
-        "UPDATE usuarios SET nombre = $1, apellidos = $2, correo = $3, numero_empleado = $4, puesto = $5, departamento_id = $6, rol = $7, telefono = $8, fecha_ingreso = $9, jefe_directo = $10, empresa_id = $11 WHERE id = $12",
+      const [result] = await pool.query(
+        "UPDATE usuarios SET nombre = ?, apellidos = ?, correo = ?, numero_empleado = ?, puesto = ?, departamento_id = ?, rol = ?, telefono = ?, fecha_ingreso = ?, jefe_directo = ?, empresa_id = ? WHERE id = ?",
         [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, id]
       );
 
       // Verifica si la actualización fue exitosa
-      if (result.rowCount > 0) {
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: 'Usuario actualizado exitosamente' });
       } else {
         return res.status(404).json({ message: 'Usuario no encontrado' });

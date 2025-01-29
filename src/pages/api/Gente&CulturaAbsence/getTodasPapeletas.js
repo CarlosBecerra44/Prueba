@@ -1,5 +1,4 @@
-// Archivo: src/pages/api/getEstrategias.js
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -28,8 +27,9 @@ export default async function handler(req, res) {
       ORDER BY 
           f.fecha_subida DESC;
     `;
-    const result = await pool.query(query);
-    const eventos = result.rows;
+    
+    const [result] = await pool.execute(query); // Se usa pool.execute para ejecutar la consulta en MySQL
+    const eventos = result;
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);

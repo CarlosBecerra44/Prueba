@@ -2,17 +2,19 @@ import pool from '@/lib/db';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { tipo, marca, modelo, serial, etiquetas,fecha,observacion } = req.body;
+    const { tipo, marca, modelo, serial, etiquetas, fecha, observacion } = req.body;
 
     try {
       // Inserta los datos en la tabla `inventario`
-      const result = await pool.query(
-        `INSERT INTO inventario (tipo, marca, modelo, serie, etiqueta,fecha,observacion) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [tipo, marca, modelo, serial, JSON.stringify(etiquetas),fecha,observacion]
-      );
+      const query = `
+        INSERT INTO inventario (tipo, marca, modelo, serie, etiqueta, fecha, observacion) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      const values = [tipo, marca, modelo, serial, JSON.stringify(etiquetas), fecha, observacion];
 
-      res.status(200).json({ success: true, data: result.rows[0] });
+      const result = await pool.query(query, values);
+
+      res.status(200).json({ success: true, data: result[0] });
       
     } catch (error) {
       console.error(error);

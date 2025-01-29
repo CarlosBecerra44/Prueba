@@ -5,9 +5,9 @@ export default async function handler(req, res) {
     const { id } = req.query;
 
     try {
-      const result = await pool.query("UPDATE formularios_papeletas SET estatus = 'No visible' WHERE id = $1", [id]);
+      const [result] = await pool.execute("UPDATE formularios_papeletas SET estatus = 'No visible' WHERE id = ?", [id]);
 
-      if (result.rowCount > 0) {
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: "Formulario eliminado correctamente" });
       } else {
         return res.status(404).json({ message: "Formulario no encontrado" });

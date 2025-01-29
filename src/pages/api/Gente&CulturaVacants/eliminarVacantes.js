@@ -4,10 +4,18 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const { id } = req.query;
 
-    try {
-      const result = await pool.query("UPDATE vacantes SET eliminado = 1 WHERE id = $1", [id]);
+    if (!id) {
+      return res.status(400).json({ message: "ID es requerido" });
+    }
 
-      if (result.rowCount > 0) {
+    try {
+      // Consulta parametrizada para MySQL
+      const [result] = await pool.query(
+        "UPDATE vacantes SET eliminado = 1 WHERE id = ?",
+        [id]
+      );
+
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: "Formulario eliminado correctamente" });
       } else {
         return res.status(404).json({ message: "Formulario no encontrado" });

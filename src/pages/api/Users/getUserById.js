@@ -5,13 +5,12 @@ export default async function handler(req, res) {
     const { id } = req.body;
 
     try {
-      const query = 'SELECT * FROM usuarios WHERE id = $1';
-      const values = [id];
-      const result = await pool.query(query, values);
+      const query = 'SELECT * FROM usuarios WHERE id = ?';
+      const [result] = await pool.query(query, [id]);
 
-      if (result.rows.length > 0) {
-        const user = result.rows[0];
-        
+      if (result.length > 0) {
+        const user = result[0];
+
         return res.status(200).json({ success: true, user });
       } else {
         return res.status(404).json({ success: false, message: 'Usuario no encontrado' });

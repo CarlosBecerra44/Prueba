@@ -1,4 +1,3 @@
-// Archivo: src/pages/api/getEstrategias.js
 import pool from '@/lib/db';
 
 export default async function handler(req, res) {
@@ -7,9 +6,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Consulta para obtener los eventos desde la tabla 'Prueba2'
-    const result = await pool.query('SELECT * FROM formularios_estrategias WHERE eliminado = 0 ORDER BY fecha_actualizacion DESC');
-    const eventos = result.rows;
+    // Consulta para obtener los eventos desde la tabla 'formularios_estrategias'
+    const [eventos] = await pool.query('SELECT * FROM formularios_estrategias WHERE eliminado = 0 ORDER BY fecha_actualizacion DESC');
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);

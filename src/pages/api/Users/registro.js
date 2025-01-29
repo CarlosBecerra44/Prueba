@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { rol='estandar',name, email, password, confirmPassword,  } = req.body;
+  const { rol = 'estandar', name, email, password, confirmPassword } = req.body;
 
   // Validar que las contraseñas coincidan
   if (password !== confirmPassword) {
@@ -16,8 +16,8 @@ export default async function handler(req, res) {
 
   try {
     // Verificar si el usuario ya existe
-    const userExists = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [email]);
-    if (userExists.rows.length > 0) {
+    const [userExists] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [email]);
+    if (userExists.length > 0) {
       return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
 
@@ -25,12 +25,13 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Guardar el nuevo usuario en la base de datos
-    const newUser = await pool.query(
-      'INSERT INTO usuarios (rol,nombre, correo, password) VALUES ($1, $2, $3, $4) RETURNING *',
-      [rol,name, email, hashedPassword,]
+    const [newUser] = await pool.query(
+      'INSERT INTO usuarios (rol, nombre, correo, password) VALUES (?, ?, ?, ?) ',
+      [rol, name, email, hashedPassword]
     );
-console.log({message: 'usuario registrado'});
-    res.status(201).json({ success: true, user: newUser.rows[0] });
+
+    console.log({ message: 'usuario registrado' });
+    res.status(201).json({ success: true, user: { rol, nombre: name, correo: email } });
   } catch (error) {
     console.error('Error registrando al usuario:', error);
     res.status(500).json({ message: 'Error en el servidor' });

@@ -1,16 +1,16 @@
-import pool from "@/lib/db";
+import pool from "@/lib/db"; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { id, estatus } = req.body;
 
     try {
-      const result = await pool.query(
-        "UPDATE formularios_faltas SET estatus = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $2",
+      const [result] = await pool.execute(
+        "UPDATE formularios_faltas SET estatus = ?, fecha_actualizacion = NOW() WHERE id = ?",
         [estatus, id]
       );
 
-      if (result.rowCount > 0) {
+      if (result.affectedRows > 0) {
         return res.status(200).json({ message: 'Usuario actualizado exitosamente' });
       } else {
         return res.status(404).json({ message: 'Usuario no encontrado' });

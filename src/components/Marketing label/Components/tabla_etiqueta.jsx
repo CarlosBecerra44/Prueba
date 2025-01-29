@@ -353,7 +353,7 @@ export function TablaEventosMejorada() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   No se encontraron etiquetas
                 </TableCell>
               </TableRow>

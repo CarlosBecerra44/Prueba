@@ -22,8 +22,8 @@ export async function middleware(req) {
   const roles = {
     isMaster: rol === "Máster",
     isAdminMkt: rol === "Administrador" && idPermiso !== null,
-    isAdminGC: rol === "Administrador" && departamento === "5",
-    isITMember: rol !== "Máster" && departamento === "1",
+    isAdminGC: rol === "Administrador" && departamento === 5,
+    isITMember: rol !== "Máster" && departamento === 1,
     isStandardMkt: rol === "Estándar" && idPermiso !== null,
     isStandard: rol === "Estándar",
   };

@@ -13,8 +13,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await pool.query('SELECT * FROM vacantes WHERE id = $1', [id]);
-    const datos = result.rows[0];
+    // Consulta parametrizada para MySQL
+    const [rows] = await pool.query('SELECT * FROM vacantes WHERE id = ?', [id]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Vacante no encontrada' });
+    }
+
+    const datos = rows[0];
     res.status(200).json(datos);
   } catch (error) {
     console.error('Error al obtener los datos:', error);

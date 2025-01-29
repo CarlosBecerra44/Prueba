@@ -1,5 +1,4 @@
-// Archivo: src/pages/api/getEstrategias.js
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -9,7 +8,7 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
-    // Consulta para obtener los eventos desde la tabla 'Prueba2'
+    // Consulta para obtener los eventos desde la tabla 'formularios_faltas' en MySQL
     const query = `
       SELECT 
           f.*, 
@@ -28,12 +27,15 @@ export default async function handler(req, res) {
       ON 
           u.departamento_id = d.id
       WHERE 
-          f.id_usuario = $1 AND (f.tipo != 'Aumento sueldo' AND f.tipo != 'Horas extras' AND f.tipo != 'Bonos / Comisiones') AND f.eliminado = 0
+          f.id_usuario = ? 
+          AND f.tipo NOT IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones')
+          AND f.eliminado = 0
       ORDER BY 
           f.fecha_actualizacion DESC;
     `;
-    const result = await pool.query(query, [id]);
-    const eventos = result.rows;
+
+    const [result] = await pool.execute(query, [id]);
+    const eventos = result;
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);

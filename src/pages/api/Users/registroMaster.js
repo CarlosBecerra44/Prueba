@@ -1,7 +1,6 @@
 // pages/api/register.js
 import pool from '@/lib/db';
 import bcrypt from 'bcrypt';
-import { redirect } from 'next/dist/server/api-utils';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,8 +23,8 @@ export default async function handler(req, res) {
 
   try {
     // Verificar si el usuario ya existe
-    const userExists = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [email]);
-    if (userExists.rows.length > 0) {
+    const [userExists] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [email]);
+    if (userExists.length > 0) {
       return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
 
@@ -33,14 +32,14 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Guardar el nuevo usuario en la base de datos
-    const newUser = await pool.query(
-      'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto, telefono, fecha_ingreso, jefe_directo, empresa_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+    const [newUser] = await pool.query(
+      'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto, telefono, fecha_ingreso, jefe_directo, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [rol, name, employeeNumber, departamento, correo, hashedPassword, lastName, position, telefono, entryDate, jefe_directo, empresa]
     );
 
-    console.log({message: 'usuario registrado'});
+    console.log({ message: 'usuario registrado' });
 
-    res.status(201).json({ success: true, user: newUser.rows[0] });
+    res.status(201).json({ success: true, user: { ...newUser[0], password: undefined } }); // Omitir la contraseña al retornar el usuario
   } catch (error) {
     console.error('Error registrando al usuario:', error);
     res.status(500).json({ message: 'Error en el servidor' });

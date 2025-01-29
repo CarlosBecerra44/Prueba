@@ -1,23 +1,27 @@
-import pool from '@/lib/db';  // O cualquier cliente de Postgres que estés usando
+import pool from '@/lib/db';  // O cualquier cliente de MySQL que estés usando
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const {formData, emailUsuario} = req.query;
+    const { formData, emailUsuario } = req.query;
     const estatus = "Pendiente";
 
     try {
-        const result2 = await pool.query("SELECT * FROM usuarios WHERE correo = $1", [emailUsuario])
-        if(result2.rows.length > 0) {
-            const id = result2.rows[0].id;
+      // Consulta para obtener el usuario por correo electrónico
+      const query2 = "SELECT * FROM usuarios WHERE correo = ?";
+      const [result2] = await pool.execute(query2, [emailUsuario]);
 
-            const result = await pool.query(
-                "INSERT INTO formularios_papeletas (formulario, id_usuario, estatus) VALUES ($1, $2, $3) RETURNING *",
-                [formData, id, estatus]  // Guarda el objeto JSON en la columna 'data'
-              );
-              res.status(200).json({ message: "Formulario guardado", result: result.rows[0] });
-        } else {
-            console.log("No se encontró el usuario solicitado");
-        }
+      if (result2.length > 0) {
+        const id = result2[0].id;
+
+        // Consulta para insertar el formulario en la base de datos
+        const query = "INSERT INTO formularios_papeletas (formulario, id_usuario, estatus) VALUES (?, ?, ?)";
+        const [result] = await pool.execute(query, [JSON.stringify(formData), id, estatus]);
+
+        res.status(200).json({ message: "Formulario guardado", result: result });
+      } else {
+        console.log("No se encontró el usuario solicitado");
+        res.status(404).json({ message: "Usuario no encontrado" });
+      }
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Error al guardar el formulario" });

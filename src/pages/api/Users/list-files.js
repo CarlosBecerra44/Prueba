@@ -5,13 +5,16 @@ const ftp = require("basic-ftp");
 export default async function handler(req, res) {
   try {
     const { folderId, correo } = req.query;
-console.log(correo)
-    const result = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
-    if (result.rows.length > 0) {
-      const id = result.rows[0].departamento_id; // Accediendo a la columna 'id' de la primera fila
-      const result2 = await pool.query('SELECT * FROM departamentos WHERE id = $1', [id]);
+    console.log(correo);
 
-      if(result2.rows.length > 0) {
+    // Consulta para obtener el usuario basado en el correo
+    const [result] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
+
+    if (result.length > 0) {
+      const id = result[0].departamento_id; // Accediendo a la columna 'departamento_id' de la primera fila
+      const [result2] = await pool.query('SELECT * FROM departamentos WHERE id = ?', [id]);
+
+      if(result2.length > 0) {
         const client = new ftp.Client();
         client.ftp.verbose = true;
     
@@ -36,9 +39,11 @@ console.log(correo)
         res.status(200).json({ files: fileList });
       } else {
         console.log("No se encontró el departamento solicitado");
+        res.status(404).json({ message: "Departamento no encontrado" });
       }
     } else {
       console.log("No se encontró el usuario con el correo proporcionado.");
+      res.status(404).json({ message: "Usuario no encontrado" });
     }
   } catch (error) {
     console.error("Error conectando al FTP:", error);

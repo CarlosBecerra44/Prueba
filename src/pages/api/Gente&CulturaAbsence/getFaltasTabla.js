@@ -1,5 +1,4 @@
-// Archivo: src/pages/api/getEstrategias.js
-import pool from '@/lib/db';
+import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -21,8 +20,8 @@ export default async function handler(req, res) {
           f.id_usuario = u.id 
           AND f.eliminado = 0 
           AND f.estatus = 'Autorizada' 
-          AND DATE_PART('week', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('week', CURRENT_DATE)
-          AND DATE_PART('year', (f.formulario->>'fechaInicio')::DATE) = DATE_PART('year', CURRENT_DATE)
+          AND WEEK(STR_TO_DATE(f.formulario->>'$.fechaInicio', '%Y-%m-%d')) = WEEK(CURRENT_DATE)
+          AND YEAR(STR_TO_DATE(f.formulario->>'$.fechaInicio', '%Y-%m-%d')) = YEAR(CURRENT_DATE)
       JOIN 
           departamentos d
       ON 
@@ -30,8 +29,9 @@ export default async function handler(req, res) {
       ORDER BY 
           f.fecha_subida DESC;
     `;
-    const result = await pool.query(query);
-    const eventos = result.rows;
+
+    const [result] = await pool.execute(query);
+    const eventos = result;
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);
