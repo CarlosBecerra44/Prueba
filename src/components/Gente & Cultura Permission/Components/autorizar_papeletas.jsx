@@ -3297,7 +3297,7 @@ export function AutorizarPapeletas() {
             ) : (
               <TableRow>
                 <TableCell colSpan={10} className="text-center">
-                  No se encontraron papeletas
+                  No se encontraron solicitudes
                 </TableCell>
               </TableRow>
             )}
