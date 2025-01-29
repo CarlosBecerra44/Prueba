@@ -241,7 +241,7 @@ export function UserManagementTable() {
     }
   
     const filtered = users.filter(
-      (usuario) => usuario.departamento_id === selectedDepartamento
+      (usuario) => usuario.departamento_id.toString() === selectedDepartamento
     );
   
     console.log("Usuarios filtrados antes de actualizar el estado:", filtered);
@@ -250,7 +250,7 @@ export function UserManagementTable() {
 
   useEffect(() => {
     if (selectedUser?.departamento_id) {
-      setFilteredUsers(users.filter(user => user.departamento_id === selectedUser.departamento_id));
+      setFilteredUsers(users.filter(user => user.departamento_id.toString() === selectedUser.departamento_id.toString()));
     } else {
       setFilteredUsers([]);
     }
@@ -646,7 +646,7 @@ export function UserManagementTable() {
                   <SelectContent>
                     {filteredUsersDpto.length > 0 ? (
                       filteredUsersDpto.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
+                        <SelectItem key={user.id.toString()} value={user.id.toString()}>
                           {user.nombre + " " + user.apellidos}
                         </SelectItem>
                       ))
@@ -785,7 +785,7 @@ export function UserManagementTable() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="departamento" className="text-right">Departamento</Label>
                 <Select
-                  value={selectedUser?.departamento_id || ''} // Usar el valor del departamento del usuario seleccionado
+                  value={selectedUser?.departamento_id.toString() || ''} // Usar el valor del departamento del usuario seleccionado
                   onValueChange={(value) => {
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
@@ -822,7 +822,7 @@ export function UserManagementTable() {
                   Jefe Directo
                 </Label>
                 <Select
-                  value={selectedUser?.jefe_directo || ''} // Usar el jefe directo del usuario seleccionado
+                  value={selectedUser?.jefe_directo.toString() || ''} // Usar el jefe directo del usuario seleccionado
                   onValueChange={(value) =>
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
@@ -837,7 +837,7 @@ export function UserManagementTable() {
                   <SelectContent>
                     {filteredUsersDpto.length > 0 ? (
                       filteredUsersDpto.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
+                        <SelectItem key={user.id.toString()} value={user.id.toString()}>
                           {user.nombre + ' ' + user.apellidos}
                         </SelectItem>
                       ))
@@ -852,7 +852,7 @@ export function UserManagementTable() {
                   Empresa
                 </Label>
                 <Select
-                  value={selectedUser?.empresa_id || ''}
+                  value={selectedUser?.empresa_id.toString() || ''}
                   onValueChange={(value) =>
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
