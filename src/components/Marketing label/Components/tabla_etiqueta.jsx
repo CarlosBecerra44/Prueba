@@ -160,11 +160,31 @@ export function TablaEventosMejorada() {
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
-    const fechaUTC1 = new Date(evento.fecha_envio);
-    const fechaFormateada = fechaUTC1.toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
+    const fechaCompleta = evento.fecha_envio;
+    const fecha = new Date(fechaCompleta);
 
-    const fechaUTC2 = new Date(evento.fecha_actualizacion);
-    const fechaFormateada2 = fechaUTC2.toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
+    // Extraer solo la fecha y la hora
+    const fechaFormateada = fecha.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
+
+    const fechaCompleta2 = evento.fecha_actualizacion;
+    const fecha2 = new Date(fechaCompleta2);
+
+    // Extraer solo la fecha y la hora
+    const fechaFormateada2 = fecha2.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
 
     return {
       id: evento.id,

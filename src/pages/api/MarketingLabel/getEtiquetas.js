@@ -8,7 +8,10 @@ export default async function handler(req, res) {
 
   try {
     // Consulta para obtener los eventos desde la tabla 'etiquetas_form'
-    const [rows] = await db.query('SELECT * FROM etiquetas_form WHERE eliminado = false ORDER BY fecha_actualizacion DESC');
+    const [rows] = await db.query(`SELECT id, datos_formulario, pdf_path,
+       eliminado, estatus, CONVERT_TZ(fecha_envio, '+00:00', '+06:00') AS
+       fecha_envio, CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00') AS 
+       fecha_actualizacion FROM etiquetas_form WHERE eliminado = false ORDER BY fecha_actualizacion DESC`);
     
     // Retorna los eventos en formato JSON
     res.status(200).json(rows);
