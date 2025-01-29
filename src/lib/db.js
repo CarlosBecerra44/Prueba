@@ -8,7 +8,7 @@ const pool = mysql.createPool({
   database: 'aionnet_productivo', // Nombre de la base de datos
   port: 3306,           // Puerto para MySQL
   waitForConnections: true,
-  connectionLimit: 20,  // Número máximo de conexiones en el pool
+  connectionLimit: 50,  // Número máximo de conexiones en el pool
   queueLimit: 0         // Sin límite en la cola de conexiones
 });
 

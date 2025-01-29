@@ -46,7 +46,7 @@ export function NotificationBell() {
       } catch (error) {
         console.error("Error al refrescar notificaciones:", error);
       }
-    }, 1000);
+    }, 10000);
   
     return () => clearInterval(interval);
   }, [idUser]);
