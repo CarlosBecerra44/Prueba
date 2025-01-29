@@ -160,13 +160,13 @@ export function TablaEventosMejorada() {
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
-    const fechaRecibida = new Date(evento.fecha_envio).toISOString(); // Convertir a formato UTC ISO si es necesario
-    const fecha = moment(fechaRecibida).tz('America/Mexico_City');
-    const fechaFormateada = fecha.format('DD/MM/YYYY HH:mm:ss');
+    const fechaFormateada = moment.utc(evento.fecha_envio) // Asegura que la fecha es UTC
+    .tz('America/Mexico_City') // Convierte a la zona horaria de México
+    .format('DD/MM/YYYY HH:mm:ss'); // Formato final
 
-    const fechaRecibida2 = new Date(evento.fecha_actualizacion).toISOString(); // Convertir a formato UTC ISO si es necesario
-    const fecha2 = moment(fechaRecibida2).tz('America/Mexico_City');
-    const fechaFormateada2 = fecha2.format('DD/MM/YYYY HH:mm:ss');
+    const fechaFormateada2 = moment.utc(evento.fecha_actualizacion)
+        .tz('America/Mexico_City')
+        .format('DD/MM/YYYY HH:mm:ss');
 
     return {
       id: evento.id,
