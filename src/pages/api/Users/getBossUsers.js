@@ -7,17 +7,28 @@ export default async function handler(req, res) {
 
   const { id } = req.query;
 
-  try {
-    // Consulta para obtener los usuarios donde jefe_directo sea el ID proporcionado
-    const [result] = await pool.query('SELECT * FROM usuarios WHERE jefe_directo = ?', [id]);
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID requerido' });
+  }
 
-    if (result.length > 0) {
-      return res.status(200).json({ success: true, users: result });
+  let connection;
+
+  try {
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+
+    // Ejecutar la consulta
+    const [users] = await connection.query('SELECT * FROM usuarios WHERE jefe_directo = ?', [id]);
+
+    if (users.length > 0) {
+      return res.status(200).json({ success: true, users });
     } else {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+      return res.status(404).json({ success: false, message: 'No se encontraron usuarios con este jefe directo' });
     }
   } catch (error) {
     console.error('Error al obtener los usuarios:', error);
-    res.status(500).json({ message: 'Error al obtener los usuarios' });
+    return res.status(500).json({ success: false, message: 'Error en el servidor' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión
   }
 }

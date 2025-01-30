@@ -1,52 +1,67 @@
 import pool from '@/lib/db';
-
 const ftp = require("basic-ftp");
 
 export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, message: 'Método no permitido' });
+  }
+
+  const { folderId, correo } = req.query;
+
+  if (!correo) {
+    return res.status(400).json({ success: false, message: 'Correo es requerido' });
+  }
+
+  let connection;
+
   try {
-    const { folderId, correo } = req.query;
-    console.log(correo);
+    // Obtener la conexión del pool
+    connection = await pool.getConnection();
 
     // Consulta para obtener el usuario basado en el correo
-    const [result] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
+    const [userResult] = await connection.execute('SELECT * FROM usuarios WHERE correo = ?', [correo]);
 
-    if (result.length > 0) {
-      const id = result[0].departamento_id; // Accediendo a la columna 'departamento_id' de la primera fila
-      const [result2] = await pool.query('SELECT * FROM departamentos WHERE id = ?', [id]);
-
-      if(result2.length > 0) {
-        const client = new ftp.Client();
-        client.ftp.verbose = true;
-    
-        // Accede al servidor FTP
-        await client.access({
-          host: "192.168.1.87",
-          user: "pruebas@nutriton.com.mx",
-          password: "NutriAdmin2035",
-          secure: false, // Cambia a true si el servidor FTP es seguro (FTPS)
-        });
-    
-        // Define la ruta que quieres listar (usa "/" si no se especifica una carpeta)
-        const directory = folderId ? `/${folderId}` : "/";
-    
-        // Lista los archivos en la carpeta especificada
-        const fileList = await client.list(directory);
-    
-        // Cierra la conexión FTP
-        await client.close();
-    
-        // Devuelve la lista de archivos al frontend
-        res.status(200).json({ files: fileList });
-      } else {
-        console.log("No se encontró el departamento solicitado");
-        res.status(404).json({ message: "Departamento no encontrado" });
-      }
-    } else {
-      console.log("No se encontró el usuario con el correo proporcionado.");
-      res.status(404).json({ message: "Usuario no encontrado" });
+    if (userResult.length === 0) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
+
+    const departamentoId = userResult[0].departamento_id;
+
+    // Consulta para obtener el departamento
+    const [deptResult] = await connection.execute('SELECT * FROM departamentos WHERE id = ?', [departamentoId]);
+
+    if (deptResult.length === 0) {
+      return res.status(404).json({ success: false, message: "Departamento no encontrado" });
+    }
+
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+
+    // Accede al servidor FTP
+    await client.access({
+      host: "192.168.1.87",
+      user: "pruebas@nutriton.com.mx",
+      password: "NutriAdmin2035",
+      secure: false, // Cambia a true si el servidor FTP es seguro (FTPS)
+    });
+
+    // Define la ruta que quieres listar (usa "/" si no se especifica una carpeta)
+    const directory = folderId ? `/${folderId}` : "/";
+
+    // Lista los archivos en la carpeta especificada
+    const fileList = await client.list(directory);
+
+    // Cierra la conexión FTP
+    await client.close();
+
+    // Devuelve la lista de archivos al frontend
+    return res.status(200).json({ success: true, files: fileList });
+
   } catch (error) {
     console.error("Error conectando al FTP:", error);
-    res.status(500).json({ error: "Error conectando al FTP" });
+    return res.status(500).json({ success: false, error: "Error conectando al FTP" });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

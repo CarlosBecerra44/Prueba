@@ -8,10 +8,14 @@ export default async function handler(req, res) {
   const { formData, tipoFormulario2 } = req.body;
   const { id } = req.query;
   const estatus = "Pendiente";
+  let connection;
 
   try {
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
     // Guardar el formulario en la base de datos
-    await pool.execute(
+    await connection.execute(
       'INSERT INTO formularios_faltas (formulario, id_usuario, estatus, archivo, tipo) VALUES (?, ?, ?, ?, ?)',
       [JSON.stringify(formData), id, estatus, formData.comprobante, tipoFormulario2]
     );
@@ -20,5 +24,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error guardando el formulario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

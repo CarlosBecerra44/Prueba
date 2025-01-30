@@ -1,30 +1,39 @@
 import pool from "@/lib/db";
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    // Extrae los campos del cuerpo de la solicitud
-    const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, empresa_id } = req.body;
-    const jefe = jefe_directo || null; // Si jefe_directo está vacío, se asigna null
-
-    try {
-      // Ejecuta la consulta SQL para actualizar los datos del usuario
-      const [result] = await pool.query(
-        "UPDATE usuarios SET nombre = ?, apellidos = ?, correo = ?, numero_empleado = ?, puesto = ?, departamento_id = ?, rol = ?, telefono = ?, fecha_ingreso = ?, jefe_directo = ?, empresa_id = ? WHERE id = ?",
-        [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, id]
-      );
-
-      // Verifica si la actualización fue exitosa
-      if (result.affectedRows > 0) {
-        return res.status(200).json({ message: 'Usuario actualizado exitosamente' });
-      } else {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
-      }
-    } catch (err) {
-      console.error('Error al actualizar el usuario:', err);
-      return res.status(500).json({ message: 'Error al actualizar el usuario' });
-    }
-  } else {
-    // Si el método no es POST, responde con un error
+  if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
+  }
+
+  const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, empresa_id } = req.body;
+  const jefe = jefe_directo || null;
+
+  let connection;
+
+  try {
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+
+    // Ejecutar la consulta SQL para actualizar los datos del usuario
+    const [result] = await connection.query(
+      `UPDATE usuarios 
+       SET nombre = ?, apellidos = ?, correo = ?, numero_empleado = ?, 
+           puesto = ?, departamento_id = ?, rol = ?, telefono = ?, 
+           fecha_ingreso = ?, jefe_directo = ?, empresa_id = ? 
+       WHERE id = ?`,
+      [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, id]
+    );
+
+    // Verificar si se actualizó el usuario
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ success: true, message: 'Usuario actualizado exitosamente' });
+    } else {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al actualizar el usuario:', error);
+    return res.status(500).json({ success: false, message: 'Error al actualizar el usuario' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión
   }
 }

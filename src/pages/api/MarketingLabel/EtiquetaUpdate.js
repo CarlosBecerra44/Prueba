@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import pool from '@/lib/db';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -11,8 +11,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID es requerido' });
   }
 
+  let connection;
+
   try {
-    const [rows] = await db.query('SELECT * FROM etiquetas_form WHERE id = ?', [id]);
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+
+    // Realizar la consulta
+    const [rows] = await connection.query('SELECT * FROM etiquetas_form WHERE id = ?', [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: 'Etiqueta no encontrada' });
@@ -36,5 +42,10 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error al obtener los datos:', error);
     res.status(500).json({ message: 'Error al obtener los datos' });
+  } finally {
+    // Liberar la conexión
+    if (connection) {
+      connection.release();
+    }
   }
 }

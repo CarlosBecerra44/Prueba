@@ -12,9 +12,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID es requerido' });
   }
 
+  let connection;
+
   try {
+    // Obtener la conexión
+    connection = await pool.getConnection();
+
     // Consulta parametrizada para MySQL
-    const [rows] = await pool.query('SELECT * FROM vacantes WHERE id = ?', [id]);
+    const [rows] = await connection.execute('SELECT * FROM vacantes WHERE id = ?', [id]);
     
     if (rows.length === 0) {
       return res.status(404).json({ message: 'Vacante no encontrada' });
@@ -25,5 +30,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error al obtener los datos:', error);
     res.status(500).json({ message: 'Error al obtener los datos' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

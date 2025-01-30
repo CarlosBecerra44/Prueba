@@ -37,19 +37,19 @@ export function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const fetchNotificaciones = async () => {
       try {
         const response = await fetch(`/api/Reminder/notificaciones?id=${idUser}`);
         const data = await response.json();
         setNotificaciones(data);
         setHasNotifications(data.length > 0);
       } catch (error) {
-        console.error("Error al refrescar notificaciones:", error);
+        console.error("Error al obtener notificaciones:", error);
       }
-    }, 10000);
+    };
   
-    return () => clearInterval(interval);
-  }, [idUser]);
+    fetchNotificaciones();
+  }, [idUser]);  
 
   const mostrarNotificaciones = () => {
     if (notificaciones.length > 0) {

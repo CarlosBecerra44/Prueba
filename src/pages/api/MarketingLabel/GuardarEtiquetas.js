@@ -1,4 +1,4 @@
-import db from '@/lib/db'; // Asegúrate de que db esté configurado correctamente
+import pool from '@/lib/db'; // Asegúrate de que db esté configurado correctamente
 import formidable from 'formidable';
 
 export const config = {
@@ -35,9 +35,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Guardar la información en la base de datos
+    let connection;
     try {
-      const [rows] = await db.query(
+      // Obtener una conexión del pool
+      connection = await pool.getConnection();
+
+      // Guardar la información en la base de datos
+      const [rows] = await connection.query(
         'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES (?, ?, ?, ?)',
         [JSON.stringify(fields), fileUrl, false, 'Pendiente'] // Guardar los datos como JSON en la base de datos
       );
@@ -55,6 +59,11 @@ export default async function handler(req, res) {
         success: false,
         message: `Error al procesar la solicitud: ${error.message}`,
       });
+    } finally {
+      // Liberar la conexión
+      if (connection) {
+        connection.release();
+      }
     }
   });
 }

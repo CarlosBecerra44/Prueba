@@ -29,9 +29,12 @@ export default NextAuth({
         const field = correo ? "correo" : "numero_empleado";
         const value = correo || numero;
 
+        let connection;
         try {
+          connection = await pool.getConnection();
+
           const query = `SELECT * FROM usuarios WHERE ${field} = ?`;
-          const [rows] = await pool.query(query, [value]);
+          const [rows] = await connection.execute(query, [value]);
 
           if (rows.length > 0) {
             const user = rows[0];
@@ -56,6 +59,9 @@ export default NextAuth({
         } catch (error) {
           console.error("Error en la autorización:", error.message);
           throw new Error(error.message);
+        } finally {
+          // Liberar la conexión
+          if (connection) connection.release();
         }
       },
     }),
@@ -90,15 +96,25 @@ export default NextAuth({
     },
     async signIn({ user, account }) {
       if (account.provider === "google") {
-        // Verifica si el usuario ya existe en la base de datos
-        const query = "SELECT * FROM usuarios WHERE correo = ?";
-        const [rows] = await pool.query(query, [user.email]);
+        let connection;
+        try {
+          connection = await pool.getConnection();
 
-        if (rows.length === 0) {
-          const rol = "estandar";
-          // Si el usuario no existe, lo inserta en la base de datos
-          const insertQuery = "INSERT INTO usuarios (rol, nombre, correo) VALUES (?, ?, ?)";
-          await pool.query(insertQuery, [rol, user.name, user.email]);
+          // Verifica si el usuario ya existe en la base de datos
+          const query = "SELECT * FROM usuarios WHERE correo = ?";
+          const [rows] = await connection.execute(query, [user.email]);
+
+          if (rows.length === 0) {
+            const rol = "estandar";
+            // Si el usuario no existe, lo inserta en la base de datos
+            const insertQuery = "INSERT INTO usuarios (rol, nombre, correo) VALUES (?, ?, ?)";
+            await connection.execute(insertQuery, [rol, user.name, user.email]);
+          }
+        } catch (error) {
+          console.error("Error al verificar o insertar el usuario:", error.message);
+        } finally {
+          // Liberar la conexión
+          if (connection) connection.release();
         }
       }
       return true;

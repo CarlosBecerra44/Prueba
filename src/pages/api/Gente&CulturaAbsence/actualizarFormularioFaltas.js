@@ -9,9 +9,13 @@ export default async function handler(req, res) {
   const { id } = req.query;
   const estatusForm = formData.estatus ? formData.estatus : estatus;
 
+  let connection;
   try {
-    // Guardar el formulario en la base de datos
-    await pool.execute(
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
+    // Actualizar el formulario en la base de datos
+    await connection.execute(
       'UPDATE formularios_faltas SET formulario = ?, estatus = ?, fecha_actualizacion = NOW() WHERE id = ?',
       [JSON.stringify(formData), estatusForm, id]
     );
@@ -20,5 +24,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error guardando el formulario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

@@ -10,9 +10,14 @@ export default async function handler(req, res) {
     console.log("Salario máximo:", salarioMax);
     console.log("Rango de salario:", salario);
 
+    let connection;
+
     try {
+      // Obtener la conexión
+      connection = await pool.getConnection();
+
       // Consulta parametrizada para MySQL
-      const [result] = await pool.query(
+      const [result] = await connection.execute(
         `UPDATE vacantes 
          SET vacante = ?, 
              cantidad = ?, 
@@ -35,6 +40,9 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('Error al actualizar la vacante:', err);
       return res.status(500).json({ message: 'Error al actualizar la vacante' });
+    } finally {
+      // Liberar la conexión
+      if (connection) connection.release();
     }
   } else {
     return res.status(405).json({ message: 'Método no permitido' });

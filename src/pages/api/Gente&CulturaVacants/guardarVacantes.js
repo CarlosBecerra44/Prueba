@@ -21,9 +21,14 @@ export default async function handler(req, res) {
   const salario = `${salarioMin}-${salarioMax}`;
   const ingreso = fecha_ingreso || null;
 
+  let connection;
+
   try {
+    // Obtener la conexión
+    connection = await pool.getConnection();
+
     // Guardar el formulario en la base de datos
-    const [result] = await pool.query(
+    const [result] = await connection.execute(
       "INSERT INTO vacantes (vacante, cantidad, gerencia, proceso_actual, ubicacion, salario, fecha_apertura, fecha_ingreso, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [vacante, cantidad, gerencia, proceso_actual, ubicacion, salario, fecha_apertura, ingreso, observaciones]
     );
@@ -32,5 +37,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error guardando el formulario:", error);
     res.status(500).json({ message: "Error en el servidor" });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

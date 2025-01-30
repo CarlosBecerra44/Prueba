@@ -8,7 +8,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'El id del usuario es necesario' });
     }
 
+    let connection;
     try {
+      // Obtener una conexión del pool
+      connection = await pool.getConnection();
+      
       // Consulta para obtener el `seccion` y `campo` desde `permiso` para el usuario
       const userPermissionQuery = `
         SELECT permiso.seccion, permiso.campo
@@ -17,7 +21,7 @@ export default async function handler(req, res) {
         WHERE usuarios.id = ?
       `;
 
-      const [result] = await pool.execute(userPermissionQuery, [userId]);
+      const [result] = await connection.query(userPermissionQuery, [userId]);
 
       if (result.length === 0) {
         return res.status(404).json({ message: 'No se encontraron permisos para este usuario' });
@@ -29,6 +33,11 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Error al obtener permisos', error);
       res.status(500).json({ message: 'Error al obtener permisos' });
+    } finally {
+      // Liberar la conexión
+      if (connection) {
+        connection.release();
+      }
     }
   } else {
     res.setHeader('Allow', ['GET']);

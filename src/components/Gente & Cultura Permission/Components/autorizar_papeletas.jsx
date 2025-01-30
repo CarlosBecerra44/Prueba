@@ -84,7 +84,6 @@ export function AutorizarPapeletas() {
   const [allUsers, setAllUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [isButtonLoaded, setIsButtonLoaded] = useState(false);
   const [autorizar, setAutorizar] = useState(false);
   const [usersBonos, setUsersBonos] = useState([]);
 
@@ -135,14 +134,6 @@ export function AutorizarPapeletas() {
     });
     setFormularioAbierto(true); // Abrir el formulario
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsButtonLoaded(true);
-    }, 1);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const openModalForms = () => {
     setTipoFormulario2("");
@@ -580,7 +571,7 @@ export function AutorizarPapeletas() {
     );
   
   const {data: session,status}=useSession ();
-  if (status === "loading" || !isButtonLoaded) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -614,6 +605,51 @@ export function AutorizarPapeletas() {
       ...prevFormData,
       [name]: value, // Actualiza dinámicamente el campo según el `name`
     }));
+  };
+
+  const handleChangeBonos = (e, index, field) => {
+    const { name, value } = e.target;
+  
+    // Actualiza el estado del formulario
+    if (field) {
+      const updatedBonos = [...formData.bonos.otros];
+      updatedBonos[index] = {
+        ...updatedBonos[index],
+        [field]: value,
+      };
+      setFormData({
+        ...formData,
+        bonos: { ...formData.bonos, otros: updatedBonos },
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  
+    // Recalcular el total
+    calcularTotal();
+  };
+  
+  const calcularTotal = () => {
+    // Suma los campos fuera del arreglo de bonos
+    let total = 0;
+  
+    total += parseFloat(formData.bonoCantidad || 0);
+    total += parseFloat(formData.comision || 0);
+  
+    // Suma los campos dentro del arreglo de bonos
+    formData.bonos.otros.forEach((bono) => {
+      total += parseFloat(bono.bonoCantidad || 0);
+      total += parseFloat(bono.comision || 0);
+    });
+  
+    // Establece el total en el estado
+    setFormData({
+      ...formData,
+      total: total.toFixed(2), // Redondear a dos decimales
+    });
   };
 
   const handleFileChange = (e) => {
@@ -1391,6 +1427,7 @@ export function AutorizarPapeletas() {
                     id="total"
                     name="total"
                     type="number"
+                    value={formData.total || 0}
                     onChange={handleChange}
                     placeholder="Total..."
                     readOnly={true}
@@ -1485,7 +1522,7 @@ export function AutorizarPapeletas() {
                       style={{width: "207px"
                       }}
                       value={otro.total}
-                      onChange={(e) => handleChange(e, index, "total")}
+                      onChange={(e) => handleChangeBonos(e, index, "total")}
                       placeholder="Total..."
                       readOnly={true} />
                       <Button

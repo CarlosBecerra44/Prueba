@@ -11,12 +11,27 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID es requerido' });
   }
 
+  let connection;
+
   try {
-    const [rows] = await pool.execute('SELECT * FROM formularios_faltas WHERE id = ?', [id]);
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
+    // Ejecutar la consulta para obtener el formulario por ID
+    const [rows] = await connection.execute('SELECT * FROM formularios_faltas WHERE id = ?', [id]);
     const datos = rows[0];
+
+    // Verificar si se encontró el formulario
+    if (!datos) {
+      return res.status(404).json({ message: 'Formulario no encontrado' });
+    }
+
     res.status(200).json(datos);
   } catch (error) {
     console.error('Error al obtener los datos:', error);
     res.status(500).json({ message: 'Error al obtener los datos' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

@@ -1,4 +1,3 @@
-// pages/api/register.js
 import pool from '@/lib/db';
 import bcrypt from 'bcrypt';
 
@@ -14,9 +13,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
   }
 
+  let connection;
+
   try {
+    // Obtener la conexión del pool
+    connection = await pool.getConnection();
+
     // Verificar si el usuario ya existe
-    const [userExists] = await pool.query('SELECT * FROM usuarios WHERE correo = ?', [email]);
+    const [userExists] = await connection.execute('SELECT * FROM usuarios WHERE correo = ?', [email]);
     if (userExists.length > 0) {
       return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
@@ -25,15 +29,18 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Guardar el nuevo usuario en la base de datos
-    const [newUser] = await pool.query(
-      'INSERT INTO usuarios (rol, nombre, correo, password) VALUES (?, ?, ?, ?) ',
+    const [newUser] = await connection.execute(
+      'INSERT INTO usuarios (rol, nombre, correo, password) VALUES (?, ?, ?, ?)',
       [rol, name, email, hashedPassword]
     );
 
-    console.log({ message: 'usuario registrado' });
+    console.log({ message: 'Usuario registrado' });
     res.status(201).json({ success: true, user: { rol, nombre: name, correo: email } });
   } catch (error) {
     console.error('Error registrando al usuario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

@@ -5,7 +5,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
+  let connection;
+
   try {
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
     // Consulta para obtener los eventos junto con los datos del usuario
     const query = `
       SELECT 
@@ -22,7 +27,8 @@ export default async function handler(req, res) {
       ORDER BY 
         fp.id ASC
     `;
-    const [result] = await pool.execute(query);
+
+    const [result] = await connection.execute(query);
 
     // **Agregar console.log para depuración**
     console.log('Eventos con usuarios:', result);
@@ -32,5 +38,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

@@ -6,34 +6,38 @@ export default async function handler(req, res) {
   }
 
   const { departamento } = req.query;
+  let connection;
 
-  if (departamento != null) {
-    try {
+  try {
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
+    if (departamento != null) {
       // Consulta para obtener los usuarios por departamento
-      const [result] = await pool.execute('SELECT * FROM usuarios WHERE departamento_id = ?', [departamento]);
+      const [result] = await connection.execute('SELECT * FROM usuarios WHERE departamento_id = ?', [departamento]);
+
       if (result.length > 0) {
         const users = result;
         return res.status(200).json({ success: true, users });
       } else {
         return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
       }
-    } catch (error) {
-      console.error('Error al obtener los usuarios:', error);
-      res.status(500).json({ message: 'Error al obtener los usuarios' });
-    }
-  } else {
-    try {
+    } else {
       // Consulta para obtener los usuarios con departamentos específicos
-      const [result] = await pool.execute('SELECT * FROM usuarios WHERE departamento_id IN (7, 11)');
+      const [result] = await connection.execute('SELECT * FROM usuarios WHERE departamento_id IN (7, 11)');
+
       if (result.length > 0) {
         const users = result;
         return res.status(200).json({ success: true, users });
       } else {
         return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
       }
-    } catch (error) {
-      console.error('Error al obtener los usuarios:', error);
-      res.status(500).json({ message: 'Error al obtener los usuarios' });
     }
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error);
+    res.status(500).json({ message: 'Error al obtener los usuarios' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

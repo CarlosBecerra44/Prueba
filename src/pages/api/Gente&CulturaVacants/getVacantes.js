@@ -5,9 +5,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Método no permitido" });
   }
 
+  let connection;
+
   try {
+    // Obtener la conexión
+    connection = await pool.getConnection();
+
     // Consulta para obtener los eventos desde la tabla 'vacantes'
-    const [result] = await pool.query(`
+    const [result] = await connection.execute(`
       SELECT vacantes.*, departamentos.nombre 
       FROM vacantes
       INNER JOIN departamentos 
@@ -21,5 +26,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error al obtener los eventos:", error);
     res.status(500).json({ message: "Error al obtener los eventos" });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

@@ -11,8 +11,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: "ID es requerido" });
   }
 
+  let connection;
   try {
-    const [result] = await pool.query(
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+
+    // Ejecutar la consulta para marcar el formulario como eliminado
+    const [result] = await connection.query(
       "UPDATE formularios_estrategias SET eliminado = 1 WHERE id = ?",
       [id]
     );
@@ -25,5 +30,10 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error eliminando el formulario:", error);
     return res.status(500).json({ message: "Error al eliminar el formulario" });
+  } finally {
+    // Liberar la conexión
+    if (connection) {
+      connection.release();
+    }
   }
 }

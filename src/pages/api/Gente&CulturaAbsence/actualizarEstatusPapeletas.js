@@ -4,8 +4,12 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { id, estatus } = req.body;
 
+    let connection;
     try {
-      const [result] = await pool.execute(
+      // Obtiene una conexión del pool
+      connection = await pool.getConnection();
+
+      const [result] = await connection.execute(
         "UPDATE formularios_faltas SET estatus = ?, fecha_actualizacion = NOW() WHERE id = ?",
         [estatus, id]
       );
@@ -18,6 +22,9 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('Error al actualizar el usuario:', err);
       return res.status(500).json({ message: 'Error al actualizar el usuario' });
+    } finally {
+      // Liberar la conexión
+      if (connection) connection.release();
     }
   } else {
     return res.status(405).json({ message: 'Método no permitido' });

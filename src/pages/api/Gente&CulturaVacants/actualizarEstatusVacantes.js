@@ -8,9 +8,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'ID y estatus son requeridos' });
     }
 
+    let connection;
+
     try {
+      // Obtener la conexión
+      connection = await pool.getConnection();
+
       // Consulta parametrizada para MySQL
-      const [result] = await pool.query(
+      const [result] = await connection.execute(
         "UPDATE vacantes SET proceso_actual = ? WHERE id = ?",
         [estatus, id]
       );
@@ -23,6 +28,9 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('Error al actualizar la vacante:', err);
       return res.status(500).json({ message: 'Error al actualizar la vacante' });
+    } finally {
+      // Liberar la conexión
+      if (connection) connection.release();
     }
   } else {
     return res.status(405).json({ message: 'Método no permitido' });

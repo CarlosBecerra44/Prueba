@@ -7,19 +7,35 @@ export default async function handler(req, res) {
   }
 
   const { userId, nuevaContraseña } = req.body;
-  const hashedPassword = await bcrypt.hash(nuevaContraseña, 10);
+  
+  if (!userId || !nuevaContraseña) {
+    return res.status(400).json({ message: 'Faltan datos requeridos' });
+  }
+
+  let connection;
 
   try {
-    // Actualizar la contraseña en la base de datos
-    const [result] = await pool.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, userId]);
+    // Hashear la nueva contraseña
+    const hashedPassword = await bcrypt.hash(nuevaContraseña, 10);
+
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
+
+    // Ejecutar la actualización en la base de datos
+    const [result] = await connection.query(
+      'UPDATE usuarios SET password = ? WHERE id = ?', 
+      [hashedPassword, userId]
+    );
 
     if (result.affectedRows > 0) {
-      res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+      return res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
     } else {
-      res.status(404).json({ message: 'Usuario no encontrado' });
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
   } catch (error) {
     console.error('Error actualizando la contraseña:', error);
-    res.status(500).json({ message: 'Error en el servidor' });
+    return res.status(500).json({ success: false, message: 'Error en el servidor' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión
   }
 }

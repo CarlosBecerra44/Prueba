@@ -4,13 +4,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
-  
+
   const { id, formulario } = req.body;
   console.log(formulario);
   console.log("ID: " + id);
 
+  let connection;
   try {
-    const [result] = await pool.query(
+    connection = await pool.getConnection();
+
+    const [result] = await connection.execute(
       "UPDATE empresas SET formulario = ? WHERE id = ?",
       [JSON.stringify(formulario), id]
     );
@@ -23,5 +26,8 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Error al actualizar el usuario:', err);
     return res.status(500).json({ message: 'Error al actualizar el usuario' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

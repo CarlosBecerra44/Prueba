@@ -822,7 +822,7 @@ export function UserManagementTable() {
                   Jefe Directo
                 </Label>
                 <Select
-                  value={selectedUser?.jefe_directo.toString() || ''} // Usar el jefe directo del usuario seleccionado
+                  value={selectedUser?.jefe_directo?.toString() || ''} // Usar el jefe directo del usuario seleccionado
                   onValueChange={(value) =>
                     setSelectedUser((prevUser) => ({
                       ...prevUser,

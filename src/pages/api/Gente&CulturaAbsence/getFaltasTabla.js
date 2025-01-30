@@ -5,7 +5,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
+  let connection;
+
   try {
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
+
     const query = `
       SELECT 
           f.*, 
@@ -30,7 +35,7 @@ export default async function handler(req, res) {
           f.fecha_subida DESC;
     `;
 
-    const [result] = await pool.execute(query);
+    const [result] = await connection.execute(query);
     const eventos = result;
 
     // Retorna los eventos en formato JSON
@@ -38,5 +43,8 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }
