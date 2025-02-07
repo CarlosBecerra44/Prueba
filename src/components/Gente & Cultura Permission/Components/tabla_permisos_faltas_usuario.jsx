@@ -178,6 +178,23 @@ export function TablaPermisosFaltaUsuario() {
     fetchUserData();
   }, []);  
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('/api/Users/getUsers');
+        if (response.data.success) {
+          setAllUsers(response.data.users);
+        } else {
+          console.error('Error al obtener los usuarios:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los usuarios:', error);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
   const handleOpenModal = () => {
     setModalOpen(true)
   }
@@ -203,6 +220,7 @@ export function TablaPermisosFaltaUsuario() {
     "Jefe directo",
     "Fecha de subida",
     "Fecha de último movimiento",
+    "Comentarios",
     "Estatus",
     "Acción"
   ]
@@ -218,6 +236,7 @@ export function TablaPermisosFaltaUsuario() {
       try {
         const response = await axios.get(`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
+        console.log(response.data)
       } catch (error) {
         console.error('Error al obtener eventos:', error)
       }
@@ -280,6 +299,7 @@ export function TablaPermisosFaltaUsuario() {
       fecha_subida: evento.fecha_subida,
       fecha_actualizacion: evento.fecha_actualizacion,
       jefe_directo: evento.jefe_directo,
+      comentarios: evento.comentarios,
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
@@ -351,6 +371,21 @@ export function TablaPermisosFaltaUsuario() {
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
       if (!allowedTypes.includes(file.type)) {
         alert('Tipo de archivo no permitido');
+        return;
+      }
+
+      const maxSize = 4 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        
+        Swal.fire({
+          title: 'Error',
+          text: 'El archivo es demasiado grande. El tamaño máximo permitido es 4MB.',
+          icon: 'error',
+          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          showConfirmButton: false
+        });
+        e.target.value = ""; // Limpia el input de archivo
         return;
       }
   
@@ -741,7 +776,7 @@ export function TablaPermisosFaltaUsuario() {
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG)
+                    Subir archivo (PDF, JPG, PNG) Max: 4MB
                   </Button2>
                   {formData.comprobante && (
                     <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
@@ -922,7 +957,7 @@ export function TablaPermisosFaltaUsuario() {
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG)
+                    Subir archivo (PDF, JPG, PNG) Max: 4MB
                   </Button2>
                   {formData.comprobante && (
                     <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
@@ -1060,7 +1095,7 @@ export function TablaPermisosFaltaUsuario() {
                     className="w-full"
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG)
+                    Subir archivo (PDF, JPG, PNG) Max: 4MB
                   </Button2>
                   {formData.comprobante && (
                     <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
@@ -1495,7 +1530,7 @@ export function TablaPermisosFaltaUsuario() {
                   readOnly={true} />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <Label htmlFor="comprobante">Justificante</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
@@ -1508,10 +1543,15 @@ export function TablaPermisosFaltaUsuario() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -1521,7 +1561,7 @@ export function TablaPermisosFaltaUsuario() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -1696,41 +1736,46 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
                   <div className="space-y-2">
-                    <Label htmlFor="comprobante">Comprobante</Label>
-                    <div className="flex items-center space-x-2">
-                  {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-                  ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
-                    <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
-                    </>
-                  )}
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div className="flex items-center space-x-2">
+                    {formData.comprobante ? (
+                      <a
+                      href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Descargar {formData.comprobante}
+                    </a>    
+                    ) : (
+                      <>
+                        <Input
+                          id="comprobante"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setFormData((prevFormData) => ({
+                              ...prevFormData,
+                              comprobante: file ? file.name : null,
+                            }));
+                          }}
+                          required
+                          className="hidden"
+                        />
+                        <Button2
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById("comprobante").click()}
+                          className="w-full"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Subir archivo (PDF, JPG, PNG)
+                        </Button2>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
               <div className="space-y-2" hidden>
                 <Label>¿La falta es justificada?</Label>
                 <RadioGroup
@@ -1836,7 +1881,7 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <Label htmlFor="comprobante">Comprobante</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
@@ -1848,10 +1893,15 @@ export function TablaPermisosFaltaUsuario() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -1861,7 +1911,7 @@ export function TablaPermisosFaltaUsuario() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -2268,9 +2318,9 @@ export function TablaPermisosFaltaUsuario() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Autorizada">Autorizada</SelectItem>
+              <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="No autorizada">No autorizada</SelectItem>
+              <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -2298,7 +2348,7 @@ export function TablaPermisosFaltaUsuario() {
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
                   <TableCell>{evento.puesto || 'Sin puesto especificado'}</TableCell>
                   <TableCell>
-                    {
+                  {
                       evento.jefe_directo
                         ? (() => {
                             const jefe = allUsers.find(u => u.id === evento.jefe_directo);
@@ -2334,14 +2384,13 @@ export function TablaPermisosFaltaUsuario() {
                       })}`
                     : "Sin datos"}
                   </TableCell>
+                  <TableCell>{evento.comentarios || 'Sin comentarios'}</TableCell>
                   <TableCell
                     style={{
                       color: (() => {
+                        if (evento.estatus.startsWith("Autorizada")) return "green";
+                        if (evento.estatus.startsWith("No autorizada")) return "red";
                         switch (evento.estatus) {
-                          case 'Autorizada':
-                            return 'green';
-                          case 'No autorizada':
-                            return 'red';
                           case 'Pendiente':
                             return 'orange';
                           default:
@@ -2357,7 +2406,7 @@ export function TablaPermisosFaltaUsuario() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   No se encontraron papeletas
                 </TableCell>
               </TableRow>

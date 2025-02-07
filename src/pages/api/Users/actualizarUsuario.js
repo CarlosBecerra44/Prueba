@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, empresa_id } = req.body;
+  const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, empresa_id, planta } = req.body;
   const jefe = jefe_directo || null;
 
   let connection;
@@ -19,9 +19,9 @@ export default async function handler(req, res) {
       `UPDATE usuarios 
        SET nombre = ?, apellidos = ?, correo = ?, numero_empleado = ?, 
            puesto = ?, departamento_id = ?, rol = ?, telefono = ?, 
-           fecha_ingreso = ?, jefe_directo = ?, empresa_id = ? 
+           fecha_ingreso = ?, jefe_directo = ?, empresa_id = ?, planta = ?
        WHERE id = ?`,
-      [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, id]
+      [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, planta, id]
     );
 
     // Verificar si se actualizó el usuario

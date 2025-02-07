@@ -86,6 +86,9 @@ export function AutorizarPapeletas() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [autorizar, setAutorizar] = useState(false);
   const [usersBonos, setUsersBonos] = useState([]);
+  const [comentarios, setComentarios] = useState("");
+  const [modalOpenStatus, setModalOpenStatus] = useState(false);
+  const [modalDataStatus, setModalDataStatus] = useState({ id: null, estatus: "" });
 
   const openModal = () => {
     setFormData({
@@ -117,8 +120,8 @@ export function AutorizarPapeletas() {
       nombreBono: "",
       bonoCantidad: "",
       comision: "",
-      total: "",
-      totalFinal: "",
+      total: 0,
+      totalFinal: 0,
       planTrabajo: {
         otros: []
       },
@@ -165,6 +168,17 @@ export function AutorizarPapeletas() {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
 
+  const handleOpenModalStatus = (id_papeleta, nuevoEstatus) => {
+    setModalDataStatus({ id: id_papeleta, estatus: nuevoEstatus });
+    setModalOpenStatus(true);
+    setComentarios("");
+  };
+
+  const handleCloseModalStatus = () => {
+    setModalOpenStatus(false);
+    setModalDataStatus({ id: null, estatus: "" });
+  };
+
   const [formData, setFormData] = useState({
     dias: "",
     horas: "",
@@ -194,8 +208,8 @@ export function AutorizarPapeletas() {
     nombreBono: "",
     bonoCantidad: "",
     comision: "",
-    total: "",
-    totalFinal: "",
+    total: 0,
+    totalFinal: 0,
     planTrabajo: {
       otros: []
     },
@@ -331,6 +345,15 @@ export function AutorizarPapeletas() {
     fetchUsers();
   }, []);
 
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get(`/api/Gente&CulturaAbsence/autorizarPapeletas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data)
+    } catch (error) {
+      console.error('Error al obtener eventos:', error)
+    }
+  }
+
   const handleOpenModal = () => {
     setModalOpen(true)
   }
@@ -356,6 +379,20 @@ export function AutorizarPapeletas() {
     "Jefe directo",
     "Fecha de subida",
     "Fecha de último movimiento",
+    "Estatus",
+    "Acción"
+  ]
+
+  const encabezadosSolicitudes = [
+    "Tipo",
+    "Número de empleado",
+    "Nombre",
+    "Departamento",
+    "Puesto",
+    "Jefe directo",
+    "Fecha de subida",
+    "Fecha de último movimiento",
+    "Comentarios",
     "Estatus",
     "Acción"
   ]
@@ -387,6 +424,7 @@ export function AutorizarPapeletas() {
       setFormData(data.formulario);
       setTipoFormulario2(data.tipo);
       setFormularioPrincipalAbiertoEdit(true);
+      obtenerUsuariosBonos(data.formulario.tipoSolicitud);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
     }
@@ -480,21 +518,37 @@ export function AutorizarPapeletas() {
           bonoCantidad: "",
           comision: "" ,
           comentarios: "",
-          total: "",
-          totalFinal: "",
+          total: 0,
+          totalFinal: 0,
         }]
       }
     }))
   }
 
   const eliminarBono = (index) => {
-    setFormData(prevData => ({
-      ...prevData,
-      bonos: {
-        otros: prevData.bonos.otros.filter((_, i) => i !== index)
-      }
-    }))
-  }
+    setFormData((prevData) => {
+      // Eliminar el elemento en el índice indicado
+      const updatedOtros = prevData.bonos.otros.filter((_, i) => i !== index);
+  
+      // Recalcular los totales después de eliminar el campo
+      let totalFijo = parseFloat(prevData.total) || 0;
+      let totalDinamico = updatedOtros.reduce((sum, item) => {
+        const bono = parseFloat(item.bonoCantidad) || 0;
+        const comision = parseFloat(item.comision) || 0;
+        return sum + bono + comision;
+      }, 0);
+  
+      // Total final es la suma de los totales fijos y dinámicos
+      const totalFinal = totalFijo + totalDinamico;
+  
+      // Actualizar el estado con el array de bonos actualizado y el nuevo totalFinal
+      return {
+        ...prevData,
+        bonos: { otros: updatedOtros },
+        totalFinal,
+      };
+    });
+  };  
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -539,6 +593,7 @@ export function AutorizarPapeletas() {
       fecha_subida: evento.fecha_subida,
       fecha_actualizacion: evento.fecha_actualizacion,
       jefe_directo: evento.jefe_directo,
+      comentarios: evento.comentarios,
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
@@ -607,48 +662,61 @@ export function AutorizarPapeletas() {
     }));
   };
 
-  const handleChangeBonos = (e, index, field) => {
+  const handleCommentsChange = (value) => {
+    setComentarios(value)
+  }
+
+  const handleChangeBonos = (e, index = null, field = null) => {
     const { name, value } = e.target;
   
-    // Actualiza el estado del formulario
-    if (field) {
-      const updatedBonos = [...formData.bonos.otros];
-      updatedBonos[index] = {
-        ...updatedBonos[index],
-        [field]: value,
-      };
-      setFormData({
-        ...formData,
-        bonos: { ...formData.bonos, otros: updatedBonos },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+    // Si el valor es vacío, lo dejamos como vacío, no forzamos el 0
+    const newValue = value === "" ? "" : parseFloat(value) || 0;
   
-    // Recalcular el total
-    calcularTotal();
-  };
+    setFormData((prevData) => {
+      let updatedData = { ...prevData };
   
-  const calcularTotal = () => {
-    // Suma los campos fuera del arreglo de bonos
-    let total = 0;
+      if (index !== null && field) {
+        // Casos dinámicos (con índice), actualizando un campo específico de 'otros'
+        const updatedOtros = [...prevData.bonos.otros];
   
-    total += parseFloat(formData.bonoCantidad || 0);
-    total += parseFloat(formData.comision || 0);
+        updatedOtros[index] = {
+          ...updatedOtros[index],
+          [field]: newValue,
+        };
   
-    // Suma los campos dentro del arreglo de bonos
-    formData.bonos.otros.forEach((bono) => {
-      total += parseFloat(bono.bonoCantidad || 0);
-      total += parseFloat(bono.comision || 0);
-    });
+        // Calcular total para este índice
+        const bono = parseFloat(updatedOtros[index]?.bonoCantidad) || 0;
+        const comision = parseFloat(updatedOtros[index]?.comision) || 0;
+        updatedOtros[index].total = bono + comision;
   
-    // Establece el total en el estado
-    setFormData({
-      ...formData,
-      total: total.toFixed(2), // Redondear a dos decimales
+        // Actualizar el array 'otros' en el estado
+        updatedData.bonos = { otros: updatedOtros };
+  
+      } else if (name) {
+        // Casos fijos (sin índice, con nombre de campo)
+        updatedData[name] = newValue;
+  
+        // Recalcular total general para el campo fijo
+        const bono = parseFloat(updatedData.bonoCantidad) || 0;
+        const comision = parseFloat(updatedData.comision) || 0;
+        updatedData.total = bono + comision;
+      }
+  
+      // Calcular el total final sumando todos los totales (fijos + dinámicos)
+      const totalFijo = parseFloat(updatedData.total) || 0;
+      const totalDinamico = updatedData.bonos?.otros.reduce((sum, item) => {
+        const bono = parseFloat(item.bonoCantidad) || 0;
+        const comision = parseFloat(item.comision) || 0;
+        return sum + bono + comision;
+      }, 0);
+  
+      // Total final es la suma del total fijo y el total dinámico
+      const totalFinal = totalFijo + totalDinamico;
+  
+      // Actualizar totalFinal en el estado
+      updatedData.totalFinal = totalFinal;
+  
+      return updatedData;
     });
   };
 
@@ -666,27 +734,57 @@ export function AutorizarPapeletas() {
     }
   };  
 
-  const handleChangeStatus = async (index, nuevoEstatus) => {
+  const handleChangeStatus = async (index, nuevoEstatus, comentarios) => {
+    if (!index || !nuevoEstatus) {
+      
+      console.error("Error: Falta un valor en handleChangeStatus", { index, nuevoEstatus, comentarios });
+      Swal.fire({
+        title: 'Error',
+        text: 'Faltan valores para actualizar el estatus',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
-        `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
-        { id: index, estatus: nuevoEstatus } // Envías los datos correctamente
+          `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
+          { id: index, estatus: nuevoEstatus, comentarios: comentarios || null } // Asegura que no sea undefined
       );
-  
+
       if (response.status === 200) {
-        // Actualizar el estado local sin recargar la página
-        fetchEventos();       
-  
-        // Mostrar mensaje de éxito
-        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado correctamente', 'success');
+          fetchEventos();
+          Swal.fire({
+            title: 'Actualizado',
+            text: 'El estatus de la papeleta ha sido actualizado correctamente',
+            icon: 'success',
+            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+            showConfirmButton: false,
+          });
+          setComentarios("");
+          handleCloseModalStatus();
       } else {
-        Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
+          Swal.fire({
+            title: 'Error',
+            text: 'Error al actualizar el estatus de la papeleta',
+            icon: 'error',
+            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+            showConfirmButton: false,
+          });
       }
     } catch (error) {
       console.error('Error al actualizar el estatus de la papeleta:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la papeleta', 'error');
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al intentar actualizar el estatus de la papeleta',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });
     }
-  }; 
+};
 
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
@@ -1360,6 +1458,8 @@ export function AutorizarPapeletas() {
                   <Label htmlFor="nombreBono">Nombre</Label>
                 </div>
                 <Select
+                  id={"nombreBono"}
+                  name={"nombreBono"}
                   value={formData.nombreBono || ''}
                   onValueChange={(value) => {
                     const selectedUser = usersBonos.find((user) => user.id === value);
@@ -1395,7 +1495,7 @@ export function AutorizarPapeletas() {
                     id="bonoCantidad"
                     name="bonoCantidad"
                     type="number"
-                    onChange={handleChange}
+                    onChange={handleChangeBonos}
                     placeholder="Bono..."
                     required
                   />
@@ -1406,7 +1506,7 @@ export function AutorizarPapeletas() {
                     id="comision"
                     name="comision"
                     type="number"
-                    onChange={handleChange}
+                    onChange={handleChangeBonos}
                     placeholder="Comisión..."
                     required
                   />
@@ -1428,7 +1528,7 @@ export function AutorizarPapeletas() {
                     name="total"
                     type="number"
                     value={formData.total || 0}
-                    onChange={handleChange}
+                    onChange={handleChangeBonos}
                     placeholder="Total..."
                     readOnly={true}
                   />
@@ -1450,6 +1550,8 @@ export function AutorizarPapeletas() {
                 </div>
                 <div className="space-y-2">
                   <Select
+                    id={"nombreBono"}
+                    name={"nombreBono"}
                     onValueChange={(value) => {
                       const selectedUser = usersBonos.find((user) => user.id === value);
                       if (selectedUser) {
@@ -1489,7 +1591,7 @@ export function AutorizarPapeletas() {
                     id={`bonoCantidad-${index}`}
                     name={`bonoCantidad-${index}`}
                     type="number"
-                    onChange={(e) => handleChange(e, index, "bonoCantidad")}
+                    onChange={(e) => handleChangeBonos(e, index, "bonoCantidad")}
                     placeholder="Bono..."
                     required
                   />
@@ -1499,7 +1601,7 @@ export function AutorizarPapeletas() {
                     id={`comision-${index}`}
                     name={`comision-${index}`}
                     type="number"
-                    onChange={(e) => handleChange(e, index, "comision")}
+                    onChange={(e) => handleChangeBonos(e, index, "comision")}
                     placeholder="Comisión..."
                     required
                   />
@@ -1521,7 +1623,7 @@ export function AutorizarPapeletas() {
                       type="number"
                       style={{width: "207px"
                       }}
-                      value={otro.total}
+                      value={otro.total || 0}
                       onChange={(e) => handleChangeBonos(e, index, "total")}
                       placeholder="Total..."
                       readOnly={true} />
@@ -1541,8 +1643,7 @@ export function AutorizarPapeletas() {
                   id="totalFinal"
                   name="totalFinal"
                   type="number"
-                  value={formData.totalFinal || ''}
-                  onChange={handleChange}
+                  value={formData.totalFinal || 0}
                   placeholder="Total final..."
                   readOnly={true}
                 />
@@ -1581,7 +1682,14 @@ export function AutorizarPapeletas() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" >Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.tipoSolicitud || !formData.mes || !formData.dias
+                || !formData.nombreBono || !formData.bonoCantidad || !formData.comision || !formData.comentarios
+                || !formData.total || 
+                formData.bonos.otros.some((otro, index) =>
+                  !otro.nombreBono || !otro.bonoCantidad || !otro.comision || !formData[`comentarios-${index}`] ||
+                  !otro.total
+                )
+              }>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1669,7 +1777,7 @@ export function AutorizarPapeletas() {
               </Select>
             </div>
             <div className="grid grid-cols-1 gap-4">
-                {renderDatePicker("Fecha requerida de ajuste", formData.fechaFormulario, handleChange, "fechaFormulario")}
+                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio")}
               </div>
               <div className="space-y-2">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
@@ -1686,7 +1794,7 @@ export function AutorizarPapeletas() {
             </CardContent>
             <CardFooter>
               <Button2 type="submit" className="w-full" disabled={!formData.nombreColaborador || !formData.puestoColaborador || 
-                !formData.motivo || !formData.fechaFormulario || !formData.comentarios
+                !formData.motivo || !formData.fechaInicio || !formData.comentarios
               }>Enviar</Button2>
             </CardFooter>
           </form>
@@ -1746,7 +1854,7 @@ export function AutorizarPapeletas() {
                   readOnly={true} />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <Label htmlFor="comprobante">Justificante</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
@@ -1759,10 +1867,15 @@ export function AutorizarPapeletas() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -1772,7 +1885,7 @@ export function AutorizarPapeletas() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -1946,14 +2059,19 @@ export function AutorizarPapeletas() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="comprobante">Comprobante</Label>
-                    <div className="flex items-center space-x-2">
+              <div className="space-y-2">
+                <Label htmlFor="comprobante">Comprobante</Label>
+                <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -1963,7 +2081,7 @@ export function AutorizarPapeletas() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -2087,7 +2205,7 @@ export function AutorizarPapeletas() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <Label htmlFor="comprobante">Comprobante</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
@@ -2099,10 +2217,15 @@ export function AutorizarPapeletas() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
-                    // Si hay un valor recuperado, mostrarlo como texto
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
                   ) : (
-                    // Si no hay un valor recuperado, permitir la subida de archivo
                     <>
                       <Input
                         id="comprobante"
@@ -2112,7 +2235,7 @@ export function AutorizarPapeletas() {
                           const file = e.target.files?.[0] || null;
                           setFormData((prevFormData) => ({
                             ...prevFormData,
-                            comprobante: file ? file.name : null, // Guardar el nombre del archivo en formData
+                            comprobante: file ? file.name : null,
                           }));
                         }}
                         required
@@ -2837,6 +2960,8 @@ export function AutorizarPapeletas() {
                   <Label htmlFor="nombreBono">Nombre</Label>
                 </div>
                 <Select
+                  id={"nombreBono"}
+                  name={"nombreBono"}
                   value={formData.nombreBono || ''}
                   onValueChange={(value) => {
                     const selectedUser = usersBonos.find((user) => user.id === value);
@@ -2848,7 +2973,7 @@ export function AutorizarPapeletas() {
                       });
                     }
                   }}
-                  disabled={formData.nombreBono !== ""}  // Deshabilitar si no hay usuarios disponibles
+                  disabled={formData.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Seleccione el colaborador..." />
@@ -2930,25 +3055,22 @@ export function AutorizarPapeletas() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Select
-                    onValueChange={(value) => {
-                      const selectedUser = usersBonos.find((user) => user.id === value);
-                      if (selectedUser) {
-                        const updatedBonos = [...formData.bonos.otros];
-                        updatedBonos[index] = {
-                          ...updatedBonos[index],
-                          noBono: selectedUser.numero_empleado,
-                          nombreBono: selectedUser.id,
-                        };
-                        setFormData({
-                          ...formData,
-                          bonos: { ...formData.bonos, otros: updatedBonos },
-                        });
-                      }
-                    }}
-                    value={otro.nombreBono || ''} // Mostrar el valor actual del Select
-                    disabled={formData[`nombreBono-${index}`] !== ""}
-                  >
+                <Select
+                  id={"nombreBono"}
+                  name={"nombreBono"}
+                  value={otro.nombreBono || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = usersBonos.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        noBono: selectedUser.numero_empleado,
+                        nombreBono: selectedUser.id,
+                      });
+                    }
+                  }}
+                  disabled={otro.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Seleccione el colaborador..." />
                   </SelectTrigger>
@@ -2969,22 +3091,22 @@ export function AutorizarPapeletas() {
                   <Input
                     id={`bonoCantidad-${index}`}
                     name={`bonoCantidad-${index}`}
-                    value={formData[`bonoCantidad-${index}`]}
+                    value={otro.bonoCantidad}
                     type="number"
                     onChange={(e) => handleChange(e, index, "bonoCantidad")}
                     placeholder="Bono..."
-                    required
+                    readOnly={true}
                   />
                 </div>
                 <div className="space-y-2">
                   <Input
                     id={`comision-${index}`}
                     name={`comision-${index}`}
-                    value={formData[`comision-${index}`]}
+                    value={otro.comision}
                     type="number"
                     onChange={(e) => handleChange(e, index, "comision")}
                     placeholder="Comisión..."
-                    required
+                    readOnly={true}
                   />
                 </div>
                 <div className="space-y-2">
@@ -2995,6 +3117,7 @@ export function AutorizarPapeletas() {
                     type="text"
                     onChange={(e) => handleChange(e, index, "comentarios")}
                     placeholder="Comentarios..."
+                    readOnly={true}
                   />
                 </div>
                 <div className="space-y-2">
@@ -3003,19 +3126,10 @@ export function AutorizarPapeletas() {
                       id={`total-${index}`}
                       name={`total-${index}`}
                       type="number"
-                      style={{width: "207px"
-                      }}
                       value={otro.total}
                       onChange={(e) => handleChange(e, index, "total")}
                       placeholder="Total..."
                       readOnly={true} />
-                      <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarBono(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -3031,10 +3145,6 @@ export function AutorizarPapeletas() {
                   readOnly={true}
                 />
               </div>
-              <Button style={{background:"rgb(31 41 55)", color:"white", width: "180px"}} type="button" onClick={añadirBono} variant="outline" className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>
             </div>
               <div className="space-y-2" hidden>
                 <Label>¿La falta es justificada?</Label>
@@ -3064,9 +3174,6 @@ export function AutorizarPapeletas() {
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" >Enviar</Button2>
-            </CardFooter>
           </form>
         </Card>
             </DialogContent>
@@ -3146,7 +3253,7 @@ export function AutorizarPapeletas() {
               </Select>
             </div>
             <div className="grid grid-cols-1 gap-4">
-                {renderDatePicker("Fecha requerida de ajuste", formData.fechaFormulario, handleChange, "fechaFormulario", true)}
+                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio", true)}
               </div>
               <div className="space-y-2">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
@@ -3173,7 +3280,8 @@ export function AutorizarPapeletas() {
   </Dialog>
 )}
 
-<div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+{autorizar ? (
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
           <SearchIcon style={{marginTop:"10px", marginLeft:"15px"}} className="absolute h-5 w-5 text-gray-400" />
@@ -3185,7 +3293,6 @@ export function AutorizarPapeletas() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {autorizar ? (
           <div className="w-full sm:w-1/3">
             <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
             <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
@@ -3200,8 +3307,34 @@ export function AutorizarPapeletas() {
               </SelectContent>
             </Select>
           </div>
-        ) : (
           <div className="w-full sm:w-1/3">
+            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
+            <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="Seleccionar estatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+                <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+      </div>
+      ) : (<div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="w-full sm:w-1/3">
+          <Label htmlFor="search" className="mb-2 block">Buscar</Label>
+          <SearchIcon style={{marginTop:"10px", marginLeft:"15px"}} className="absolute h-5 w-5 text-gray-400" />
+          <Input
+            id="search"
+            placeholder="Buscar en todos los campos..."
+            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="w-full sm:w-1/3">
             <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
             <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
               <SelectTrigger id="status-filter">
@@ -3213,26 +3346,38 @@ export function AutorizarPapeletas() {
                 <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
                 <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
                 <SelectItem value="Permiso">Permiso</SelectItem>
+                <SelectItem value="Home Office">Home Office</SelectItem>
                 <SelectItem value="Suspension">Suspensión</SelectItem>
                 <SelectItem value="Vacaciones">Vacaciones</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        )}
-      </div>
+      </div>)}
+
       <div className="overflow-x-auto">
         <Table>
           {autorizar ? (<TableCaption>Solicitudes generadas</TableCaption>) : (<TableCaption>Papeletas pendientes por revisar</TableCaption>)}
-          
-          <TableHeader>
-            <TableRow>
-              {encabezados.map((encabezado, index) => (
-                <TableHead key={index} className="whitespace-nowrap">
-                  {encabezado}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+          {autorizar ? (
+            <TableHeader>
+              <TableRow>
+                {encabezadosSolicitudes.map((encabezado, index) => (
+                  <TableHead key={index} className="whitespace-nowrap">
+                    {encabezado}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            ) : (
+            <TableHeader>
+              <TableRow>
+                {encabezados.map((encabezado, index) => (
+                  <TableHead key={index} className="whitespace-nowrap">
+                    {encabezado}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+          )}
           <TableBody>
             {currentEventos.length > 0 ? (
               currentEventos.map((evento, index) => (
@@ -3280,15 +3425,14 @@ export function AutorizarPapeletas() {
                       })}`
                     : "Sin datos"}
                   </TableCell>
+                  {autorizar ? (<TableCell>{evento.comentarios || 'Sin comentarios'}</TableCell>) : (<TableCell hidden></TableCell>)} 
                   {autorizar ? (
                     <TableCell
                       style={{
                         color: (() => {
+                          if (evento.estatus.startsWith("Autorizada")) return "green";
+                          if (evento.estatus.startsWith("No autorizada")) return "red";
                           switch (evento.estatus) {
-                            case 'Autorizada':
-                              return 'green';
-                            case 'No autorizada':
-                              return 'red';
                             case 'Pendiente':
                               return 'orange';
                             default:
@@ -3300,14 +3444,13 @@ export function AutorizarPapeletas() {
                       {evento.estatus}
                     </TableCell>
                   ) : (
+                    <>
                     <TableCell
                       style={{
                         color: (() => {
+                          if (evento.estatus.startsWith("Autorizada")) return "green";
+                          if (evento.estatus.startsWith("No autorizada")) return "red";
                           switch (evento.estatus) {
-                            case 'Autorizada':
-                              return 'green';
-                            case 'No autorizada':
-                              return 'red';
                             case 'Pendiente':
                               return 'orange';
                             default:
@@ -3316,26 +3459,72 @@ export function AutorizarPapeletas() {
                         })(),
                       }}
                     >
-                      <Select className="w-full min-w-[200px] max-w-[300px]" value={evento.estatus} onValueChange={(value) => handleChangeStatus(evento.id_papeleta, value)}>
-                        <SelectTrigger id="estatus" className="w-full min-w-[200px] max-w-[300px]">
+                      {/* Select de estatus */}
+                      <Select
+                        className="w-full min-w-[200px] max-w-[300px]"
+                        value={evento.estatus}
+                        onValueChange={(value) => {
+                          if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                            handleOpenModalStatus(evento.id_papeleta, value);
+                          } else {
+                            handleChangeStatus(evento.id_papeleta, value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full min-w-[200px] max-w-[300px]">
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
                         <SelectContent className="w-full min-w-[200px] max-w-[300px]">
-                          <SelectItem value="Autorizada">Autorizada</SelectItem>
+                          <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
                           <SelectItem value="Pendiente">Pendiente</SelectItem>
-                          <SelectItem value="No autorizada">No autorizada</SelectItem>
+                          <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    {modalOpenStatus && (
+                      <Dialog open={modalOpenStatus} onOpenChange={handleCloseModalStatus}>
+                      <DialogContent className="border-none p-0">
+                      <Card className="w-full max-w-lg">
+                    <CardHeader>
+                      {modalDataStatus.estatus.startsWith("Autorizada") ? <CardTitle className="text-2xl font-bold text-center">Agregar comentario - Sí se autoriza la papeleta</CardTitle> : <CardTitle className="text-2xl font-bold text-center">Agregar comentario - No se autoriza la papeleta</CardTitle>} 
+                    </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                            <Label htmlFor="comentariosEstatus">Comentarios</Label>
+                          </div>
+                          <Textarea
+                            id="comentariosEstatus"
+                            name="comentariosEstatus"
+                            onChange={(e) => handleCommentsChange(e.target.value)}
+                            value={comentarios}
+                            className="min-h-[100px]"
+                            placeholder="Coloca tus comentarios aquí..." />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button2 className="w-full" disabled={!comentarios} onClick={() => handleChangeStatus(modalDataStatus.id, modalDataStatus.estatus, comentarios)}>Enviar</Button2>
+                      </CardFooter>
+                  </Card>
+                      </DialogContent>
+                    </Dialog>
+                    )}
+                    </>
                   )}
                   <TableCell>{evento.accion ? evento.accion(evento.id_papeleta) : "N/A"}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
-                  No se encontraron solicitudes
-                </TableCell>
+                {autorizar ? (
+                  <TableCell colSpan={11} className="text-center">
+                    No se encontraron solicitudes
+                  </TableCell>
+                ) : (
+                  <TableCell colSpan={10} className="text-center">
+                    No se encontraron papeletas
+                  </TableCell>
+                )}
               </TableRow>
             )}
           </TableBody>

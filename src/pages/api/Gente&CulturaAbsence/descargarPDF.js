@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     });
 
     console.log("Conexión exitosa al FTP.");
-    const filePath = `/uploads/${fileName}`;
+    const filePath = `/uploads/papeletas/${fileName}`;
     const writableStream = res;
 
     // Descargar directamente al cliente

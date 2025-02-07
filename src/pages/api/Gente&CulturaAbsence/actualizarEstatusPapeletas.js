@@ -2,7 +2,7 @@ import pool from "@/lib/db"; // Asegúrate de que tu pool esté configurado para
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { id, estatus } = req.body;
+    const { id, estatus, comentarios } = req.body;
 
     let connection;
     try {
@@ -10,8 +10,8 @@ export default async function handler(req, res) {
       connection = await pool.getConnection();
 
       const [result] = await connection.execute(
-        "UPDATE formularios_faltas SET estatus = ?, fecha_actualizacion = NOW() WHERE id = ?",
-        [estatus, id]
+        "UPDATE formularios_faltas SET estatus = ?, fecha_actualizacion = NOW(), comentarios = ? WHERE id = ?",
+        [estatus, comentarios, id]
       );
 
       if (result.affectedRows > 0) {

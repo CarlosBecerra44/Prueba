@@ -86,6 +86,7 @@ export function UserManagementTable() {
   const [entryDate, setEntryDate] = useState('');
   const [directBoss, setDirectBoss] = useState('');
   const [company, setCompany] = useState('');
+  const [workPlant, setWorkPlant] = useState('');
   const [selectedPermission, setSelectedPermission] = useState("")
   const [selectedPermission1, setSelectedPermission1] = useState("")
   const [password, setPassword] = useState('');
@@ -100,7 +101,6 @@ export function UserManagementTable() {
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState("todos")
   const [error, setError] = useState('');
-  //const [dpto, setSelectedDepartamento] = useState('');
   const [role, setSelectedRole] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -284,18 +284,6 @@ export function UserManagementTable() {
     );
   }
 
-  /*console.log("Rol del usuario:", rol);
-
-  if (!isMaster) {
-    return (
-      //window.location.href = "/paginas_error",
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner className={styles.spinner} />
-        <p className="ml-3">No tienes acceso a esta vista</p>
-      </div>
-    );
-  }*/
-
   const handleEditUser = (userId) => {
     const userToEdit = users.find(user => user.id === userId); // Buscar el usuario en el estado
     setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
@@ -322,7 +310,7 @@ export function UserManagementTable() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company }),
+        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant }),
       });
 
       const data = await res.json();
@@ -374,6 +362,7 @@ export function UserManagementTable() {
           jefe_directo: selectedUser.jefe_directo,  
           departamento_id: selectedUser.departamento_id,  
           empresa_id: selectedUser.empresa_id,  
+          planta: selectedUser.planta,  
           rol: selectedUser.rol,
         }),
       });
@@ -522,6 +511,24 @@ export function UserManagementTable() {
     setIsChangeOptionsDialogOpen(true)
     setIsFormSectionsDialogOpen(false)
   }
+
+  const handleCleanForm = () => {
+    setName("");
+    setLastName("");
+    setEmail("");
+    setEmployeeNumber("");
+    setPosition("");
+    setPhoneNumber("");
+    setEntryDate("");
+    setSelectedDepartamento("");
+    setDirectBoss("");
+    setCompany("");
+    setWorkPlant("");
+    setPassword("");
+    setConfirmPassword("");
+    setSelectedRole("");
+  }
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
@@ -560,7 +567,7 @@ export function UserManagementTable() {
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button><UserPlus className="mr-2 h-4 w-4" /> Añadir usuario</Button>
+            <Button onClick={handleCleanForm}><UserPlus className="mr-2 h-4 w-4" /> Añadir usuario</Button>
           </DialogTrigger>
           
           <DialogContent>
@@ -677,6 +684,25 @@ export function UserManagementTable() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="workPlant" className="text-right">
+                  Planta*
+                </Label>
+                <Select
+                  value={workPlant}
+                  onValueChange={(value) => {
+                    setWorkPlant(value); // Actualizar departamento seleccionado
+                  }}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No</SelectItem>
+                    <SelectItem value="1">Sí</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="password" className="text-right">Contraseña*</Label>
                 <Input id="password" type="password" className="col-span-3" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
@@ -699,7 +725,7 @@ export function UserManagementTable() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={!name || !lastName || !employeeNumber || !position || !entryDate || !selectedDepartamento || !company || !password || !confirmPassword} >Agregar usuario</Button>
+              <Button type="submit" disabled={!name || !lastName || !employeeNumber || !position || !entryDate || !selectedDepartamento || !company || !workPlant || !password || !confirmPassword} >Agregar usuario</Button>
             </DialogFooter>
             </form>
           </DialogContent>
@@ -867,6 +893,28 @@ export function UserManagementTable() {
                     <SelectItem value="1">Asesoría y desarrollo...</SelectItem>
                     <SelectItem value="2">Eren</SelectItem>
                     <SelectItem value="3">Inik</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="workPlant" className="text-right">
+                  Planta
+                </Label>
+                <Select
+                  value={selectedUser?.planta.toString() || ''}
+                  onValueChange={(value) =>
+                    setSelectedUser((prevUser) => ({
+                      ...prevUser,
+                      planta: value, // Actualizar el jefe directo del usuario seleccionado
+                    }))
+                  }
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No</SelectItem>
+                    <SelectItem value="1">Sí</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

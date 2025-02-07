@@ -41,6 +41,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { CalendarIcon, Upload } from 'lucide-react'
 import { format } from 'date-fns'
 import { Textarea } from "@/components/ui/textarea"
+import { EventTwoTone } from "@mui/icons-material"
+import { Tooltip } from 'react-tippy';
+import 'react-tippy/dist/tippy.css'; // Asegúrate de importar los estilos
+import HelpIcon from '@mui/icons-material/Help'; // Ícono de signo de interrogación
 
 const MySwal = withReactContent(Swal);
 
@@ -53,12 +57,19 @@ export function TablaPermisosFalta() {
   const [users, setUsers] = useState([]);
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
+  const [tipoPeticion, setTipoPeticion] = useState("todos"); // Estado para el tipo de petición seleccionada
   const [departamento, setDepartamento] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState("");
+  const [autorizar, setAutorizar] = useState(false);
+  const [verPeticiones, setVerPeticiones] = useState("");
+  const [usersBonos, setUsersBonos] = useState([]);
   const [index, setIndex] = useState(0);
   const [estatus, setEstatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [comentarios, setComentarios] = useState("");
+  const [modalOpenStatus, setModalOpenStatus] = useState(false);
+  const [modalDataStatus, setModalDataStatus] = useState({ id: null, estatus: "" });
   const [formData, setFormData] = useState({
     dias: "",
     horas: "",
@@ -82,7 +93,8 @@ export function TablaPermisosFalta() {
     "Jefe directo",
     "Empresa",
     "Fecha de subida",
-    "Fecha de último movimiento",
+    "Fecha requerida",
+    "Comentarios",
     "Estatus",
     "Acción"
   ]
@@ -161,32 +173,113 @@ export function TablaPermisosFalta() {
       setFormularioPrincipalAbiertoEdit(true);
       setIndex(index);
       setEstatus(data.estatus);
+      obtenerUsuariosBonos(data.formulario.tipoSolicitud);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
     }
   };
 
-  const handleChangeStatus = async (index, nuevoEstatus) => {
+  const handleOpenModalStatus = (id_papeleta, nuevoEstatus, tipoPeticion) => {
+    setModalDataStatus({ id: id_papeleta, estatus: nuevoEstatus, tipo: tipoPeticion });
+    setModalOpenStatus(true);
+    setComentarios("");
+  };
+
+  const handleCloseModalStatus = () => {
+    setModalOpenStatus(false);
+    setModalDataStatus({ id: null, estatus: "", tipo: "" });
+  };
+
+  const handleChangeStatus = async (index, nuevoEstatus, comentarios) => {
+    if (!index || !nuevoEstatus) {
+      
+      console.error("Error: Falta un valor en handleChangeStatus", { index, nuevoEstatus, comentarios });
+      Swal.fire({
+        title: 'Error',
+        text: 'Faltan valores para actualizar el estatus',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
-        `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
-        { id: index, estatus: nuevoEstatus } // Envías los datos correctamente
+          `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
+          { id: index, estatus: nuevoEstatus, comentarios: comentarios || null } // Asegura que no sea undefined
       );
-  
+
       if (response.status === 200) {
-        // Actualizar el estado local sin recargar la página
-        fetchEventos();       
-  
-        // Mostrar mensaje de éxito
-        Swal.fire('Actualizado', 'El estatus de la papeleta ha sido actualizado correctamente', 'success');
+          {verPeticiones === "Todas las solicitudes" ? (verTSolicitudes()) : verPeticiones === "Todas las papeletas" ? (verTPapeletas()) : (fetchEventos())}
+          Swal.fire({
+            title: 'Actualizado',
+            text: 'El estatus de la papeleta ha sido actualizado correctamente',
+            icon: 'success',
+            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+            showConfirmButton: false,
+          });
+          setComentarios("");
+          handleCloseModalStatus();
       } else {
-        Swal.fire('Error', 'Error al actualizar el estatus de la papeleta', 'error');
+          Swal.fire({
+            title: 'Error',
+            text: 'Error al actualizar el estatus de la papeleta',
+            icon: 'error',
+            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+            showConfirmButton: false,
+          });
       }
     } catch (error) {
       console.error('Error al actualizar el estatus de la papeleta:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el estatus de la papeleta', 'error');
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al intentar actualizar el estatus de la papeleta',
+        icon: 'error',
+        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        showConfirmButton: false,
+      });
     }
-  }; 
+};
+
+  //Obtenemos los usuarios para el formulario de bonos y comisiones
+  const obtenerUsuariosBonos = (value) => {
+    const fetchUsers = async () => {
+      if (value == "comisiones") {
+        const departamentoBonos = 13;
+
+        try {
+          const response = await axios.get(`/api/Gente&CulturaAbsence/getUsersBonos?departamento=${departamentoBonos}`);
+          if (response.data.success) {
+            console.log(JSON.stringify(response.data.users))
+            setUsersBonos(response.data.users);
+          } else {
+            console.error('Error al obtener los usuarios:', response.data.message);
+          }
+        } catch (error) {
+          console.error('Error al hacer fetch de los usuarios:', error);
+        }
+      } else {
+        try {
+          const response = await axios.get(`/api/Gente&CulturaAbsence/getUsersBonos`);
+          if (response.data.success) {
+            console.log(JSON.stringify(response.data.users))
+            setUsersBonos(response.data.users);
+          } else {
+            console.error('Error al obtener los usuarios:', response.data.message);
+          }
+        } catch (error) {
+          console.error('Error al hacer fetch de los usuarios:', error);
+        }
+      }
+    };
+    
+    fetchUsers();
+  }
+
+  const handleCommentsChange = (value) => {
+    setComentarios(value)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -290,25 +383,18 @@ export function TablaPermisosFalta() {
       tipo: evento.tipo,
       nombre: evento.nombre + " " + evento.apellidos,
       fecha_subida: evento.fecha_subida,
-      fecha_actualizacion: evento.fecha_actualizacion,
+      fecha_requerida: evento.formulario_usuario,
       numero_empleado: evento.numero_empleado,
       departamento: evento.nombre_departamento,
       puesto: evento.puesto,
       jefe_directo: evento.jefe_directo,
-      empresa: evento.empresa_id,
+      empresa: evento.empresa_usuario,
+      comentarios: evento.comentarios,
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
-          <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
-            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Button>
-            <Button style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} onClick={() => handleEditForm(index)} disabled={evento.estatus !== "Pendiente"}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="rgb(31 41 55)" fill="rgb(31 41 55)" width="20px" height="20px">
-                <path d="M21,11.5V15H18a3,3,0,0,0-3,3v3H4.5A1.5,1.5,0,0,1,3,19.5V4.5A1.5,1.5,0,0,1,4.5,3h9A1.5,1.5,0,0,0,15,1.5h0A1.5,1.5,0,0,0,13.5,0h-9A4.5,4.5,0,0,0,0,4.5v15A4.5,4.5,0,0,0,4.5,24H16.484a4.5,4.5,0,0,0,3.181-1.317l3.017-3.017A4.5,4.5,0,0,0,24,16.485V11.5A1.5,1.5,0,0,0,22.5,10h0A1.5,1.5,0,0,0,21,11.5Z" />
-                <path d="M17.793,1.793l-12.5,12.5A1,1,0,0,0,5,15v3a1,1,0,0,0,1,1H9a1,1,0,0,0,.707-.293L22.038,6.376a3.379,3.379,0,0,0,.952-3.17A3.118,3.118,0,0,0,17.793,1.793Z" />
-              </svg>
+            <Button onClick={() => handleEditForm(index)}>
+              <VisualizeIcon />
             </Button>
         </div>
       ),
@@ -317,18 +403,54 @@ export function TablaPermisosFalta() {
 
   // Filtrar eventos según el término de búsqueda y estatus
   const filteredEventos = eventos
-    .map(extractData)
-    .filter(evento => 
-      //(statusFilter === "todos" || evento.estatus === statusFilter) && // Filtro por estatus
-      (tipoFormulario === "todos" || evento.tipo === tipoFormulario) && // Filtro por tipo de formulario
-      (departamento === "todos" || evento.departamento === departamento) && // Filtro por tipo de formulario
-      Object.values(evento)
-        .filter(value => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
-        .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase())) && // Filtro por término de búsqueda
-      (!startDate || new Date(evento.fecha_subida) >= new Date(startDate)) && // Filtro por fecha de inicio
-      (!endDate || new Date(evento.fecha_subida) <= new Date(endDate)) // Filtro por fecha de fin
-  );
+  .map(extractData)
+  .filter(evento => {
+    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo"];
+    const papeletasTipos = ["Faltas", "Llegada tarde / Salida antes", "Tiempo por tiempo", "Permiso", "Home Office", "Suspension", "Vacaciones"];
 
+    // Filtrar por tipo de petición
+    if (
+      tipoPeticion !== "todos" &&
+      !(
+        (tipoPeticion === "solicitudes" && solicitudesTipos.includes(evento.tipo)) ||
+        (tipoPeticion === "papeletas" && papeletasTipos.includes(evento.tipo))
+      )
+    ) {
+      return false;
+    }
+
+    // Filtrar por tipo de formulario
+    if (tipoFormulario !== "todos" && evento.tipo !== tipoFormulario) {
+      return false;
+    }
+
+    if (statusFilter !== "todos" && evento.estatus !== statusFilter) {
+      return false;
+    }
+
+    // Filtrar por departamento
+    if (departamento !== "todos" && evento.departamento !== departamento) {
+      return false;
+    }
+
+    // Filtrar por término de búsqueda
+    const values = Object.values(evento).filter(value => value !== null && value !== undefined);
+    if (!values.some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))) {
+      return false;
+    }
+
+    // Filtrar por fecha de inicio
+    if (startDate && new Date(evento.fecha_subida) < new Date(startDate)) {
+      return false;
+    }
+
+    // Filtrar por fecha de fin
+    if (endDate && new Date(evento.fecha_subida) > new Date(endDate)) {
+      return false;
+    }
+
+    return true;
+  });
   
   const {data: session,status}=useSession ();
   if (status === "loading") {
@@ -365,27 +487,67 @@ export function TablaPermisosFalta() {
     });
   
     const worksheet = XLSX.utils.json_to_sheet(
-      filteredEventos.map((evento) => ({
-        Tipo: evento.tipo,
-        Nombre_completo: evento.nombre + " " + evento.apellidos,
-        Fecha_subida: evento.fecha_subida
-          ? timezoneFormatter.format(new Date(evento.fecha_subida))
-          : "Sin datos",
-        Fecha_último_movimiento: evento.fecha_actualizacion
-          ? timezoneFormatter.format(new Date(evento.fecha_actualizacion))
-          : "Sin datos",
-        Numero_empleado: evento.numero_empleado,
-        Departamento: evento.departamento,
-        Puesto: evento.puesto,
-        Jefe_directo: evento.jefe_directo,
-        empresa: evento.empresa,
-        Estatus: evento.estatus,
-      }))
-    );
+      filteredEventos.map((evento) => {
+        let nombreEmpresa = "Sin datos"; // Valor por defecto
+        let nombreJefe = "Sin datos";
+        let fechaRequerida = "Sin datos";
+
+        const jefe = users.find(u => u.id === evento.jefe_directo);
+        nombreJefe = jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+    
+        try {
+          const empresaData = JSON.parse(evento.empresa); // Convierte la cadena en un objeto JSON
+          nombreEmpresa = empresaData.nombre ? empresaData.nombre : "Sin datos";
+        } catch (error) {
+          console.error("Error al parsear formulario:", error);
+          return "Datos inválidos";
+        }
+
+        try {
+          const fechaData = JSON.parse(evento.fecha_requerida); // Convierte la cadena en un objeto JSON
+          fechaRequerida = fechaData.fechaInicio ? `${new Date(fechaData.fechaInicio).toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })}` : "Sin datos";
+        } catch (error) {
+          console.error("Error al parsear formulario:", error);
+          return "Datos inválidos";
+        }
+    
+        return {
+          Tipo: evento.tipo || "Sin datos",
+          Numero_empleado: evento.numero_empleado || "Sin datos",
+          Nombre_completo: evento.nombre + " " + evento.apellidos || "Sin datos",
+          Departamento: evento.departamento || "Sin datos",
+          Puesto: evento.puesto || "Sin datos",
+          Jefe_directo: nombreJefe || "Sin datos",
+          Empresa: nombreEmpresa || "Sin datos",
+          Fecha_subida: evento.fecha_subida
+            ? timezoneFormatter.format(new Date(evento.fecha_subida))
+            : "Sin datos",
+          Fecha_requerida: fechaRequerida || "Sin datos",
+          Comentarios: evento.comentarios || "Sin datos",
+          Estatus: evento.estatus === "Autorizada por tu jefe directo" 
+          ? "Pendiente" 
+          : evento.estatus || "Sin datos",
+        };
+      })
+    );    
   
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Papeletas de incidencias");
-    XLSX.writeFile(workbook, "incidencias.xlsx");
+    const nombreHoja = 
+      verPeticiones === "Todas las solicitudes" ? "Solicitudes" :
+      verPeticiones === "Todas las papeletas" ? "Papeletas" :
+      "Papeletas y solicitudes";
+
+    const nombreArchivo = 
+      verPeticiones === "Todas las solicitudes" ? "solicitudes.xlsx" :
+      verPeticiones === "Todas las papeletas" ? "papeletas.xlsx" :
+      "papeletas_y_solicitudes.xlsx";
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+    XLSX.writeFile(workbook, nombreArchivo);
   };  
 
   const verTPapeletas = () => {
@@ -393,13 +555,44 @@ export function TablaPermisosFalta() {
       try {
         const response = await axios.get('/api/Gente&CulturaAbsence/getTodasPapeletas') // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
-        console.log(response.data)
+        setAutorizar(false);
+        setVerPeticiones("Todas las papeletas");
       } catch (error) {
         console.error('Error al obtener eventos:', error)
       }
     }
 
     fetchPapeletas();
+  }
+
+  const verTSolicitudes = () => {
+    const fetchSolicitudes = async () => {
+      try {
+        const response = await axios.get('/api/Gente&CulturaAbsence/getTodasSolicitudes') // Asegúrate de que esta ruta esté configurada en tu backend
+        setEventos(response.data)
+        setAutorizar(true);
+        setVerPeticiones("Todas las solicitudes");
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+
+    fetchSolicitudes();
+  }
+
+  const verPapeletasSemana = () => {
+    const fetchPapeletasSemana = async () => {
+      try {
+        const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
+        setEventos(response.data)
+        setAutorizar(true);
+        setVerPeticiones("");
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+
+    fetchPapeletasSemana();
   }
 
   // Paginación
@@ -412,24 +605,123 @@ export function TablaPermisosFalta() {
 
   return (
     <div className="container mx-auto">
-      <div style={{ display:"flex" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
         <Button
           variant="contained"
-          color="primary"
-          style={{ background: "rgb(31 41 55)", marginBottom: "15px", gap: "10px" }}
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
           onClick={exportToExcel}
-        ><ExportIcon className="h-4 w-4" />
-          Exportar a Excel
+        >
+          <ExportIcon className="h-4 w-4" />EXPORTAR A EXCEL
+        </Button>
+        {verPeticiones === "" ? (
+          <>
+          <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTPapeletas}
+        >
+          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
         </Button>
         <Button
           variant="contained"
-          color="primary"
-          style={{ background: "rgb(31 41 55)", marginBottom: "15px", marginLeft: "70px", gap: "10px" }}
-          onClick={verTPapeletas}
-        ><PermisosIcon className="h-4 w-4" />
-          Ver todas las papeletas
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTSolicitudes}
+        >
+          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
         </Button>
-      </div>
+        </>
+        ) : verPeticiones === "Todas las papeletas" ? (
+        <>
+          <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPapeletasSemana}
+        >
+          <VisualizeIcon2  />VER PAPELETAS DE LA SEMANA
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTSolicitudes}
+        >
+          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
+        </Button>
+        </>
+        ) : (
+          <>
+          <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTPapeletas}
+        >
+          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPapeletasSemana}
+        >
+          <VisualizeIcon2  />VER PAPELETAS DE LA SEMANA
+        </Button>
+        </>
+        )}
+      </div><br />
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
@@ -462,23 +754,74 @@ export function TablaPermisosFalta() {
             style={{width:"150px"}}
           />
         </div>
-        <div className="w-full sm:w-1/3">
-          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
-          <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Seleccionar tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Faltas">Faltas</SelectItem>
-              <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
-              <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
-              <SelectItem value="Permiso">Permiso</SelectItem>
-              <SelectItem value="Suspension">Suspensión</SelectItem>
-              <SelectItem value="Vacaciones">Vacaciones</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {verPeticiones === "" ? (
+          <>
+            <div className="w-full sm:w-1/3">
+              <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de petición</Label>
+              <Select onValueChange={setTipoPeticion} defaultValue={tipoPeticion}>
+                <SelectTrigger id="status-filter">
+                  <SelectValue placeholder="Seleccionar tipo de petición" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Papeletas y solicitudes</SelectItem>
+                  <SelectItem value="papeletas">Solo papeletas</SelectItem>
+                  <SelectItem value="solicitudes">Solo solicitudes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full sm:w-1/3">
+              <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de solicitud</Label>
+              <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
+                <SelectTrigger id="status-filter">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="Horas extras">Horas extras</SelectItem>
+                  <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
+                  <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        ) : (
+          <div hidden></div>
+        )} 
+        {verPeticiones === "Todas las solicitudes" ? (
+          <div className="w-full sm:w-1/3">
+            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de solicitud</Label>
+            <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="Horas extras">Horas extras</SelectItem>
+                <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
+                <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="w-full sm:w-1/3">
+            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de papeleta</Label>
+            <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="Faltas">Faltas</SelectItem>
+                <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
+                <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
+                <SelectItem value="Permiso">Permiso</SelectItem>
+                <SelectItem value="Home Office">Home Office</SelectItem>
+                <SelectItem value="Suspension">Suspensión</SelectItem>
+                <SelectItem value="Vacaciones">Vacaciones</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="w-full sm:w-1/3">
           <Label htmlFor="status-filter" className="mb-2 block">Filtrar por departamento</Label>
           <Select onValueChange={setDepartamento} defaultValue={departamento}>
@@ -505,20 +848,24 @@ export function TablaPermisosFalta() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-full sm:w-1/3" hidden>
-          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
-          <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Seleccionar estatus" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Autorizada">Autorizada</SelectItem>
-              <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="No autorizada">No autorizada</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {verPeticiones !== "" ? (
+          <div className="w-full sm:w-1/3">
+            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
+            <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="Seleccionar estatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                {verPeticiones === "Todas las papeletas" ? (<SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>) : (<SelectItem value="Pendiente">Pendiente</SelectItem>)}
+                <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div hidden></div>
+        )}
       </div>
       {formularioPrincipalAbiertoEdit && (
   <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalFormsEdit}>
@@ -550,11 +897,12 @@ export function TablaPermisosFalta() {
                   type="number"
                   value={formData.dias}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Dias que faltó" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -564,10 +912,21 @@ export function TablaPermisosFalta() {
                   value={formData.motivo}
                   onChange={handleChange}
                   className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
+                  placeholder="Coloca tus observaciones aquí..."
+                  readOnly={true} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Justificante</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Si el justificante es del IMSS, 
+                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     <a
@@ -607,11 +966,10 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2" hidden>
                 <Label>¿La falta es justificada?</Label>
                 <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
+                  onValueChange={handleChange}
                   className="flex space-x-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="si" id="justificada-si" />
@@ -623,9 +981,9 @@ export function TablaPermisosFalta() {
                   </div>
                 </RadioGroup>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2" hidden>
                 <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
+                <Select onValueChange={handleChange}>
                   <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
@@ -635,34 +993,20 @@ export function TablaPermisosFalta() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
           </form>
         </Card>
             </DialogContent>
           </Dialog>
           )}
+
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
             <DialogContent className="border-none p-0">
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
+            <DialogDescription className="text-center">Autorización para llegar tarde o salir temprano</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
@@ -673,10 +1017,11 @@ export function TablaPermisosFalta() {
                   name="horaFormulario"
                   type="time"
                   value={formData.horaFormulario}
-                  onChange={handleChange} />
+                  onChange={handleChange}
+                  readOnly={true}/>
               </div>
               <div className="grid grid-cols-1 gap-4">
-                  {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio")}
+                  {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -686,25 +1031,37 @@ export function TablaPermisosFalta() {
                   value={formData.motivo}
                   onChange={handleChange}
                   className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
+                  placeholder="Coloca tus observaciones aquí..."
+                  readOnly={true} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
           </form>
         </Card>
             </DialogContent>
@@ -716,17 +1073,26 @@ export function TablaPermisosFalta() {
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
+            <DialogDescription className="text-center">TIempo que puedes reponer llegando temprano o saliendo tarde</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Días</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title="1 día de trabajo equivale a 8 horas de trabajo." arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <Input
                   id="dias"
                   name="dias"
                   type="number"
                   value={formData.dias}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Dias..." />
               </div>
               <div className="space-y-2">
@@ -737,11 +1103,12 @@ export function TablaPermisosFalta() {
                   type="number"
                   value={formData.horas}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Horas..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -750,6 +1117,7 @@ export function TablaPermisosFalta() {
                   name="motivo"
                   value={formData.motivo}
                   onChange={handleChange}
+                  readOnly={true}
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
@@ -794,23 +1162,34 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
           </form>
         </Card>
             </DialogContent>
@@ -822,14 +1201,34 @@ export function TablaPermisosFalta() {
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
+            <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
             <div className="space-y-2">
-                <Label>Tipo de permiso</Label>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label>Tipo de permiso</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip
+                      title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
+                        <ul style="margin:0;padding:5px;text-align:justify;">
+                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
+                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
+                          <li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
+                          <li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
+                        </ul>`
+                      }
+                      arrow
+                    >
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <RadioGroup
                   onValueChange={(value) => handleChange2({ name: "conSueldo", value })}
                   value={formData.conSueldo}
+                  disabled={true}
                   className="flex space-x-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="si" id="justificada-si" />
@@ -849,11 +1248,12 @@ export function TablaPermisosFalta() {
                   type="number"
                   value={formData.dias}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -862,11 +1262,21 @@ export function TablaPermisosFalta() {
                   name="motivo"
                   value={formData.motivo}
                   onChange={handleChange}
+                  readOnly={true}
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     <a
@@ -906,23 +1316,234 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Home Office" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "100%", // Ajusta el ancho
+              maxWidth: "1600px", // Límite del ancho
+              height: "65vh", // Ajusta la altura
+              maxHeight: "65vh", // Límite de la altura
+              padding: "30px", // Margen interno
+              marginLeft: "120px"
+            }}>
+            <Card className="w-full xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Home Office</CardTitle>
+            <DialogDescription className="text-center">Solicitar permiso para realizar home office</DialogDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div>
+                <Label style={{fontSize: 17}}>Periodo</Label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                <Label style={{fontSize: 17}}>Plan de trabajo</Label>
+                <div style={{marginLeft: "10px"}}>
+                  <Tooltip
+                    title={
+                      `<p style="margin:0;padding:5px;text-align:justify;">INSTRUCCIONES PARA EL LLENADO DEL FORMULARIO:</p>
+                      <ul style="margin:0;padding:5px;text-align:justify;">
+                        <li style="margin-bottom:5px;"><strong>FECHA:</strong> Fecha de actividad, se debe seguir un consecutivo.</li>
+                        <li style="margin-bottom:5px;"><strong>ACTIVIDAD:</strong> Corresponde al nombre corto que el proponente le designe a la actividad.</li>
+                        <li style="margin-bottom:5px;"><strong>DESCRIPCIÓN DE ACTIVIDAD ELABORADA:</strong> Describa las actividades requeridas para el cumplimiento del objetivo del proyecto.</li>
+                        <li style="margin-bottom:5px;"><strong>PERSONA A LA QUE SE LE DIÓ RESPUESTA (SOLO DE DAR SEGUIMIENTO A PETICIÓN):</strong> Indique el nombre del miembro del equipo de trabajo quien se le dió respuesta con la actividad. Solo en caso de que se tenga, puesto que si es una actividad individual sin relación a otra área, este espacio se deja en blanco.</li>
+                        <li style="margin-bottom:5px;"><strong>TIEMPO DE RESPUESTA:</strong> Indique el tiempo de respuesta que se requirió para las actividades.</li>
+                        <li style="margin-bottom:5px;"><strong>COMENTARIOS (SI SE DEJA PENDIENTE, SE REQUIERE APOYO DE ALGÚN OTRA ÁREA, ETC.):</strong> Son observaciones, pendientes que pueden quedar en otra área, o en la nuestra.</li>
+                        <li><strong>RECUERDE:</strong> Las actividades propuestas deben estar orientadas al cumplimiento del objeto de la convocatoria.</li>
+                      </ul>`
+                    }
+                    arrow
+                  >
+                    <HelpIcon style={{ cursor: 'pointer', fontSize: 20 }} />
+                  </Tooltip>
+                </div>
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                <div>
+                  {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario", true)}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="actividad">Actividad</Label>
+                  <Input
+                    id="actividad"
+                    name="actividad"
+                    type="text"
+                    value={formData.actividad}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Input
+                    id="descripcion"
+                    name="descripcion"
+                    type="text"
+                    value={formData.descripcion}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="persona">Persona respuesta</Label>
+                  <Input
+                    id="persona"
+                    name="persona"
+                    type="text"
+                    value={formData.persona}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tiempoRespuesta">Tiempo de respuesta</Label>
+                  <Input
+                    id="tiempoRespuesta"
+                    name="tiempoRespuesta"
+                    type="text"
+                    value={formData.tiempoRespuesta}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comentarios">Comentarios</Label>
+                  <Input
+                    id="comentarios"
+                    name="comentarios"
+                    type="text"
+                    value={formData.comentarios}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.planTrabajo.otros.map((otro, index) => (
+               <div key={index} className="grid grid-cols-7 gap-1">
+               <div>
+                {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", true, true)}
+              </div>
+               <div>
+                 <Input
+                   id={`actividad-${index}`}
+                   name={`actividad-${index}`}
+                   type="text"
+                   value={formData[`actividad-${index}`]}
+                   onChange={(e) => handleChange(e, index, "actividad")}
+                   readOnly={true}
+                 />
+               </div>
+               <div className="col-span-2">
+                 <Input
+                   id={`descripcion-${index}`}
+                   name={`descripcion-${index}`}
+                   type="text"
+                   value={formData[`descripcion-${index}`]}
+                   onChange={(e) => handleChange(e, index, "descripcion")}
+                   readOnly={true}
+                 />
+               </div>
+               <div >
+                 <Input
+                   id={`persona-${index}`}
+                   name={`persona-${index}`}
+                   type="text"
+                   value={formData[`persona-${index}`]}
+                   onChange={(e) => handleChange(e, index, "persona")}
+                   readOnly={true}
+                 />
+               </div>
+               <div >
+                 <Input
+                   id={`tiempoRespuesta-${index}`}
+                   name={`tiempoRespuesta-${index}`}
+                   type="text"
+                   value={formData[`tiempoRespuesta-${index}`]}
+                   onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
+                   readOnly={true}
+                 />
+               </div>
+               <div>
+               <div>
+               <Input
+                    id={`comentarios-${index}`}
+                    name={`comentarios-${index}`}
+                    type="text"
+                    value={formData[`comentarios-${index}`]}
+                    onChange={(e) => handleChange(e, index, "comentarios")}
+                    readOnly={true}
+                  />
+                  </div>
+               </div>
+             </div>
+              ))}
+            </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
           </form>
         </Card>
             </DialogContent>
@@ -934,6 +1555,7 @@ export function TablaPermisosFalta() {
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
+            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
@@ -945,11 +1567,12 @@ export function TablaPermisosFalta() {
                   type="number"
                   value={formData.dias}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -958,26 +1581,38 @@ export function TablaPermisosFalta() {
                   name="motivo"
                   value={formData.motivo}
                   onChange={handleChange}
+                  readOnly={true}
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
+                  <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
           </form>
         </Card>
             </DialogContent>
@@ -1000,11 +1635,12 @@ export function TablaPermisosFalta() {
                   type="number"
                   value={formData.dias}
                   onChange={handleChange}
+                  readOnly={true}
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1013,38 +1649,688 @@ export function TablaPermisosFalta() {
                   name="motivo"
                   value={formData.motivo}
                   onChange={handleChange}
+                  readOnly={true}
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Horas extras" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "70%", // Ajusta el ancho
+              maxWidth: "900px", // Límite del ancho
+              height: "90vh", // Ajusta la altura
+              maxHeight: "90vh", // Límite de la altura
+              padding: "30px", // Margen interno
+            }}>
+            <Card className="w-full xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Horas extras</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="horaInicio">Hora de inicio</Label>
+                  </div>
+                  <Input
+                      id="horaInicio"
+                      name="horaInicio"
+                      type="time"
+                      style={{width: "385px"}}
+                      value={formData.horaInicio}
+                      onChange={handleChange}
+                      readOnly={true}
+                      placeholder="Hora de inicio..." />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="horaFin">Hora de fin</Label>
+                  </div>
+                  <Input
+                      id="horaFin"
+                      name="horaFin"
+                      type="time"
+                      style={{width: "385px"}}
+                      value={formData.horaFin}
+                      onChange={handleChange}
+                      readOnly={true}
+                      placeholder="Hora de fin..." />
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="pagada">¿Las vacaciones son pagadas?</Label>
-                <Select value={formData.pagada} onValueChange={(value) => handleChange2({ name: "pagada", value })}>
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Motivo del tiempo extra</Label>
+                </div>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca el motivo del tiempo extra aquí..." />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap:"40px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="noOrden">No. de orden</Label>
+                  </div>
+                  <Input
+                      id="noOrden"
+                      name="noOrden"
+                      type="number"
+                      style={{width: "80px"}}
+                      value={formData.noOrden}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="nombreProducto">Nombre del producto</Label>
+                  </div>
+                  <Input
+                      id="nombreProducto"
+                      name="nombreProducto"
+                      type="text"
+                      style={{width: "300px"}}
+                      value={formData.nombreProducto}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="cantidadProgramada">Cantidad programada</Label>
+                  </div>
+                  <Input
+                      id="cantidadProgramada"
+                      name="cantidadProgramada"
+                      type="number"
+                      style={{width: "150px"
+                      }}
+                      value={formData.cantidadProgramada}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="cantidadTerminada">Cantidad terminada</Label>
+                  </div>
+                  <Input
+                      id="cantidadTerminada"
+                      name="cantidadTerminada"
+                      type="number"
+                      style={{width: "130px"}}
+                      value={formData.cantidadTerminada}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.productos.otros.map((otro, index) => (
+               <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+               <div className="space-y-2">
+                 <Input
+                     id={`noOrden-${index}`}
+                     name={`noOrden-${index}`}
+                     type="number"
+                     style={{width: "80px"}}
+                     value={formData[`noOrden-${index}`]}
+                     onChange={(e) => handleChange(e, index, "noOrden")}
+                     readOnly={true} />
+               </div>
+               <div className="space-y-2">
+                 <Input
+                     id={`nombreProducto-${index}`}
+                     name={`nombreProducto-${index}`}
+                     type="text"
+                     style={{width: "300px", marginLeft: "35px"}}
+                     value={formData[`nombreProducto-${index}`]}
+                     onChange={(e) => handleChange(e, index, "nombreProducto")}
+                     readOnly={true} />
+               </div>
+               <div className="space-y-2">
+                 <Input
+                     id={`cantidadProgramada-${index}`}
+                     name={`cantidadProgramada-${index}`}
+                     type="number"
+                     style={{width: "150px", marginLeft: "30px"
+                     }}
+                     value={formData[`cantidadProgramada-${index}`]}
+                     onChange={(e) => handleChange(e, index, "cantidadProgramada")}
+                     readOnly={true} />
+               </div>
+               <div className="space-y-2">
+               <div className="flex items-center">
+                  <Input
+                      id={`cantidadTerminada-${index}`}
+                      name={`cantidadTerminada-${index}`}
+                      type="number"
+                      style={{width: "130px", marginLeft: "30px"}}
+                      value={formData[`cantidadTerminada-${index}`]}
+                      onChange={(e) => handleChange(e, index, "cantidadTerminada")}
+                      readOnly={true} />
+                  </div>
+               </div>
+             </div>
+              ))}
+            </div>
+              <div>
+                <Label style={{fontSize: 17}}>Personal que se autoriza</Label>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="noPersonal">No.</Label>
+                  </div>
+                  <Input
+                      id="noPersonal"
+                      name="noPersonal"
+                      type="number"
+                      style={{width: "80px"}}
+                      value={formData.noPersonal}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="nombrePersonal">Nombre</Label>
+                  </div>
+                  <Input
+                      id="nombrePersonal"
+                      name="nombrePersonal"
+                      type="text"
+                      style={{width: "350px"}}
+                      value={formData.nombrePersonal}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <Label htmlFor="area">Área</Label>
+                  </div>
+                  <Input
+                      id="area"
+                      name="area"
+                      type="text"
+                      style={{width: "340px"
+                      }}
+                      value={formData.area}
+                      onChange={handleChange}
+                      readOnly={true} />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.personal.otros.map((otro, index) => (
+                <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
+                <div className="space-y-2">
+                  <Input
+                      id={`noPersonal-${index}`}
+                      name={`noPersonal-${index}`}
+                      type="number"
+                      style={{width: "80px"}}
+                      value={formData[`noPersonal-${index}`]}
+                      onChange={(e) => handleChange(e, index, "noPersonal")}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                      id={`nombrePersonal-${index}`}
+                      name={`nombrePersonal-${index}`}
+                      type="text"
+                      style={{width: "350px"}}
+                      value={formData[`nombrePersonal-${index}`]}
+                      onChange={(e) => handleChange(e, index, "nombrePersonal")}
+                      readOnly={true} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                  <Input
+                      id={`area-${index}`}
+                      name={`area-${index}`}
+                      type="text"
+                      style={{width: "340px"
+                      }}
+                      value={formData[`area-${index}`]}
+                      onChange={(e) => handleChange(e, index, "area")}
+                      readOnly={true} />
+                  </div>
+                </div>
+              </div>
+              ))}
+            </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Bonos / Comisiones" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "100%", // Ajusta el ancho
+              maxWidth: "1600px", // Límite del ancho
+              height: "65vh", // Ajusta la altura
+              maxHeight: "65vh", // Límite de la altura
+              padding: "30px", // Margen interno
+              marginLeft: "120px"
+            }}>
+            <Card className="w-full xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Bonos / Comisiones</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tipoSolicitud">Tipo de solicitud</Label>
+                  <Select
+                    value={formData.tipoSolicitud || ''}
+                    onValueChange={(value) => {
+                      obtenerUsuariosBonos(value);
+                      setFormData({
+                        ...formData,
+                        tipoSolicitud: value,
+                        noBono: "",
+                        nombreBono: "",
+                        bonos: {
+                          ...formData.bonos,
+                          otros: [] 
+                        }
+                      });
+                    }}
+                    disabled={formData.tipoSolicitud !== ""}                    
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione el tipo de solicitud..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bonos">Bonos</SelectItem>
+                      <SelectItem value="comisiones">Comisiones</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mes">Mes</Label>
+                  <Select
+                    value={formData.mes || ''}
+                    onValueChange={(value) => {
+                      setFormData({
+                        ...formData,
+                        mes: value,
+                      });
+                    }}
+                    disabled={formData.mes !== ""} 
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione el mes..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="enero">Enero</SelectItem>
+                      <SelectItem value="febrero">Febrero</SelectItem>
+                      <SelectItem value="marzo">Marzo</SelectItem>
+                      <SelectItem value="abril">Abril</SelectItem>
+                      <SelectItem value="mayo">Mayo</SelectItem>
+                      <SelectItem value="junio">Junio</SelectItem>
+                      <SelectItem value="julio">Julio</SelectItem>
+                      <SelectItem value="agosto">Agosto</SelectItem>
+                      <SelectItem value="septiembre">Septiembre</SelectItem>
+                      <SelectItem value="octubre">Octubre</SelectItem>
+                      <SelectItem value="noviembre">Noviembre</SelectItem>
+                      <SelectItem value="diciembre">Diciembre</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dias">Días</Label>
+                  <Input
+                    id="dias"
+                    name="dias"
+                    type="number"
+                    value={formData.dias}
+                    onChange={handleChange}
+                    placeholder="Dias..."
+                    readOnly={true}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-6 gap-1">
+                <div className="space-y-2">
+                  <Label htmlFor="noBono">No.</Label>
+                  <Input
+                    id="noBono"
+                    name="noBono"
+                    value={formData.noBono}
+                    type="number"
+                    onChange={handleChange}
+                    placeholder="No."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="nombreBono">Nombre</Label>
+                </div>
+                <Select
+                  id={"nombreBono"}
+                  name={"nombreBono"}
+                  value={formData.nombreBono || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = usersBonos.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        noBono: selectedUser.numero_empleado,
+                        nombreBono: selectedUser.id,
+                      });
+                    }
+                  }}
+                  disabled={formData.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el colaborador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {usersBonos.length > 0 ? (
+                      usersBonos.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled></SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bonoCantidad">Bono</Label>
+                  <Input
+                    id="bonoCantidad"
+                    name="bonoCantidad"
+                    type="number"
+                    value={formData.bonoCantidad}
+                    onChange={handleChange}
+                    placeholder="Bono..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comision">Comisión</Label>
+                  <Input
+                    id="comision"
+                    name="comision"
+                    type="number"
+                    value={formData.comision}
+                    onChange={handleChange}
+                    placeholder="Comisión..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comentarios">Comentarios</Label>
+                  <Input
+                    id="comentarios"
+                    name="comentarios"
+                    type="text"
+                    value={formData.comentarios}
+                    onChange={handleChange}
+                    placeholder="Comentarios..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="total">Total</Label>
+                  <Input
+                    id="total"
+                    name="total"
+                    type="number"
+                    value={formData.total}
+                    onChange={handleChange}
+                    placeholder="Total..."
+                    readOnly={true}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.bonos.otros.map((otro, index) => (
+                <div key={index} className="grid grid-cols-6 gap-1">
+                <div className="space-y-2">
+                  <Input
+                    id={`noBono-${index}`}
+                    name={`noBono-${index}`}
+                    value={otro.noBono || ''}
+                    type="number"
+                    onChange={(e) => handleChange(e, index, "noBono")}
+                    placeholder="No."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                <Select
+                  id={"nombreBono"}
+                  name={"nombreBono"}
+                  value={otro.nombreBono || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = usersBonos.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        noBono: selectedUser.numero_empleado,
+                        nombreBono: selectedUser.id,
+                      });
+                    }
+                  }}
+                  disabled={otro.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el colaborador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {usersBonos.length > 0 ? (
+                      usersBonos.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled></SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+                <div className="space-y-2">
+                  <Input
+                    id={`bonoCantidad-${index}`}
+                    name={`bonoCantidad-${index}`}
+                    value={otro.bonoCantidad}
+                    type="number"
+                    onChange={(e) => handleChange(e, index, "bonoCantidad")}
+                    placeholder="Bono..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    id={`comision-${index}`}
+                    name={`comision-${index}`}
+                    value={otro.comision}
+                    type="number"
+                    onChange={(e) => handleChange(e, index, "comision")}
+                    placeholder="Comisión..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Input
+                    id={`comentarios-${index}`}
+                    name={`comentarios-${index}`}
+                    value={formData[`comentarios-${index}`]}
+                    type="text"
+                    onChange={(e) => handleChange(e, index, "comentarios")}
+                    placeholder="Comentarios..."
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                  <Input
+                      id={`total-${index}`}
+                      name={`total-${index}`}
+                      type="number"
+                      value={otro.total}
+                      onChange={(e) => handleChange(e, index, "total")}
+                      placeholder="Total..."
+                      readOnly={true} />
+                  </div>
+                </div>
+              </div>
+              ))}
+              <div className="space-y-2 ml-auto" style={{width: "245px"}}>
+                <Input
+                  id="totalFinal"
+                  name="totalFinal"
+                  type="number"
+                  value={formData.totalFinal || ''}
+                  onChange={handleChange}
+                  placeholder="Total final..."
+                  readOnly={true}
+                />
+              </div>
+            </div>
+              <div className="space-y-2" hidden>
+                <Label>¿La falta es justificada?</Label>
+                <RadioGroup
+                  onValueChange={handleChange}
+                  className="flex space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Sí</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2" hidden>
+                <Label htmlFor="pagada">¿La falta es pagada?</Label>
+                <Select onValueChange={handleChange}>
                   <SelectTrigger id="pagada">
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, son pagadas</SelectItem>
-                    <SelectItem value="no">No son pagadas</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="estatus">Estatus</Label>
-                <Select value={estatus} onValueChange={(value) => handleChangeEstatus({ name: "estatus", value })}>
-                  <SelectTrigger id="estatus" name="estatus">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Autorizada">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
-                    <SelectItem value="No autorizada">No autorizada</SelectItem>
+                    <SelectItem value="si">Sí, es pagada</SelectItem>
+                    <SelectItem value="no">No es pagada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full">Enviar</Button2>
-            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Aumento sueldo" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Aumento de sueldo / Cambio de puesto / Cambio de área</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="nombreColaborador">Nombre del colaborador a aplicar ajuste</Label>
+                </div>
+                <Select
+                  value={formData.nombreColaborador || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = users.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        nombreColaborador: selectedUser.id,
+                        puestoColaborador: selectedUser.puesto,
+                      });
+                    }
+                  }}
+                  disabled={formData.nombreColaborador !== ""} // Deshabilitar si no hay usuarios disponibles
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el colaborador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="puestoColaborador">Puesto</Label>
+                </div>
+                <Input
+                  id="puestoColaborador"
+                  name="puestoColaborador"
+                  type="text"
+                  value={formData.puestoColaborador}
+                  placeholder="Puesto del colaborador..."
+                  readOnly={true} />
+              </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="motivo">Aplica por</Label>
+                </div>
+              <Select
+                value={formData.motivo || ''}
+                disabled={formData.motivo !== ""}
+              >
+                <SelectTrigger style={{ maxWidth: "500px" }}>
+                  <SelectValue placeholder="Seleccionar motivo..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="modificacion">Modificación a perfil de puesto - Competencias</SelectItem>
+                  <SelectItem value="cambio">Cambio de puesto</SelectItem>
+                  <SelectItem value="desempeño">Desempeño</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio", true)}
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comentarios">Comentarios adicionales</Label>
+                </div>
+                <Textarea
+                  id="comentarios"
+                  name="comentarios"
+                  onChange={handleChange}
+                  value={formData.comentarios}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus comentarios adicionales aquí..." />
+              </div>
+            </CardContent>
           </form>
         </Card>
             </DialogContent>
@@ -1057,7 +2343,7 @@ export function TablaPermisosFalta() {
 )}
       <div className="overflow-x-auto">
         <Table>
-          <TableCaption>Permisos pendientes por revisar</TableCaption>
+          {verPeticiones === "Todas las solicitudes" ? <TableCaption>Solicitudes pendientes por revisar</TableCaption> : verPeticiones === "Todas las papeletas" ? <TableCaption>Papeletas pendientes por revisar</TableCaption> : <TableCaption>Papeletas y solicitudes pendientes por revisar</TableCaption>}
           <TableHeader>
             <TableRow>
               {encabezados.map((encabezado, index) => (
@@ -1088,14 +2374,15 @@ export function TablaPermisosFalta() {
                     }
                   </TableCell>
                   <TableCell>
-                    {
-                      evento.empresa
-                        ? (() => {
-                            const empresa = users.find(u => u.empresa_id === evento.empresa);
-                            return empresa ? `${empresa.empresa_usuario.nombre}` : "Sin datos";
-                          })()
-                        : "Sin datos"
-                    }
+                    {evento.empresa ? (() => {
+                      try {
+                        const empresaData = JSON.parse(evento.empresa); // Convierte la cadena en un objeto JSON
+                        return empresaData.nombre ? empresaData.nombre : "Sin datos";
+                      } catch (error) {
+                        console.error("Error al parsear formulario:", error);
+                        return "Datos inválidos";
+                      }
+                    })() : "Sin datos"}
                   </TableCell>
                   <TableCell>{evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {
@@ -1109,53 +2396,130 @@ export function TablaPermisosFalta() {
                         hour12: false, // Cambiar a true si prefieres formato de 12 horas
                       })}`
                     : "Sin datos"}</TableCell>
-                  <TableCell>{evento.fecha_actualizacion
-                    ? `${new Date(evento.fecha_actualizacion).toLocaleDateString('es-ES', {
+                  <TableCell>
+                    {evento.fecha_requerida ? (() => {
+                      try {
+                        const fechaData = JSON.parse(evento.fecha_requerida); // Convierte la cadena en un objeto JSON
+                        return fechaData.fechaInicio ? `${new Date(fechaData.fechaInicio).toLocaleDateString('es-ES', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
-                      })} ${new Date(evento.fecha_actualizacion).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false, // Cambiar a true si prefieres formato de 12 horas
-                      })}`
-                    : "Sin datos"}</TableCell>
-                  <TableCell
-                    style={{
-                      color: (() => {
-                        switch (evento.estatus) {
-                          case 'Autorizada':
-                            return 'green';
-                          case 'No autorizada':
-                            return 'red';
-                          case 'Pendiente':
-                            return 'orange';
-                          default:
-                            return 'black'; // color por defecto
-                        }
-                      })(),
-                    }}
-                  >
-                    <Select className="w-full min-w-[200px] max-w-[300px]" value={evento.estatus} onValueChange={(value) => handleChangeStatus(evento.id_papeleta, value)}>
-                      <SelectTrigger id="estatus" className="w-full min-w-[200px] max-w-[300px]">
-                        <SelectValue placeholder="Selecciona una opción" />
-                      </SelectTrigger>
-                      <SelectContent className="w-full min-w-[200px] max-w-[300px]">
-                        <SelectItem value="Autorizada">Autorizada</SelectItem>
-                        <SelectItem value="Pendiente">Pendiente</SelectItem>
-                        <SelectItem value="No autorizada">No autorizada</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      })}` : "Sin datos";
+                      } catch (error) {
+                        console.error("Error al parsear formulario:", error);
+                        return "Datos inválidos";
+                      }
+                    })() : "Sin datos"}
                   </TableCell>
+                  <TableCell>
+                    {evento.comentarios || "Sin comentarios"}
+                  </TableCell>
+                  <>
+                    <TableCell 
+                      style={{
+                        color: (() => {
+                          if (evento.estatus.startsWith("Autorizada por RH")) return "green";
+                          if (evento.estatus.startsWith("No autorizada")) return "red";
+                          switch (evento.estatus) {
+                            case 'Pendiente':
+                              return 'orange';
+                            case 'Autorizada por tu jefe directo':
+                              return 'orange';
+                            default:
+                              return 'black'; // color por defecto
+                          }
+                        })(),
+                      }}
+                    >
+                      <Select
+                        className="w-full min-w-[200px] max-w-[300px]"
+                        value={evento.estatus}
+                        onValueChange={(value) => {
+                          if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                            handleOpenModalStatus(evento.id_papeleta, value, evento.tipo);
+                          } else {
+                            handleChangeStatus(evento.id_papeleta, value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full min-w-[200px] max-w-[300px]">
+                          <SelectValue placeholder="Selecciona una opción" />
+                        </SelectTrigger>
+                        <SelectContent className="w-full min-w-[200px] max-w-[300px]">
+                          {verPeticiones === "Todas las solicitudes" ? (
+                            <>
+                              <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                              <SelectItem value="Pendiente">Pendiente</SelectItem>
+                              <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                            </>
+                          ) : verPeticiones === "Todas las papeletas" ? (
+                            <>
+                              <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                              <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                              <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                            </>
+                          ) : (
+                            <>
+                              <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                              {evento.estatus === "Autorizada por tu jefe directo" ? (<SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>) : (<SelectItem value="Pendiente">Pendiente</SelectItem>)} 
+                              <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    {modalOpenStatus && (
+                      <Dialog open={modalOpenStatus} onOpenChange={handleCloseModalStatus}>
+                      <DialogContent className="border-none p-0">
+                      <Card className="w-full max-w-lg">
+                      <CardHeader>
+                        {modalDataStatus?.estatus?.startsWith("Autorizada") 
+                          ? <CardTitle className="text-2xl font-bold text-center">
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo"].includes(modalDataStatus.tipo) 
+                                ? "Agregar comentario - Sí se autoriza la solicitud" 
+                                : "Agregar comentario - Sí se autoriza la papeleta"}
+                            </CardTitle>
+                          : <CardTitle className="text-2xl font-bold text-center">
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo"].includes(modalDataStatus.tipo) 
+                                ? "Agregar comentario - No se autoriza la solicitud" 
+                                : "Agregar comentario - No se autoriza la papeleta"}
+                            </CardTitle>
+                        }
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                            <Label htmlFor="comentariosEstatus">Comentarios</Label>
+                          </div>
+                          <Textarea
+                            id="comentariosEstatus"
+                            name="comentariosEstatus"
+                            onChange={(e) => handleCommentsChange(e.target.value)}
+                            value={comentarios}
+                            className="min-h-[100px]"
+                            placeholder="Coloca tus comentarios aquí..." />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button2 className="w-full" disabled={!comentarios} onClick={() => handleChangeStatus(modalDataStatus.id, modalDataStatus.estatus, comentarios)}>Enviar</Button2>
+                      </CardFooter>
+                  </Card>
+                      </DialogContent>
+                    </Dialog>
+                    )}
+                  </>
                   <TableCell>{evento.accion ? evento.accion(evento.id_papeleta) : "N/A"}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
-                  No se encontraron permisos
-                </TableCell>
+                {verPeticiones === "Todas las solicitudes" ? <TableCell colSpan={12} className="text-center">
+                  No se encontraron solicitudes
+                </TableCell> : verPeticiones === "Todas las papeletas" ? <TableCell colSpan={12} className="text-center">
+                  No se encontraron papeletas
+                </TableCell> : <TableCell colSpan={12} className="text-center">
+                  No se encontraron papeletas ni solicitudes
+                </TableCell>}
               </TableRow>
             )}
           </TableBody>
@@ -1275,4 +2639,76 @@ function Spinner() {
   return (
     <div className="spinner" />
   );
+}
+
+function VisualizeIcon(props) {
+  return (
+    (<svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="30"
+      height="30"
+      viewBox="0 0 64 64"
+      aria-labelledby="title"
+      role="img"
+    > 
+      <path
+        d="M32 12C16 12 4 32 4 32s12 20 28 20 28-20 28-20S48 12 32 12z"
+        fill="none"
+        stroke="rgb(31 41 55)"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      
+      <circle
+        cx="32"
+        cy="32"
+        r="10"
+        fill="none"
+        stroke="rgb(31 41 55)"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      
+      <circle cx="32" cy="32" r="4" fill="rgb(31 41 55)" />
+    </svg>)
+  )
+}
+
+function VisualizeIcon2(props) {
+  return (
+    (<svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="23"
+      height="23"
+      viewBox="0 0 64 64"
+      aria-labelledby="title"
+      role="img"
+    > 
+      <path
+        d="M32 12C16 12 4 32 4 32s12 20 28 20 28-20 28-20S48 12 32 12z"
+        fill="none"
+        stroke="rgb(255 255 255)"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      
+      <circle
+        cx="32"
+        cy="32"
+        r="10"
+        fill="none"
+        stroke="rgb(255 255 255)"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      
+      <circle cx="32" cy="32" r="4" fill="rgb(255 255 255)" />
+    </svg>)
+  )
 }

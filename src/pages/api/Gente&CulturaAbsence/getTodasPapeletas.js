@@ -16,7 +16,9 @@ export default async function handler(req, res) {
           f.*, 
           u.*, 
           f.id AS id_papeleta, 
-          d.nombre AS nombre_departamento
+          f.formulario AS formulario_usuario,
+          d.nombre AS nombre_departamento,
+          e.formulario AS empresa_usuario
       FROM 
           formularios_faltas f
       JOIN 
@@ -24,11 +26,16 @@ export default async function handler(req, res) {
       ON 
           f.id_usuario = u.id 
           AND f.eliminado = 0 
-          AND f.estatus = 'Autorizada'
+          AND (f.estatus != 'Pendiente' AND f.estatus != 'No autorizada por tu jefe directo')
+          AND (f.tipo != 'Aumento sueldo' AND f.tipo != 'Horas extras' AND f.tipo != 'Bonos / Comisiones')
       JOIN 
           departamentos d
       ON 
           u.departamento_id = d.id
+      JOIN 
+          empresas e
+      ON
+          u.empresa_id = e.id
       ORDER BY 
           f.fecha_subida DESC;
     `;

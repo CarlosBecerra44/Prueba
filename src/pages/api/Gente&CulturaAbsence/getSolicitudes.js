@@ -33,7 +33,7 @@ export default async function handler(req, res) {
           AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones') 
           AND f.eliminado = 0
       ORDER BY 
-          f.fecha_subida DESC;
+          f.fecha_actualizacion DESC;
     `;
     
     const [result] = await connection.execute(query, [id]);

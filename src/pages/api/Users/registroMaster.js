@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company } = req.body;
+  const { name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant } = req.body;
 
   const correo = email || null;
   const rol = role || "Estándar";
@@ -37,8 +37,8 @@ export default async function handler(req, res) {
 
     // Guardar el nuevo usuario en la base de datos
     const [newUser] = await connection.execute(
-      'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto, telefono, fecha_ingreso, jefe_directo, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [rol, name, employeeNumber, departamento, correo, hashedPassword, lastName, position, telefono, entryDate, jefe_directo, empresa]
+      'INSERT INTO usuarios (rol, nombre, numero_empleado, departamento_id, correo, password, apellidos, puesto, telefono, fecha_ingreso, jefe_directo, empresa_id, planta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [rol, name, employeeNumber, departamento, correo, hashedPassword, lastName, position, telefono, entryDate, jefe_directo, empresa, workPlant]
     );
 
     console.log({ message: 'Usuario registrado' });

@@ -5,7 +5,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { id } = req.query;
   let connection;
 
   try {
@@ -17,32 +16,31 @@ export default async function handler(req, res) {
           f.*, 
           u.*, 
           f.id AS id_papeleta, 
-          d.nombre AS nombre_departamento
+          f.formulario AS formulario_usuario,
+          d.nombre AS nombre_departamento,
+          e.formulario AS empresa_usuario
       FROM 
           formularios_faltas f
       JOIN 
           usuarios u
       ON 
           f.id_usuario = u.id 
+          AND f.eliminado = 0 
+          AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones')
       JOIN 
           departamentos d
       ON 
           u.departamento_id = d.id
-      WHERE 
-          f.id_usuario != ? AND u.jefe_directo = ? AND f.eliminado = 0 AND f.estatus = 'Pendiente'
+      JOIN 
+          empresas e
+      ON
+          u.empresa_id = e.id
       ORDER BY 
           f.fecha_subida DESC;
     `;
     
-    const [result] = await connection.execute(query, [id, id]);
-
-    // Procesamos el campo 'datos_formulario' (suponiendo que es un campo JSON)
-    const eventos = result.map(evento => {
-      return {
-        ...evento,
-        datos_formulario: evento.datos_formulario ? JSON.parse(evento.datos_formulario) : null, // Convertir a objeto si es JSON
-      };
-    });
+    const [result] = await connection.execute(query); // Ejecuta la consulta utilizando la conexión obtenida
+    const eventos = result;
 
     // Retorna los eventos en formato JSON
     res.status(200).json(eventos);
