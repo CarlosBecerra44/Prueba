@@ -70,6 +70,8 @@ export function TablaPermisosFalta() {
   const [comentarios, setComentarios] = useState("");
   const [modalOpenStatus, setModalOpenStatus] = useState(false);
   const [modalDataStatus, setModalDataStatus] = useState({ id: null, estatus: "" });
+  const [fechaInicioPapeleta, setFechaInicio] = useState("");
+  const [fechaFinPapeleta, setFechaFin] = useState("");
   const [formData, setFormData] = useState({
     dias: "",
     horas: "",
@@ -85,6 +87,7 @@ export function TablaPermisosFalta() {
   });
 
   const encabezados = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -174,6 +177,8 @@ export function TablaPermisosFalta() {
       setIndex(index);
       setEstatus(data.estatus);
       obtenerUsuariosBonos(data.formulario.tipoSolicitud);
+      setFechaInicio(data.fecha_inicio);
+      setFechaFin(data.fecha_fin);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
     }
@@ -211,7 +216,8 @@ export function TablaPermisosFalta() {
       );
 
       if (response.status === 200) {
-          {verPeticiones === "Todas las solicitudes" ? (verTSolicitudes()) : verPeticiones === "Todas las papeletas" ? (verTPapeletas()) : (fetchEventos())}
+          {verPeticiones === "Todas las solicitudes" ? (verTSolicitudes()) : verPeticiones === "Todas las papeletas" ? (verTPapeletas()) 
+            : verPeticiones === "Papeletas extemporaneas" ? (verPSExtemporaneas()) : (fetchEventos())}
           Swal.fire({
             title: 'Actualizado',
             text: 'El estatus de la papeleta ha sido actualizado correctamente',
@@ -380,10 +386,10 @@ export function TablaPermisosFalta() {
 
     return {
       id_papeleta: evento.id_papeleta,
-      tipo: evento.tipo,
+      tipo: evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
       nombre: evento.nombre + " " + evento.apellidos,
       fecha_subida: evento.fecha_subida,
-      fecha_requerida: evento.formulario_usuario,
+      fecha_requerida: evento.fecha_inicio,
       numero_empleado: evento.numero_empleado,
       departamento: evento.nombre_departamento,
       puesto: evento.puesto,
@@ -401,26 +407,30 @@ export function TablaPermisosFalta() {
     }
   }
 
-  // Filtrar eventos según el término de búsqueda y estatus
   const filteredEventos = eventos
   .map(extractData)
   .filter(evento => {
-    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo"];
-    const papeletasTipos = ["Faltas", "Llegada tarde / Salida antes", "Tiempo por tiempo", "Permiso", "Home Office", "Suspension", "Vacaciones"];
+    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"];
+    const papeletasTipos = ["Llegada tarde / Salida antes", "Tiempo por tiempo", "Permiso", "Home Office", "Vacaciones"];
+
+    if (!evento.fecha_requerida) return false;
+
+    const fechaEvento = new Date(evento.fecha_requerida.replace(" ", "T")); // 🔹 Reemplaza espacio por "T" para evitar errores en Safari
+    fechaEvento.setUTCHours(0, 0, 0, 0); // 🔹 Normalizar la fecha
 
     // Filtrar por tipo de petición
     if (
       tipoPeticion !== "todos" &&
       !(
-        (tipoPeticion === "solicitudes" && solicitudesTipos.includes(evento.tipo)) ||
-        (tipoPeticion === "papeletas" && papeletasTipos.includes(evento.tipo))
+        (tipoPeticion === "solicitudes" && solicitudesTipos.includes(evento.tipo.split(" - ")[0])) ||
+        (tipoPeticion === "papeletas" && papeletasTipos.includes(evento.tipo.split(" - ")[0]))
       )
     ) {
       return false;
     }
 
     // Filtrar por tipo de formulario
-    if (tipoFormulario !== "todos" && evento.tipo !== tipoFormulario) {
+    if (tipoFormulario !== "todos" && evento.tipo.split(" - ")[0] !== tipoFormulario) {
       return false;
     }
 
@@ -440,13 +450,23 @@ export function TablaPermisosFalta() {
     }
 
     // Filtrar por fecha de inicio
-    if (startDate && new Date(evento.fecha_subida) < new Date(startDate)) {
-      return false;
+    if (startDate) {
+      const fechaInicioFiltro = new Date(startDate);
+      fechaInicioFiltro.setUTCHours(0, 0, 0, 0); // 🔹 Normalizar la fecha
+      
+      if (fechaEvento < fechaInicioFiltro) {
+        return false;
+      }
     }
 
     // Filtrar por fecha de fin
-    if (endDate && new Date(evento.fecha_subida) > new Date(endDate)) {
-      return false;
+    if (endDate) {
+      const fechaFinFiltro = new Date(endDate);
+      fechaFinFiltro.setUTCHours(23, 59, 59, 999); // 🔹 Asegurar que incluya el día completo
+      
+      if (fechaEvento > fechaFinFiltro) {
+        return false;
+      }
     }
 
     return true;
@@ -490,7 +510,6 @@ export function TablaPermisosFalta() {
       filteredEventos.map((evento) => {
         let nombreEmpresa = "Sin datos"; // Valor por defecto
         let nombreJefe = "Sin datos";
-        let fechaRequerida = "Sin datos";
 
         const jefe = users.find(u => u.id === evento.jefe_directo);
         nombreJefe = jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
@@ -498,18 +517,6 @@ export function TablaPermisosFalta() {
         try {
           const empresaData = JSON.parse(evento.empresa); // Convierte la cadena en un objeto JSON
           nombreEmpresa = empresaData.nombre ? empresaData.nombre : "Sin datos";
-        } catch (error) {
-          console.error("Error al parsear formulario:", error);
-          return "Datos inválidos";
-        }
-
-        try {
-          const fechaData = JSON.parse(evento.fecha_requerida); // Convierte la cadena en un objeto JSON
-          fechaRequerida = fechaData.fechaInicio ? `${new Date(fechaData.fechaInicio).toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })}` : "Sin datos";
         } catch (error) {
           console.error("Error al parsear formulario:", error);
           return "Datos inválidos";
@@ -526,7 +533,12 @@ export function TablaPermisosFalta() {
           Fecha_subida: evento.fecha_subida
             ? timezoneFormatter.format(new Date(evento.fecha_subida))
             : "Sin datos",
-          Fecha_requerida: fechaRequerida || "Sin datos",
+          Fecha_requerida: evento.fecha_requerida
+            ? `${new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })}` : "Sin datos",
           Comentarios: evento.comentarios || "Sin datos",
           Estatus: evento.estatus === "Autorizada por tu jefe directo" 
           ? "Pendiente" 
@@ -539,11 +551,13 @@ export function TablaPermisosFalta() {
     const nombreHoja = 
       verPeticiones === "Todas las solicitudes" ? "Solicitudes" :
       verPeticiones === "Todas las papeletas" ? "Papeletas" :
+      verPeticiones === "Papeletas extemporaneas" ? "Papeletas y solicitudes ext" :
       "Papeletas y solicitudes";
 
     const nombreArchivo = 
       verPeticiones === "Todas las solicitudes" ? "solicitudes.xlsx" :
       verPeticiones === "Todas las papeletas" ? "papeletas.xlsx" :
+      verPeticiones === "Papeletas extemporaneas" ? "papeletas_y_solicitudes_ex.xlsx" :
       "papeletas_y_solicitudes.xlsx";
 
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
@@ -593,6 +607,21 @@ export function TablaPermisosFalta() {
     }
 
     fetchPapeletasSemana();
+  }
+
+  const verPSExtemporaneas = () => {
+    const fetchPapeletasSolicitudesExtemp = async () => {
+      try {
+        const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasExtemporaneas') // Asegúrate de que esta ruta esté configurada en tu backend
+        setEventos(response.data)
+        setAutorizar(true);
+        setVerPeticiones("Papeletas extemporaneas");
+      } catch (error) {
+        console.error('Error al obtener eventos:', error)
+      }
+    }
+
+    fetchPapeletasSolicitudesExtemp();
   }
 
   // Paginación
@@ -653,6 +682,21 @@ export function TablaPermisosFalta() {
         >
           <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
         </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPSExtemporaneas}
+        >
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
+        </Button>
         </>
         ) : verPeticiones === "Todas las papeletas" ? (
         <>
@@ -669,7 +713,7 @@ export function TablaPermisosFalta() {
           }}
           onClick={verPapeletasSemana}
         >
-          <VisualizeIcon2  />VER PAPELETAS DE LA SEMANA
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
         </Button>
         <Button
           variant="contained"
@@ -686,8 +730,23 @@ export function TablaPermisosFalta() {
         >
           <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
         </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPSExtemporaneas}
+        >
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
+        </Button>
         </>
-        ) : (
+        ) : verPeticiones === "Todas las solicitudes" ? (
           <>
           <Button
           variant="contained"
@@ -717,10 +776,73 @@ export function TablaPermisosFalta() {
           }}
           onClick={verPapeletasSemana}
         >
-          <VisualizeIcon2  />VER PAPELETAS DE LA SEMANA
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPSExtemporaneas}
+        >
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
         </Button>
         </>
-        )}
+        ) : (
+        <>
+          <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTPapeletas}
+        >
+          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verTSolicitudes}
+        >
+          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{
+            background: "rgb(31 41 55)",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+          onClick={verPapeletasSemana}
+        >
+          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
+        </Button>
+        </>
+      )}
       </div><br />
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
@@ -754,7 +876,7 @@ export function TablaPermisosFalta() {
             style={{width:"150px"}}
           />
         </div>
-        {verPeticiones === "" ? (
+        {(verPeticiones === "" || verPeticiones === "Papeletas extemporaneas") ? (
           <>
             <div className="w-full sm:w-1/3">
               <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de petición</Label>
@@ -777,6 +899,8 @@ export function TablaPermisosFalta() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="Faltas">Faltas</SelectItem>
+                  <SelectItem value="Suspension">Suspensión</SelectItem>
                   <SelectItem value="Horas extras">Horas extras</SelectItem>
                   <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
                   <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
@@ -795,10 +919,12 @@ export function TablaPermisosFalta() {
                 <SelectValue placeholder="Seleccionar tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="Horas extras">Horas extras</SelectItem>
-                <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
-                <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="Faltas">Faltas</SelectItem>
+              <SelectItem value="Suspension">Suspensión</SelectItem>
+              <SelectItem value="Horas extras">Horas extras</SelectItem>
+              <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
+              <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -811,12 +937,10 @@ export function TablaPermisosFalta() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="Faltas">Faltas</SelectItem>
                 <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
                 <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
                 <SelectItem value="Permiso">Permiso</SelectItem>
                 <SelectItem value="Home Office">Home Office</SelectItem>
-                <SelectItem value="Suspension">Suspensión</SelectItem>
                 <SelectItem value="Vacaciones">Vacaciones</SelectItem>
               </SelectContent>
             </Select>
@@ -848,7 +972,7 @@ export function TablaPermisosFalta() {
             </SelectContent>
           </Select>
         </div>
-        {verPeticiones !== "" ? (
+        {(verPeticiones !== "" && verPeticiones !== "Papeletas extemporaneas") ? (
           <div className="w-full sm:w-1/3">
             <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
             <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
@@ -889,6 +1013,56 @@ export function TablaPermisosFalta() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
+            <div className="space-y-2">
+                <Label>Tipo de falta</Label>
+                <RadioGroup
+                  value={formData.justificada}
+                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
+                  className="flex space-x-2"
+                  disabled={true}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="justificada-si" />
+                    <Label htmlFor="justificada-si">Justificada</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="justificada-no" />
+                    <Label htmlFor="justificada-no">Injustificada</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
+                </div>
+                <Select
+                  value={formData.nombreColaborador || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = users.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        nombreColaborador: selectedUser.id
+                      });
+                    }
+                  }}
+                  disabled={formData.nombreColaborador !== ""}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el colaborador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Días</Label>
                 <Input
@@ -901,8 +1075,8 @@ export function TablaPermisosFalta() {
                   placeholder="Dias que faltó" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -939,29 +1113,7 @@ export function TablaPermisosFalta() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin justificante agregado</span>
                     </>
                   )}
                 </div>
@@ -1021,7 +1173,7 @@ export function TablaPermisosFalta() {
                   readOnly={true}/>
               </div>
               <div className="grid grid-cols-1 gap-4">
-                  {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1107,8 +1259,8 @@ export function TablaPermisosFalta() {
                   placeholder="Horas..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1252,8 +1404,8 @@ export function TablaPermisosFalta() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1370,8 +1522,8 @@ export function TablaPermisosFalta() {
                 <Label style={{fontSize: 17}}>Periodo</Label>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                 <Label style={{fontSize: 17}}>Plan de trabajo</Label>
@@ -1559,6 +1711,39 @@ export function TablaPermisosFalta() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
+            <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
+                </div>
+                <Select
+                  value={formData.nombreColaborador || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = users.find((user) => user.id === value);
+                    if (selectedUser) {
+                      setFormData({
+                        ...formData,
+                        nombreColaborador: selectedUser.id
+                      });
+                    }
+                  }}
+                  disabled={formData.nombreColaborador !== ""}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione el colaborador..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Días</Label>
                 <Input
@@ -1571,8 +1756,8 @@ export function TablaPermisosFalta() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1639,8 +1824,8 @@ export function TablaPermisosFalta() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1675,8 +1860,8 @@ export function TablaPermisosFalta() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                 <div className="space-y-2">
@@ -2243,7 +2428,13 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Aumento sueldo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "100%", // Ajusta el ancho
+              maxWidth: "600px", // Límite del ancho
+              height: "85vh", // Ajusta la altura
+              maxHeight: "85vh", // Límite de la altura
+              padding: "45px", // Margen interno
+            }}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Aumento de sueldo / Cambio de puesto / Cambio de área</CardTitle>
@@ -2314,8 +2505,32 @@ export function TablaPermisosFalta() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                <Label htmlFor="sueldoActual">Sueldo actual</Label>
+              </div>
+              <Input
+                id="sueldoActual"
+                name="sueldoActual"
+                type="number"
+                value={formData.sueldoActual}
+                placeholder="Sueldo actual..."
+                readOnly={true} />
+            </div>
+            <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                <Label htmlFor="nuevoSueldo">Nuevo sueldo</Label>
+              </div>
+              <Input
+                id="nuevoSueldo"
+                name="nuevoSueldo"
+                type="number"
+                value={formData.nuevoSueldo}
+                placeholder="Nuevo sueldo..."
+                readOnly={true} />
+            </div>
             <div className="grid grid-cols-1 gap-4">
-                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha requerida de ajuste", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
               </div>
               <div className="space-y-2">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
@@ -2343,7 +2558,10 @@ export function TablaPermisosFalta() {
 )}
       <div className="overflow-x-auto">
         <Table>
-          {verPeticiones === "Todas las solicitudes" ? <TableCaption>Solicitudes pendientes por revisar</TableCaption> : verPeticiones === "Todas las papeletas" ? <TableCaption>Papeletas pendientes por revisar</TableCaption> : <TableCaption>Papeletas y solicitudes pendientes por revisar</TableCaption>}
+          {verPeticiones === "Todas las solicitudes" ? <TableCaption>Solicitudes pendientes por revisar</TableCaption> 
+          : verPeticiones === "Todas las papeletas" ? <TableCaption>Papeletas pendientes por revisar</TableCaption> 
+          : verPeticiones === "Papeletas extemporaneas" ? <TableCaption>Papeletas y solicitudes extemporáneas pendientes por revisar</TableCaption> 
+          : <TableCaption>Papeletas y solicitudes pendientes por revisar</TableCaption>}
           <TableHeader>
             <TableRow>
               {encabezados.map((encabezado, index) => (
@@ -2358,6 +2576,7 @@ export function TablaPermisosFalta() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
+                  <TableCell>{evento.id_papeleta || "Sin ID especificado"}</TableCell>
                   <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre especificado'}</TableCell>
@@ -2397,19 +2616,13 @@ export function TablaPermisosFalta() {
                       })}`
                     : "Sin datos"}</TableCell>
                   <TableCell>
-                    {evento.fecha_requerida ? (() => {
-                      try {
-                        const fechaData = JSON.parse(evento.fecha_requerida); // Convierte la cadena en un objeto JSON
-                        return fechaData.fechaInicio ? `${new Date(fechaData.fechaInicio).toLocaleDateString('es-ES', {
+                    {evento.fecha_requerida
+                    ? `${new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
-                      })}` : "Sin datos";
-                      } catch (error) {
-                        console.error("Error al parsear formulario:", error);
-                        return "Datos inválidos";
-                      }
-                    })() : "Sin datos"}
+                      })}`
+                    : "Sin datos"}
                   </TableCell>
                   <TableCell>
                     {evento.comentarios || "Sin comentarios"}
@@ -2475,12 +2688,12 @@ export function TablaPermisosFalta() {
                       <CardHeader>
                         {modalDataStatus?.estatus?.startsWith("Autorizada") 
                           ? <CardTitle className="text-2xl font-bold text-center">
-                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo"].includes(modalDataStatus.tipo) 
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"].includes(modalDataStatus.tipo) 
                                 ? "Agregar comentario - Sí se autoriza la solicitud" 
                                 : "Agregar comentario - Sí se autoriza la papeleta"}
                             </CardTitle>
                           : <CardTitle className="text-2xl font-bold text-center">
-                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo"].includes(modalDataStatus.tipo) 
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"].includes(modalDataStatus.tipo) 
                                 ? "Agregar comentario - No se autoriza la solicitud" 
                                 : "Agregar comentario - No se autoriza la papeleta"}
                             </CardTitle>
@@ -2501,7 +2714,7 @@ export function TablaPermisosFalta() {
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button2 className="w-full" disabled={!comentarios} onClick={() => handleChangeStatus(modalDataStatus.id, modalDataStatus.estatus, comentarios)}>Enviar</Button2>
+                        {modalDataStatus.estatus.startsWith("Autorizada") ? (<Button2 className="w-full" onClick={() => handleChangeStatus(modalDataStatus.id, modalDataStatus.estatus, comentarios)}>Enviar</Button2>) : (<Button2 className="w-full" disabled={!comentarios} onClick={() => handleChangeStatus(modalDataStatus.id, modalDataStatus.estatus, comentarios)}>Enviar</Button2>)}
                       </CardFooter>
                   </Card>
                       </DialogContent>
@@ -2513,11 +2726,13 @@ export function TablaPermisosFalta() {
               ))
             ) : (
               <TableRow>
-                {verPeticiones === "Todas las solicitudes" ? <TableCell colSpan={12} className="text-center">
+                {verPeticiones === "Todas las solicitudes" ? <TableCell colSpan={13} className="text-center">
                   No se encontraron solicitudes
-                </TableCell> : verPeticiones === "Todas las papeletas" ? <TableCell colSpan={12} className="text-center">
+                </TableCell> : verPeticiones === "Todas las papeletas" ? <TableCell colSpan={13} className="text-center">
                   No se encontraron papeletas
-                </TableCell> : <TableCell colSpan={12} className="text-center">
+                </TableCell> : verPeticiones === "Papeletas extemporaneas" ? <TableCell colSpan={13} className="text-center">
+                  No se encontraron papeletas ni solicitudes extemporáneas
+                </TableCell> : <TableCell colSpan={13} className="text-center">
                   No se encontraron papeletas ni solicitudes
                 </TableCell>}
               </TableRow>

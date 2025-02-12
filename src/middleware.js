@@ -1,36 +1,56 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import axios from "axios";
 
 export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
-  // Si no hay token, redirigir al login
   if (!token) {
-    const loginUrl = new URL("/login", req.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const url = req.nextUrl.clone();
   const currentPath = url.pathname;
 
-  // Obtener datos del token
   const rol = token.rol;
-  const idPermiso = token.idPermiso || null; // Asegúrate de incluir idPermiso en el token
+  const idUser = token.id; // Asegúrate de que el token contenga idUser
+  const idPermiso = token.idPermiso || null;
   const departamento = token.departamento || null;
 
-  // Roles y su estado (booleanos)
+  // Obtener permisos del usuario desde la API
+  let permisos = {};
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/api/MarketingLabel/permiso?userId=${idUser}`
+    );
+    permisos = response.data;
+  } catch (error) {
+    console.error("Error al obtener permisos:", error);
+  }
+
+  // Función para verificar permisos
+  const tienePermiso = (seccion, campo) => {
+    if (!permisos.campo || !permisos.campo[seccion]) {
+      return false;
+    }
+    return permisos.campo[seccion].includes(campo);
+  };
+
+  // Definir roles
   const roles = {
     isMaster: rol === "Máster",
-    isAdminMkt: rol === "Administrador" && idPermiso !== null,
+    isAdminMkt: rol === "Administrador" && idPermiso !== null && departamento === 2,
     isAdminGC: rol === "Administrador" && departamento === 5,
     isITMember: rol !== "Máster" && departamento === 1,
     isStandardMkt: rol === "Estándar" && idPermiso !== null,
     isStandard: rol === "Estándar",
+    hasAccessPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Modulo papeletas"),
+    hasAccessAutorizarPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
   };
 
-  // Mapa de roles y rutas permitidas
+  // Rutas permitidas por rol
   const roleRoutes = {
-    isMaster: "*", // Puede acceder a todas las rutas
+    isMaster: "*",
     isAdminMkt: [
       "/inicio",
       "/perfil",
@@ -44,18 +64,11 @@ export async function middleware(req) {
       "/inicio",
       "/perfil",
       "/papeletas_usuario",
-      "/gente_y_cultura/todas_papeletas",
-      "/gente_y_cultura/autorizar_papeletas",
       "/usuario",
       "/usuario/empresas",
       "/gente_y_cultura/vacantes",
     ],
-    isITMember: [
-      "/inicio", 
-      "/perfil", 
-      "/papeletas_usuario",
-      "/it/inventario",
-    ],
+    isITMember: ["/inicio", "/perfil", "/papeletas_usuario", "/it/inventario"],
     isStandardMkt: [
       "/inicio",
       "/perfil",
@@ -64,31 +77,41 @@ export async function middleware(req) {
       "/marketing/Editar",
       "/marketing/etiquetas",
     ],
-    isStandard: [
-      "/inicio", 
-      "/perfil", 
+    isStandard: ["/inicio", "/perfil", "/papeletas_usuario"],
+    hasAccessPapeletas: [
+      "/inicio",
+      "/perfil",
       "/papeletas_usuario",
+      "/gente_y_cultura/todas_papeletas",
+      "/usuario",
+      "/usuario/empresas",
+      "/gente_y_cultura/vacantes",
+    ],
+    hasAccessAutorizarPapeletas: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/gente_y_cultura/autorizar_papeletas"
     ],
   };
 
-  // Permitir acceso total para Máster
+  // Máster puede acceder a todas las rutas
   if (roles.isMaster) {
     return NextResponse.next();
   }
 
-  // Determinar las rutas permitidas según el rol
+  // Obtener rutas permitidas para el usuario
   const allowedRoutes = Object.entries(roleRoutes)
-    .filter(([key]) => roles[key]) // Evalúa si el rol es verdadero
+    .filter(([key]) => roles[key])
     .flatMap(([, routes]) => routes);
 
-  // Verificar si la ruta actual está permitida
+  // Verificar si la ruta está permitida
   const isAuthorized =
     allowedRoutes.includes("*") ||
     allowedRoutes.some((route) => currentPath.startsWith(route));
 
   if (!isAuthorized) {
-    const errorUrl = new URL("/paginas_error", req.url);
-    return NextResponse.redirect(errorUrl);
+    return NextResponse.redirect(new URL("/paginas_error", req.url));
   }
 
   return NextResponse.next();

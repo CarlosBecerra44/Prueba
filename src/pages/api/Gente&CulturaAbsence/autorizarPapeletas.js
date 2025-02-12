@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       ON 
           u.departamento_id = d.id
       WHERE 
-          f.id_usuario != ? AND u.jefe_directo = ? AND f.eliminado = 0 AND f.estatus = 'Pendiente'
+          f.id_usuario != ? AND u.jefe_directo = ? AND f.eliminado = 0 AND f.estatus = 'Pendiente' AND f.tipo NOT IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')
       ORDER BY 
           f.fecha_subida DESC;
     `;

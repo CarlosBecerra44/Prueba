@@ -27,9 +27,19 @@ export default async function handler(req, res) {
         return res.status(404).json({ message: 'No se encontraron permisos para este usuario' });
       }
 
+      // Convertir `permiso.campo` a JSON si es necesario
+      let permisos = result[0];
+
+      try {
+        permisos.campo = typeof permisos.campo === 'string' ? JSON.parse(permisos.campo) : permisos.campo;
+      } catch (error) {
+        console.error('Error al parsear permisos.campo:', error);
+        permisos.campo = {}; // En caso de error, devolver un objeto vacío
+      }
+
       // Devuelve los permisos del usuario
-      res.status(200).json(result[0]);
-      console.log(result[0]);
+      console.log("PERMISOS: " + JSON.stringify(permisos))
+      res.status(200).json(permisos);
     } catch (error) {
       console.error('Error al obtener permisos', error);
       res.status(500).json({ message: 'Error al obtener permisos' });

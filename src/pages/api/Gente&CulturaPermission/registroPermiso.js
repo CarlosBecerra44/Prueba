@@ -1,4 +1,4 @@
-import pool from '@/lib/db'; // O cualquier cliente de MySQL que estés usando
+import pool from '@/lib/db';
 
 export default async function handler(req, res) {
   const { id: userId } = req.query;
@@ -10,12 +10,11 @@ export default async function handler(req, res) {
   let connection;
 
   try {
-    // Obtener la conexión
     connection = await pool.getConnection();
 
     if (req.method === 'GET') {
       try {
-        // Consulta para traer los permisos ya existentes para el usuario
+        // Recuperar permisos
         const existingPermisoQuery = `
           SELECT id, seccion, campo FROM permiso
           WHERE id = (
@@ -25,9 +24,24 @@ export default async function handler(req, res) {
         const [existingPermisoResult] = await connection.execute(existingPermisoQuery, [userId]);
 
         if (existingPermisoResult.length > 0) {
+          let permiso = existingPermisoResult[0];
+
+          // Intentar parsear si los valores están en formato TEXT
+          try {
+            permiso.seccion = JSON.parse(permiso.seccion);
+          } catch (e) {
+            permiso.seccion = permiso.seccion || []; // En caso de error, asignar array vacío
+          }
+
+          try {
+            permiso.campo = JSON.parse(permiso.campo);
+          } catch (e) {
+            permiso.campo = permiso.campo || {}; // En caso de error, asignar objeto vacío
+          }
+
           return res.status(200).json({
             message: 'Permisos existentes encontrados',
-            permiso: existingPermisoResult[0],
+            permiso,
           });
         } else {
           return res.status(404).json({ message: 'No se encontraron permisos para este usuario' });
@@ -40,7 +54,7 @@ export default async function handler(req, res) {
       const { selections } = req.body;
 
       try {
-        // Código para insertar o actualizar permisos si no existen
+        // Convertir selecciones en JSON
         const combinedSelections = selections.reduce((acc, selection) => {
           const seccion = selection.seccion;
           const campo = selection.campo;
@@ -56,6 +70,7 @@ export default async function handler(req, res) {
         const seccionJson = JSON.stringify(Object.keys(combinedSelections));
         const campoJson = JSON.stringify(combinedSelections);
 
+        // Comprobar si ya existen permisos para el usuario
         const existingPermisoQuery = `
           SELECT id, seccion, campo FROM permiso
           WHERE id = (
@@ -65,20 +80,41 @@ export default async function handler(req, res) {
         const [existingPermisoResult] = await connection.execute(existingPermisoQuery, [userId]);
 
         if (existingPermisoResult.length > 0) {
+          // Manejar datos en TEXT o JSON
+          let permiso = existingPermisoResult[0];
+          let seccionExistente, campoExistente;
+
+          try {
+            seccionExistente = JSON.parse(permiso.seccion);
+          } catch (e) {
+            seccionExistente = permiso.seccion ? permiso.seccion.split(',') : [];
+          }
+
+          try {
+            campoExistente = JSON.parse(permiso.campo);
+          } catch (e) {
+            campoExistente = permiso.campo ? {} : {};
+          }
+
+          // Fusionar permisos existentes con los nuevos
+          const nuevaSeccion = [...new Set([...seccionExistente, ...Object.keys(combinedSelections)])];
+          const nuevoCampo = { ...campoExistente, ...combinedSelections };
+
           const permisoQuery = `
             UPDATE permiso 
-            SET seccion = JSON_MERGE(seccion, ?), campo = JSON_MERGE(campo, ?) 
+            SET seccion = ?, campo = ?
             WHERE id = (
               SELECT id_permiso FROM usuarios WHERE id = ?
             )
           `;
 
-          await connection.execute(permisoQuery, [seccionJson, campoJson, userId]);
+          await connection.execute(permisoQuery, [JSON.stringify(nuevaSeccion), JSON.stringify(nuevoCampo), userId]);
 
           return res.status(200).json({
             message: 'Permisos del usuario actualizados correctamente',
           });
         } else {
+          // Crear nuevo permiso
           const permisoQuery = `
             INSERT INTO permiso (seccion, campo)
             VALUES (?, ?)
@@ -110,7 +146,6 @@ export default async function handler(req, res) {
     console.error('Error al obtener la conexión:', error);
     return res.status(500).json({ message: 'Error al obtener la conexión' });
   } finally {
-    // Liberar la conexión
     if (connection) connection.release();
   }
 }

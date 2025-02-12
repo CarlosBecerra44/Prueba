@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -88,13 +88,13 @@ const toggleSection = (sectionId) => {
           id: 1,
           name: "Papeletas",
           href: "/gente_y_cultura/todas_papeletas",
-          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"]
+          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessPapeletas"]
         },
         {
           id: 2,
           name: "Autorizar papeletas",
           href: "/gente_y_cultura/autorizar_papeletas",
-          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"]
+          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessAutorizarPapeletas"]
         },
 
         {
@@ -136,6 +136,8 @@ const toggleSection = (sectionId) => {
     if (isStandard && category.includes("standard")) return true;
     if (isAdminGC && category.includes("adminGC")) return true;
     if (isITMember && category.includes("itMember")) return true;
+    if (hasAccessPapeletas && category.includes("hasAccessPapeletas")) return true;
+    if (hasAccessAutorizarPapeletas && category.includes("hasAccessAutorizarPapeletas")) return true;
 
     return false;
   };

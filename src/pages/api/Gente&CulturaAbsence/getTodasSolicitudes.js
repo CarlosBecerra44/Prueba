@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       ON 
           f.id_usuario = u.id 
           AND f.eliminado = 0 
-          AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones')
+          AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones' OR f.tipo = 'Faltas' OR f.tipo = 'Suspension')
       JOIN 
           departamentos d
       ON 
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       ON
           u.empresa_id = e.id
       ORDER BY 
-          f.fecha_subida DESC;
+          f.fecha_actualizacion DESC;
     `;
     
     const [result] = await connection.execute(query); // Ejecuta la consulta utilizando la conexión obtenida

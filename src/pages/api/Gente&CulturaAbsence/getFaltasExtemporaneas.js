@@ -12,32 +12,29 @@ export default async function handler(req, res) {
     connection = await pool.getConnection();
 
     const query = `
-      SELECT 
-          f.*, 
-          u.*, 
-          f.id AS id_papeleta, 
-          f.formulario AS formulario_usuario,
-          d.nombre AS nombre_departamento,
-          e.formulario AS empresa_usuario
-      FROM 
-          formularios_faltas f
-      JOIN 
-          usuarios u
-      ON 
-          f.id_usuario = u.id 
-          AND f.eliminado = 0 
-          AND (f.estatus != 'Pendiente' AND f.estatus != 'No autorizada por tu jefe directo')
-          AND (f.tipo != 'Aumento sueldo' AND f.tipo != 'Horas extras' AND f.tipo != 'Bonos / Comisiones' AND f.tipo != 'Faltas' AND f.tipo != 'Suspension')
-      JOIN 
-          departamentos d
-      ON 
-          u.departamento_id = d.id
-      JOIN 
-          empresas e
-      ON
-          u.empresa_id = e.id
-      ORDER BY 
-          f.fecha_actualizacion DESC;
+        SELECT 
+            f.*, 
+            u.*, 
+            f.id AS id_papeleta, 
+            f.formulario AS formulario_usuario,
+            d.nombre AS nombre_departamento,
+            e.formulario AS empresa_usuario,
+            f.fecha_inicio
+        FROM 
+            formularios_faltas f
+        JOIN 
+            usuarios u ON f.id_usuario = u.id 
+        JOIN 
+            departamentos d ON u.departamento_id = d.id
+        JOIN 
+            empresas e ON u.empresa_id = e.id
+        WHERE 
+            f.eliminado = 0 
+            AND f.extemporanea = 1
+            AND (f.estatus = 'Autorizada por tu jefe directo' 
+            OR (f.estatus = 'Pendiente' AND f.tipo IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')))
+        ORDER BY 
+            f.fecha_subida DESC;
     `;
     
     const [result] = await connection.execute(query); // Ejecuta la consulta utilizando la conexión obtenida

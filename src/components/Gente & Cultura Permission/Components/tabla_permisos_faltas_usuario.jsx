@@ -31,7 +31,7 @@ import HelpIcon from '@mui/icons-material/Help'; // Ícono de signo de interroga
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { CalendarIcon, Upload } from 'lucide-react'
-import { format } from 'date-fns'
+import { startOfDay, addDays, subDays, getDay, isAfter, isBefore, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
@@ -71,8 +71,39 @@ export function TablaPermisosFaltaUsuario() {
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
+  const [tipoFormularioAbierto, setTipoFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
+  const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] = useState(""); // Estado para abrir el formulario
+  const [fechaInicioPapeleta, setFechaInicio] = useState("");
+  const [fechaFinPapeleta, setFechaFin] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  useEffect(() => {
+    const checkTime = () => {
+      const now = new Date();
+      const day = now.getDay(); // 0: Domingo, 1: Lunes, ..., 3: Miércoles, ..., 6: Sábado
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Deshabilitar los miércoles a las 12 PM (12:00 - 23:59)
+      if (day === 3 && hours >= 12) {
+        setIsDisabled(true);
+      }
+      // Habilitar el jueves a las 12 AM (00:00 en adelante)
+      else if (day === 4 && hours === 0 && minutes === 0) {
+        setIsDisabled(false);
+      }
+    };
+
+    // Ejecutar al cargar el componente
+    checkTime();
+
+    // Verificar la hora cada minuto
+    const interval = setInterval(async () => checkTime(), 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const openModal = () => {
     setFormData({
@@ -94,10 +125,15 @@ export function TablaPermisosFaltaUsuario() {
     setFormularioAbierto(true); // Abrir el formulario
   };
 
-  const openModalForms = () => {
+  const openModalType = () => {
     setTipoFormulario2("");
     setFormularioPrincipalAbierto(true); // Abrir el formulario
   };
+
+  const openModalFormsType = () => {
+    setFormularioNormalOExtemporaneo("");
+    setTipoFormularioAbierto(true);
+  }
 
   const closeModal = () => {
     setFormularioAbierto(false); // Cerrar el formulario
@@ -109,6 +145,10 @@ export function TablaPermisosFaltaUsuario() {
 
   const closeModalForms = () => {
     setFormularioPrincipalAbierto(false); // Cerrar el formulario
+  };
+
+  const closeModalFormsType = () => {
+    setTipoFormularioAbierto(false); // Cerrar el formulario
   };
 
   const closeModalFormsEdit = () => {
@@ -211,6 +251,10 @@ export function TablaPermisosFaltaUsuario() {
     setTipoFormulario2(value);
   };
 
+  const handleCheckboxChangeTypeForm = (value) => {
+    setFormularioNormalOExtemporaneo(value);
+  };
+
   const encabezados = [
     "Tipo",
     "Número de empleado",
@@ -250,6 +294,8 @@ export function TablaPermisosFaltaUsuario() {
       const data = await response.json();
       setFormData(data.formulario);
       setTipoFormulario2(data.tipo);
+      setFechaInicio(data.fecha_inicio);
+      setFechaFin(data.fecha_fin);
       setFormularioPrincipalAbiertoEdit(true);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
@@ -291,7 +337,7 @@ export function TablaPermisosFaltaUsuario() {
     return {
       id: evento.id,
       id_papeleta: evento.id_papeleta,
-      tipo: evento.tipo,
+      tipo: evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
       nombre: evento.nombre + " " + evento.apellidos,
       departamento: evento.nombre_departamento,
       puesto: evento.puesto,
@@ -321,7 +367,7 @@ export function TablaPermisosFaltaUsuario() {
     .map(extractData)
     .filter(evento => 
       (statusFilter === "todos" || evento.estatus === statusFilter) && // Filtro por estatus
-      (tipoFormulario === "todos" || evento.tipo === tipoFormulario) && // Filtro por tipo de formulario
+      (tipoFormulario === "todos" || evento.tipo.split(" - ")[0] === tipoFormulario) && // Filtro por tipo de formulario
       Object.values(evento)
         .filter(value => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
         .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase())) // Filtro por término de búsqueda
@@ -450,7 +496,7 @@ export function TablaPermisosFaltaUsuario() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ formData, tipoFormulario2 }),
+        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
       });
   
       if (response.ok) {
@@ -542,78 +588,99 @@ export function TablaPermisosFaltaUsuario() {
     }
   };
 
-  const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => (
-    <div className={removeSpacing ? "" : "space-y-2"}>
-    <Label>{label}</Label>
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button2
-        variant="outline"
-        className={cn(
-          "w-full justify-start text-left font-normal",
-          !date && "text-muted-foreground"
-        )}
-        disabled={readOnly}
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {date
-          ? format(date, "PPP", { locale: es })
-          : <span>Selecciona una fecha</span>}
-      </Button2>
-    </PopoverTrigger>
-    {!readOnly && (
-      <PopoverContent className="p-4 min-w-[320px]">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(selectedDate) =>
-            handleChange({ target: { name, value: selectedDate } })
-          }
-          initialFocus
-          className="grid grid-cols-7 gap-1"
-          locale={es}
-          render={{
-            header: () => (
-              <div className="grid grid-cols-7 text-center text-sm font-medium text-gray-700">
-                <span>D</span>
-                <span>L</span>
-                <span>M</span>
-                <span>MI</span>
-                <span>J</span>
-                <span>V</span>
-                <span>S</span>
-              </div>
-            ),
-          }}
-        />
-      </PopoverContent>
-    )}
-  </Popover>
-</div>
+  const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => {
+    // Obtener la fecha actual sin horas
+    const hoy = startOfDay(new Date());
+    const diaSemana = hoy.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
 
-  )    
+    let juevesInicioNomina = null;
+
+    // Si es "Normal", calcular el jueves de nómina
+    if (formularioNormalOExtemporaneo === "Normal") {
+        juevesInicioNomina = addDays(hoy, (4 - diaSemana));
+        
+        // Si hoy es lunes (1), martes (2) o miércoles (3), restamos 7 días
+        if (diaSemana <= 3) {
+            juevesInicioNomina = subDays(juevesInicioNomina, 7);
+        }
+    } 
+
+    return (
+      <div className={removeSpacing ? "" : "space-y-2"}>
+        <Label>{label}</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+              <Button2
+                  variant="outline"
+                  className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                  )}
+                  disabled={readOnly}
+              >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date
+                      ? format(date, "PPP", { locale: es })
+                      : <span>Selecciona una fecha</span>}
+              </Button2>
+          </PopoverTrigger>
+          {!readOnly && (
+            <PopoverContent className="p-4 min-w-[320px]">
+                <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(selectedDate) => {
+                        handleChange({ target: { name, value: selectedDate } });
+                    }}
+                    initialFocus
+                    className="grid grid-cols-7 gap-1"
+                    locale={es}
+                    fromDate={formularioNormalOExtemporaneo === "Normal" ? juevesInicioNomina : null} // Si es "Normal", restringimos desde el jueves
+                    toDate={null} // Hasta el miércoles siguiente
+                    render={{
+                        header: () => (
+                            <div className="grid grid-cols-7 text-center text-sm font-medium text-gray-700">
+                                <span>D</span>
+                                <span>L</span>
+                                <span>M</span>
+                                <span>MI</span>
+                                <span>J</span>
+                                <span>V</span>
+                                <span>S</span>
+                            </div>
+                        ),
+                    }}
+                />
+            </PopoverContent>
+          )}
+        </Popover>
+      </div>
+    );
+  };
 
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button
-          variant="contained"
-          color="secondary"
+          disabled={isDisabled}
           style={{
-            background: "rgb(31 41 55)",
+            background: isDisabled ? "gray" : "rgb(31 41 55)",
             padding: "10px 15px",
             whiteSpace: "nowrap",
             display: "flex",
             alignItems: "center",
             gap: "12px",
+            color: "white",
+            border: "none",
+            cursor: isDisabled ? "not-allowed" : "pointer",
           }}
-          onClick={openModalForms}
+          onClick={!isDisabled ? openModalFormsType : undefined}
         >
-          <PermisosIcon className="h-4 w-4" />AGREGAR PAPELETA
+          <PermisosIcon className="h-4 w-4" /> AGREGAR PAPELETA
         </Button>
       </div><br />
-      {formularioPrincipalAbierto && (
-            <Dialog open={formularioPrincipalAbierto} onOpenChange={closeModalForms}>
+      {tipoFormularioAbierto && (
+            <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
             <DialogContent className="border-none p-0">
             <Card className="w-full max-w-lg">
           <CardHeader>
@@ -623,16 +690,42 @@ export function TablaPermisosFaltaUsuario() {
           <div className="grid gap-4 py-4">
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="Faltas"
-                checked={tipoFormulario2 === "Faltas"}
+                id="Normal"
+                checked={formularioNormalOExtemporaneo === "Normal"}
                 onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Faltas" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
+                  handleCheckboxChangeTypeForm(checked ? "Normal" : "");
+                  if (checked) openModalType(); // Abrir el modal después de actualizar el estado
                 }}
                 style={{ marginLeft: "30px" }}
               />
-              <Label htmlFor="Faltas">Faltas</Label>
+              <Label htmlFor="Normal">Normal</Label>
             </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="Extemporánea"
+                checked={formularioNormalOExtemporaneo === "Extemporánea"}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChangeTypeForm(checked ? "Extemporánea" : "");
+                  if (checked) openModalType(); // Abrir el modal después de actualizar el estado
+                }}
+                style={{ marginLeft: "30px" }}
+              />
+              <Label htmlFor="Extemporánea">Extemporánea (Omisiones o aclaraciones de nómina)</Label>
+            </div>
+          </div>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+      {formularioPrincipalAbierto && (
+            <Dialog open={formularioPrincipalAbierto} onOpenChange={closeModalForms}>
+            <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Nueva papeleta</CardTitle>
+            <DialogDescription className="text-center">Selecciona el tipo de papeleta</DialogDescription>
+          </CardHeader>
+          <div className="grid gap-4 py-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="Llegada tarde / Salida antes"
@@ -683,18 +776,6 @@ export function TablaPermisosFaltaUsuario() {
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="Suspension"
-                checked={tipoFormulario2 === "Suspension"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Suspension" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Suspension">Suspensión</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
                 id="Vacaciones"
                 checked={tipoFormulario2 === "Vacaciones"}
                 onCheckedChange={(checked) => {
@@ -714,111 +795,6 @@ export function TablaPermisosFaltaUsuario() {
       {/* Mostrar formulario basado en el tipo seleccionado */}
       {formularioAbierto && tipoFormulario2 && (
         <div>
-          {tipoFormulario2 === "Faltas" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  onChange={handleChange}
-                  required
-                  placeholder="Dias..."/>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube tu justificante. Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                <input
-                    id="comprobante"
-                    name="comprobante"  // Asegúrate que sea "comprobante"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    required
-                    className="hidden"
-                  />
-                  <Button2
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("comprobante").click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG) Max: 4MB
-                  </Button2>
-                  {formData.comprobante && (
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
           {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
             <DialogContent className="border-none p-0">
@@ -1366,76 +1342,6 @@ export function TablaPermisosFaltaUsuario() {
             </DialogContent>
           </Dialog>
           )}
-          {tipoFormulario2 === "Suspension" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
-            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  onChange={handleChange}
-                  required
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
             <DialogContent className="border-none p-0">
@@ -1494,126 +1400,6 @@ export function TablaPermisosFaltaUsuario() {
           </DialogDescription>
         </CardHeader>
         <div className="grid gap-4 py-4">
-        {tipoFormulario2 === "Faltas" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={true}
-                  placeholder="Dias que faltó" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..."
-                  readOnly={true} />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {formData.comprobante ? (
-                    <a
-                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Descargar {formData.comprobante}
-                  </a>    
-                  ) : (
-                    <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
             <DialogContent className="border-none p-0">
@@ -1635,7 +1421,7 @@ export function TablaPermisosFaltaUsuario() {
                   readOnly={true}/>
               </div>
               <div className="grid grid-cols-1 gap-4">
-                  {renderDatePicker("Fecha", formData.fechaInicio, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1721,8 +1507,8 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Horas..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1866,8 +1652,8 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -1984,8 +1770,8 @@ export function TablaPermisosFaltaUsuario() {
                 <Label style={{fontSize: 17}}>Periodo</Label>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                 <Label style={{fontSize: 17}}>Plan de trabajo</Label>
@@ -2185,8 +1971,8 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -2253,8 +2039,8 @@ export function TablaPermisosFaltaUsuario() {
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin", true)}
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="motivo">Observaciones</Label>
@@ -2299,12 +2085,10 @@ export function TablaPermisosFaltaUsuario() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Faltas">Faltas</SelectItem>
               <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
               <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
               <SelectItem value="Permiso">Permiso</SelectItem>
               <SelectItem value="Home Office">Home Office</SelectItem>
-              <SelectItem value="Suspension">Suspensión</SelectItem>
               <SelectItem value="Vacaciones">Vacaciones</SelectItem>
             </SelectContent>
           </Select>

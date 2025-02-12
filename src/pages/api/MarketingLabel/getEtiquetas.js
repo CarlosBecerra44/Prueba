@@ -24,8 +24,15 @@ export default async function handler(req, res) {
       ORDER BY fecha_actualizacion DESC
     `);
 
+    // Convertir datos_formulario y firmas a JSON si es necesario
+    const parsedRows = rows.map(row => ({
+      ...row,
+      datos_formulario: parseJSON(row.datos_formulario),
+      firmas: parseJSON(row.firmas),
+    }));
+
     // Retorna los eventos en formato JSON
-    res.status(200).json(rows);
+    res.status(200).json(parsedRows);
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });
@@ -34,5 +41,15 @@ export default async function handler(req, res) {
     if (connection) {
       connection.release();
     }
+  }
+}
+
+// Función para intentar parsear JSON, si falla devuelve el valor original
+function parseJSON(value) {
+  try {
+    return typeof value === 'string' ? JSON.parse(value) : value;
+  } catch (error) {
+    console.error('Error al parsear JSON:', value, error);
+    return value; // Devuelve el valor original si hay un error
   }
 }

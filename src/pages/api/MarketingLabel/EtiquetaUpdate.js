@@ -24,8 +24,8 @@ export default async function handler(req, res) {
       return res.status(404).json({ message: 'Etiqueta no encontrada' });
     }
 
-    // No necesitas JSON.parse porque `datos_formulario` ya es un objeto
-    const datos_formulario = rows[0].datos_formulario || {};
+    // Intentar parsear `datos_formulario` si es una cadena de texto
+    const datos_formulario = parseJSON(rows[0].datos_formulario) || {};
     const pdf_path = rows[0].pdf_path || ''; // Valor por defecto si es null o undefined
     const estatus = rows[0].estatus || '';
 
@@ -47,5 +47,15 @@ export default async function handler(req, res) {
     if (connection) {
       connection.release();
     }
+  }
+}
+
+// Función para intentar parsear JSON si es una cadena de texto
+function parseJSON(value) {
+  try {
+    return typeof value === 'string' ? JSON.parse(value) : value;
+  } catch (error) {
+    console.error('Error al parsear JSON:', value, error);
+    return value; // Devuelve el valor original si hay un error
   }
 }

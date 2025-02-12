@@ -32,7 +32,7 @@ export default async function handler(req, res) {
           u.departamento_id = d.id
       WHERE 
           f.id_usuario = ? 
-          AND f.tipo NOT IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones')
+          AND f.tipo NOT IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')
           AND f.eliminado = 0
       ORDER BY 
           f.fecha_actualizacion DESC;

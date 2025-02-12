@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
     if (departamento != null) {
       // Consulta para obtener los usuarios por departamento
-      const [result] = await connection.execute('SELECT * FROM usuarios WHERE departamento_id = ?', [departamento]);
+      const [result] = await connection.execute('SELECT * FROM usuarios WHERE departamento_id = ? AND eliminado = 0 ORDER BY nombre ASC', [departamento]);
 
       if (result.length > 0) {
         const users = result;
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       }
     } else {
       // Consulta para obtener los usuarios con departamentos específicos
-      const [result] = await connection.execute('SELECT * FROM usuarios WHERE departamento_id IN (7, 11)');
+      const [result] = await connection.execute('SELECT * FROM usuarios WHERE eliminado = 0 ORDER BY nombre ASC');
 
       if (result.length > 0) {
         const users = result;

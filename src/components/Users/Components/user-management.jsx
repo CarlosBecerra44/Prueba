@@ -73,6 +73,11 @@ const formSections = [
       'Gerente de marketing','Diseñador gráfico', 'Gerente o supervisor de calidad', 'Gerente o coordinador de auditorías','Químico o formulador','Planeación','Maquilas'
     ]
   },
+  { 
+    id: 'Papeletas', 
+    name: 'Papeletas',
+    changeOptions: ['Autorizar', 'Modulo papeletas']
+  },
 ]
 
 export function UserManagementTable() {
@@ -953,8 +958,8 @@ export function UserManagementTable() {
                           <Label htmlFor="Editar">Editar</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Checkbox id="delete-records"  onCheckedChange={() => handlePermissionChange("delete-records")}  />
-                          <Label htmlFor="delete-records">Visualizar 
+                          <Checkbox id="Visualizar"  onCheckedChange={() => handlePermissionChange("Visualizar")}  />
+                          <Label htmlFor="Visualizar">Visualizar 
                           </Label>
                         </div>
                         
