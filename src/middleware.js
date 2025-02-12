@@ -21,7 +21,7 @@ export async function middleware(req) {
   let permisos = {};
   try {
     const response = await axios.get(
-      `http://localhost:3000/api/MarketingLabel/permiso?userId=${idUser}`
+      `https://aionnet.vercel.app/api/MarketingLabel/permiso?userId=${idUser}`
     );
     permisos = response.data;
   } catch (error) {
