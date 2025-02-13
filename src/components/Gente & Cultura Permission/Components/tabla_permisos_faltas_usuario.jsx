@@ -2102,9 +2102,11 @@ export function TablaPermisosFaltaUsuario() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+              <SelectItem value="Autorizada por RH">Autorizada por RH</SelectItem>
+              <SelectItem value="Autorizada por tu jefe directo">Autorizada por tu jefe directo</SelectItem>
               <SelectItem value="Pendiente">Pendiente</SelectItem>
-              <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
+              <SelectItem value="No autorizada por tu jefe directo">No autorizada por tu jefe directo</SelectItem>
+              <SelectItem value="No autorizada por RH">No autorizada por RH</SelectItem>
             </SelectContent>
           </Select>
         </div>

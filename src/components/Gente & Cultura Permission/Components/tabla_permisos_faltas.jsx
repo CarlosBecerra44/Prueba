@@ -508,44 +508,51 @@ export function TablaPermisosFalta() {
   
     const worksheet = XLSX.utils.json_to_sheet(
       filteredEventos.map((evento) => {
-        let nombreEmpresa = "Sin datos"; // Valor por defecto
+        let nombreEmpresa = "Sin datos"; 
         let nombreJefe = "Sin datos";
-
+  
+        // Buscar jefe directo
         const jefe = users.find(u => u.id === evento.jefe_directo);
-        nombreJefe = jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
-    
-        try {
-          const empresaData = JSON.parse(evento.empresa); // Convierte la cadena en un objeto JSON
-          nombreEmpresa = empresaData.nombre ? empresaData.nombre : "Sin datos";
-        } catch (error) {
-          console.error("Error al parsear formulario:", error);
-          return "Datos inválidos";
+        if (jefe) {
+          nombreJefe = `${jefe.nombre} ${jefe.apellidos}`;
         }
-    
+  
+        // Manejar evento.empresa si es JSON o texto
+        if (typeof evento.empresa === "object" && evento.empresa !== null) {
+          nombreEmpresa = evento.empresa.nombre || "Sin datos";
+        } else if (typeof evento.empresa === "string") {
+          try {
+            const empresaData = JSON.parse(evento.empresa);
+            nombreEmpresa = empresaData.nombre || "Sin datos";
+          } catch (error) {
+            console.error("Error al parsear empresa:", error);
+          }
+        }
+  
         return {
+          ID: evento.id_papeleta || "Sin datos",
           Tipo: evento.tipo || "Sin datos",
           Numero_empleado: evento.numero_empleado || "Sin datos",
-          Nombre_completo: evento.nombre + " " + evento.apellidos || "Sin datos",
+          Nombre_completo: `${evento.nombre ?? ""} ${evento.apellidos ?? ""}`.trim() || "Sin datos",
           Departamento: evento.departamento || "Sin datos",
           Puesto: evento.puesto || "Sin datos",
-          Jefe_directo: nombreJefe || "Sin datos",
-          Empresa: nombreEmpresa || "Sin datos",
-          Fecha_subida: evento.fecha_subida
-            ? timezoneFormatter.format(new Date(evento.fecha_subida))
+          Jefe_directo: nombreJefe,
+          Empresa: nombreEmpresa,
+          Fecha_subida: evento.fecha_subida 
+            ? timezoneFormatter.format(new Date(evento.fecha_subida)) 
             : "Sin datos",
-          Fecha_requerida: evento.fecha_requerida
-            ? `${new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })}` : "Sin datos",
+          Fecha_requerida: evento.fecha_requerida 
+            ? new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
+              }) 
+            : "Sin datos",
           Comentarios: evento.comentarios || "Sin datos",
           Estatus: evento.estatus === "Autorizada por tu jefe directo" 
-          ? "Pendiente" 
-          : evento.estatus || "Sin datos",
+            ? "Pendiente" 
+            : evento.estatus || "Sin datos",
         };
       })
-    );    
+    );
   
     const workbook = XLSX.utils.book_new();
     const nombreHoja = 
@@ -553,16 +560,16 @@ export function TablaPermisosFalta() {
       verPeticiones === "Todas las papeletas" ? "Papeletas" :
       verPeticiones === "Papeletas extemporaneas" ? "Papeletas y solicitudes ext" :
       "Papeletas y solicitudes";
-
+  
     const nombreArchivo = 
       verPeticiones === "Todas las solicitudes" ? "solicitudes.xlsx" :
       verPeticiones === "Todas las papeletas" ? "papeletas.xlsx" :
       verPeticiones === "Papeletas extemporaneas" ? "papeletas_y_solicitudes_ex.xlsx" :
       "papeletas_y_solicitudes.xlsx";
-
+  
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
     XLSX.writeFile(workbook, nombreArchivo);
-  };  
+  };    
 
   const verTPapeletas = () => {
     const fetchPapeletas = async () => {
