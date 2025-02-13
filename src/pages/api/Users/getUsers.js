@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       ON 
         u.empresa_id = e.id
       ORDER BY 
-        u.id ASC
+        u.nombre ASC
     `;
 
     // Ejecutar la consulta usando la conexión

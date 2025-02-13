@@ -26,9 +26,19 @@ export default async function handler(req, res) {
       return res.status(404).json({ message: 'Formulario no encontrado' });
     }
 
+    let formularioData;
+
+    try {
+      // Intentar parsear como JSON
+      formularioData = datos.formulario ? JSON.parse(datos.formulario) : null;
+    } catch (error) {
+      // Si falla, se trata como texto
+      formularioData = datos.formulario;
+    }
+
     const evento = {
       ...datos,
-      formulario: datos.formulario ? JSON.parse(datos.formulario) : null,
+      formulario: formularioData,
     };
 
     res.status(200).json(evento);
