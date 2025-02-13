@@ -57,7 +57,9 @@ export default async function handler(req, res) {
                 e.formulario AS empresa_usuario,
                 f.fecha_inicio,
                 CONVERT_TZ(f.fecha_subida, '+00:00', '+06:00') AS fecha_subida, 
-                CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion
+                CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion,
+                CONVERT_TZ(f.fecha_inicio, '+00:00', '+06:00') AS fecha_inicio,
+                CONVERT_TZ(f.fecha_fin, '+00:00', '+06:00') AS fecha_fin
             FROM 
                 formularios_faltas f
             JOIN 
