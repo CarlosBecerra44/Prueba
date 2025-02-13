@@ -18,7 +18,9 @@ export default async function handler(req, res) {
           f.id AS id_papeleta, 
           f.formulario AS formulario_usuario,
           d.nombre AS nombre_departamento,
-          e.formulario AS empresa_usuario
+          e.formulario AS empresa_usuario,
+          CONVERT_TZ(f.fecha_subida, '+00:00', '+06:00') AS fecha_subida, 
+          CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion
       FROM 
           formularios_faltas f
       JOIN 
