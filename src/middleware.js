@@ -46,6 +46,8 @@ export async function middleware(req) {
     isStandard: rol === "Estándar",
     hasAccessPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Modulo papeletas"),
     hasAccessAutorizarPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
+    hasAllAccessVacantes: rol === "Administrador" && departamento === 5 && tienePermiso("Gente y Cultura", "Vacantes"),
+    hasAccessVacantes: rol !== "Máster" && tienePermiso("Gente y Cultura", "Vacantes sin sueldo")
   };
 
   // Rutas permitidas por rol
@@ -66,7 +68,6 @@ export async function middleware(req) {
       "/papeletas_usuario",
       "/usuario",
       "/usuario/empresas",
-      "/gente_y_cultura/vacantes",
     ],
     isITMember: ["/inicio", "/perfil", "/papeletas_usuario", "/it/inventario"],
     isStandardMkt: [
@@ -83,15 +84,24 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/gente_y_cultura/todas_papeletas",
-      "/usuario",
-      "/usuario/empresas",
-      "/gente_y_cultura/vacantes",
     ],
     hasAccessAutorizarPapeletas: [
       "/inicio",
       "/perfil",
       "/papeletas_usuario",
       "/gente_y_cultura/autorizar_papeletas"
+    ],
+    hasAllAccessVacantes: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/gente_y_cultura/vacantes",
+    ],
+    hasAccessVacantes: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/gente_y_cultura/vacantes",
     ],
   };
 

@@ -78,6 +78,11 @@ const formSections = [
     name: 'Papeletas',
     changeOptions: ['Autorizar', 'Modulo papeletas']
   },
+  { 
+    id: 'Gente y Cultura', 
+    name: 'Gente y Cultura',
+    changeOptions: ['Vacantes', 'Vacantes sin sueldo']
+  },
 ]
 
 export function UserManagementTable() {

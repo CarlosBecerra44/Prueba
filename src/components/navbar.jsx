@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAllAccessVacantes, hasAccessVacantes } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -110,7 +110,7 @@ const toggleSection = (sectionId) => {
           id: 4,
           name: "Vacantes",
           href: "/gente_y_cultura/vacantes",
-          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"]
+          icon: <VacantesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAllAccessVacantes","hasAccessVacantes"]
         }
       ]
     },
@@ -138,6 +138,8 @@ const toggleSection = (sectionId) => {
     if (isITMember && category.includes("itMember")) return true;
     if (hasAccessPapeletas && category.includes("hasAccessPapeletas")) return true;
     if (hasAccessAutorizarPapeletas && category.includes("hasAccessAutorizarPapeletas")) return true;
+    if (hasAllAccessVacantes && category.includes("hasAllAccessVacantes")) return true;
+    if (hasAccessVacantes && category.includes("hasAccessVacantes")) return true;
 
     return false;
   };

@@ -71,6 +71,8 @@ export function TablaVacantes() {
   const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
   const [selectedVacant, setSelectedVacant] = useState(null);
+  const [permisos, setPermisos] = useState([]);
+  const [idUser, setID] = useState('');
   const [formData, setFormData] = useState({
     dias: "",
     horas: "",
@@ -84,13 +86,58 @@ export function TablaVacantes() {
     estatus: ""
   });
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/Users/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get(`/api/MarketingLabel/permiso?userId=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
+        setPermisos(response.data)
+        console.log("PERMISOS USUARIO: " + JSON.stringify(response.data))
+      } catch (error) {
+        console.error('Error al obtener permisos:', error)
+      }
+    }
+    fetchPermissions()
+  }, [idUser])
+
+  // Función para verificar si el usuario tiene permiso en la sección y campo específicos
+  const tienePermiso = (seccion, campo) => {
+    // Asegúrate de que la sección exista en los permisos
+    if (!permisos.campo || !permisos.campo[seccion]) {
+      return false; // No hay permisos para esta sección
+    }
+    // Verifica si el campo está en la lista de campos permitidos
+    return permisos.campo[seccion].includes(campo);
+  };
+
   const encabezados = [
     "Vacante",
     "Cantidad",
     "Gerencia",
     "Proceso actual",
     "Ubicación",
-    "Salario",
+    tienePermiso("Gente y Cultura", "Vacantes sin sueldo") ? "" : "Salario",
     "Fecha de apertura",
     "Ingreso",
     "Observaciones",
@@ -774,7 +821,8 @@ export function TablaVacantes() {
                     </Select>
                   </TableCell>
                   <TableCell>{evento.ubicacion || 'Sin ubicación especificada'}</TableCell>
-                  <TableCell>{evento.salario || 'Sin salario especificado'}</TableCell>
+                  {tienePermiso("Gente y Cultura", "Vacantes sin sueldo") ? <TableCell></TableCell>
+                  : <TableCell>{evento.salario || 'Sin salario especificado'}</TableCell>}
                   <TableCell>{evento.fecha_apertura
                     ? `${new Date(evento.fecha_apertura).toLocaleDateString('es-ES', {
                         day: '2-digit',

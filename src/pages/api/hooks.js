@@ -81,6 +81,8 @@ export function useUser() {
     isStandardMkt: (rol === "Estándar" && idPermiso !== null),
     isStandard: (rol === "Estándar"),
     hasAccessPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Modulo papeletas"))),
-    hasAccessAutorizarPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Autorizar")))
+    hasAccessAutorizarPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Autorizar"))),
+    hasAllAccessVacantes: (rol === "Administrador" && departamento === "Gente y Cultura" && (tienePermiso("Gente y Cultura", "Vacantes"))),
+    hasAccessVacantes: (rol !== "Máster" && (tienePermiso("Gente y Cultura", "Vacantes sin sueldo")))
   };
 }
