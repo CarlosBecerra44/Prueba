@@ -2593,15 +2593,27 @@ export function TablaPermisosFalta() {
                     }
                   </TableCell>
                   <TableCell>
-                    {evento.empresa ? (() => {
-                      try {
-                        const empresaData = JSON.parse(evento.empresa); // Convierte la cadena en un objeto JSON
-                        return empresaData.nombre ? empresaData.nombre : "Sin datos";
-                      } catch (error) {
-                        console.error("Error al parsear formulario:", error);
-                        return "Datos inválidos";
+                    {(() => {
+                      if (!evento.empresa) return "Sin datos";
+
+                      let empresaData;
+
+                      // Si evento.empresa ya es un objeto, usarlo directamente
+                      if (typeof evento.empresa === "object") {
+                        empresaData = evento.empresa;
+                      } else {
+                        // Si es una cadena, intentar parsearla como JSON
+                        try {
+                          empresaData = JSON.parse(evento.empresa);
+                        } catch (error) {
+                          console.error("Error al parsear empresa:", error);
+                          return evento.empresa; // Mostrar el texto tal cual si no es JSON válido
+                        }
                       }
-                    })() : "Sin datos"}
+
+                      // Verificar si empresaData es un objeto válido y tiene la propiedad 'nombre'
+                      return empresaData && empresaData.nombre ? empresaData.nombre : "Sin datos";
+                    })()}
                   </TableCell>
                   <TableCell>{evento.fecha_subida
                     ? `${new Date(evento.fecha_subida).toLocaleDateString('es-ES', {

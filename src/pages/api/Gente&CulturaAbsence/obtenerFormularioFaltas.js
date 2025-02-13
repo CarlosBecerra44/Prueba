@@ -17,8 +17,25 @@ export default async function handler(req, res) {
     // Obtiene una conexión del pool
     connection = await pool.getConnection();
 
-    // Ejecutar la consulta para obtener el formulario por ID
-    const [rows] = await connection.execute('SELECT * FROM formularios_faltas WHERE id = ?', [id]);
+    // Ejecutar la consulta para obtener el formulario por ID con la conversión de zona horaria
+    const [rows] = await connection.execute(
+      `SELECT 
+        id,
+        formulario, 
+        id_usuario,
+        CONVERT_TZ(fecha_inicio, '+00:00', '+06:00') AS fecha_inicio, 
+        CONVERT_TZ(fecha_fin, '+00:00', '+06:00') AS fecha_fin,
+        estatus,
+        archivo,
+        eliminado,
+        tipo,
+        comentarios,
+        extemporanea
+      FROM formularios_faltas 
+      WHERE id = ?`, 
+      [id]
+    );
+
     const datos = rows[0];
 
     // Verificar si se encontró el formulario
