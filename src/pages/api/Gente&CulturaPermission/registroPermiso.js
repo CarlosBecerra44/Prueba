@@ -25,42 +25,27 @@ export default async function handler(req, res) {
         if (existingPermisoResult.length > 0) {
           let permiso = existingPermisoResult[0];
 
-          try {
-            permiso.seccion = JSON.parse(permiso.seccion);
-          } catch (e) {
-            permiso.seccion = permiso.seccion ? permiso.seccion.split(',') : [];
-          }
+          permiso.seccion = permiso.seccion ? JSON.parse(permiso.seccion) : [];
+          permiso.campo = permiso.campo ? JSON.parse(permiso.campo) : {};
 
-          try {
-            permiso.campo = JSON.parse(permiso.campo);
-          } catch (e) {
-            permiso.campo = permiso.campo ? {} : {};
-          }
-
-          return res.status(200).json({
-            message: 'Permisos existentes encontrados',
-            permiso,
-          });
+          return res.status(200).json({ message: 'Permisos encontrados', permiso });
         } else {
           return res.status(404).json({ message: 'No se encontraron permisos para este usuario' });
         }
       } catch (error) {
-        console.error('Error al obtener los datos', error);
-        return res.status(500).json({ message: 'Error al obtener los datos' });
+        console.error('Error al obtener los permisos', error);
+        return res.status(500).json({ message: 'Error al obtener los permisos' });
       }
     } else if (req.method === 'POST') {
       const { selections } = req.body;
+      if (!Array.isArray(selections) || selections.length === 0) {
+        return res.status(400).json({ message: 'Las selecciones son requeridas' });
+      }
 
       try {
         const combinedSelections = selections.reduce((acc, selection) => {
-          const seccion = selection.seccion;
-          const campo = selection.campo;
-
-          if (acc[seccion]) {
-            acc[seccion].push(campo);
-          } else {
-            acc[seccion] = [campo];
-          }
+          const { seccion, campo } = selection;
+          acc[seccion] = acc[seccion] ? [...new Set([...acc[seccion], campo])] : [campo];
           return acc;
         }, {});
 
@@ -75,62 +60,51 @@ export default async function handler(req, res) {
         `;
         const [existingPermisoResult] = await connection.execute(existingPermisoQuery, [userId]);
 
+        let permisoId = null;
+
         if (existingPermisoResult.length > 0) {
           let permiso = existingPermisoResult[0];
-          let seccionExistente, campoExistente;
+          permisoId = permiso.id;
 
-          try {
-            seccionExistente = JSON.parse(permiso.seccion);
-          } catch (e) {
-            seccionExistente = permiso.seccion ? permiso.seccion.split(',') : [];
-          }
-
-          try {
-            campoExistente = JSON.parse(permiso.campo);
-          } catch (e) {
-            campoExistente = permiso.campo ? {} : {};
-          }
+          let seccionExistente = permiso.seccion ? JSON.parse(permiso.seccion) : [];
+          let campoExistente = permiso.campo ? JSON.parse(permiso.campo) : {};
 
           const nuevaSeccion = [...new Set([...seccionExistente, ...Object.keys(combinedSelections)])];
-          const nuevoCampo = { ...campoExistente };
+          const nuevoCampo = { ...campoExistente, ...combinedSelections };
 
-          for (const seccion in combinedSelections) {
-            nuevoCampo[seccion] = nuevoCampo[seccion]
-              ? [...new Set([...nuevoCampo[seccion], ...combinedSelections[seccion]])]
-              : combinedSelections[seccion];
-          }
-
-          const permisoQuery = `
+          const updateQuery = `
             UPDATE permiso 
             SET seccion = ?, campo = ?
-            WHERE id = (
-              SELECT id_permiso FROM usuarios WHERE id = ?
-            )
+            WHERE id = ?
           `;
-
-          await connection.execute(permisoQuery, [JSON.stringify(nuevaSeccion), JSON.stringify(nuevoCampo), userId]);
-
-          return res.status(200).json({ message: 'Permisos del usuario actualizados correctamente' });
+          await connection.execute(updateQuery, [JSON.stringify(nuevaSeccion), JSON.stringify(nuevoCampo), permisoId]);
         } else {
-          const permisoQuery = `INSERT INTO permiso (seccion, campo) VALUES (?, ?)`;
-          const [permisoResult] = await connection.execute(permisoQuery, [seccionJson, campoJson]);
-          const permisoId = permisoResult.insertId;
+          const insertQuery = `
+            INSERT INTO permiso (seccion, campo)
+            VALUES (?, ?)
+          `;
+          const [insertResult] = await connection.execute(insertQuery, [seccionJson, campoJson]);
+          permisoId = insertResult.insertId;
 
-          const userQuery = `UPDATE usuarios SET id_permiso = ? WHERE id = ?`;
-          await connection.execute(userQuery, [permisoId, userId]);
-
-          return res.status(200).json({ message: 'Permiso creado y asignado al usuario exitosamente', permisoId });
+          const updateUserQuery = `
+            UPDATE usuarios
+            SET id_permiso = ?
+            WHERE id = ?
+          `;
+          await connection.execute(updateUserQuery, [permisoId, userId]);
         }
+
+        return res.status(200).json({ message: 'Permisos actualizados correctamente' });
       } catch (error) {
-        console.error('Error al guardar los datos', error);
-        return res.status(500).json({ message: 'Error al guardar los datos' });
+        console.error('Error al guardar permisos', error);
+        return res.status(500).json({ message: 'Error al guardar permisos' });
       }
     } else {
       res.status(405).json({ message: 'Método no permitido' });
     }
   } catch (error) {
-    console.error('Error al obtener la conexión:', error);
-    return res.status(500).json({ message: 'Error al obtener la conexión' });
+    console.error('Error en la conexión:', error);
+    return res.status(500).json({ message: 'Error en la conexión' });
   } finally {
     if (connection) connection.release();
   }
