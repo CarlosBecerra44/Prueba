@@ -87,14 +87,14 @@ export default async function handler(req, res) {
           try {
             seccionExistente = JSON.parse(permiso.seccion);
           } catch (e) {
-            seccionExistente = permiso.seccion ? permiso.seccion.split(',') : [];
-          }
+            seccionExistente = typeof permiso.seccion === "string" ? permiso.seccion.split(',') : [];
+          }          
 
           try {
             campoExistente = JSON.parse(permiso.campo);
           } catch (e) {
-            campoExistente = permiso.campo ? {} : {};
-          }
+            campoExistente = typeof permiso.campo === "string" ? JSON.parse(permiso.campo) : {};
+          }          
 
           // Fusionar permisos existentes con los nuevos
           const nuevaSeccion = [...new Set([...seccionExistente, ...Object.keys(combinedSelections)])];
