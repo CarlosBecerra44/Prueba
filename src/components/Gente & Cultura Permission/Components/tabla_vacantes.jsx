@@ -71,7 +71,7 @@ export function TablaVacantes() {
   const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
   const [selectedVacant, setSelectedVacant] = useState(null);
-  const [permisos, setPermisos] = useState([]);
+  const [permisos, setPermisos] = useState(null);
   const [idUser, setID] = useState('');
   const [formData, setFormData] = useState({
     dias: "",
@@ -110,26 +110,25 @@ export function TablaVacantes() {
 
   useEffect(() => {
     const fetchPermissions = async () => {
+      if (!idUser) return; // Asegurar que haya un ID antes de la petición
+      
       try {
-        const response = await axios.get(`/api/MarketingLabel/permiso?userId=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
-        setPermisos(response.data)
-        console.log("PERMISOS USUARIO: " + JSON.stringify(response.data))
+        const response = await axios.get(`/api/MarketingLabel/permiso?userId=${idUser}`);
+        setPermisos(response.data); // Guardar los permisos
+        console.log("PERMISOS USUARIO: " + JSON.stringify(response.data));
       } catch (error) {
-        console.error('Error al obtener permisos:', error)
+        console.error('Error al obtener permisos:', error);
       }
-    }
-    fetchPermissions()
-  }, [idUser])
+    };
+    
+    fetchPermissions();
+  }, [idUser]);  
 
   // Función para verificar si el usuario tiene permiso en la sección y campo específicos
   const tienePermiso = (seccion, campo) => {
-    // Asegúrate de que la sección exista en los permisos
-    if (!permisos.campo || !permisos.campo[seccion]) {
-      return false; // No hay permisos para esta sección
-    }
-    // Verifica si el campo está en la lista de campos permitidos
+    if (!permisos || !permisos.campo || !permisos.campo[seccion]) return false;
     return permisos.campo[seccion].includes(campo);
-  };
+  };  
 
   const encabezados = [
     "Vacante",
@@ -137,7 +136,7 @@ export function TablaVacantes() {
     "Gerencia",
     "Proceso actual",
     "Ubicación",
-    tienePermiso("Gente y Cultura", "Vacantes sin sueldo") ? "" : "Salario",
+    permisos && tienePermiso("Gente y Cultura", "Vacantes sin sueldo") ? "" : "Salario",
     "Fecha de apertura",
     "Ingreso",
     "Observaciones",
@@ -386,7 +385,7 @@ export function TablaVacantes() {
 
   
   const {data: session,status}=useSession ();
-  if (status === "loading") {
+  if (status === "loading" || permisos === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
