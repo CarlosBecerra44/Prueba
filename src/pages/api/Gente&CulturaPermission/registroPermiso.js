@@ -14,7 +14,6 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       try {
-        // Recuperar permisos
         const existingPermisoQuery = `
           SELECT id, seccion, campo FROM permiso
           WHERE id = (
@@ -26,17 +25,16 @@ export default async function handler(req, res) {
         if (existingPermisoResult.length > 0) {
           let permiso = existingPermisoResult[0];
 
-          // Intentar parsear si los valores están en formato TEXT
           try {
             permiso.seccion = JSON.parse(permiso.seccion);
           } catch (e) {
-            permiso.seccion = permiso.seccion || []; // En caso de error, asignar array vacío
+            permiso.seccion = permiso.seccion ? permiso.seccion.split(',') : [];
           }
 
           try {
             permiso.campo = JSON.parse(permiso.campo);
           } catch (e) {
-            permiso.campo = permiso.campo || {}; // En caso de error, asignar objeto vacío
+            permiso.campo = permiso.campo ? {} : {};
           }
 
           return res.status(200).json({
@@ -54,7 +52,6 @@ export default async function handler(req, res) {
       const { selections } = req.body;
 
       try {
-        // Convertir selecciones en JSON
         const combinedSelections = selections.reduce((acc, selection) => {
           const seccion = selection.seccion;
           const campo = selection.campo;
@@ -70,7 +67,6 @@ export default async function handler(req, res) {
         const seccionJson = JSON.stringify(Object.keys(combinedSelections));
         const campoJson = JSON.stringify(combinedSelections);
 
-        // Comprobar si ya existen permisos para el usuario
         const existingPermisoQuery = `
           SELECT id, seccion, campo FROM permiso
           WHERE id = (
@@ -80,7 +76,6 @@ export default async function handler(req, res) {
         const [existingPermisoResult] = await connection.execute(existingPermisoQuery, [userId]);
 
         if (existingPermisoResult.length > 0) {
-          // Manejar datos en TEXT o JSON
           let permiso = existingPermisoResult[0];
           let seccionExistente, campoExistente;
 
@@ -96,9 +91,14 @@ export default async function handler(req, res) {
             campoExistente = permiso.campo ? {} : {};
           }
 
-          // Fusionar permisos existentes con los nuevos
           const nuevaSeccion = [...new Set([...seccionExistente, ...Object.keys(combinedSelections)])];
-          const nuevoCampo = { ...campoExistente, ...combinedSelections };
+          const nuevoCampo = { ...campoExistente };
+
+          for (const seccion in combinedSelections) {
+            nuevoCampo[seccion] = nuevoCampo[seccion]
+              ? [...new Set([...nuevoCampo[seccion], ...combinedSelections[seccion]])]
+              : combinedSelections[seccion];
+          }
 
           const permisoQuery = `
             UPDATE permiso 
@@ -110,30 +110,16 @@ export default async function handler(req, res) {
 
           await connection.execute(permisoQuery, [JSON.stringify(nuevaSeccion), JSON.stringify(nuevoCampo), userId]);
 
-          return res.status(200).json({
-            message: 'Permisos del usuario actualizados correctamente',
-          });
+          return res.status(200).json({ message: 'Permisos del usuario actualizados correctamente' });
         } else {
-          // Crear nuevo permiso
-          const permisoQuery = `
-            INSERT INTO permiso (seccion, campo)
-            VALUES (?, ?)
-          `;
-
+          const permisoQuery = `INSERT INTO permiso (seccion, campo) VALUES (?, ?)`;
           const [permisoResult] = await connection.execute(permisoQuery, [seccionJson, campoJson]);
           const permisoId = permisoResult.insertId;
 
-          const userQuery = `
-            UPDATE usuarios
-            SET id_permiso = ?
-            WHERE id = ?
-          `;
+          const userQuery = `UPDATE usuarios SET id_permiso = ? WHERE id = ?`;
           await connection.execute(userQuery, [permisoId, userId]);
 
-          return res.status(200).json({
-            message: 'Permiso creado y asignado al usuario exitosamente',
-            permisoId,
-          });
+          return res.status(200).json({ message: 'Permiso creado y asignado al usuario exitosamente', permisoId });
         }
       } catch (error) {
         console.error('Error al guardar los datos', error);
