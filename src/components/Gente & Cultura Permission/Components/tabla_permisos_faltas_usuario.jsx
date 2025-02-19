@@ -660,6 +660,11 @@ export function TablaPermisosFaltaUsuario() {
 
   return (
     <div>
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">
+          Mis papeletas
+        </CardTitle>
+      </div>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button
           disabled={isDisabled}
@@ -681,7 +686,7 @@ export function TablaPermisosFaltaUsuario() {
       </div><br />
       {tipoFormularioAbierto && (
             <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Nueva papeleta</CardTitle>
@@ -719,7 +724,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
       {formularioPrincipalAbierto && (
             <Dialog open={formularioPrincipalAbierto} onOpenChange={closeModalForms}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Nueva papeleta</CardTitle>
@@ -797,7 +802,7 @@ export function TablaPermisosFaltaUsuario() {
         <div>
           {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
@@ -865,7 +870,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
@@ -978,7 +983,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
@@ -1116,7 +1121,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Home Office" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "1600px", // Límite del ancho
               height: "65vh", // Ajusta la altura
@@ -1344,7 +1349,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
@@ -1402,7 +1407,7 @@ export function TablaPermisosFaltaUsuario() {
         <div className="grid gap-4 py-4">
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
@@ -1469,7 +1474,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
@@ -1597,7 +1602,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
@@ -1751,7 +1756,7 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Home Office" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "1600px", // Límite del ancho
               height: "65vh", // Ajusta la altura
@@ -1949,78 +1954,9 @@ export function TablaPermisosFaltaUsuario() {
             </DialogContent>
           </Dialog>
           )}
-          {tipoFormulario2 === "Suspension" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
-            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={true}
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={true}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>

@@ -76,12 +76,17 @@ const formSections = [
   { 
     id: 'Papeletas', 
     name: 'Papeletas',
-    changeOptions: ['Autorizar', 'Modulo papeletas']
+    changeOptions: ['Autorizar', 'Modulo papeletas', 'Solicitudes']
   },
   { 
     id: 'Gente y Cultura', 
     name: 'Gente y Cultura',
     changeOptions: ['Vacantes', 'Vacantes sin sueldo']
+  },
+  { 
+    id: 'Marketing', 
+    name: 'Marketing',
+    changeOptions: ['Firmas']
   },
 ]
 

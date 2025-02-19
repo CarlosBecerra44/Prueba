@@ -42,10 +42,11 @@ export async function middleware(req) {
     isAdminMkt: rol === "Administrador" && idPermiso !== null && departamento === 2,
     isAdminGC: rol === "Administrador" && departamento === 5,
     isITMember: rol !== "Máster" && departamento === 1,
-    isStandardMkt: rol === "Estándar" && idPermiso !== null,
+    isStandardMkt: rol !== "Máster" && tienePermiso("Marketing", "Firmas"),
     isStandard: rol === "Estándar",
     hasAccessPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Modulo papeletas"),
     hasAccessAutorizarPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
+    hasAccessSolicitudes: rol !== "Máster" && tienePermiso("Papeletas", "Solicitudes"),
     hasAllAccessVacantes: rol === "Administrador" && departamento === 5 && tienePermiso("Gente y Cultura", "Vacantes"),
     hasAccessVacantes: rol !== "Máster" && tienePermiso("Gente y Cultura", "Vacantes sin sueldo")
   };
@@ -90,6 +91,12 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/gente_y_cultura/autorizar_papeletas"
+    ],
+    hasAccessSolicitudes: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/gente_y_cultura/solicitudes"
     ],
     hasAllAccessVacantes: [
       "/inicio",

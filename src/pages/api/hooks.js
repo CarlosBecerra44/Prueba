@@ -78,10 +78,11 @@ export function useUser() {
     isAdminMkt: (rol === "Administrador" && idPermiso !== null && departamento === "Marketing"),
     isAdminGC: (rol === "Administrador" && departamento === "Gente y Cultura"),
     isITMember: (rol !== "Máster" && departamento === "IT"),
-    isStandardMkt: (rol === "Estándar" && idPermiso !== null),
+    isStandardMkt: (rol !== "Máster" && (tienePermiso("Marketing", "Firmas"))),
     isStandard: (rol === "Estándar"),
     hasAccessPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Modulo papeletas"))),
     hasAccessAutorizarPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Autorizar"))),
+    hasAccessSolicitudes: (rol !== "Máster" && (tienePermiso("Papeletas", "Solicitudes"))),
     hasAllAccessVacantes: (rol === "Administrador" && departamento === "Gente y Cultura" && (tienePermiso("Gente y Cultura", "Vacantes"))),
     hasAccessVacantes: (rol !== "Máster" && (tienePermiso("Gente y Cultura", "Vacantes sin sueldo")))
   };

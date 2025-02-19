@@ -38,7 +38,7 @@ export default async function handler(req, res) {
             AND (f.estatus = 'Autorizada por tu jefe directo' 
             OR (f.estatus = 'Pendiente' AND f.tipo IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')))
         ORDER BY 
-            f.fecha_subida DESC;
+            f.fecha_inicio DESC;
     `;
     
     const [result] = await connection.execute(query); // Ejecuta la consulta utilizando la conexión obtenida

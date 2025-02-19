@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@mui/material"
+import { MenuItem, Button } from "@mui/material";
 import axios from "axios"
 import Link from "next/link"
 import Swal from 'sweetalert2';
@@ -61,15 +61,16 @@ export function TablaPermisosFalta() {
   const [departamento, setDepartamento] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState("");
   const [autorizar, setAutorizar] = useState(false);
-  const [verPeticiones, setVerPeticiones] = useState("");
+  const [verPeticiones, setVerPeticiones] = useState("Papeletas semana");
   const [usersBonos, setUsersBonos] = useState([]);
   const [index, setIndex] = useState(0);
-  const [estatus, setEstatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [comentarios, setComentarios] = useState("");
   const [modalOpenStatus, setModalOpenStatus] = useState(false);
   const [modalDataStatus, setModalDataStatus] = useState({ id: null, estatus: "" });
+  const [idFormulario, setIDFormulario] = useState("");
+  const [estatusFormulario, setEstatus] = useState(""); // Estado para abrir el formulario
   const [fechaInicioPapeleta, setFechaInicio] = useState("");
   const [fechaFinPapeleta, setFechaFin] = useState("");
   const [formData, setFormData] = useState({
@@ -123,7 +124,6 @@ export function TablaPermisosFalta() {
     try {
       const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
       setEventos(response.data)
-      console.log(response.data)
     } catch (error) {
       console.error('Error al obtener eventos:', error)
     }
@@ -149,17 +149,6 @@ export function TablaPermisosFalta() {
     }))
   }
 
-  const handleChangeEstatus = ({ name, value }) => {
-    console.log("Cambiando estatus:", name, value); // Depuración
-    if (name === "estatus") {
-      setEstatus(value); // Actualiza el estado
-      setFormData(prevFormData => ({
-        ...prevFormData,
-        estatus: value
-      })); // Actualiza el estado
-    }
-  };
-
   const handleChange2 = ({ name, value }) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -175,6 +164,7 @@ export function TablaPermisosFalta() {
       setTipoFormulario2(data.tipo);
       setFormularioPrincipalAbiertoEdit(true);
       setIndex(index);
+      setIDFormulario(data.id);
       setEstatus(data.estatus);
       obtenerUsuariosBonos(data.formulario.tipoSolicitud);
       setFechaInicio(data.fecha_inicio);
@@ -227,6 +217,7 @@ export function TablaPermisosFalta() {
           });
           setComentarios("");
           handleCloseModalStatus();
+          closeModalEdit();
       } else {
           Swal.fire({
             title: 'Error',
@@ -354,39 +345,9 @@ export function TablaPermisosFalta() {
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
-    const handleDelete = async (index) => {
-      try {
-        // Mostrar alerta de confirmación
-        const result = await Swal.fire({
-          title: '¿Deseas eliminar la papeleta?',
-          text: 'No podrás revertir esta acción',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          confirmButtonText: 'Eliminar',
-          cancelButtonText: 'Cancelar',
-        });
-
-        // Si el usuario confirma la eliminación
-        if (result.isConfirmed) {
-          const response = await axios.post(`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`);
-          if (response.status === 200) {
-            await Swal.fire('Eliminado', 'La papeleta ha sido eliminada correctamente', 'success');
-            window.location.href = "/gente_y_cultura/faltas";
-          } else {
-            Swal.fire('Error', 'Error al eliminar la papeleta', 'error');
-          }
-        }
-      } catch (error) {
-        console.error('Error al eliminar la papeleta:', error);
-        Swal.fire('Error', 'Ocurrió un error al intentar eliminar la papeleta', 'error');
-      }
-    };
-
     return {
       id_papeleta: evento.id_papeleta,
-      tipo: evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
+      tipo: evento.tipo === "Suspension" ? "Suspensión o castigo" + (evento.extemporanea === 1 ? " - Extemporánea" : "") : evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
       nombre: evento.nombre + " " + evento.apellidos,
       fecha_subida: evento.fecha_subida,
       fecha_requerida: evento.fecha_inicio,
@@ -410,13 +371,8 @@ export function TablaPermisosFalta() {
   const filteredEventos = eventos
   .map(extractData)
   .filter(evento => {
-    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"];
+    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspensión o castigo"];
     const papeletasTipos = ["Llegada tarde / Salida antes", "Tiempo por tiempo", "Permiso", "Home Office", "Vacaciones"];
-
-    if (!evento.fecha_requerida) return false;
-
-    const fechaEvento = new Date(evento.fecha_requerida.replace(" ", "T")); // 🔹 Reemplaza espacio por "T" para evitar errores en Safari
-    fechaEvento.setUTCHours(0, 0, 0, 0); // 🔹 Normalizar la fecha
 
     // Filtrar por tipo de petición
     if (
@@ -448,6 +404,11 @@ export function TablaPermisosFalta() {
     if (!values.some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))) {
       return false;
     }
+
+    if (!evento.fecha_requerida) return true;
+
+    const fechaEvento = new Date(evento.fecha_requerida.replace(" ", "T")); // 🔹 Reemplaza espacio por "T" para evitar errores en Safari
+    fechaEvento.setUTCHours(0, 0, 0, 0); // 🔹 Normalizar la fecha
 
     // Filtrar por fecha de inicio
     if (startDate) {
@@ -607,7 +568,7 @@ export function TablaPermisosFalta() {
         const response = await axios.get('/api/Gente&CulturaAbsence/getFaltasTabla') // Asegúrate de que esta ruta esté configurada en tu backend
         setEventos(response.data)
         setAutorizar(true);
-        setVerPeticiones("");
+        setVerPeticiones("Papeletas semana");
       } catch (error) {
         console.error('Error al obtener eventos:', error)
       }
@@ -631,6 +592,26 @@ export function TablaPermisosFalta() {
     fetchPapeletasSolicitudesExtemp();
   }
 
+  const handleSelectChange = (value) => {
+    setVerPeticiones(value);
+    switch (value) {
+      case "Todas las papeletas":
+        verTPapeletas();
+        break;
+      case "Todas las solicitudes":
+        verTSolicitudes();
+        break;
+      case "Papeletas semana":
+        verPapeletasSemana();
+        break;
+      case "Papeletas extemporaneas":
+        verPSExtemporaneas();
+        break;
+      default:
+        break;
+    }
+  };
+
   // Paginación
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -641,7 +622,13 @@ export function TablaPermisosFalta() {
 
   return (
     <div className="container mx-auto">
-      <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+      <div className="flex justify-center items-center text-center mb-4">
+        {verPeticiones === "Todas las papeletas" ? <CardTitle className="text-3xl font-bold">Todas las papeletas</CardTitle> 
+        : verPeticiones === "Todas las solicitudes" ? <CardTitle className="text-3xl font-bold">Todas las solicitudes</CardTitle>
+        : verPeticiones === "Papeletas extemporaneas" ? <CardTitle className="text-3xl font-bold">Papeletas y solicitudes extemporáneas pendientes por revisar</CardTitle>
+        : <CardTitle className="text-3xl font-bold">Papeletas y solicitudes pendientes por revisar</CardTitle>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
         <Button
           variant="contained"
           color="secondary"
@@ -655,201 +642,22 @@ export function TablaPermisosFalta() {
           }}
           onClick={exportToExcel}
         >
-          <ExportIcon className="h-4 w-4" />EXPORTAR A EXCEL
+          <ExportIcon className="h-4 w-4" /> EXPORTAR A EXCEL
         </Button>
-        {verPeticiones === "" ? (
-          <>
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTPapeletas}
-        >
-          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTSolicitudes}
-        >
-          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPSExtemporaneas}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
-        </Button>
-        </>
-        ) : verPeticiones === "Todas las papeletas" ? (
-        <>
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPapeletasSemana}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTSolicitudes}
-        >
-          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPSExtemporaneas}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
-        </Button>
-        </>
-        ) : verPeticiones === "Todas las solicitudes" ? (
-          <>
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTPapeletas}
-        >
-          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPapeletasSemana}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPSExtemporaneas}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES EXTEMPORÁNEAS
-        </Button>
-        </>
-        ) : (
-        <>
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTPapeletas}
-        >
-          <VisualizeIcon2  />VER TODAS LAS PAPELETAS
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verTSolicitudes}
-        >
-          <VisualizeIcon2  />VER TODAS LAS SOLICITUDES
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verPapeletasSemana}
-        >
-          <VisualizeIcon2  />VER PAPELETAS Y SOLICITUDES DE LA SEMANA
-        </Button>
-        </>
-      )}
+        <div>
+          <Label htmlFor="search" className="mb-2 block">Vista</Label>
+          <Select onValueChange={handleSelectChange} defaultValue={verPeticiones}>
+            <SelectTrigger id="status-filter" className="w-[350px]">
+              <SelectValue placeholder="Seleccionar vista" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Papeletas semana">Ver papeletas y solicitudes de la semana</SelectItem>
+              <SelectItem value="Todas las papeletas">Ver todas las papeletas</SelectItem>
+              <SelectItem value="Todas las solicitudes">Ver todas las solicitudes</SelectItem>
+              <SelectItem value="Papeletas extemporaneas">Ver papeletas y solicitudes extemporáneas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div><br />
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
@@ -883,7 +691,7 @@ export function TablaPermisosFalta() {
             style={{width:"150px"}}
           />
         </div>
-        {(verPeticiones === "" || verPeticiones === "Papeletas extemporaneas") ? (
+        {(verPeticiones === "Papeletas semana" || verPeticiones === "Papeletas extemporaneas") ? (
           <>
             <div className="w-full sm:w-1/3">
               <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo de petición</Label>
@@ -907,7 +715,7 @@ export function TablaPermisosFalta() {
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="Faltas">Faltas</SelectItem>
-                  <SelectItem value="Suspension">Suspensión</SelectItem>
+                  <SelectItem value="Suspensión o castigo">Suspensión o castigo</SelectItem>
                   <SelectItem value="Horas extras">Horas extras</SelectItem>
                   <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
                   <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
@@ -928,7 +736,7 @@ export function TablaPermisosFalta() {
               <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="Faltas">Faltas</SelectItem>
-              <SelectItem value="Suspension">Suspensión</SelectItem>
+              <SelectItem value="Suspensión o castigo">Suspensión o castigo</SelectItem>
               <SelectItem value="Horas extras">Horas extras</SelectItem>
               <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
               <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
@@ -979,7 +787,7 @@ export function TablaPermisosFalta() {
             </SelectContent>
           </Select>
         </div>
-        {(verPeticiones !== "" && verPeticiones !== "Papeletas extemporaneas") ? (
+        {(verPeticiones !== "Papeletas semana" && verPeticiones !== "Papeletas extemporaneas") ? (
           <div className="w-full sm:w-1/3">
             <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
             <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
@@ -1013,7 +821,7 @@ export function TablaPermisosFalta() {
         <div className="grid gap-4 py-4">
         {tipoFormulario2 === "Faltas" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
@@ -1125,30 +933,36 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1161,7 +975,7 @@ export function TablaPermisosFalta() {
 
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
@@ -1193,30 +1007,36 @@ export function TablaPermisosFalta() {
                   placeholder="Coloca tus observaciones aquí..."
                   readOnly={true} />
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Autorizada por tu jefe directo':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1228,7 +1048,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
@@ -1321,30 +1141,36 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Autorizada por tu jefe directo':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1356,7 +1182,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
@@ -1475,30 +1301,36 @@ export function TablaPermisosFalta() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Autorizada por tu jefe directo':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1510,7 +1342,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Home Office" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "1600px", // Límite del ancho
               height: "65vh", // Ajusta la altura
@@ -1675,30 +1507,36 @@ export function TablaPermisosFalta() {
              </div>
               ))}
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Autorizada por tu jefe directo':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1710,10 +1548,10 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Suspension" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Suspensión o castigo</CardTitle>
             <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -1777,30 +1615,36 @@ export function TablaPermisosFalta() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, 'Suspensión o castigo');
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1812,7 +1656,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
@@ -1845,6 +1689,39 @@ export function TablaPermisosFalta() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Autorizada por tu jefe directo':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </form>
         </Card>
@@ -1853,7 +1730,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Horas extras" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "70%", // Ajusta el ancho
               maxWidth: "900px", // Límite del ancho
               height: "90vh", // Ajusta la altura
@@ -2101,6 +1978,39 @@ export function TablaPermisosFalta() {
               </div>
               ))}
             </div>
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </form>
         </Card>
@@ -2109,7 +2019,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Bonos / Comisiones" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "1600px", // Límite del ancho
               height: "65vh", // Ajusta la altura
@@ -2400,30 +2310,36 @@ export function TablaPermisosFalta() {
                 />
               </div>
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2435,7 +2351,7 @@ export function TablaPermisosFalta() {
           )}
           {tipoFormulario2 === "Aumento sueldo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "600px", // Límite del ancho
               height: "85vh", // Ajusta la altura
@@ -2552,6 +2468,39 @@ export function TablaPermisosFalta() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus comentarios adicionales aquí..." />
               </div>
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una opción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </form>
         </Card>
@@ -2565,8 +2514,8 @@ export function TablaPermisosFalta() {
 )}
       <div className="overflow-x-auto">
         <Table>
-          {verPeticiones === "Todas las solicitudes" ? <TableCaption>Solicitudes pendientes por revisar</TableCaption> 
-          : verPeticiones === "Todas las papeletas" ? <TableCaption>Papeletas pendientes por revisar</TableCaption> 
+          {verPeticiones === "Todas las solicitudes" ? <TableCaption>Todas las solicitudes existentes</TableCaption> 
+          : verPeticiones === "Todas las papeletas" ? <TableCaption>Todas las papeletas existentes</TableCaption> 
           : verPeticiones === "Papeletas extemporaneas" ? <TableCaption>Papeletas y solicitudes extemporáneas pendientes por revisar</TableCaption> 
           : <TableCaption>Papeletas y solicitudes pendientes por revisar</TableCaption>}
           <TableHeader>
@@ -2584,7 +2533,7 @@ export function TablaPermisosFalta() {
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
                   <TableCell>{evento.id_papeleta || "Sin ID especificado"}</TableCell>
-                  <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
+                  <TableCell>{evento.tipo === "Suspension" ? "Suspensión o castigo" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre especificado'}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
@@ -2594,14 +2543,14 @@ export function TablaPermisosFalta() {
                       evento.jefe_directo
                         ? (() => {
                             const jefe = users.find(u => u.id === evento.jefe_directo);
-                            return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin datos";
+                            return jefe ? `${jefe.nombre} ${jefe.apellidos}` : "Sin jefe directo especificado";
                           })()
-                        : "Sin datos"
+                        : "Sin jefe directo especificado"
                     }
                   </TableCell>
                   <TableCell>
                     {(() => {
-                      if (!evento.empresa) return "Sin datos";
+                      if (!evento.empresa) return "Sin empresa especificada";
 
                       let empresaData;
 
@@ -2619,7 +2568,7 @@ export function TablaPermisosFalta() {
                       }
 
                       // Verificar si empresaData es un objeto válido y tiene la propiedad 'nombre'
-                      return empresaData && empresaData.nombre ? empresaData.nombre : "Sin datos";
+                      return empresaData && empresaData.nombre ? empresaData.nombre : "Sin empresa especificada";
                     })()}
                   </TableCell>
                   <TableCell>{evento.fecha_subida
@@ -2633,18 +2582,18 @@ export function TablaPermisosFalta() {
                         second: '2-digit',
                         hour12: false, // Cambiar a true si prefieres formato de 12 horas
                       })}`
-                    : "Sin datos"}</TableCell>
+                    : "Sin fecha de subida especificada"}</TableCell>
                   <TableCell>
-                    {evento.fecha_requerida
-                    ? `${new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}`
-                    : "Sin datos"}
+                    {evento.fecha_requerida && evento.fecha_requerida !== "Sin fecha"
+                      ? new Date(evento.fecha_requerida).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })
+                      : "Sin fecha requerida especificada"}
                   </TableCell>
                   <TableCell>
-                    {evento.comentarios || "Sin comentarios"}
+                    {evento.comentarios || "Sin comentarios especificados"}
                   </TableCell>
                   <>
                     <TableCell 
@@ -2702,17 +2651,19 @@ export function TablaPermisosFalta() {
                     </TableCell>
                     {modalOpenStatus && (
                       <Dialog open={modalOpenStatus} onOpenChange={handleCloseModalStatus}>
-                      <DialogContent className="border-none p-0">
+                      <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
                       <Card className="w-full max-w-lg">
                       <CardHeader>
                         {modalDataStatus?.estatus?.startsWith("Autorizada") 
-                          ? <CardTitle className="text-2xl font-bold text-center">
-                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"].includes(modalDataStatus.tipo) 
+                          ? <CardTitle style={{color: "green"}} className="text-2xl font-bold text-center">
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspensión o castigo"]
+                                .some(tipo => modalDataStatus.tipo?.startsWith(tipo)) 
                                 ? "Agregar comentario - Sí se autoriza la solicitud" 
                                 : "Agregar comentario - Sí se autoriza la papeleta"}
                             </CardTitle>
-                          : <CardTitle className="text-2xl font-bold text-center">
-                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspension"].includes(modalDataStatus.tipo) 
+                          : <CardTitle style={{color: "red"}} className="text-2xl font-bold text-center">
+                              {["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspensión o castigo"]
+                                .some(tipo => modalDataStatus.tipo?.startsWith(tipo)) 
                                 ? "Agregar comentario - No se autoriza la solicitud" 
                                 : "Agregar comentario - No se autoriza la papeleta"}
                             </CardTitle>

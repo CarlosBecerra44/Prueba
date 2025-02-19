@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       ON
           u.empresa_id = e.id
       ORDER BY 
-          f.fecha_actualizacion DESC;
+          f.fecha_inicio DESC;
     `;
     
     const [result] = await connection.execute(query); // Ejecuta la consulta utilizando la conexión obtenida

@@ -21,7 +21,7 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAllAccessVacantes, hasAccessVacantes } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -72,21 +72,21 @@ const toggleSection = (sectionId) => {
   }
 
   const categories = [
-    { id: "principal", name: "Principal", href: "#", roles: ["master", "adminMkt","adminGC","itMember","standardMkt","standard"]},
-    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"]},
+    { id: "principal", name: "Principal", href: "#", roles: ["*"]},
+    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt"]},
     {
       id: 7,
       name: "Gente & Cultura",
       href: "#",
-      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"],
+      icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC","hasAccessPapeletas","hasAccessAutorizarPapeletas","hasAccessSolicitudes","hasAllAccessVacantes","hasAccessVacantes"],
       subMenu: [
         {
           id: 1,
-          name: "Papeletas",
+          name: "Papeletas RH",
           href: "/gente_y_cultura/todas_papeletas",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessPapeletas"]
         },
@@ -96,33 +96,39 @@ const toggleSection = (sectionId) => {
           href: "/gente_y_cultura/autorizar_papeletas",
           icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessAutorizarPapeletas"]
         },
-
         {
           id: 3,
+          name: "Ver mis solicitudes",
+          href: "/gente_y_cultura/solicitudes",
+          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessSolicitudes"]
+        },
+
+        {
+          id: 4,
           name: "Usuarios",
           href: "/usuario",
           icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"],
           subMenu: [
-            { id: 301, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
+            { id: 401, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
           ]
         },
         {
-          id: 4,
+          id: 5,
           name: "Vacantes",
           href: "/gente_y_cultura/vacantes",
           icon: <VacantesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAllAccessVacantes","hasAccessVacantes"]
         }
       ]
     },
-    { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
-    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
-    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] },
-    { id: "cursos", name: "Cursos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"]},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","adminGC","itMember","standardMkt","standard"] }
+    { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
+    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] }
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -130,6 +136,7 @@ const toggleSection = (sectionId) => {
   );
 
   const hasAccess = (category) => {
+    if (category.includes("*")) return true;
     if (isMaster && category.includes("master")) return true;
     if (isAdminMkt && category.includes("adminMkt")) return true;
     if (isStandardMkt && category.includes("standardMkt")) return true;
@@ -138,6 +145,7 @@ const toggleSection = (sectionId) => {
     if (isITMember && category.includes("itMember")) return true;
     if (hasAccessPapeletas && category.includes("hasAccessPapeletas")) return true;
     if (hasAccessAutorizarPapeletas && category.includes("hasAccessAutorizarPapeletas")) return true;
+    if (hasAccessSolicitudes && category.includes("hasAccessSolicitudes")) return true;
     if (hasAllAccessVacantes && category.includes("hasAllAccessVacantes")) return true;
     if (hasAccessVacantes && category.includes("hasAccessVacantes")) return true;
 

@@ -55,13 +55,6 @@ export function AutorizarPapeletas() {
   const [eventos, setEventos] = useState([])
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [isModalOpen, setModalOpen] = useState(false)
-  const [isEditModalOpen, setEditModalOpen] = useState(false)
-  const [motivo, setMotivo] = useState('')
-  const [dias, setDias] = useState('')
-  const [comprobante, setComprobante] = useState(null)
-  const [justificada, setJustificada] = useState('')
-  const [pagada, setPagada] = useState('')
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [departamento, setDepartamento] = useState('');
@@ -74,14 +67,9 @@ export function AutorizarPapeletas() {
   const [puesto, setPuesto] = useState('');
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
-  const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
-  const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
-  const [formularioPrincipalAbiertoTrab, setFormularioPrincipalAbiertoTrab] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
-  const [file, setFile] = useState(null); // Estado para abrir el formulario
   const [allUsers, setAllUsers] = useState([]);
   const [users, setUsers] = useState([]);
-  const [showTooltip, setShowTooltip] = useState(false);
   const [autorizar, setAutorizar] = useState(false);
   const [usersBonos, setUsersBonos] = useState([]);
   const [comentarios, setComentarios] = useState("");
@@ -90,123 +78,11 @@ export function AutorizarPapeletas() {
   const [fechaInicioPapeleta, setFechaInicio] = useState("");
   const [fechaFinPapeleta, setFechaFin] = useState("");
   const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] = useState(""); // Estado para abrir el formulario
-  const [tipoFormularioAbierto, setTipoFormularioAbierto] = useState(false); // Estado para abrir el formulario
-  const [isDisabled, setIsDisabled] = useState(false);
-  
-  useEffect(() => {
-    const checkTime = () => {
-      const now = new Date();
-      const day = now.getDay(); // 0: Domingo, 1: Lunes, ..., 3: Miércoles, ..., 6: Sábado
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-
-      // Deshabilitar los miércoles a las 12 PM (12:00 - 23:59)
-      if (day === 3 && hours >= 12) {
-        setIsDisabled(true);
-      }
-      // Habilitar el jueves a las 12 AM (00:00 en adelante)
-      else if (day === 4 && hours === 0 && minutes === 0) {
-        setIsDisabled(false);
-      }
-    };
-
-    // Ejecutar al cargar el componente
-    checkTime();
-
-    // Verificar la hora cada minuto
-    const interval = setInterval(async () => checkTime(), 60000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const openModal = () => {
-    setFormData({
-      dias: "",
-      horas: "",
-      fechaInicio: null,
-      fechaFin: null,
-      motivo: "",
-      comprobante: null,
-      justificada: "",
-      pagada: "",
-      conSueldo: "",
-      horaFormulario: "",
-      fechaFormulario: null,
-      horaInicio: "",
-      horaFin: "",
-      noOrden: "",
-      nombreProducto: "",
-      cantidadProgramada: "",
-      cantidadTerminada: "",
-      noPersonal: "",
-      nombrePersonal: "",
-      area: "",
-      nombreColaborador: "",
-      puestoColaborador: "",
-      comentarios: "",
-      tipoSolicitud: "",
-      noBono: "",
-      nombreBono: "",
-      bonoCantidad: "",
-      comision: "",
-      total: 0,
-      totalFinal: 0,
-      sueldoActual: "",
-      nuevoSueldo: "",
-      planTrabajo: {
-        otros: []
-      },
-      personal: {
-        otros: []
-      },
-      productos: {
-        otros: []
-      },
-      bonos: {
-        otros: []
-      },
-    });
-    setFormularioAbierto(true); // Abrir el formulario
-  };
-
-  const openModalForms = () => {
-    setTipoFormulario2("");
-    setFormularioPrincipalAbierto(true); // Abrir el formulario
-  };
-
-  const openModalType = () => {
-    setTipoFormulario2("");
-    setFormularioPrincipalAbierto(true); // Abrir el formulario
-  };
-
-  const openModalFormsType = () => {
-    setFormularioNormalOExtemporaneo("");
-    setTipoFormularioAbierto(true);
-  }
-
-  const openModalFormsWorkers = () => {
-    setTipoFormulario2("");
-    setFormularioPrincipalAbiertoTrab(true); // Abrir el formulario
-  };
-
-  const closeModal = () => {
-    setFormularioAbierto(false); // Cerrar el formulario
-  };
+  const [idFormulario, setIDFormulario] = useState("");
+  const [estatusFormulario, setEstatus] = useState("");
 
   const closeModalEdit = () => {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
-  };
-
-  const closeModalForms = () => {
-    setFormularioPrincipalAbierto(false); // Cerrar el formulario
-  };
-
-  const closeModalFormsType = () => {
-    setTipoFormularioAbierto(false); // Cerrar el formulario
-  };
-
-  const closeModalFormsWorkers = () => {
-    setFormularioPrincipalAbiertoTrab(false); // Cerrar el formulario
   };
 
   const closeModalFormsEdit = () => {
@@ -401,26 +277,6 @@ export function AutorizarPapeletas() {
     }
   }
 
-  const handleOpenModal = () => {
-    setModalOpen(true)
-  }
-
-  const handleOpenEditModal = () => {
-    setEditModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setModalOpen(false)
-  }
-
-  const handleCheckboxChange = (value) => {
-    setTipoFormulario2(value);
-  };
-
-  const handleCheckboxChangeTypeForm = (value) => {
-    setFormularioNormalOExtemporaneo(value);
-  };
-
   const encabezados = [
     "Tipo",
     "Número de empleado",
@@ -430,20 +286,6 @@ export function AutorizarPapeletas() {
     "Jefe directo",
     "Fecha de subida",
     "Fecha de último movimiento",
-    "Estatus",
-    "Acción"
-  ]
-
-  const encabezadosSolicitudes = [
-    "Tipo",
-    "Número de empleado",
-    "Nombre",
-    "Departamento",
-    "Puesto",
-    "Jefe directo",
-    "Fecha de subida",
-    "Fecha de último movimiento",
-    "Comentarios",
     "Estatus",
     "Acción"
   ]
@@ -478,167 +320,19 @@ export function AutorizarPapeletas() {
       setFechaFin(data.fecha_fin);
       setFormularioPrincipalAbiertoEdit(true);
       obtenerUsuariosBonos(data.formulario.tipoSolicitud);
+      setIDFormulario(data.id);
+      setEstatus(data.estatus);
     } catch (error) {
       console.error('Error al obtener el formulario:', error);
     }
   }; 
 
-  const autorizarPapeletas = () => {
-    const fetchPapeletas = async () => {
-      if (!idUser) {
-        // Si el idUser no está disponible, no hacemos la solicitud
-        return;
-      }
-
-      if(users.length > 0) {
-        try {
-          const response = await axios.get(`/api/Gente&CulturaAbsence/autorizarPapeletas?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
-          setEventos(response.data)
-          setAutorizar(false);
-        } catch (error) {
-          console.error('Error al obtener eventos:', error)
-        }
-      }
-    }
-    fetchPapeletas()
-  }
-
-  const verSolicitudes = () => {
-    const fetchPapeletas = async () => {
-      try {
-        const response = await axios.get(`/api/Gente&CulturaAbsence/getSolicitudes?id=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
-        setEventos(response.data);
-        setAutorizar(true);
-      } catch (error) {
-        console.error('Error al obtener eventos:', error)
-      }
-    }
-    fetchPapeletas()
-  }
-
-  const añadirPersonal = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      personal: {
-        otros: [...prevData.personal.otros, { 
-          noPersonal: "",
-          nombrePersonal: "",
-          area: "" 
-        }]
-      }
-    }))
-  }
-
-  const eliminarPersonal = (index) => {
-    setFormData(prevData => ({
-      ...prevData,
-      personal: {
-        otros: prevData.personal.otros.filter((_, i) => i !== index)
-      }
-    }))
-  }
-
-  const añadirProducto = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      productos: {
-        otros: [...prevData.productos.otros, { 
-          noOrden: "",
-          nombreProducto: "",
-          cantidadProgramada: "",
-          cantidadTerminada: "" 
-        }]
-      }
-    }))
-  }
-
-  const eliminarProducto = (index) => {
-    setFormData(prevData => ({
-      ...prevData,
-      planTrabajo: {
-        otros: prevData.planTrabajo.otros.filter((_, i) => i !== index)
-      }
-    }))
-  }
-
-  const añadirBono = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      bonos: {
-        otros: [...prevData.bonos.otros, { 
-          noBono: "",
-          nombreBono: "",
-          bonoCantidad: "",
-          comision: "" ,
-          comentarios: "",
-          total: 0,
-          totalFinal: 0,
-        }]
-      }
-    }))
-  }
-
-  const eliminarBono = (index) => {
-    setFormData((prevData) => {
-      // Eliminar el elemento en el índice indicado
-      const updatedOtros = prevData.bonos.otros.filter((_, i) => i !== index);
-  
-      // Recalcular los totales después de eliminar el campo
-      let totalFijo = parseFloat(prevData.total) || 0;
-      let totalDinamico = updatedOtros.reduce((sum, item) => {
-        const bono = parseFloat(item.bonoCantidad) || 0;
-        const comision = parseFloat(item.comision) || 0;
-        return sum + bono + comision;
-      }, 0);
-  
-      // Total final es la suma de los totales fijos y dinámicos
-      const totalFinal = totalFijo + totalDinamico;
-  
-      // Actualizar el estado con el array de bonos actualizado y el nuevo totalFinal
-      return {
-        ...prevData,
-        bonos: { otros: updatedOtros },
-        totalFinal,
-      };
-    });
-  };  
-
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
-    const handleDelete = async (index) => {
-      try {
-        // Mostrar alerta de confirmación
-        const result = await Swal.fire({
-          title: '¿Deseas eliminar la solicitud?',
-          text: 'No podrás revertir esta acción',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          confirmButtonText: 'Eliminar',
-          cancelButtonText: 'Cancelar',
-        });
-
-        // Si el usuario confirma la eliminación
-        if (result.isConfirmed) {
-          const response = await axios.post(`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`);
-          if (response.status === 200) {
-            await Swal.fire('Eliminada', 'La solicitud ha sido eliminada correctamente', 'success');
-            window.location.href = "/gente_y_cultura/autorizar_papeletas";
-          } else {
-            Swal.fire('Error', 'Error al eliminar la solicitud', 'error');
-          }
-        }
-      } catch (error) {
-        console.error('Error al eliminar la solicitud:', error);
-        Swal.fire('Error', 'Ocurrió un error al intentar eliminar la solicitud', 'error');
-      }
-    };
-
     return {
       id: evento.id,
       id_papeleta: evento.id_papeleta,
-      tipo: evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
+      tipo: evento.tipo === "Suspension" ? "Suspensión o castigo" + (evento.extemporanea === 1 ? " - Extemporánea" : "") : evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
       nombre: evento.nombre + " " + evento.apellidos,
       departamento: evento.nombre_departamento,
       puesto: evento.puesto,
@@ -650,15 +344,6 @@ export function AutorizarPapeletas() {
       estatus: evento.estatus,
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
-          {autorizar ? (
-            <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
-              <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Button>
-          ) : (
-            <div hidden></div>
-          )}
           <Button style={{ width: "1px", height: "40px"}} onClick={() => handleEditForm(index)}>
             <VisualizeIcon />
           </Button>
@@ -719,74 +404,6 @@ export function AutorizarPapeletas() {
     setComentarios(value)
   }
 
-  const handleChangeBonos = (e, index = null, field = null) => {
-    const { name, value } = e.target;
-  
-    // Si el valor es vacío, lo dejamos como vacío, no forzamos el 0
-    const newValue = value === "" ? "" : parseFloat(value) || 0;
-  
-    setFormData((prevData) => {
-      let updatedData = { ...prevData };
-  
-      if (index !== null && field) {
-        // Casos dinámicos (con índice), actualizando un campo específico de 'otros'
-        const updatedOtros = [...prevData.bonos.otros];
-  
-        updatedOtros[index] = {
-          ...updatedOtros[index],
-          [field]: newValue,
-        };
-  
-        // Calcular total para este índice
-        const bono = parseFloat(updatedOtros[index]?.bonoCantidad) || 0;
-        const comision = parseFloat(updatedOtros[index]?.comision) || 0;
-        updatedOtros[index].total = bono + comision;
-  
-        // Actualizar el array 'otros' en el estado
-        updatedData.bonos = { otros: updatedOtros };
-  
-      } else if (name) {
-        // Casos fijos (sin índice, con nombre de campo)
-        updatedData[name] = newValue;
-  
-        // Recalcular total general para el campo fijo
-        const bono = parseFloat(updatedData.bonoCantidad) || 0;
-        const comision = parseFloat(updatedData.comision) || 0;
-        updatedData.total = bono + comision;
-      }
-  
-      // Calcular el total final sumando todos los totales (fijos + dinámicos)
-      const totalFijo = parseFloat(updatedData.total) || 0;
-      const totalDinamico = updatedData.bonos?.otros.reduce((sum, item) => {
-        const bono = parseFloat(item.bonoCantidad) || 0;
-        const comision = parseFloat(item.comision) || 0;
-        return sum + bono + comision;
-      }, 0);
-  
-      // Total final es la suma del total fijo y el total dinámico
-      const totalFinal = totalFijo + totalDinamico;
-  
-      // Actualizar totalFinal en el estado
-      updatedData.totalFinal = totalFinal;
-  
-      return updatedData;
-    });
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    
-    if (file) {
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Tipo de archivo no permitido');
-        return;
-      }
-  
-      setFormData((prev) => ({ ...prev, comprobante: file.name }));
-    }
-  };  
-
   const handleChangeStatus = async (index, nuevoEstatus, comentarios) => {
     if (!index || !nuevoEstatus) {
       
@@ -818,6 +435,7 @@ export function AutorizarPapeletas() {
           });
           setComentarios("");
           handleCloseModalStatus();
+          closeModalEdit();
       } else {
           Swal.fire({
             title: 'Error',
@@ -838,14 +456,6 @@ export function AutorizarPapeletas() {
       });
     }
 };
-
-  // Paginación
-  const indexOfLastEvento = currentPage * itemsPerPage;
-  const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
-  const currentEventos = filteredEventos.slice(indexOfFirstEvento, indexOfLastEvento);
-  const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -918,38 +528,6 @@ export function AutorizarPapeletas() {
     }
   };  
 
-  const handleSubmitEdit = async (e) => {
-    e.preventDefault();
-    if (!session) {
-      console.log("No se ha iniciado sesión");
-      return;
-    }
-    try {
-      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ formData }), // Enviar todo el objeto formData como JSON
-      });      
-      if (response.ok) {
-        Swal.fire({
-          title: 'Creado',
-          text: 'Se ha creado correctamente',
-          icon: 'success',
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/gente_y_cultura/faltasUsuario";
-        });
-      } else {
-        Swal.fire('Error', 'Error al crear la papeleta', 'error');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => {
     // Obtener la fecha actual sin horas
     const hoy = startOfDay(new Date());
@@ -1020,1156 +598,21 @@ export function AutorizarPapeletas() {
     );
   };
 
+  // Paginación
+  const indexOfLastEvento = currentPage * itemsPerPage;
+  const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
+  const currentEventos = filteredEventos.slice(indexOfFirstEvento, indexOfLastEvento);
+  const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
-        <Button
-          disabled={isDisabled}
-          style={{
-            background: isDisabled ? "gray" : "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            color: "white",
-            border: "none",
-            cursor: isDisabled ? "not-allowed" : "pointer",
-          }}
-          onClick={!isDisabled ? openModalFormsType : undefined}
-        >
-          <PermisosIcon className="h-4 w-4" />AGREGAR SOLICITUD
-        </Button>
-        {autorizar ? (
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={autorizarPapeletas}
-        >
-          <VisualizeIcon2  />VER PAPELETAS
-        </Button>
-        ) : (
-          <Button
-          variant="contained"
-          color="secondary"
-          style={{
-            background: "rgb(31 41 55)",
-            padding: "10px 15px",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-          onClick={verSolicitudes}
-        >
-          <VisualizeIcon2  />VER SOLICITUDES
-        </Button>
-        )}
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">
+          Autorizar papeletas
+        </CardTitle>
       </div><br />
-      {tipoFormularioAbierto && (
-        <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
-        <DialogContent className="border-none p-0">
-        <Card className="w-full max-w-lg">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Nueva solicitud</CardTitle>
-        <DialogDescription className="text-center">Selecciona el tipo de solicitud</DialogDescription>
-      </CardHeader>
-      <div className="grid gap-4 py-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="Normal"
-            checked={formularioNormalOExtemporaneo === "Normal"}
-            onCheckedChange={(checked) => {
-              handleCheckboxChangeTypeForm(checked ? "Normal" : "");
-              if (checked) openModalType(); // Abrir el modal después de actualizar el estado
-            }}
-            style={{ marginLeft: "30px" }}
-          />
-          <Label htmlFor="Normal">Normal</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="Extemporánea"
-            checked={formularioNormalOExtemporaneo === "Extemporánea"}
-            onCheckedChange={(checked) => {
-              handleCheckboxChangeTypeForm(checked ? "Extemporánea" : "");
-              if (checked) openModalType(); // Abrir el modal después de actualizar el estado
-            }}
-            style={{ marginLeft: "30px" }}
-          />
-          <Label htmlFor="Extemporánea">Extemporánea (Omisiones o aclaraciones de nómina)</Label>
-        </div>
-      </div>
-    </Card>
-        </DialogContent>
-      </Dialog>
-      )}
-      {formularioPrincipalAbierto && (
-            <Dialog open={formularioPrincipalAbierto} onOpenChange={closeModalForms}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Nueva solicitud</CardTitle>
-            <DialogDescription className="text-center">Selecciona el tipo de solicitud</DialogDescription>
-          </CardHeader>
-          <div className="grid gap-4 py-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Faltas"
-                checked={tipoFormulario2 === "Faltas"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Faltas" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Faltas">Faltas</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Suspension"
-                checked={tipoFormulario2 === "Suspension"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Suspension" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Suspension">Suspensión</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Horas extras"
-                checked={tipoFormulario2 === "Horas extras"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Horas extras" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Horas extras">Horas extras</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Bonos / Comisiones"
-                checked={tipoFormulario2 === "Bonos / Comisiones"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Bonos / Comisiones" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Bonos / Comisiones">Bonos / Comisiones</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="Aumento sueldo"
-                checked={tipoFormulario2 === "Aumento sueldo"}
-                onCheckedChange={(checked) => {
-                  handleCheckboxChange(checked ? "Aumento sueldo" : "");
-                  if (checked) openModal(); // Abrir el modal después de actualizar el estado
-                }}
-                style={{ marginLeft: "30px" }}
-              />
-              <Label htmlFor="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</Label>
-            </div>
-          </div>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-
-      {/* Mostrar formulario basado en el tipo seleccionado */}
-      {formularioAbierto && tipoFormulario2 && (
-        <div>
-          {tipoFormulario2 === "Faltas" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <Label>Tipo de falta</Label>
-                <RadioGroup
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Justificada</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">Injustificada</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
-                </div>
-                <Select
-                  value={formData.nombreColaborador || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id
-                      });
-                    }
-                  }}
-                  disabled={allUsers.length === 0}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  onChange={handleChange}
-                  required
-                  placeholder="Dias..."/>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube tu justificante. Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                <input
-                    id="comprobante"
-                    name="comprobante"  // Asegúrate que sea "comprobante"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <Button2
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("comprobante").click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG) Max: 4MB
-                  </Button2>
-                  {formData.comprobante && (
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.justificada || !formData.nombreColaborador || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Suspension" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
-            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
-                </div>
-                <Select
-                  value={formData.nombreColaborador || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id
-                      });
-                    }
-                  }}
-                  disabled={allUsers.length === 0}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  onChange={handleChange}
-                  required
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.nombreColaborador || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Horas extras" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "70%", // Ajusta el ancho
-              maxWidth: "900px", // Límite del ancho
-              height: "90vh", // Ajusta la altura
-              maxHeight: "90vh", // Límite de la altura
-              padding: "30px", // Margen interno
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Horas extras</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="horaInicio">Hora de inicio</Label>
-                  </div>
-                  <Input
-                      id="horaInicio"
-                      name="horaInicio"
-                      type="time"
-                      style={{width: "385px"}}
-                      value={formData.horaInicio}
-                      onChange={handleChange}
-                      required
-                      placeholder="Hora de inicio..." />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="horaFin">Hora de fin</Label>
-                  </div>
-                  <Input
-                      id="horaFin"
-                      name="horaFin"
-                      type="time"
-                      style={{width: "385px"}}
-                      value={formData.horaFin}
-                      onChange={handleChange}
-                      required
-                      placeholder="Hora de fin..." />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Motivo del tiempo extra</Label>
-                </div>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca el motivo del tiempo extra aquí..." />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap:"40px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="noOrden">No. de orden</Label>
-                  </div>
-                  <Input
-                      id="noOrden"
-                      name="noOrden"
-                      type="number"
-                      style={{width: "80px"}}
-                      value={formData.noOrden}
-                      onChange={handleChange}
-                      placeholder="No."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="nombreProducto">Nombre del producto</Label>
-                  </div>
-                  <Input
-                      id="nombreProducto"
-                      name="nombreProducto"
-                      type="text"
-                      style={{width: "300px"}}
-                      value={formData.nombreProducto}
-                      onChange={handleChange}
-                      placeholder="Nombre del producto..."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="cantidadProgramada">Cantidad programada</Label>
-                  </div>
-                  <Input
-                      id="cantidadProgramada"
-                      name="cantidadProgramada"
-                      type="number"
-                      style={{width: "150px"
-                      }}
-                      value={formData.cantidadProgramada}
-                      onChange={handleChange}
-                      placeholder="Cantidad..."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="cantidadTerminada">Cantidad terminada</Label>
-                  </div>
-                  <Input
-                      id="cantidadTerminada"
-                      name="cantidadTerminada"
-                      type="number"
-                      style={{width: "130px"}}
-                      value={formData.cantidadTerminada}
-                      onChange={handleChange}
-                      placeholder="Cantidad..."
-                      required />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.productos.otros.map((otro, index) => (
-               <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-               <div className="space-y-2">
-                 <Input
-                     id={`noOrden-${index}`}
-                     name={`noOrden-${index}`}
-                     type="number"
-                     style={{width: "80px"}}
-                     onChange={(e) => handleChange(e, index, "noOrden")}
-                     placeholder="No."
-                     required />
-               </div>
-               <div className="space-y-2">
-                 <Input
-                     id={`nombreProducto-${index}`}
-                     name={`nombreProducto-${index}`}
-                     type="text"
-                     style={{width: "300px", marginLeft: "35px"}}
-                     onChange={(e) => handleChange(e, index, "nombreProducto")}
-                     placeholder="Nombre del producto..."
-                     required />
-               </div>
-               <div className="space-y-2">
-                 <Input
-                     id={`cantidadProgramada-${index}`}
-                     name={`cantidadProgramada-${index}`}
-                     type="number"
-                     style={{width: "150px", marginLeft: "30px"
-                     }}
-                     onChange={(e) => handleChange(e, index, "cantidadProgramada")}
-                     placeholder="Cantidad..."
-                     required />
-               </div>
-               <div className="space-y-2">
-               <div className="flex items-center">
-                  <Input
-                      id={`cantidadTerminada-${index}`}
-                      name={`cantidadTerminada-${index}`}
-                      type="number"
-                      style={{width: "80px", marginLeft: "30px"}}
-                      onChange={(e) => handleChange(e, index, "cantidadTerminada")}
-                      placeholder="Cant..."
-                      required />
-                      <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarProducto(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-               </div>
-             </div>
-              ))}
-              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirProducto} className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>
-            </div>
-              <div>
-                <Label style={{fontSize: 17}}>Personal que se autoriza</Label>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="noPersonal">No.</Label>
-                  </div>
-                  <Input
-                      id="noPersonal"
-                      name="noPersonal"
-                      type="number"
-                      style={{width: "80px"}}
-                      value={formData.noPersonal}
-                      onChange={handleChange}
-                      placeholder="No."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="nombrePersonal">Nombre</Label>
-                  </div>
-                  <Input
-                      id="nombrePersonal"
-                      name="nombrePersonal"
-                      type="text"
-                      style={{width: "350px"}}
-                      value={formData.nombrePersonal}
-                      onChange={handleChange}
-                      placeholder="Nombre del personal..."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="area">Área</Label>
-                  </div>
-                  <Input
-                      id="area"
-                      name="area"
-                      type="text"
-                      style={{width: "340px"
-                      }}
-                      value={formData.area}
-                      onChange={handleChange}
-                      placeholder="Área..."
-                      required />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.personal.otros.map((otro, index) => (
-                <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-                <div className="space-y-2">
-                  <Input
-                      id={`noPersonal-${index}`}
-                      name={`noPersonal-${index}`}
-                      type="number"
-                      style={{width: "80px"}}
-                      onChange={(e) => handleChange(e, index, "noPersonal")}
-                      placeholder="No."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                      id={`nombrePersonal-${index}`}
-                      name={`nombrePersonal-${index}`}
-                      type="text"
-                      style={{width: "350px"}}
-                      onChange={(e) => handleChange(e, index, "nombrePersonal")}
-                      placeholder="Nombre del personal..."
-                      required />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                  <Input
-                      id={`area-${index}`}
-                      name={`area-${index}`}
-                      type="text"
-                      style={{width: "270px"
-                      }}
-                      onChange={(e) => handleChange(e, index, "area")}
-                      placeholder="Área..."
-                      required />
-                      <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarPersonal(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              ))}
-              <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirPersonal} className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>
-            </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.fechaInicio || !formData.fechaFin || !formData.horaInicio || 
-                !formData.horaFin || !formData.motivo || !formData.noOrden || !formData.nombreProducto || !formData.cantidadProgramada || 
-                !formData.cantidadTerminada || !formData.noPersonal || !formData.nombrePersonal || !formData.area || 
-                formData.productos.otros.some((otro, index) =>
-                  !formData[`noOrden-${index}`] || !formData[`nombreProducto-${index}`] ||
-                  !formData[`cantidadProgramada-${index}`] || !formData[`cantidadTerminada-${index}`]
-                ) ||
-                formData.personal.otros.some((otro, index) =>
-                  !formData[`noPersonal-${index}`] || !formData[`nombrePersonal-${index}`] || !formData[`area-${index}`]
-                )
-              }>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Bonos / Comisiones" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1600px", // Límite del ancho
-              height: "65vh", // Ajusta la altura
-              maxHeight: "65vh", // Límite de la altura
-              padding: "30px", // Margen interno
-              marginLeft: "120px"
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Bonos / Comisiones</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tipoSolicitud">Tipo de solicitud</Label>
-                  <Select
-                    value={formData.tipoSolicitud || ''}
-                    onValueChange={(value) => {
-                      obtenerUsuariosBonos(value);
-                      setFormData({
-                        ...formData,
-                        tipoSolicitud: value,
-                        noBono: "",
-                        nombreBono: "",
-                        bonos: {
-                          ...formData.bonos,
-                          otros: [] 
-                        }
-                      });
-                    }}                    
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione el tipo de solicitud..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bonos">Bonos</SelectItem>
-                      <SelectItem value="comisiones">Comisiones</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mes">Mes</Label>
-                  <Select
-                    value={formData.mes || ''}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        mes: value,
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione el mes..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="enero">Enero</SelectItem>
-                      <SelectItem value="febrero">Febrero</SelectItem>
-                      <SelectItem value="marzo">Marzo</SelectItem>
-                      <SelectItem value="abril">Abril</SelectItem>
-                      <SelectItem value="mayo">Mayo</SelectItem>
-                      <SelectItem value="junio">Junio</SelectItem>
-                      <SelectItem value="julio">Julio</SelectItem>
-                      <SelectItem value="agosto">Agosto</SelectItem>
-                      <SelectItem value="septiembre">Septiembre</SelectItem>
-                      <SelectItem value="octubre">Octubre</SelectItem>
-                      <SelectItem value="noviembre">Noviembre</SelectItem>
-                      <SelectItem value="diciembre">Diciembre</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dias">Días</Label>
-                  <Input
-                    id="dias"
-                    name="dias"
-                    type="number"
-                    onChange={handleChange}
-                    placeholder="Dias..."
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-6 gap-1">
-                <div className="space-y-2">
-                  <Label htmlFor="noBono">No.</Label>
-                  <Input
-                    id="noBono"
-                    name="noBono"
-                    value={formData.noBono}
-                    type="number"
-                    onChange={handleChange}
-                    placeholder="No."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreBono">Nombre</Label>
-                </div>
-                <Select
-                  id={"nombreBono"}
-                  name={"nombreBono"}
-                  value={formData.nombreBono || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = usersBonos.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        noBono: selectedUser.numero_empleado,
-                        nombreBono: selectedUser.id,
-                      });
-                    }
-                  }}
-                  disabled={usersBonos.length === 0} // Deshabilitar si no hay usuarios disponibles
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {usersBonos.length > 0 ? (
-                      usersBonos.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled></SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bonoCantidad">Bono</Label>
-                  <Input
-                    id="bonoCantidad"
-                    name="bonoCantidad"
-                    type="number"
-                    onChange={handleChangeBonos}
-                    placeholder="Bono..."
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comision">Comisión</Label>
-                  <Input
-                    id="comision"
-                    name="comision"
-                    type="number"
-                    onChange={handleChangeBonos}
-                    placeholder="Comisión..."
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comentarios">Comentarios</Label>
-                  <Input
-                    id="comentarios"
-                    name="comentarios"
-                    type="text"
-                    onChange={handleChange}
-                    placeholder="Comentarios..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="total">Total</Label>
-                  <Input
-                    id="total"
-                    name="total"
-                    type="number"
-                    value={formData.total || 0}
-                    onChange={handleChangeBonos}
-                    placeholder="Total..."
-                    readOnly={true}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.bonos.otros.map((otro, index) => (
-                <div key={index} className="grid grid-cols-6 gap-1">
-                <div className="space-y-2">
-                  <Input
-                    id={`noBono-${index}`}
-                    name={`noBono-${index}`}
-                    value={otro.noBono || ''}
-                    type="number"
-                    onChange={(e) => handleChange(e, index, "noBono")}
-                    placeholder="No."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Select
-                    id={"nombreBono"}
-                    name={"nombreBono"}
-                    onValueChange={(value) => {
-                      const selectedUser = usersBonos.find((user) => user.id === value);
-                      if (selectedUser) {
-                        const updatedBonos = [...formData.bonos.otros];
-                        updatedBonos[index] = {
-                          ...updatedBonos[index],
-                          noBono: selectedUser.numero_empleado,
-                          nombreBono: selectedUser.id,
-                        };
-                        setFormData({
-                          ...formData,
-                          bonos: { ...formData.bonos, otros: updatedBonos },
-                        });
-                      }
-                    }}
-                    value={otro.nombreBono || ''} // Mostrar el valor actual del Select
-                    disabled={usersBonos.length === 0}
-                  >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {usersBonos.length > 0 ? (
-                      usersBonos.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled></SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`bonoCantidad-${index}`}
-                    name={`bonoCantidad-${index}`}
-                    type="number"
-                    onChange={(e) => handleChangeBonos(e, index, "bonoCantidad")}
-                    placeholder="Bono..."
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`comision-${index}`}
-                    name={`comision-${index}`}
-                    type="number"
-                    onChange={(e) => handleChangeBonos(e, index, "comision")}
-                    placeholder="Comisión..."
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`comentarios-${index}`}
-                    name={`comentarios-${index}`}
-                    type="text"
-                    onChange={(e) => handleChange(e, index, "comentarios")}
-                    placeholder="Comentarios..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                  <Input
-                      id={`total-${index}`}
-                      name={`total-${index}`}
-                      type="number"
-                      style={{width: "207px"
-                      }}
-                      value={otro.total || 0}
-                      onChange={(e) => handleChangeBonos(e, index, "total")}
-                      placeholder="Total..."
-                      readOnly={true} />
-                      <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarBono(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              ))}
-              <div className="space-y-2 ml-auto" style={{width: "245px"}}>
-                <Input
-                  id="totalFinal"
-                  name="totalFinal"
-                  type="number"
-                  value={formData.totalFinal || 0}
-                  placeholder="Total final..."
-                  readOnly={true}
-                />
-              </div>
-              <Button style={{background:"rgb(31 41 55)", color:"white", width: "180px"}} type="button" onClick={añadirBono} variant="outline" className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>
-            </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.tipoSolicitud || !formData.mes || !formData.dias
-                || !formData.nombreBono || !formData.bonoCantidad || !formData.comision || !formData.comentarios
-                || !formData.total || 
-                formData.bonos.otros.some((otro, index) =>
-                  !otro.nombreBono || !otro.bonoCantidad || !otro.comision || !formData[`comentarios-${index}`] ||
-                  !otro.total
-                )
-              }>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Aumento sueldo" && (
-            <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "600px", // Límite del ancho
-              height: "85vh", // Ajusta la altura
-              maxHeight: "85vh", // Límite de la altura
-              padding: "45px", // Margen interno
-            }}>
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Aumento de sueldo / Cambio de puesto / Cambio de área</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador a aplicar ajuste</Label>
-                </div>
-                <Select
-                  value={formData.nombreColaborador || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id,
-                        puestoColaborador: selectedUser.puesto,
-                      });
-                    }
-                  }}
-                  disabled={allUsers.length === 0} // Deshabilitar si no hay usuarios disponibles
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="puestoColaborador">Puesto</Label>
-                </div>
-                <Input
-                  id="puestoColaborador"
-                  name="puestoColaborador"
-                  type="text"
-                  value={formData.puestoColaborador}
-                  placeholder="Puesto del colaborador..."
-                  readOnly={true} />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Aplica por</Label>
-                </div>
-              <Select
-                id="motivo"
-                name="motivo"
-                value={formData.motivo || ''}
-                onValueChange={(value) => {
-                  setFormData({
-                    ...formData,
-                    motivo: value,
-                  });
-                }}
-              >
-                <SelectTrigger style={{ maxWidth: "500px" }}>
-                  <SelectValue placeholder="Seleccionar motivo..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="modificacion">Modificación a perfil de puesto - Competencias</SelectItem>
-                  <SelectItem value="cambio">Cambio de puesto</SelectItem>
-                  <SelectItem value="desempeño">Desempeño</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label htmlFor="sueldoActual">Sueldo actual</Label>
-              </div>
-              <Input
-                id="sueldoActual"
-                name="sueldoActual"
-                onChange={handleChange}
-                type="number"
-                value={formData.sueldoActual}
-                placeholder="Sueldo actual..." />
-            </div>
-            <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label htmlFor="nuevoSueldo">Nuevo sueldo</Label>
-              </div>
-              <Input
-                id="nuevoSueldo"
-                name="nuevoSueldo"
-                onChange={handleChange}
-                type="number"
-                value={formData.nuevoSueldo}
-                placeholder="Nuevo sueldo..." />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-                {renderDatePicker("Fecha requerida de ajuste", formData.fechaInicio, handleChange, "fechaInicio")}
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comentarios">Comentarios adicionales</Label>
-                </div>
-                <Textarea
-                  id="comentarios"
-                  name="comentarios"
-                  onChange={handleChange}
-                  required
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus comentarios adicionales aquí..." />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.nombreColaborador || !formData.puestoColaborador || 
-                !formData.motivo || !formData.sueldoActual || !formData.nuevoSueldo || !formData.fechaInicio || !formData.comentarios
-              }>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-        </div>
-      )}
-
 {formularioPrincipalAbiertoEdit && (
   <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalFormsEdit}>
     <DialogContent className="border-none p-0">
@@ -2183,157 +626,9 @@ export function AutorizarPapeletas() {
           </DialogDescription>
         </CardHeader>
         <div className="grid gap-4 py-4">
-        {tipoFormulario2 === "Faltas" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Faltas</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <Label>Tipo de falta</Label>
-                <RadioGroup
-                  value={formData.justificada}
-                  onValueChange={(value) => handleChange2({ name: "justificada", value })}
-                  className="flex space-x-2"
-                  disabled={true}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Justificada</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">Injustificada</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
-                </div>
-                <Select
-                  value={formData.nombreColaborador || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id
-                      });
-                    }
-                  }}
-                  disabled={formData.nombreColaborador !== ""}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={true}
-                  placeholder="Dias que faltó" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..."
-                  readOnly={true} />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Justificante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Si el justificante es del IMSS, 
-                        entonces la falta es justificada y se pagan 4 horas, de lo contrario no se paga, pero si se justifica.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {formData.comprobante ? (
-                    <a
-                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Descargar {formData.comprobante}
-                  </a>    
-                  ) : (
-                    <>
-                      <span style={{fontSize: 14}}>Sin justificante agregado</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
@@ -2365,30 +660,36 @@ export function AutorizarPapeletas() {
                   placeholder="Coloca tus observaciones aquí..."
                   readOnly={true} />
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2400,7 +701,7 @@ export function AutorizarPapeletas() {
           )}
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
@@ -2493,30 +794,36 @@ export function AutorizarPapeletas() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2528,7 +835,7 @@ export function AutorizarPapeletas() {
           )}
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
@@ -2647,30 +954,36 @@ export function AutorizarPapeletas() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
+                <Select
+                  value={estatusFormulario}
+                  onValueChange={(value) => {
+                    if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2682,7 +995,7 @@ export function AutorizarPapeletas() {
           )}
           {tipoFormulario2 === "Home Office" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
               width: "100%", // Ajusta el ancho
               maxWidth: "1600px", // Límite del ancho
               height: "65vh", // Ajusta la altura
@@ -2847,132 +1160,36 @@ export function AutorizarPapeletas() {
              </div>
               ))}
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Suspension" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Suspensión</CardTitle>
-            <DialogDescription className="text-center">Las suspensiones son de 1 a 7 días como máximo</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador</Label>
-                </div>
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
                 <Select
-                  value={formData.nombreColaborador || ''}
+                  value={estatusFormulario}
                   onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id
-                      });
+                    if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
                     }
                   }}
-                  disabled={formData.nombreColaborador !== ""}
                 >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={true}
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={true}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2984,7 +1201,7 @@ export function AutorizarPapeletas() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0">
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
             <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
@@ -3017,712 +1234,38 @@ export function AutorizarPapeletas() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Horas extras" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "70%", // Ajusta el ancho
-              maxWidth: "900px", // Límite del ancho
-              height: "90vh", // Ajusta la altura
-              maxHeight: "90vh", // Límite de la altura
-              padding: "30px", // Margen interno
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Horas extras</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-                {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="horaInicio">Hora de inicio</Label>
-                  </div>
-                  <Input
-                      id="horaInicio"
-                      name="horaInicio"
-                      type="time"
-                      style={{width: "385px"}}
-                      value={formData.horaInicio}
-                      onChange={handleChange}
-                      readOnly={true}
-                      placeholder="Hora de inicio..." />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="horaFin">Hora de fin</Label>
-                  </div>
-                  <Input
-                      id="horaFin"
-                      name="horaFin"
-                      type="time"
-                      style={{width: "385px"}}
-                      value={formData.horaFin}
-                      onChange={handleChange}
-                      readOnly={true}
-                      placeholder="Hora de fin..." />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Motivo del tiempo extra</Label>
-                </div>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={true}
-                  className="min-h-[100px]"
-                  placeholder="Coloca el motivo del tiempo extra aquí..." />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap:"40px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="noOrden">No. de orden</Label>
-                  </div>
-                  <Input
-                      id="noOrden"
-                      name="noOrden"
-                      type="number"
-                      style={{width: "80px"}}
-                      value={formData.noOrden}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="nombreProducto">Nombre del producto</Label>
-                  </div>
-                  <Input
-                      id="nombreProducto"
-                      name="nombreProducto"
-                      type="text"
-                      style={{width: "300px"}}
-                      value={formData.nombreProducto}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="cantidadProgramada">Cantidad programada</Label>
-                  </div>
-                  <Input
-                      id="cantidadProgramada"
-                      name="cantidadProgramada"
-                      type="number"
-                      style={{width: "150px"
-                      }}
-                      value={formData.cantidadProgramada}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="cantidadTerminada">Cantidad terminada</Label>
-                  </div>
-                  <Input
-                      id="cantidadTerminada"
-                      name="cantidadTerminada"
-                      type="number"
-                      style={{width: "130px"}}
-                      value={formData.cantidadTerminada}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.productos.otros.map((otro, index) => (
-               <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-               <div className="space-y-2">
-                 <Input
-                     id={`noOrden-${index}`}
-                     name={`noOrden-${index}`}
-                     type="number"
-                     style={{width: "80px"}}
-                     value={formData[`noOrden-${index}`]}
-                     onChange={(e) => handleChange(e, index, "noOrden")}
-                     readOnly={true} />
-               </div>
-               <div className="space-y-2">
-                 <Input
-                     id={`nombreProducto-${index}`}
-                     name={`nombreProducto-${index}`}
-                     type="text"
-                     style={{width: "300px", marginLeft: "35px"}}
-                     value={formData[`nombreProducto-${index}`]}
-                     onChange={(e) => handleChange(e, index, "nombreProducto")}
-                     readOnly={true} />
-               </div>
-               <div className="space-y-2">
-                 <Input
-                     id={`cantidadProgramada-${index}`}
-                     name={`cantidadProgramada-${index}`}
-                     type="number"
-                     style={{width: "150px", marginLeft: "30px"
-                     }}
-                     value={formData[`cantidadProgramada-${index}`]}
-                     onChange={(e) => handleChange(e, index, "cantidadProgramada")}
-                     readOnly={true} />
-               </div>
-               <div className="space-y-2">
-               <div className="flex items-center">
-                  <Input
-                      id={`cantidadTerminada-${index}`}
-                      name={`cantidadTerminada-${index}`}
-                      type="number"
-                      style={{width: "130px", marginLeft: "30px"}}
-                      value={formData[`cantidadTerminada-${index}`]}
-                      onChange={(e) => handleChange(e, index, "cantidadTerminada")}
-                      readOnly={true} />
-                  </div>
-               </div>
-             </div>
-              ))}
-            </div>
-              <div>
-                <Label style={{fontSize: 17}}>Personal que se autoriza</Label>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="noPersonal">No.</Label>
-                  </div>
-                  <Input
-                      id="noPersonal"
-                      name="noPersonal"
-                      type="number"
-                      style={{width: "80px"}}
-                      value={formData.noPersonal}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="nombrePersonal">Nombre</Label>
-                  </div>
-                  <Input
-                      id="nombrePersonal"
-                      name="nombrePersonal"
-                      type="text"
-                      style={{width: "350px"}}
-                      value={formData.nombrePersonal}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <Label htmlFor="area">Área</Label>
-                  </div>
-                  <Input
-                      id="area"
-                      name="area"
-                      type="text"
-                      style={{width: "340px"
-                      }}
-                      value={formData.area}
-                      onChange={handleChange}
-                      readOnly={true} />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.personal.otros.map((otro, index) => (
-                <div key={index} style={{ display: "flex", alignItems: "center", gap:"10px" }}>
-                <div className="space-y-2">
-                  <Input
-                      id={`noPersonal-${index}`}
-                      name={`noPersonal-${index}`}
-                      type="number"
-                      style={{width: "80px"}}
-                      value={formData[`noPersonal-${index}`]}
-                      onChange={(e) => handleChange(e, index, "noPersonal")}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                      id={`nombrePersonal-${index}`}
-                      name={`nombrePersonal-${index}`}
-                      type="text"
-                      style={{width: "350px"}}
-                      value={formData[`nombrePersonal-${index}`]}
-                      onChange={(e) => handleChange(e, index, "nombrePersonal")}
-                      readOnly={true} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                  <Input
-                      id={`area-${index}`}
-                      name={`area-${index}`}
-                      type="text"
-                      style={{width: "340px"
-                      }}
-                      value={formData[`area-${index}`]}
-                      onChange={(e) => handleChange(e, index, "area")}
-                      readOnly={true} />
-                  </div>
-                </div>
-              </div>
-              ))}
-            </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Bonos / Comisiones" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1600px", // Límite del ancho
-              height: "65vh", // Ajusta la altura
-              maxHeight: "65vh", // Límite de la altura
-              padding: "30px", // Margen interno
-              marginLeft: "120px"
-            }}>
-            <Card className="w-full xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Bonos / Comisiones</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tipoSolicitud">Tipo de solicitud</Label>
-                  <Select
-                    value={formData.tipoSolicitud || ''}
-                    onValueChange={(value) => {
-                      obtenerUsuariosBonos(value);
-                      setFormData({
-                        ...formData,
-                        tipoSolicitud: value,
-                        noBono: "",
-                        nombreBono: "",
-                        bonos: {
-                          ...formData.bonos,
-                          otros: [] 
-                        }
-                      });
-                    }}
-                    disabled={formData.tipoSolicitud !== ""}                    
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione el tipo de solicitud..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bonos">Bonos</SelectItem>
-                      <SelectItem value="comisiones">Comisiones</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mes">Mes</Label>
-                  <Select
-                    value={formData.mes || ''}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        mes: value,
-                      });
-                    }}
-                    disabled={formData.mes !== ""} 
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione el mes..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="enero">Enero</SelectItem>
-                      <SelectItem value="febrero">Febrero</SelectItem>
-                      <SelectItem value="marzo">Marzo</SelectItem>
-                      <SelectItem value="abril">Abril</SelectItem>
-                      <SelectItem value="mayo">Mayo</SelectItem>
-                      <SelectItem value="junio">Junio</SelectItem>
-                      <SelectItem value="julio">Julio</SelectItem>
-                      <SelectItem value="agosto">Agosto</SelectItem>
-                      <SelectItem value="septiembre">Septiembre</SelectItem>
-                      <SelectItem value="octubre">Octubre</SelectItem>
-                      <SelectItem value="noviembre">Noviembre</SelectItem>
-                      <SelectItem value="diciembre">Diciembre</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dias">Días</Label>
-                  <Input
-                    id="dias"
-                    name="dias"
-                    type="number"
-                    value={formData.dias}
-                    onChange={handleChange}
-                    placeholder="Dias..."
-                    readOnly={true}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-6 gap-1">
-                <div className="space-y-2">
-                  <Label htmlFor="noBono">No.</Label>
-                  <Input
-                    id="noBono"
-                    name="noBono"
-                    value={formData.noBono}
-                    type="number"
-                    onChange={handleChange}
-                    placeholder="No."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreBono">Nombre</Label>
-                </div>
+              <div className="space-y-2" style={{
+                color: (() => {
+                  if (estatusFormulario.startsWith("Autorizada")) return "green";
+                  if (estatusFormulario.startsWith("No autorizada")) return "red";
+                  switch (estatusFormulario) {
+                    case 'Pendiente':
+                      return 'orange';
+                    default:
+                      return 'black'; // color por defecto
+                  }
+                })(),
+              }}>
+                <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
                 <Select
-                  id={"nombreBono"}
-                  name={"nombreBono"}
-                  value={formData.nombreBono || ''}
+                  value={estatusFormulario}
                   onValueChange={(value) => {
-                    const selectedUser = usersBonos.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        noBono: selectedUser.numero_empleado,
-                        nombreBono: selectedUser.id,
-                      });
+                    if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
+                      handleOpenModalStatus(idFormulario, value);
+                    } else {
+                      handleChangeStatus(idFormulario, value);
                     }
                   }}
-                  disabled={formData.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
                 >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {usersBonos.length > 0 ? (
-                      usersBonos.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled></SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bonoCantidad">Bono</Label>
-                  <Input
-                    id="bonoCantidad"
-                    name="bonoCantidad"
-                    type="number"
-                    value={formData.bonoCantidad}
-                    onChange={handleChange}
-                    placeholder="Bono..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comision">Comisión</Label>
-                  <Input
-                    id="comision"
-                    name="comision"
-                    type="number"
-                    value={formData.comision}
-                    onChange={handleChange}
-                    placeholder="Comisión..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comentarios">Comentarios</Label>
-                  <Input
-                    id="comentarios"
-                    name="comentarios"
-                    type="text"
-                    value={formData.comentarios}
-                    onChange={handleChange}
-                    placeholder="Comentarios..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="total">Total</Label>
-                  <Input
-                    id="total"
-                    name="total"
-                    type="number"
-                    value={formData.total}
-                    onChange={handleChange}
-                    placeholder="Total..."
-                    readOnly={true}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.bonos.otros.map((otro, index) => (
-                <div key={index} className="grid grid-cols-6 gap-1">
-                <div className="space-y-2">
-                  <Input
-                    id={`noBono-${index}`}
-                    name={`noBono-${index}`}
-                    value={otro.noBono || ''}
-                    type="number"
-                    onChange={(e) => handleChange(e, index, "noBono")}
-                    placeholder="No."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                <Select
-                  id={"nombreBono"}
-                  name={"nombreBono"}
-                  value={otro.nombreBono || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = usersBonos.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        noBono: selectedUser.numero_empleado,
-                        nombreBono: selectedUser.id,
-                      });
-                    }
-                  }}
-                  disabled={otro.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {usersBonos.length > 0 ? (
-                      usersBonos.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled></SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`bonoCantidad-${index}`}
-                    name={`bonoCantidad-${index}`}
-                    value={otro.bonoCantidad}
-                    type="number"
-                    onChange={(e) => handleChange(e, index, "bonoCantidad")}
-                    placeholder="Bono..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`comision-${index}`}
-                    name={`comision-${index}`}
-                    value={otro.comision}
-                    type="number"
-                    onChange={(e) => handleChange(e, index, "comision")}
-                    placeholder="Comisión..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    id={`comentarios-${index}`}
-                    name={`comentarios-${index}`}
-                    value={formData[`comentarios-${index}`]}
-                    type="text"
-                    onChange={(e) => handleChange(e, index, "comentarios")}
-                    placeholder="Comentarios..."
-                    readOnly={true}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                  <Input
-                      id={`total-${index}`}
-                      name={`total-${index}`}
-                      type="number"
-                      value={otro.total}
-                      onChange={(e) => handleChange(e, index, "total")}
-                      placeholder="Total..."
-                      readOnly={true} />
-                  </div>
-                </div>
-              </div>
-              ))}
-              <div className="space-y-2 ml-auto" style={{width: "245px"}}>
-                <Input
-                  id="totalFinal"
-                  name="totalFinal"
-                  type="number"
-                  value={formData.totalFinal || ''}
-                  onChange={handleChange}
-                  placeholder="Total final..."
-                  readOnly={true}
-                />
-              </div>
-            </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una opción" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </CardContent>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Aumento sueldo" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "600px", // Límite del ancho
-              height: "85vh", // Ajusta la altura
-              maxHeight: "85vh", // Límite de la altura
-              padding: "45px", // Margen interno
-            }}>
-            <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Aumento de sueldo / Cambio de puesto / Cambio de área</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="nombreColaborador">Nombre del colaborador a aplicar ajuste</Label>
-                </div>
-                <Select
-                  value={formData.nombreColaborador || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = allUsers.find((user) => user.id === value);
-                    if (selectedUser) {
-                      setFormData({
-                        ...formData,
-                        nombreColaborador: selectedUser.id,
-                        puestoColaborador: selectedUser.puesto,
-                      });
-                    }
-                  }}
-                  disabled={formData.nombreColaborador !== ""} // Deshabilitar si no hay usuarios disponibles
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el colaborador..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allUsers.length > 0 ? (
-                      allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.nombre} {user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles para seleccionar</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="puestoColaborador">Puesto</Label>
-                </div>
-                <Input
-                  id="puestoColaborador"
-                  name="puestoColaborador"
-                  type="text"
-                  value={formData.puestoColaborador}
-                  placeholder="Puesto del colaborador..."
-                  readOnly={true} />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Aplica por</Label>
-                </div>
-              <Select
-                value={formData.motivo || ''}
-                disabled={formData.motivo !== ""}
-              >
-                <SelectTrigger style={{ maxWidth: "500px" }}>
-                  <SelectValue placeholder="Seleccionar motivo..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="modificacion">Modificación a perfil de puesto - Competencias</SelectItem>
-                  <SelectItem value="cambio">Cambio de puesto</SelectItem>
-                  <SelectItem value="desempeño">Desempeño</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label htmlFor="sueldoActual">Sueldo actual</Label>
-              </div>
-              <Input
-                id="sueldoActual"
-                name="sueldoActual"
-                type="number"
-                value={formData.sueldoActual}
-                placeholder="Sueldo actual..."
-                readOnly={true} />
-            </div>
-            <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label htmlFor="nuevoSueldo">Nuevo sueldo</Label>
-              </div>
-              <Input
-                id="nuevoSueldo"
-                name="nuevoSueldo"
-                type="number"
-                value={formData.nuevoSueldo}
-                placeholder="Nuevo sueldo..."
-                readOnly={true} />
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-                {renderDatePicker("Fecha requerida de ajuste", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-              </div>
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comentarios">Comentarios adicionales</Label>
-                </div>
-                <Textarea
-                  id="comentarios"
-                  name="comentarios"
-                  onChange={handleChange}
-                  value={formData.comentarios}
-                  readOnly={true}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus comentarios adicionales aquí..." />
               </div>
             </CardContent>
           </form>
@@ -3735,8 +1278,6 @@ export function AutorizarPapeletas() {
     </DialogContent>
   </Dialog>
 )}
-
-{autorizar ? (
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
           <Label htmlFor="search" className="mb-2 block">Buscar</Label>
@@ -3749,97 +1290,41 @@ export function AutorizarPapeletas() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-          <div className="w-full sm:w-1/3">
-            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
-            <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
-              <SelectTrigger id="status-filter">
-                <SelectValue placeholder="Seleccionar tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="Faltas">Faltas</SelectItem>
-                <SelectItem value="Suspension">Suspensión</SelectItem>
-                <SelectItem value="Horas extras">Horas extras</SelectItem>
-                <SelectItem value="Bonos / Comisiones">Bonos / Comisiones</SelectItem>
-                <SelectItem value="Aumento sueldo">Aumentos de sueldo / Cambio de puesto / Cambio de área</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-full sm:w-1/3">
-            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por estatus</Label>
-            <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
-              <SelectTrigger id="status-filter">
-                <SelectValue placeholder="Seleccionar estatus" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
-                <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-      </div>
-      ) : (<div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
-          <Label htmlFor="search" className="mb-2 block">Buscar</Label>
-          <SearchIcon style={{marginTop:"10px", marginLeft:"15px"}} className="absolute h-5 w-5 text-gray-400" />
-          <Input
-            id="search"
-            placeholder="Buscar en todos los campos..."
-            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
+          <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
+            <SelectTrigger id="status-filter">
+              <SelectValue placeholder="Seleccionar tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
+              <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
+              <SelectItem value="Permiso">Permiso</SelectItem>
+              <SelectItem value="Home Office">Home Office</SelectItem>
+              <SelectItem value="Vacaciones">Vacaciones</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <div className="w-full sm:w-1/3">
-            <Label htmlFor="status-filter" className="mb-2 block">Filtrar por tipo</Label>
-            <Select onValueChange={setTipoFormulario} defaultValue={tipoFormulario}>
-              <SelectTrigger id="status-filter">
-                <SelectValue placeholder="Seleccionar tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="Llegada tarde / Salida antes">Llegada tarde / Salida antes</SelectItem>
-                <SelectItem value="Tiempo por tiempo">Tiempo por tiempo</SelectItem>
-                <SelectItem value="Permiso">Permiso</SelectItem>
-                <SelectItem value="Home Office">Home Office</SelectItem>
-                <SelectItem value="Vacaciones">Vacaciones</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-      </div>)}
-
+      </div>
       <div className="overflow-x-auto">
         <Table>
           {autorizar ? (<TableCaption>Solicitudes generadas</TableCaption>) : (<TableCaption>Papeletas pendientes por revisar</TableCaption>)}
-          {autorizar ? (
-            <TableHeader>
-              <TableRow>
-                {encabezadosSolicitudes.map((encabezado, index) => (
-                  <TableHead key={index} className="whitespace-nowrap">
-                    {encabezado}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            ) : (
-            <TableHeader>
-              <TableRow>
-                {encabezados.map((encabezado, index) => (
-                  <TableHead key={index} className="whitespace-nowrap">
-                    {encabezado}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-          )}
+          <TableHeader>
+            <TableRow>
+              {encabezados.map((encabezado, index) => (
+                <TableHead key={index} className="whitespace-nowrap">
+                  {encabezado}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
           <TableBody>
             {currentEventos.length > 0 ? (
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
-                  <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
+                  <TableCell>{evento.tipo === "Suspension" ? "Suspensión o castigo" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre de empleado especificado'}</TableCell>
                   <TableCell>{evento.departamento || 'Sin departamento especificado'}</TableCell>
@@ -3881,7 +1366,6 @@ export function AutorizarPapeletas() {
                       })}`
                     : "Sin datos"}
                   </TableCell>
-                  {autorizar ? (<TableCell>{evento.comentarios || 'Sin comentarios'}</TableCell>) : (<TableCell hidden></TableCell>)} 
                   {autorizar ? (
                     <TableCell
                       style={{
@@ -3939,10 +1423,10 @@ export function AutorizarPapeletas() {
                     </TableCell>
                     {modalOpenStatus && (
                       <Dialog open={modalOpenStatus} onOpenChange={handleCloseModalStatus}>
-                      <DialogContent className="border-none p-0">
+                      <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
                       <Card className="w-full max-w-lg">
                     <CardHeader>
-                      {modalDataStatus.estatus.startsWith("Autorizada") ? <CardTitle className="text-2xl font-bold text-center">Agregar comentario - Sí se autoriza la papeleta</CardTitle> : <CardTitle className="text-2xl font-bold text-center">Agregar comentario - No se autoriza la papeleta</CardTitle>} 
+                      {modalDataStatus.estatus.startsWith("Autorizada") ? <CardTitle style={{color: "green"}} className="text-2xl font-bold text-center">Agregar comentario - Sí se autoriza la papeleta</CardTitle> : <CardTitle style={{color: "red"}} className="text-2xl font-bold text-center">Agregar comentario - No se autoriza la papeleta</CardTitle>} 
                     </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-2">
@@ -3972,15 +1456,9 @@ export function AutorizarPapeletas() {
               ))
             ) : (
               <TableRow>
-                {autorizar ? (
-                  <TableCell colSpan={11} className="text-center">
-                    No se encontraron solicitudes
-                  </TableCell>
-                ) : (
-                  <TableCell colSpan={10} className="text-center">
-                    No se encontraron papeletas
-                  </TableCell>
-                )}
+                <TableCell colSpan={10} className="text-center">
+                  No se encontraron papeletas
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
