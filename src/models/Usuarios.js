@@ -1,30 +1,35 @@
 import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize"; // Asegúrate de tener tu conexión en este archivo
+import Departamento from "@/models/Departamentos"; // Importa el modelo de Departamento
+import Empresa from "@/models/Empresas"; // Importa el modelo de Empresa
 
 const Usuario = sequelize.define(
   "Usuario",
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    rol: { type: DataTypes.STRING },
-    nombre: { type: DataTypes.STRING },
-    apellidos: { type: DataTypes.STRING },
-    numero_empleado: { type: DataTypes.STRING },
-    correo: { type: DataTypes.STRING, unique: true },
-    departamento_id: { type: DataTypes.INTEGER },
-    id_permiso: { type: DataTypes.INTEGER },
-    puesto: { type: DataTypes.STRING },
-    telefono: { type: DataTypes.INTEGER },
-    fecha_ingreso: { type: DataTypes.DATE },
-    jefe_directo: { type: DataTypes.INTEGER },
-    empresa_id: { type: DataTypes.INTEGER },
-    planta: { type: DataTypes.INTEGER },
-    password: { type: DataTypes.STRING },
-    eliminado: { type: DataTypes.INTEGER },
+    rol: { type: DataTypes.STRING, allowNull: true },
+    nombre: { type: DataTypes.STRING, allowNull: false },
+    apellidos: { type: DataTypes.STRING, allowNull: false },
+    numero_empleado: { type: DataTypes.STRING, allowNull: true, unique: true },
+    correo: { type: DataTypes.STRING, unique: true, allowNull: true },
+    departamento_id: { type: DataTypes.INTEGER, allowNull: true },
+    id_permiso: { type: DataTypes.INTEGER, allowNull: true },
+    puesto: { type: DataTypes.STRING, allowNull: true },
+    telefono: { type: DataTypes.INTEGER, allowNull: true },
+    fecha_ingreso: { type: DataTypes.DATE, allowNull: true },
+    jefe_directo: { type: DataTypes.INTEGER, allowNull: true },
+    empresa_id: { type: DataTypes.INTEGER, allowNull: true },
+    planta: { type: DataTypes.INTEGER, allowNull: true },
+    password: { type: DataTypes.STRING, allowNull: false },
+    eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
   },
   {
     tableName: "usuarios",
     timestamps: false, // Si tu tabla no usa `createdAt` y `updatedAt`
   }
 );
+
+Usuario.belongsTo(Departamento, { foreignKey: "departamento_id" });
+Usuario.belongsTo(Empresa, { foreignKey: "empresa_id" });
 
 export default Usuario;

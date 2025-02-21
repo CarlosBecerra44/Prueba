@@ -15,7 +15,6 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import {useUser} from "@/pages/api/hooks";
 
-
 const formSections = [
   { 
     id: 'Investigación y Desarrollo de Nuevos Productos', 
@@ -90,7 +89,7 @@ const formSections = [
   },
 ]
 
-export function UserManagementTable() {
+export function CMD() {
   const [selectedSections, setSelectedSections] = useState([])
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');

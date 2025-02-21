@@ -1,39 +1,54 @@
-import pool from "@/lib/db";
+import Usuario from "@/models/Usuarios"; // Modelo de Usuario
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Método no permitido' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Método no permitido" });
   }
 
-  const { id, nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe_directo, empresa_id, planta } = req.body;
-  const jefe = jefe_directo || null;
-
-  let connection;
+  const {
+    id,
+    nombre,
+    apellidos,
+    correo,
+    numero_empleado,
+    puesto,
+    departamento_id,
+    rol,
+    telefono,
+    fecha_ingreso,
+    jefe_directo,
+    empresa_id,
+    planta,
+  } = req.body;
 
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
+    // Buscar el usuario por ID
+    const usuario = await Usuario.findByPk(id);
 
-    // Ejecutar la consulta SQL para actualizar los datos del usuario
-    const [result] = await connection.query(
-      `UPDATE usuarios 
-       SET nombre = ?, apellidos = ?, correo = ?, numero_empleado = ?, 
-           puesto = ?, departamento_id = ?, rol = ?, telefono = ?, 
-           fecha_ingreso = ?, jefe_directo = ?, empresa_id = ?, planta = ?
-       WHERE id = ?`,
-      [nombre, apellidos, correo, numero_empleado, puesto, departamento_id, rol, telefono, fecha_ingreso, jefe, empresa_id, planta, id]
-    );
-
-    // Verificar si se actualizó el usuario
-    if (result.affectedRows > 0) {
-      return res.status(200).json({ success: true, message: 'Usuario actualizado exitosamente' });
-    } else {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    if (!usuario) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
+
+    // Actualizar el usuario con los nuevos valores
+    await usuario.update({
+      nombre,
+      apellidos,
+      correo,
+      numero_empleado,
+      puesto,
+      departamento_id,
+      rol,
+      telefono,
+      fecha_ingreso,
+      jefe_directo: jefe_directo || null,
+      empresa_id,
+      planta,
+    });
+
+    return res.status(200).json({ success: true, message: "Usuario actualizado exitosamente" });
+
   } catch (error) {
-    console.error('Error al actualizar el usuario:', error);
-    return res.status(500).json({ success: false, message: 'Error al actualizar el usuario' });
-  } finally {
-    if (connection) connection.release(); // Liberar la conexión
+    console.error("Error al actualizar el usuario:", error);
+    return res.status(500).json({ success: false, message: "Error al actualizar el usuario" });
   }
 }
