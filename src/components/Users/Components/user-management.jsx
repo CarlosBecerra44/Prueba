@@ -203,7 +203,6 @@ export function UserManagementTable() {
         const response = await axios.get('/api/Users/getUsers');
         if (response.data.success) {
           setUsers(response.data.users);
-          console.log(response.data.users)
         } else {
           console.error('Error al obtener los usuarios:', response.data.message);
         }

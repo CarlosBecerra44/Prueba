@@ -1,24 +1,26 @@
-import Empresa from "@/models/Empresas"; // Modelo de Empresa
+import pool from '@/lib/db'; // Tu configuración de conexión a la base de datos MySQL
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ success: false, message: "Método no permitido" });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, message: 'Método no permitido' });
   }
 
+  let connection;
+  
   try {
-    // Obtener todas las empresas donde 'eliminado' es 0
-    const empresas = await Empresa.findAll({
-      where: { eliminado: 0 },
-    });
+    // Obtiene una conexión del pool
+    connection = await pool.getConnection();
 
-    if (empresas.length === 0) {
-      return res.status(404).json({ success: false, message: "Empresas no encontradas" });
+    const [rows] = await connection.execute("SELECT * FROM empresas WHERE eliminado = 0");
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Empresas no encontradas' });
     }
 
     // Intentar parsear cada columna que pueda ser JSON
-    const parsedEmpresas = empresas.map((empresa) => {
+    const parsedRows = rows.map(row => {
       return Object.fromEntries(
-        Object.entries(empresa.toJSON()).map(([key, value]) => {
+        Object.entries(row).map(([key, value]) => {
           try {
             return [key, JSON.parse(value)];
           } catch (error) {
@@ -28,9 +30,12 @@ export default async function handler(req, res) {
       );
     });
 
-    return res.status(200).json({ success: true, users: parsedEmpresas });
+    return res.status(200).json({ success: true, users: parsedRows });
   } catch (error) {
-    console.error("Error en el servidor:", error);
-    return res.status(500).json({ success: false, message: "Error interno del servidor" });
+    console.error('Error en el servidor:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

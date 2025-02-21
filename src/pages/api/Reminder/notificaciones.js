@@ -1,5 +1,4 @@
-import RegistroEventos from "@/models/RegistroEventos";
-import Notificacion from "@/models/Notificacion";
+import pool from "@/lib/db"; // Configuración de tu conexión a la BD
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -12,36 +11,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "ID de usuario es requerido" });
   }
 
+  const query = `
+    SELECT ne.id, ne.descripcion, nu.leido, ne.fecha, ne.tipo, nu.id AS id_notificacion
+    FROM notificacion nu
+    JOIN registroeventos ne ON nu.id_evento = ne.id
+    WHERE nu.id_usuario = ? AND nu.leido = false
+    ORDER BY ne.fecha DESC
+  `;
+
+  let connection;
+
   try {
-    // Consultar las notificaciones no leídas del usuario
-    const notificaciones = await Notificacion.findAll({
-      where: {
-        id_usuario: id,
-        leido: false,
-      },
-      include: [
-        {
-          model: RegistroEventos,
-          as: "evento", // Asegurar que coincida con el alias en la relación
-          attributes: ["id", "descripcion", "fecha", "tipo"],
-        },
-      ],
-      order: [[{ model: RegistroEventos, as: "evento" }, "fecha", "DESC"]],
-    });
+    // Obtener la conexión
+    connection = await pool.getConnection();
 
-    // Mapear los resultados al formato esperado
-    const resultado = notificaciones.map((noti) => ({
-      id: noti.evento?.id, // Acceder correctamente con el alias definido en "as"
-      descripcion: noti.evento?.descripcion,
-      leido: noti.leido,
-      fecha: noti.evento?.fecha,
-      tipo: noti.evento?.tipo,
-      id_notificacion: noti.id,
-    }));
+    // Ejecutar la consulta con la conexión obtenida
+    const [result] = await connection.execute(query, [id]);
 
-    res.status(200).json(resultado);
+    // Enviar la respuesta con las notificaciones
+    res.status(200).json(result || []);
   } catch (error) {
     console.error("Error al obtener notificaciones:", error);
     res.status(500).json({ error: "Error al obtener las notificaciones" });
+  } finally {
+    // Liberar la conexión
+    if (connection) {
+      connection.release();
+    }
   }
 }

@@ -1,36 +1,53 @@
-import Usuario from "@/models/Usuarios"; // Modelo de Usuario
-import Departamento from "@/models/Departamentos"; // Modelo de Departamento
+import pool from '@/lib/db';
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Método no permitido" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Método no permitido' });
   }
 
   const { correo } = req.body;
   if (!correo) {
-    return res.status(400).json({ success: false, message: "El correo es requerido" });
+    return res.status(400).json({ success: false, message: 'El correo es requerido' });
   }
 
+  let connection;
+
   try {
-    // Buscar el usuario por correo
-    const user = await Usuario.findOne({ where: { correo } });
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    // Consulta para verificar si el usuario existe
+    const [userResult] = await connection.execute(
+      'SELECT * FROM usuarios WHERE correo = ?',
+      [correo]
+    );
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // Buscar el departamento del usuario
-    const departamento = await Departamento.findByPk(user.departamento_id);
+    const user = userResult[0]; // Usuario encontrado
+    const idUser = user.departamento_id; // ID del departamento
 
-    if (!departamento) {
-      return res.status(404).json({ success: false, message: "Departamento no encontrado" });
+    // Consulta para obtener el departamento
+    const [departmentResult] = await connection.execute(
+      'SELECT * FROM departamentos WHERE id = ?',
+      [idUser]
+    );
+
+    if (departmentResult.length === 0) {
+      return res.status(404).json({ success: false, message: 'Departamento no encontrado' });
     }
+
+    const departamento = departmentResult[0]; // Departamento encontrado
 
     // Responder con éxito
     return res.status(200).json({ success: true, user, departamento });
 
   } catch (error) {
-    console.error("Error en el servidor:", error);
-    return res.status(500).json({ success: false, message: "Error interno del servidor" });
+    console.error('Error en el servidor:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión
   }
 }

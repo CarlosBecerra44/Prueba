@@ -123,28 +123,12 @@ const toggleSection = (sectionId) => {
     { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
-    { 
-      id: 11, 
-      name: "Ingeniería de nuevo producto", 
-      href: "#", icon: <IngenieriaNuevoPIcon 
-      className="h-6 w-6 text-gray-400" />, 
-      roles: ["master"],
-      subMenu: [
-        {
-          id: 1,
-          name: "CMD",
-          href: "/ingenieria_nuevo_producto/catalogo_productos",
-          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master"]
-        },
-      ]
-    },
+    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master"]},
-    { id: 18, name: "CMD", href: "/configuraciones/cmd", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] }
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -201,7 +185,7 @@ const toggleSection = (sectionId) => {
             return (
               <div key={category.id} className="group">
               {/* Secciones principales con IDs específicos */}
-              {["principal", "departamentos", "cursos", "configuraciones"].includes(category.id) ? (
+              {["principal", "departamentos", "cursos"].includes(category.id) ? (
                 <div
                   className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
                   onClick={() => toggleSection(category.id)}

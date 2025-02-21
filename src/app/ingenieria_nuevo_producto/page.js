@@ -1,13 +1,9 @@
-import { IngenieriaNuevoProducto as Ing } from "@/components/ING PRODUCTO/Components/catalogo_productos";
-import { Suspense } from 'react';
+import { Ingenieria_nuevo_producto as Ingenieria_nuevo_producto } from "@/components/ING PRODUCTO/Components/ingenieria_nuevo_producto";
 function page() {
     return (
-        <Suspense>
-<div>
-            <Ing />
+        <div>
+            <Ingenieria_nuevo_producto />
         </div>
-        </Suspense>
-        
     );
 }
 

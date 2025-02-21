@@ -1,27 +1,31 @@
-import Empresa from "@/models/Empresas"; // Modelo de Empresa
+import pool from "@/lib/db"; // Tu configuración de conexión a la base de datos MySQL
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const { id } = req.query;
-
+    
+    let connection;
     try {
-      // Buscar la empresa por ID
-      const empresa = await Empresa.findByPk(id);
+      // Obtiene una conexión del pool
+      connection = await pool.getConnection();
 
-      if (!empresa) {
-        return res.status(404).json({ success: false, message: "Formulario no encontrado" });
+      // Actualiza la columna 'eliminado' en lugar de eliminar el registro
+      const [result] = await connection.execute(
+        "UPDATE empresas SET eliminado = 1 WHERE id = ?",
+        [id]
+      );
+
+      if (result.affectedRows > 0) {
+        return res.status(200).json({ message: "Formulario marcado como eliminado correctamente" });
+      } else {
+        return res.status(404).json({ message: "Formulario no encontrado" });
       }
-
-      // Actualizar la columna 'eliminado' en lugar de eliminar el registro
-      await empresa.update({
-        eliminado: 1, // Marca la empresa como eliminada
-      });
-
-      return res.status(200).json({ success: true, message: "Formulario marcado como eliminado correctamente" });
-
     } catch (error) {
       console.error("Error eliminando el formulario:", error);
-      return res.status(500).json({ success: false, message: "Error al eliminar el formulario" });
+      return res.status(500).json({ message: "Error al eliminar el formulario" });
+    } finally {
+      // Liberar la conexión
+      if (connection) connection.release();
     }
   } else {
     return res.status(405).json({ message: "Método no permitido" });

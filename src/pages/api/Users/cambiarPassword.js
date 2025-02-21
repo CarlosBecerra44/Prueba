@@ -1,35 +1,41 @@
-import Usuario from "@/models/Usuarios"; // Modelo de Usuario
-import bcrypt from "bcrypt";
+import pool from '@/lib/db';
+import bcrypt from 'bcrypt';
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Método no permitido" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método no permitido' });
   }
 
   const { userId, nuevaContraseña } = req.body;
-
+  
   if (!userId || !nuevaContraseña) {
-    return res.status(400).json({ message: "Faltan datos requeridos" });
+    return res.status(400).json({ message: 'Faltan datos requeridos' });
   }
+
+  let connection;
 
   try {
     // Hashear la nueva contraseña
     const hashedPassword = await bcrypt.hash(nuevaContraseña, 10);
 
-    // Buscar el usuario por ID
-    const usuario = await Usuario.findByPk(userId);
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
 
-    if (!usuario) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    // Ejecutar la actualización en la base de datos
+    const [result] = await connection.query(
+      'UPDATE usuarios SET password = ? WHERE id = ?', 
+      [hashedPassword, userId]
+    );
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
+    } else {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
-
-    // Actualizar la contraseña
-    await usuario.update({ password: hashedPassword });
-
-    return res.status(200).json({ success: true, message: "Contraseña actualizada correctamente" });
-
   } catch (error) {
-    console.error("Error actualizando la contraseña:", error);
-    return res.status(500).json({ success: false, message: "Error en el servidor" });
+    console.error('Error actualizando la contraseña:', error);
+    return res.status(500).json({ success: false, message: 'Error en el servidor' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión
   }
 }

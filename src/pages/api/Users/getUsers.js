@@ -1,50 +1,48 @@
-import Usuario from "@/models/Usuarios";
-import Departamento from "@/models/Departamentos";
-import Empresa from "@/models/Empresas";
+import pool from '@/lib/db';
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ success: false, message: "Método no permitido" });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, message: 'Método no permitido' });
   }
 
+  let connection;
+
   try {
-    // Consultar usuarios con sus departamentos y empresas asociadas
-    const usuarios = await Usuario.findAll({
-      where: { eliminado: 0 },
-      include: [
-        {
-          model: Departamento,
-          attributes: [
-            ['nombre', 'nombre_dpto'], // Alias para el campo 'nombre'
-            ['id', 'id_dpto'],         // Alias para el campo 'id'
-          ],
-        },
-        {
-          model: Empresa,
-          attributes: [
-            ['formulario', 'empresa_usuario'], // Alias para el campo 'formulario'
-          ],
-        },
-      ],
-      order: [["nombre", "ASC"]],
-      raw: true,
-    });
+    // Obtener una conexión del pool
+    connection = await pool.getConnection();
 
-    if (usuarios.length > 0) {
+    const query = `
+      SELECT 
+        u.*, 
+        d.nombre AS nombre_dpto, 
+        d.id AS id_dpto, 
+        e.formulario AS empresa_usuario
+      FROM 
+        usuarios u
+      JOIN 
+        departamentos d 
+      ON 
+        u.departamento_id = d.id AND u.eliminado = 0
+      JOIN 
+        empresas e
+      ON 
+        u.empresa_id = e.id
+      ORDER BY 
+        u.nombre ASC
+    `;
 
-      const result = usuarios.map(user => ({
-        ...user,
-        nombre_dpto: user['Departamento.nombre_dpto'], // Accede al alias
-        id_dpto: user['Departamento.id_dpto'],         // Accede al alias
-        empresa_usuario: user['Empresa.empresa_usuario'], // Accede al alias
-      }));
+    // Ejecutar la consulta usando la conexión
+    const [rows] = await connection.query(query);
 
-      return res.status(200).json({ success: true, users: result });
+    if (rows.length > 0) {
+      return res.status(200).json({ success: true, users: rows });
     } else {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
   } catch (error) {
-    console.error("Error en el servidor:", error);
-    return res.status(500).json({ success: false, message: "Error interno del servidor" });
+    console.error('Error en el servidor:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  } finally {
+    if (connection) connection.release(); // Liberar la conexión en el `finally`
   }
 }

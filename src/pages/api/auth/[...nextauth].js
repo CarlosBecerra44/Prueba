@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
-import Usuario from "@/models/Usuarios";
+import pool from "@/lib/db"; // Tu conexión a MySQL
 
 export default NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -29,31 +29,39 @@ export default NextAuth({
         const field = correo ? "correo" : "numero_empleado";
         const value = correo || numero;
 
+        let connection;
         try {
-          // Busca el usuario en la base de datos
-          const user = await Usuario.findOne({ where: { [field]: value } });
+          connection = await pool.getConnection();
 
-          if (!user) {
+          const query = `SELECT * FROM usuarios WHERE ${field} = ?`;
+          const [rows] = await connection.execute(query, [value]);
+
+          if (rows.length > 0) {
+            const user = rows[0];
+
+            // Verifica la contraseña
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (isPasswordValid) {
+              return {
+                id: user.id,
+                name: user.nombre,
+                email: user.correo,
+                rol: user.rol,
+                departamento: user.departamento_id,
+                idPermiso: user.id_permiso,
+              };
+            } else {
+              throw new Error("Contraseña incorrecta");
+            }
+          } else {
             throw new Error("Usuario no encontrado");
           }
-
-          // Verifica la contraseña
-          const isPasswordValid = await bcrypt.compare(password, user.password);
-          if (!isPasswordValid) {
-            throw new Error("Contraseña incorrecta");
-          }
-
-          return {
-            id: user.id,
-            name: user.nombre,
-            email: user.correo,
-            rol: user.rol,
-            departamento: user.departamento_id,
-            idPermiso: user.id_permiso,
-          };
         } catch (error) {
           console.error("Error en la autorización:", error.message);
           throw new Error(error.message);
+        } finally {
+          // Liberar la conexión
+          if (connection) connection.release();
         }
       },
     }),
@@ -88,20 +96,25 @@ export default NextAuth({
     },
     async signIn({ user, account }) {
       if (account.provider === "google") {
+        let connection;
         try {
-          // Verifica si el usuario ya existe en la base de datos
-          let usuario = await Usuario.findOne({ where: { correo: user.email } });
+          connection = await pool.getConnection();
 
-          if (!usuario) {
+          // Verifica si el usuario ya existe en la base de datos
+          const query = "SELECT * FROM usuarios WHERE correo = ?";
+          const [rows] = await connection.execute(query, [user.email]);
+
+          if (rows.length === 0) {
+            const rol = "estandar";
             // Si el usuario no existe, lo inserta en la base de datos
-            usuario = await Usuario.create({
-              rol: "estandar",
-              nombre: user.name,
-              correo: user.email,
-            });
+            const insertQuery = "INSERT INTO usuarios (rol, nombre, correo) VALUES (?, ?, ?)";
+            await connection.execute(insertQuery, [rol, user.name, user.email]);
           }
         } catch (error) {
           console.error("Error al verificar o insertar el usuario:", error.message);
+        } finally {
+          // Liberar la conexión
+          if (connection) connection.release();
         }
       }
       return true;

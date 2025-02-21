@@ -1,8 +1,4 @@
-import { Op } from "sequelize";
-import RegistroEventos from "@/models/RegistroEventos";
-import Notificacion from "@/models/Notificacion";
-import Usuario from "@/models/Usuarios";
-import sequelize from "@/lib/sequelize"; // Asegúrate de importar la instancia de Sequelize
+import pool from "@/lib/db"; // Configuración de tu conexión a la BD
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -10,52 +6,40 @@ export default async function handler(req, res) {
   }
 
   const { formData2 } = req.body;
+  let connection;
 
   try {
-    // Iniciar transacción
-    const transaction = await sequelize.transaction();
+    // Obtener la conexión del pool
+    connection = await pool.getConnection();
+    
+    await connection.beginTransaction(); // Iniciar transacción
 
-    try {
-      // Insertar el registro del evento
-      const nuevoEvento = await RegistroEventos.create(
-        {
-          tipo: formData2.tipo,
-          descripcion: formData2.descripcion,
-          id_usuario: formData2.id,
-          id_departamento: formData2.dpto,
-        },
-        { transaction }
-      );
+    // Insertar el registro del evento
+    const [result] = await connection.execute(
+      "INSERT INTO registroeventos (tipo, descripcion, id_usuario, id_departamento) VALUES (?, ?, ?, ?)",
+      [formData2.tipo, formData2.descripcion, formData2.id, formData2.dpto]
+    );
 
-      // Obtener usuarios del mismo departamento (excepto el que creó el evento)
-      const usuarios = await Usuario.findAll({
-        where: {
-          departamento_id: formData2.dpto,
-          id: { [Op.ne]: formData2.id }, // Filtra los usuarios que no sean el creador
-        },
-        attributes: ["id"],
-      });
+    const idEvento = result.insertId;
 
-      // Crear las notificaciones para esos usuarios
-      const notificaciones = usuarios.map((usuario) => ({
-        id_evento: nuevoEvento.id,
-        id_usuario: usuario.id,
-      }));
+    // Insertar las notificaciones
+    await connection.execute(
+      `INSERT INTO notificacion (id_evento, id_usuario)
+       SELECT ?, id
+       FROM usuarios
+       WHERE departamento_id = ? AND id != ?`,
+      [idEvento, formData2.dpto, formData2.id]
+    );
 
-      if (notificaciones.length > 0) {
-        await Notificacion.bulkCreate(notificaciones, { transaction });
-      }
+    await connection.commit(); // Confirmar la transacción
 
-      // Confirmar transacción
-      await transaction.commit();
-
-      res.status(201).json({ message: "Evento guardado correctamente" });
-    } catch (error) {
-      await transaction.rollback(); // Revertir cambios en caso de error
-      throw error;
-    }
+    res.status(201).json({ message: "Evento guardado correctamente" });
   } catch (error) {
     console.error("Error guardando el evento:", error);
+    if (connection) await connection.rollback(); // Revertir en caso de error
     res.status(500).json({ message: "Error en el servidor", error });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }

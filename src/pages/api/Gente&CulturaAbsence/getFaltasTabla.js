@@ -1,113 +1,92 @@
-import { Op, literal } from "sequelize";
-import { parseISO, isAfter, isBefore, startOfDay, endOfDay, subDays, addDays, isEqual } from "date-fns";
-import FormulariosFaltas from "@/models/FormulariosFaltas";
-import Usuario from "@/models/Usuarios";
-import Departamento from "@/models/Departamentos";
-import Empresa from "@/models/Empresas";
+import pool from '@/lib/db';
+import { parseISO, isAfter, isBefore, startOfDay, endOfDay, subDays, addDays, format, isEqual } from 'date-fns';
 
 function determinarSemanaAnterior(fechaInicio) {
   if (!fechaInicio) {
-    console.log("Fecha de inicio es NULL, asignado a la semana anterior.");
-    return "semana_anterior";
+      console.log("Fecha de inicio es NULL, asignado a la semana anterior.");
+      return 'semana_anterior';
   }
 
-  let fechaInicioObj = startOfDay(new Date(fechaInicio));
+  let fechaInicioObj = startOfDay(new Date(fechaInicio)); // Convertir a fecha sin hora
   if (isNaN(fechaInicioObj)) return null;
 
+  // 📌 **Obtener el jueves de la semana en curso**
   const hoy = new Date();
   const diaSemana = hoy.getDay();
-  const juevesSemanaActual =
-    diaSemana >= 4 ? startOfDay(addDays(hoy, 4 - diaSemana)) : startOfDay(addDays(hoy, -3 - diaSemana));
+  const juevesSemanaActual = diaSemana >= 4
+      ? startOfDay(addDays(hoy, 4 - diaSemana))
+      : startOfDay(addDays(hoy, -3 - diaSemana));
 
+  // 📌 **Calcular la semana anterior de nómina (jueves - miércoles)**
   const inicioSemanaAnterior = subDays(juevesSemanaActual, 7);
   const finSemanaAnterior = endOfDay(addDays(inicioSemanaAnterior, 6));
 
+  // 📌 **Comparación de fechas**
   if (isAfter(fechaInicioObj, inicioSemanaAnterior) && isBefore(fechaInicioObj, finSemanaAnterior)) {
-    return "semana_anterior";
+      console.log("Asignado a la semana anterior.");
+      return 'semana_anterior';
   }
 
+  // 📌 **Incluir el jueves de la semana de nómina como parte de la semana anterior**
   if (isEqual(fechaInicioObj, inicioSemanaAnterior)) {
-    return "semana_anterior";
+      console.log("Asignado al inicio de la semana anterior.");
+      return 'semana_anterior';
   }
 
+  console.log("No pertenece a la semana anterior.");
   return null;
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Método no permitido" });
-  }
+    if (req.method !== 'GET') {
+        return res.status(405).json({ message: 'Método no permitido' });
+    }
 
-  try {
-    // Consulta con Sequelize
-    const eventos = await FormulariosFaltas.findAll({
-      where: {
-        eliminado: 0,
-        extemporanea: 0,
-        [Op.or]: [
-          { estatus: "Autorizada por tu jefe directo" },
-          {
-            estatus: "Pendiente",
-            tipo: {
-              [Op.in]: ["Aumento sueldo", "Horas extras", "Bonos / Comisiones", "Faltas", "Suspension"],
-            },
-          },
-        ],
-      },
-      attributes: [
-        "id",
-        "estatus",
-        "archivo",
-        "eliminado",
-        "comentarios",
-        "tipo",
-        "extemporanea",
-        "id_usuario",
-        ["formulario", "formulario_usuario"],
-        [literal("CONVERT_TZ(fecha_subida, '+00:00', '+06:00')"), "fecha_subida"],
-        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
-        [literal("CONVERT_TZ(fecha_inicio, '+00:00', '+06:00')"), "fecha_inicio"],
-        [literal("CONVERT_TZ(fecha_fin, '+00:00', '+06:00')"), "fecha_fin"],
-      ],
-      include: [
-        {
-          model: Usuario,
-          attributes: ["id", "numero_empleado", "nombre", "apellidos", "puesto", "jefe_directo"],
-          include: [
-            {
-              model: Departamento,
-              attributes: [["nombre", "nombre_departamento"]],
-            },
-            {
-              model: Empresa,
-              attributes: [["formulario", "empresa_usuario"]],
-            },
-          ],
-        },
-      ],
-      order: [[literal("fecha_inicio"), "DESC"]],
-      raw: true, // Devuelve los datos en formato plano
-    });
+    let connection;
 
-    // Aplicamos la lógica de la semana con date-fns en JavaScript
-    const eventosFiltrados = eventos.filter((evento) => determinarSemanaAnterior(evento.fecha_inicio) === "semana_anterior");
+    try {
+        connection = await pool.getConnection();
 
-    const result = eventosFiltrados.map(evento => ({
-        ...evento,
-        numero_empleado: evento["Usuario.numero_empleado"] || null,
-        nombre: evento["Usuario.nombre"] || null,
-        apellidos: evento["Usuario.apellidos"] || null,
-        puesto: evento["Usuario.puesto"] || null,
-        jefe_directo: evento["Usuario.jefe_directo"] || null,
-        id_papeleta: evento.id,
-        nombre_departamento: evento["Usuario.Departamento.nombre_departamento"] || null,
-        empresa_usuario: evento["Usuario.Empresa.empresa_usuario"] || null,
-        formulario: typeof evento.formulario === "string" ? JSON.parse(evento.formulario) : evento.formulario,
-      }));
+        const query = `
+            SELECT 
+                f.*, 
+                u.*, 
+                f.id AS id_papeleta, 
+                f.formulario AS formulario_usuario,
+                d.nombre AS nombre_departamento,
+                e.formulario AS empresa_usuario,
+                f.fecha_inicio,
+                CONVERT_TZ(f.fecha_subida, '+00:00', '+06:00') AS fecha_subida, 
+                CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion,
+                CONVERT_TZ(f.fecha_inicio, '+00:00', '+06:00') AS fecha_inicio,
+                CONVERT_TZ(f.fecha_fin, '+00:00', '+06:00') AS fecha_fin
+            FROM 
+                formularios_faltas f
+            JOIN 
+                usuarios u ON f.id_usuario = u.id 
+            JOIN 
+                departamentos d ON u.departamento_id = d.id
+            JOIN 
+                empresas e ON u.empresa_id = e.id
+            WHERE 
+                f.eliminado = 0 
+                AND f.extemporanea = 0
+                AND (f.estatus = 'Autorizada por tu jefe directo' 
+                OR (f.estatus = 'Pendiente' AND f.tipo IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')))
+            ORDER BY 
+                f.fecha_inicio DESC;
+        `;
 
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error("Error al obtener los eventos:", error);
-    return res.status(500).json({ message: "Error interno del servidor" });
-  }
+        const [result] = await connection.execute(query);
+
+        // Aplicamos la lógica de la semana con date-fns en JavaScript
+        const eventos = result.filter(evento => determinarSemanaAnterior(evento.fecha_inicio) === 'semana_anterior');
+
+        res.status(200).json(eventos);
+    } catch (error) {
+        console.error('Error al obtener los eventos:', error);
+        res.status(500).json({ message: 'Error al obtener los eventos' });
+    } finally {
+        if (connection) connection.release();
+    }
 }

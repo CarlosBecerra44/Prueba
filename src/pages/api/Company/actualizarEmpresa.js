@@ -1,29 +1,33 @@
-import Empresa from "@/models/Empresas"; // Modelo de Empresa
+import pool from '@/lib/db'; // Tu conexión a MySQL
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Método no permitido" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método no permitido' });
   }
 
   const { id, formulario } = req.body;
+  console.log(formulario);
+  console.log("ID: " + id);
 
+  let connection;
   try {
-    // Buscar la empresa por ID
-    const empresa = await Empresa.findByPk(id);
+    connection = await pool.getConnection();
 
-    if (!empresa) {
-      return res.status(404).json({ success: false, message: "Empresa no encontrada" });
+    const [result] = await connection.execute(
+      "UPDATE empresas SET formulario = ? WHERE id = ?",
+      [JSON.stringify(formulario), id]
+    );
+
+    if (result.affectedRows > 0) {
+      return res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+    } else {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
     }
-
-    // Actualizar la empresa con el nuevo formulario
-    await empresa.update({
-      formulario: JSON.stringify(formulario), // Convertir a JSON si es necesario
-    });
-
-    return res.status(200).json({ success: true, message: "Empresa actualizada exitosamente" });
-
-  } catch (error) {
-    console.error("Error al actualizar la empresa:", error);
-    return res.status(500).json({ success: false, message: "Error al actualizar la empresa" });
+  } catch (err) {
+    console.error('Error al actualizar el usuario:', err);
+    return res.status(500).json({ message: 'Error al actualizar el usuario' });
+  } finally {
+    // Liberar la conexión
+    if (connection) connection.release();
   }
 }
