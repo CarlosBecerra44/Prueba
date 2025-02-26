@@ -132,6 +132,12 @@ const toggleSection = (sectionId) => {
       subMenu: [
         {
           id: 1,
+          name: "Productos",
+          href: "/ingenieria_nuevo_producto",
+          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master"]
+        },
+        {
+          id: 2,
           name: "CMD",
           href: "/ingenieria_nuevo_producto/catalogo_productos",
           icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master"]

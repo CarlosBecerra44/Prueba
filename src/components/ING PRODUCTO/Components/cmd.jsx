@@ -15,6 +15,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Textarea } from "@/components/ui/textarea"
 import {useUser} from "@/pages/api/hooks";
+import { Upload } from 'lucide-react'
 
 export function CMD() {
   const [nombre, setNombre] = useState('');
@@ -28,6 +29,10 @@ export function CMD() {
   const [compraMinima, setCompraMinima] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [products, setProducts] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [subcategorias, setSubcategorias] = useState([]);
+  const [especificaciones, setEspecificaciones] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -36,6 +41,7 @@ export function CMD() {
   const [open, setOpen] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const { isMaster } = useUser();
+  const [imagenes, setImagenes] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -53,6 +59,90 @@ export function CMD() {
     
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchProveedores = async () => {
+      try {
+        const response = await axios.get('/api/ProductEngineering/getProveedores');
+        if (response.data.success) {
+          setProveedores(response.data.proveedores);
+        } else {
+          console.error('Error al obtener los proveedores:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los proveedores:', error);
+      }
+    };
+    
+    fetchProveedores();
+  }, []);
+
+  useEffect(() => {
+    const fetchCategoriaGeneral = async () => {
+      try {
+        const response = await axios.get('/api/ProductEngineering/getCategoriaGeneral');
+        if (response.data.success) {
+          setCategorias(response.data.categorias);
+        } else {
+          console.error('Error al obtener las categorias:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de las categorias:', error);
+      }
+    };
+    
+    fetchCategoriaGeneral();
+  }, []);
+
+  useEffect(() => {
+    const fetchSubcategorias = async () => {
+      try {
+        const response = await axios.get('/api/ProductEngineering/getSubcategorias');
+        if (response.data.success) {
+          setSubcategorias(response.data.subcategorias);
+        } else {
+          console.error('Error al obtener las subcategorias:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de las subcategorias:', error);
+      }
+    };
+    
+    fetchSubcategorias();
+  }, []);
+
+  useEffect(() => {
+    const fetchEspecificaciones = async () => {
+      try {
+        const response = await axios.get('/api/ProductEngineering/getEspecificaciones');
+        if (response.data.success) {
+          setEspecificaciones(response.data.especificaciones);
+        } else {
+          console.error('Error al obtener las especificaciones:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de las especificaciones:', error);
+      }
+    };
+    
+    fetchEspecificaciones();
+  }, []);
+
+  const subcategoriasFiltradas = subcategorias.filter(
+    (sub) => sub.Tipo_id === categoriaGeneral
+  );
+
+  const subcategoriasFiltradasEdit = subcategorias.filter(
+    (sub) => sub.Tipo_id === selectedProduct?.Tipo_id
+  );
+
+  const especificacionesFiltradas = especificaciones.filter(
+    (esp) => esp.Tipo_id === categoriaGeneral && esp.Categoria_id === subcategoria
+  );
+
+  const especificacionesFiltradasEdit = especificaciones.filter(
+    (esp) => esp.Tipo_id === selectedProduct?.Tipo_id && esp.Categoria_id === selectedProduct?.Categoria_id
+  );
 
   const fetchProductsUpdate = async () => {
     try {
@@ -155,45 +245,126 @@ export function CMD() {
     const productToEdit = products.find(product => product.id === productId); // Buscar el usuario en el estado
     setSelectedProduct(productToEdit); // Establecer el usuario seleccionado en el estado
   };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files); // Convertimos la lista de archivos en un array
+    const allowedTypes = ['image/jpeg', 'image/png'];
+  
+    let newImages = [];
+  
+    for (let file of files) {
+      // Verificar tipo de archivo
+      if (!allowedTypes.includes(file.type)) {
+        Swal.fire({
+          title: 'Error',
+          text: `El archivo "${file.name}" no tiene un formato permitido.`,
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false
+        });
+        continue; // Saltar este archivo
+      }
+  
+      // Verificar tamaño (4MB máximo)
+      const maxSize = 4 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire({
+          title: 'Error',
+          text: `El archivo "${file.name}" es demasiado grande. Máximo 4MB.`,
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false
+        });
+        continue; // Saltar este archivo
+      }
+  
+      newImages.push(file);
+    }
+  
+    // Evitar que se agreguen más de 4 imágenes
+    if (imagenes.length + newImages.length > 4) {
+      Swal.fire({
+        title: 'Límite alcanzado',
+        text: 'Solo puedes seleccionar hasta 4 archivos.',
+        icon: 'warning',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      return;
+    }
+  
+    // Agregar nuevas imágenes al estado
+    setImagenes((prevImages) => [...prevImages, ...newImages]);
+  };
+  
+  // Para eliminar imágenes seleccionadas
+  const handleRemoveImage = (index) => {
+    setImagenes((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Estamos procesando tu solicitud',
+      showConfirmButton: false,
+      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      }
+    });
+  
     try {
-      const res = await fetch('/api/ProductEngineering/guardarProductos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ nombre, proveedor, categoriaGeneral, subcategoria, especificacion, medicion, codigo, costo, compraMinima, descripcion }),
-      });
+      const formData = new FormData();
 
+      formData.append("nombre", nombre);
+      formData.append("proveedor", proveedor);
+      formData.append("categoriaGeneral", categoriaGeneral);
+      formData.append("subcategoria", subcategoria);
+      formData.append("especificacion", especificacion);
+      formData.append("medicion", medicion);
+      formData.append("codigo", codigo);
+      formData.append("costo", costo);
+      formData.append("compraMinima", compraMinima);
+      formData.append("descripcion", descripcion);
+      imagenes.forEach((img) => formData.append("imagenes", img));
+  
+      const res = await fetch("/api/ProductEngineering/guardarProductos", {
+        method: "POST",
+        body: formData,
+      });
+  
       const data = await res.json();
 
+      Swal.close();
+  
       if (!res.ok) {
         setError(data.message);
+        Swal.fire("Error", data.message, "error");
         return;
       }
-
+  
       if (res.ok) {
         setOpen(false);
-        fetchProductsUpdate();
+        fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
-          title: 'Creado',
-          text: 'El producto ha sido creado correctamente',
-          icon: 'success',
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          title: "Creado",
+          text: "El producto ha sido creado correctamente",
+          icon: "success",
+          timer: 3000,
           showConfirmButton: false,
         });
       } else {
-        Swal.fire('Error', 'Error al crear el producto', 'error');
+        Swal.fire("Error", "Error al crear el producto", "error");
       }
     } catch (err) {
-      console.error('Error en el registro:', err);
-      setError('Hubo un problema con el registro. Por favor, intenta nuevamente.');
-      console.log(err);
+      console.error("Error en el registro:", err);
+      setError("Hubo un problema con el registro. Por favor, intenta nuevamente.");
+      Swal.close();
+      Swal.fire("Error", "Hubo un problema con el registro", "error");
     }
-  };
+  };  
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
@@ -256,6 +427,7 @@ export function CMD() {
     setCosto("");
     setCompraMinima("");
     setDescripcion("");
+    setImagenes([]);
   }
 
   return (
@@ -315,70 +487,124 @@ export function CMD() {
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
                     <div className="space-y-2">
                         <Label htmlFor="proveedor">Proveedor</Label>
-                        <Select value={proveedor} onValueChange={setProveedor}>
-                            <SelectTrigger id="proveedor">
-                            <SelectValue placeholder="Seleccionar proveedor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Clifton Packaging</SelectItem>
-                                <SelectItem value="2">Humbelina Ramírez Urteaga</SelectItem>
-                                <SelectItem value="3">Polímeros tapatíos</SelectItem>
-                                <SelectItem value="4">Scowuil</SelectItem>
-                            </SelectContent>
+                        <Select
+                          id="proveedor"
+                          name="proveedor"
+                          value={proveedor || ""}
+                          onValueChange={(value) => {
+                            const selectedProveedor = proveedores.find((p) => p.id === value);
+                            if (selectedProveedor) {
+                              setProveedor(selectedProveedor.id);
+                            }
+                          }}
+                          disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
+                        >
+                          <SelectTrigger className="col-span-3">
+                            {proveedores.find((p) => p.id === proveedor)?.nombre || "Seleccionar proveedor"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {proveedores.length > 0 ? (
+                              proveedores.map((pro) => (
+                                <SelectItem key={pro.id} value={pro.id}>
+                                  {pro.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay proveedores disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="categoriaGeneral">Categoría general</Label>
-                        <Select value={categoriaGeneral} onValueChange={setCategoriaGeneral}>
-                            <SelectTrigger id="categoriaGeneral">
-                            <SelectValue placeholder="Seleccionar categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Envase</SelectItem>
-                                <SelectItem value="2">Bolsas</SelectItem>
-                                <SelectItem value="3">Tapas</SelectItem>
-                                <SelectItem value="4">Cápsulas</SelectItem>
-                                <SelectItem value="5">Artículos antipiratería</SelectItem>
-                                <SelectItem value="6">Fórmulas estrella</SelectItem>
-                                <SelectItem value="7">Empaques bajo desarrollo</SelectItem>
-                            </SelectContent>
+                        <Select
+                          id="categoriaGeneral"
+                          name="categoriaGeneral"
+                          value={categoriaGeneral || ""}
+                          onValueChange={(value) => {
+                            const selectedCategoria = categorias.find((c) => c.id === value);
+                            if (selectedCategoria) {
+                              setCategoriaGeneral(selectedCategoria.id);
+                            }
+                          }}
+                          disabled={categorias.length === 0} // Deshabilitar si no hay categorías disponibles
+                        >
+                          <SelectTrigger className="col-span-3">
+                            {categorias.find((c) => c.id === categoriaGeneral)?.nombre || "Seleccionar categoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categorias.length > 0 ? (
+                              categorias.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay categorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                 </div>
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
                     <div className="space-y-2">
                         <Label htmlFor="subcategoria">Subcategoría</Label>
-                        <Select value={subcategoria} onValueChange={setSubcategoria}>
-                            <SelectTrigger id="subcategoria">
-                            <SelectValue placeholder="Seleccionar subcategoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">AluSeal</SelectItem>
-                                <SelectItem value="2">Atomizadores</SelectItem>
-                                <SelectItem value="3">Botellas</SelectItem>
-                                <SelectItem value="4">Cajas de embalaje impresas</SelectItem>
-                                <SelectItem value="5">Cajas para formar kits</SelectItem>
-                                <SelectItem value="6">Colores especiales</SelectItem>
-                                <SelectItem value="7">Goteros</SelectItem>
-                                <SelectItem value="8">Paquetes celofán</SelectItem>
-                                <SelectItem value="9">Pastilleros</SelectItem>
-                                <SelectItem value="10">Tarros</SelectItem>
-                                <SelectItem value="11">Tubos depresibles</SelectItem>
-                            </SelectContent>
+                        <Select
+                          id="subcategoria"
+                          name="subcategoria"
+                          value={subcategoria || ""}
+                          onValueChange={(value) => {
+                            const selectedSubcategoria = subcategorias.find((s) => s.id === value);
+                            if (selectedSubcategoria) {
+                              setSubcategoria(selectedSubcategoria.id);
+                            }
+                          }}
+                          disabled={subcategoriasFiltradas.length === 0} // Deshabilitar si no hay subcategorías
+                        >
+                          <SelectTrigger>
+                            {subcategoriasFiltradas.find((s) => s.id === subcategoria)?.nombre || "Seleccionar subcategoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subcategoriasFiltradas.length > 0 ? (
+                              subcategoriasFiltradas.map((sub) => (
+                                <SelectItem key={sub.id} value={sub.id}>
+                                  {sub.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay subcategorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="especificacion">Especificación</Label>
-                        <Select value={especificacion} onValueChange={setEspecificacion}>
-                            <SelectTrigger id="especificacion">
-                            <SelectValue placeholder="Seleccionar especificación" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Bulbos</SelectItem>
-                                <SelectItem value="2">Insertos</SelectItem>
-                                <SelectItem value="3">Pomaderas</SelectItem>
-                                <SelectItem value="4">Redonda industrial</SelectItem>
-                            </SelectContent>
+                        <Select
+                          id="especificacion"
+                          name="especificacion"
+                          value={especificacion || ""}
+                          onValueChange={(value) => {
+                            const selectedEspecificacion = especificaciones.find((e) => e.id === value);
+                            if (selectedEspecificacion) {
+                              setEspecificacion(selectedEspecificacion.id);
+                            }
+                          }}
+                          disabled={especificacionesFiltradas.length === 0} // Deshabilitar si no hay opciones
+                        >
+                          <SelectTrigger>
+                            {especificacionesFiltradas.find((e) => e.id === especificacion)?.nombre || "Seleccionar especificación"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {especificacionesFiltradas.length > 0 ? (
+                              especificacionesFiltradas.map((esp) => (
+                                <SelectItem key={esp.id} value={esp.id}>
+                                  {esp.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay especificaciones disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                 </div>
@@ -443,8 +669,52 @@ export function CMD() {
                         />
                     </div>
                 </div>
+                <div style={{marginBottom: "15px"}} className="space-y-2 col-span-2">
+                  <Label htmlFor="imagenes">Imágenes</Label>
+                  <div className="flex flex-col space-y-2">
+                    <input
+                      id="imagenes"
+                      name="imagenes"
+                      type="file"
+                      multiple
+                      accept=".jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById("imagenes").click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
+                    </Button>
+
+                    {/* Vista previa de archivos seleccionados */}
+                    {imagenes.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {imagenes.map((img, index) => (
+                          <div key={index} className="relative">
+                              <img
+                                src={URL.createObjectURL(img)}
+                                alt={`imagen ${index + 1}`}
+                                className="w-20 h-20 object-cover border rounded"
+                              />
+                            <button
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
+                            >
+                              X
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
             <DialogFooter>
-              <Button type="submit" disabled={!nombre || !proveedor || !categoriaGeneral || !subcategoria || !especificacion || !medicion || !codigo || !costo || !compraMinima || !descripcion} >Agregar producto</Button>
+              <Button type="submit" disabled={!nombre || !proveedor || !categoriaGeneral || !subcategoria || !medicion || !codigo || !costo || !compraMinima || !descripcion || (imagenes.length === 0)} >Agregar producto</Button>
             </DialogFooter>
             </form>
           </DialogContent>
@@ -518,90 +788,124 @@ export function CMD() {
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
                     <div className="space-y-2">
                         <Label htmlFor="proveedor">Proveedor</Label>
-                        <Select value={selectedProduct?.proveedor_id.toString() || ''} onValueChange={(value) => {
+                        <Select
+                          id="proveedor"
+                          name="proveedor"
+                          value={selectedProduct?.proveedor_id ? selectedProduct.proveedor_id.toString() : ""}
+                          onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
-                            ...prevProduct,
-                            proveedor_id: value,
+                              ...prevProduct,
+                              proveedor_id: Number(value), // Convertimos el valor a número
                             }));
-                        }}>
-                            <SelectTrigger id="proveedor">
-                            <SelectValue placeholder="Seleccionar proveedor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Clifton Packaging</SelectItem>
-                                <SelectItem value="2">Humbelina Ramírez Urteaga</SelectItem>
-                                <SelectItem value="3">Polímeros tapatíos</SelectItem>
-                                <SelectItem value="4">Scowuil</SelectItem>
-                            </SelectContent>
+                          }}
+                          disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
+                        >
+                          <SelectTrigger className="col-span-3">
+                            {proveedores.find((prov) => prov.id === selectedProduct?.proveedor_id)?.nombre || "Seleccionar proveedor"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {proveedores.length > 0 ? (
+                              proveedores.map((pro) => (
+                                <SelectItem key={pro.id} value={pro.id.toString()}>
+                                  {pro.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay proveedores disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="categoriaGeneral">Categoría general</Label>
-                        <Select value={selectedProduct?.Tipo_id.toString() || ''} onValueChange={(value) => {
+                        <Select
+                          id="categoriaGeneral"
+                          name="categoriaGeneral"
+                          value={selectedProduct?.Tipo_id ? selectedProduct.Tipo_id.toString() : ""}
+                          onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
-                            ...prevProduct,
-                            Tipo_id: value,
+                              ...prevProduct,
+                              Tipo_id: Number(value), // Convertimos el valor a número
                             }));
-                        }}>
-                            <SelectTrigger id="categoriaGeneral">
-                            <SelectValue placeholder="Seleccionar categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Envase</SelectItem>
-                                <SelectItem value="2">Bolsas</SelectItem>
-                                <SelectItem value="3">Tapas</SelectItem>
-                                <SelectItem value="4">Cápsulas</SelectItem>
-                                <SelectItem value="5">Artículos antipiratería</SelectItem>
-                                <SelectItem value="6">Fórmulas estrella</SelectItem>
-                                <SelectItem value="7">Empaques bajo desarrollo</SelectItem>
-                            </SelectContent>
+                          }}
+                          disabled={categorias.length === 0} // Deshabilitar si no hay categorías disponibles
+                        >
+                          <SelectTrigger className="col-span-3">
+                            {categorias.find((cat) => cat.id === selectedProduct?.Tipo_id)?.nombre || "Seleccionar categoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categorias.length > 0 ? (
+                              categorias.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id.toString()}>
+                                  {cat.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay categorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                 </div>
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
                     <div className="space-y-2">
                         <Label htmlFor="subcategoria">Subcategoría</Label>
-                        <Select value={selectedProduct?.Categoria_id.toString() || ''} onValueChange={(value) => {
+                        <Select
+                          id="subcategoria"
+                          name="subcategoria"
+                          value={selectedProduct?.Categoria_id ? selectedProduct.Categoria_id.toString() : ""}
+                          onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
-                            ...prevProduct,
-                            Categoria_id: value,
+                              ...prevProduct,
+                              Categoria_id: Number(value), // Convertimos el valor a número
                             }));
-                        }}>
-                            <SelectTrigger id="subcategoria">
-                            <SelectValue placeholder="Seleccionar subcategoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">AluSeal</SelectItem>
-                                <SelectItem value="2">Atomizadores</SelectItem>
-                                <SelectItem value="3">Botellas</SelectItem>
-                                <SelectItem value="4">Cajas de embalaje impresas</SelectItem>
-                                <SelectItem value="5">Cajas para formar kits</SelectItem>
-                                <SelectItem value="6">Colores especiales</SelectItem>
-                                <SelectItem value="7">Goteros</SelectItem>
-                                <SelectItem value="8">Paquetes celofán</SelectItem>
-                                <SelectItem value="9">Pastilleros</SelectItem>
-                                <SelectItem value="10">Tarros</SelectItem>
-                                <SelectItem value="11">Tubos depresibles</SelectItem>
-                            </SelectContent>
+                          }}
+                          disabled={subcategoriasFiltradasEdit.length === 0} // Deshabilitar si no hay subcategorías
+                        >
+                          <SelectTrigger>
+                            {subcategoriasFiltradasEdit.find((s) => s.id === selectedProduct?.Categoria_id)?.nombre || "Seleccionar subcategoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subcategoriasFiltradasEdit.length > 0 ? (
+                              subcategoriasFiltradasEdit.map((sub) => (
+                                <SelectItem key={sub.id} value={sub.id.toString()}>
+                                  {sub.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay subcategorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="especificacion">Especificación</Label>
-                        <Select value={selectedProduct?.Subcategoria_id.toString() || ''} onValueChange={(value) => {
+                        <Select
+                          id="especificacion"
+                          name="especificacion"
+                          value={selectedProduct?.Subcategoria_id ? selectedProduct.Subcategoria_id.toString() : ""}
+                          onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
-                            ...prevProduct,
-                            Subcategoria_id: value,
+                              ...prevProduct,
+                              Subcategoria_id: Number(value), // Convertimos el valor a número
                             }));
-                        }}>
-                            <SelectTrigger id="especificacion">
-                            <SelectValue placeholder="Seleccionar especificación" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Bulbos</SelectItem>
-                                <SelectItem value="2">Insertos</SelectItem>
-                                <SelectItem value="3">Pomaderas</SelectItem>
-                                <SelectItem value="4">Redonda industrial</SelectItem>
-                            </SelectContent>
+                          }}
+                          disabled={especificacionesFiltradasEdit.length === 0} // Deshabilitar si no hay opciones
+                        >
+                          <SelectTrigger>
+                            {especificacionesFiltradasEdit.find((s) => s.id === selectedProduct?.Subcategoria_id)?.nombre || "Seleccionar especificación"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {especificacionesFiltradasEdit.length > 0 ? (
+                              especificacionesFiltradasEdit.map((esp) => (
+                                <SelectItem key={esp.id} value={esp.id.toString()}>
+                                  {esp.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay especificaciones disponibles</SelectItem>
+                            )}
+                          </SelectContent>
                         </Select>
                     </div>
                 </div>

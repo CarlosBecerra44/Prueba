@@ -12,32 +12,28 @@ export default async function handler(req, res) {
 
     // Consulta para obtener los eventos desde la tabla 'formularios_estrategias'
     const [rows] = await connection.query(
-      `SELECT 
-        p.*, 
-        pro.nombre AS nombre_proveedor, ma.nombre AS nombre_categoria, ca.nombre AS nombre_subcategoria, sub.nombre AS nombre_especificacion
-      FROM 
-        productos p
-      JOIN 
-        proveedores pro
-      ON 
-        p.proveedor_id = pro.id
-      JOIN 
-        tiposmaterialesprima ma
-      ON 
-        p.Tipo_id = ma.id
-      JOIN
-        categoriamaterialesprima ca
-      ON
-        p.Categoria_id = ca.id
-      LEFT JOIN
-        subcategoriamaterialesprima sub
-      ON
-        p.Subcategoria_id = sub.id
-      WHERE
-        p.eliminado = 0
-      ORDER BY 
-        p.id ASC`
-    );
+    `SELECT 
+  p.*, 
+  pro.nombre AS nombre_proveedor, 
+  ma.nombre AS nombre_categoria, 
+  ca.nombre AS nombre_subcategoria, 
+  sub.nombre AS nombre_especificacion,
+  GROUP_CONCAT(img.ruta) AS imagenes
+FROM productos p
+JOIN proveedores pro ON p.proveedor_id = pro.id
+JOIN tiposmaterialesprima ma ON p.Tipo_id = ma.id
+JOIN categoriamaterialesprima ca ON p.Categoria_id = ca.id
+LEFT JOIN subcategoriamaterialesprima sub ON p.Subcategoria_id = sub.id
+LEFT JOIN imgproductos img ON img.producto_id = p.id
+WHERE p.eliminado = 0
+GROUP BY p.id
+ORDER BY p.id ASC;
+`);      
+
+rows.forEach(product => {
+    product.imagenes = product.imagenes ? product.imagenes.split(",") : [];
+  });
+
 
     // Retorna los eventos en formato JSON
     return res.status(200).json({ success: true, products: rows });

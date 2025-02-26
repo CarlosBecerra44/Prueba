@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 
 // Crear un pool de conexiones
 const pool = mysql.createPool({
-  host: 'localhost', // Dirección del host
-  user: 'root',      // Usuario de la base de datos
-  password: '', // Contraseña
-  database: 'prueba', // Nombre de la base de datos
+  host: '50.6.199.166', // Dirección del host
+  user: 'aionnet',      // Usuario de la base de datos
+  password: '$ZkSex&+PSbQ', // Contraseña
+  database: 'aionnet_productivo', // Nombre de la base de datos
   port: 3306,           // Puerto para MySQL
   waitForConnections: true,
   connectionLimit: 140,  // Número máximo de conexiones en el pool

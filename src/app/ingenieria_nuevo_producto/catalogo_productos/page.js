@@ -1,8 +1,8 @@
-import { Marketing as Ingenieria_nuevo_producto } from "@/components/Emails/Components/marketing";
+import { CatalogoProductos as C } from "@/components/ING PRODUCTO/Components/catalogo_productos";
 function page() {
     return (
         <div>
-            <Ingenieria_nuevo_producto />
+            <C />
         </div>
     );
 }
