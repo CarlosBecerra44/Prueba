@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize"; // Asegúrate de tener tu conexión en este archivo
 import Departamento from "@/models/Departamentos"; // Importa el modelo de Departamento
 import Empresa from "@/models/Empresas"; // Importa el modelo de Empresa
+import Permiso from "@/models/Permisos";
 
 const Usuario = sequelize.define(
   "Usuario",
@@ -31,5 +32,6 @@ const Usuario = sequelize.define(
 
 Usuario.belongsTo(Departamento, { foreignKey: "departamento_id" });
 Usuario.belongsTo(Empresa, { foreignKey: "empresa_id" });
+Usuario.belongsTo(Permiso, { foreignKey: 'id_permiso' });
 
 export default Usuario;
