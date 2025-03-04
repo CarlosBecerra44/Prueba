@@ -10,42 +10,46 @@ export default async function handler(req, res) {
     // Obtener una conexión del pool
     connection = await pool.getConnection();
 
-    // Consulta para obtener los eventos desde la tabla 'formularios_estrategias'
+    // Consulta para obtener productos junto con sus imágenes
     const [rows] = await connection.query(
       `SELECT 
         p.*, 
-        pro.nombre AS nombre_proveedor, ma.nombre AS nombre_categoria, ca.nombre AS nombre_subcategoria, sub.nombre AS nombre_especificacion
+        pro.nombre AS nombre_proveedor, 
+        ma.nombre AS nombre_categoria, 
+        ca.nombre AS nombre_subcategoria, 
+        sub.nombre AS nombre_especificacion,
+        GROUP_CONCAT(img.ruta SEPARATOR ',') AS imagenes
       FROM 
         productos p
       JOIN 
-        proveedores pro
-      ON 
-        p.proveedor_id = pro.id
+        proveedores pro ON p.proveedor_id = pro.id
       JOIN 
-        tiposmaterialesprima ma
-      ON 
-        p.Tipo_id = ma.id
+        tiposmaterialesprima ma ON p.Tipo_id = ma.id
       JOIN
-        categoriamaterialesprima ca
-      ON
-        p.Categoria_id = ca.id
+        categoriamaterialesprima ca ON p.Categoria_id = ca.id
       LEFT JOIN
-        subcategoriamaterialesprima sub
-      ON
-        p.Subcategoria_id = sub.id
+        subcategoriamaterialesprima sub ON p.Subcategoria_id = sub.id
+      LEFT JOIN
+        imgproductos img ON img.producto_id = p.id  -- Traer imágenes de imgproductos
       WHERE
         p.eliminado = 0
+      GROUP BY 
+        p.id
       ORDER BY 
         p.id ASC`
     );
 
-    // Retorna los eventos en formato JSON
+    // Convertir la lista de imágenes en un array para cada producto
+    rows.forEach(product => {
+      product.imagenes = product.imagenes ? product.imagenes.split(",") : [];
+    });
+
+    // Retornar los productos con imágenes en formato JSON
     return res.status(200).json({ success: true, products: rows });
   } catch (error) {
     console.error('Error al obtener los productos:', error);
     res.status(500).json({ message: 'Error al obtener los productos' });
   } finally {
-    // Liberar la conexión
     if (connection) {
       connection.release();
     }

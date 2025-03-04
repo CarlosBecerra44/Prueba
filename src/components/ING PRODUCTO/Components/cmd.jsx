@@ -296,11 +296,76 @@ export function CMD() {
     // Agregar nuevas imágenes al estado
     setImagenes((prevImages) => [...prevImages, ...newImages]);
   };
+
+  const handleFileChangeEdit = (e) => {
+    const files = Array.from(e.target.files); // Convertimos la lista de archivos en un array
+    const allowedTypes = ['image/jpeg', 'image/png'];
+  
+    let newImages = [];
+  
+    for (let file of files) {
+      // Verificar tipo de archivo
+      if (!allowedTypes.includes(file.type)) {
+        Swal.fire({
+          title: 'Error',
+          text: `El archivo "${file.name}" no tiene un formato permitido.`,
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false
+        });
+        continue; // Saltar este archivo
+      }
+  
+      // Verificar tamaño (4MB máximo)
+      const maxSize = 4 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire({
+          title: 'Error',
+          text: `El archivo "${file.name}" es demasiado grande. Máximo 4MB.`,
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false
+        });
+        continue; // Saltar este archivo
+      }
+  
+      newImages.push(file);
+    }
+  
+    // Obtener la cantidad actual de imágenes (tanto del servidor como nuevas)
+    const totalImages = selectedProduct.imagenes.length + newImages.length;
+  
+    // Evitar que se agreguen más de 4 imágenes en total
+    if (totalImages > 4) {
+      Swal.fire({
+        title: 'Límite alcanzado',
+        text: 'Solo puedes tener hasta 4 imágenes.',
+        icon: 'warning',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      return;
+    }
+  
+    // Agregar nuevas imágenes sin perder las existentes
+    setSelectedProduct((prevProduct) => ({
+      ...prevProduct,
+      imagenes: [...prevProduct.imagenes, ...newImages]
+    }));
+    console.log(selectedProduct.imagenes)
+  };  
   
   // Para eliminar imágenes seleccionadas
   const handleRemoveImage = (index) => {
     setImagenes((prevImages) => prevImages.filter((_, i) => i !== index));
   };
+
+  const handleRemoveImageEdit = (index) => {
+    setSelectedProduct((prevProduct) => ({
+      ...prevProduct,
+      imagenes: prevProduct.imagenes.filter((_, i) => i !== index),
+    }));
+  };  
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -368,35 +433,61 @@ export function CMD() {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
+
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Estamos procesando tu solicitud',
+      showConfirmButton: false,
+      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      }
+    });
+  
+    const formData = new FormData();
+  
+    // Agregar los datos del producto
+    formData.append('id', selectedProduct.id);
+    formData.append('nombre', selectedProduct.nombre);
+    formData.append('proveedor', selectedProduct.proveedor_id);
+    formData.append('categoriaGeneral', selectedProduct.Tipo_id);
+    formData.append('subcategoria', selectedProduct.Categoria_id);
+    if (selectedProduct.Subcategoria_id) {
+      formData.append('especificacion', selectedProduct.Subcategoria_id);
+    }
+    formData.append('medicion', selectedProduct.medicion);
+    formData.append('codigo', selectedProduct.codigo);
+    formData.append('costo', selectedProduct.costo);
+    formData.append('compraMinima', selectedProduct.cMinima);
+    formData.append('descripcion', selectedProduct.descripcion);
+  
+    // Enviar imágenes existentes como texto (rutas de las imágenes en el servidor)
+    if (selectedProduct.imagenes && selectedProduct.imagenes.length > 0) {
+      selectedProduct.imagenes.forEach((image, index) => {
+        if (typeof image === 'string') {
+          formData.append(`imagenesExistentes[${index}]`, image); // Se envía como texto (ruta)
+        } else if (image instanceof File) {
+          formData.append('imagenes', image); // Se envía como archivo
+        }
+      });
+    }
   
     try {
       const res = await fetch('/api/ProductEngineering/actualizarProducto', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: selectedProduct.id,  
-          nombre: selectedProduct.nombre,  
-          proveedor: selectedProduct.proveedor_id, 
-          categoriaGeneral: selectedProduct.Tipo_id,  
-          subcategoria: selectedProduct.Categoria_id, 
-          especificacion: selectedProduct.Subcategoria_id,  
-          medicion: selectedProduct.medicion,  
-          codigo: selectedProduct.codigo,  
-          costo: selectedProduct.costo,  
-          compraMinima: selectedProduct.cMinima,  
-          descripcion: selectedProduct.descripcion,
-        }),
+        body: formData,
       });
   
       const data = await res.json();
+
+      Swal.close();
   
       if (!res.ok) {
         setError(data.message || 'Hubo un problema al actualizar el producto');
+        Swal.fire("Error", data.message, "error");
         return;
       }
-
+  
       if (res.ok) {
         setOpenEdit(false);
         fetchProductsUpdate();
@@ -404,17 +495,19 @@ export function CMD() {
           title: 'Actualizado',
           text: 'Los datos del producto se han actualizado correctamente',
           icon: 'success',
-          timer: 2000, // La alerta desaparecerá después de 1.5 segundos
+          timer: 2000,
           showConfirmButton: false,
         });
       } else {
-        Swal.fire('Error', 'Error al actualizar los datos del producto', 'error');
+        Swal.fire("Error", "Error al actualizar el producto", "error");
       }
     } catch (err) {
       console.error('Error en la actualización:', err);
       setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
+      Swal.close();
+      Swal.fire("Error", "Hubo un problema con la actualización", "error");
     }
-  };
+  };  
 
   const handleCleanForm = () => {
     setNombre("");
@@ -825,6 +918,7 @@ export function CMD() {
                           onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
                               ...prevProduct,
+                              Categoria_id: null,
                               Tipo_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
@@ -857,6 +951,7 @@ export function CMD() {
                           onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
                               ...prevProduct,
+                              Subcategoria_id: null,
                               Categoria_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
@@ -969,6 +1064,55 @@ export function CMD() {
                         placeholder="Descripción del producto"
                         />
                     </div>
+                </div>
+                <div style={{ marginBottom: "15px" }} className="space-y-2 col-span-2">
+                  <Label htmlFor="imagenes">Imágenes</Label>
+                  <div className="flex flex-col space-y-2">
+                    <input
+                      id="imagenes"
+                      name="imagenes"
+                      type="file"
+                      multiple
+                      accept=".jpg,.jpeg,.png"
+                      onChange={handleFileChangeEdit}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button" // Evita que se envíe el formulario
+                      variant="outline"
+                      onClick={() => document.getElementById("imagenes").click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
+                    </Button>
+
+                    {/* Vista previa de imágenes */}
+                    {selectedProduct?.imagenes.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {selectedProduct.imagenes.map((img, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={
+                                img instanceof File
+                                  ? URL.createObjectURL(img)
+                                  : `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(img)}`
+                              }
+                              alt={`imagen ${index + 1}`}
+                              className="w-20 h-20 object-cover border rounded"
+                            />
+                            <button
+                              type="button" // Evita el envío del formulario
+                              onClick={() => handleRemoveImageEdit(index)}
+                              className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
+                            >
+                              X
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
             <DialogFooter>
               <Button type="submit">Actualizar producto</Button>

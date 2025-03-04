@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       [values]
     );
 
-    res.status(201).json({ message: 'Pedido guardado correctamente' });
+    res.status(201).json({ success: true, message: 'Pedido guardado correctamente' });
   } catch (error) {
     console.error('Error guardando el pedido:', error);
     res.status(500).json({ message: 'Error en el servidor' });
