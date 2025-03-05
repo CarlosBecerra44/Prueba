@@ -5,10 +5,10 @@ import { Page, Text, View, Image, Document, StyleSheet } from '@react-pdf/render
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
-    padding: 10,
+    padding: 20, // Aumenta el padding para evitar cortes
   },
   section: {
-    marginBottom: 10,
+    marginBottom: 15,
   },
   heading: {
     fontSize: 12,
@@ -20,7 +20,8 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderWidth: 1,
     borderColor: '#000',
-    marginBottom: 5,
+    marginBottom: 15,
+    padding: 10,
   },
   tableRow: {
     flexDirection: 'row',
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
     padding: 5,
     fontWeight: 'bold',
-    fontSize: 10
+    fontSize: 10,
   },
   tableCol: {
     width: '50%',
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#000',
     padding: 5,
-    fontSize: 10
+    fontSize: 10,
   },
   totalRow: {
     fontWeight: 'bold',
@@ -53,12 +54,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flexGrow: 1,
     fontSize: 10,
-    textAlign:"center"
   },
   tableCellHeader: {
     fontWeight: 'bold',
     fontSize: 10,
-    textAlign:"center"
+    textAlign: "center",
   },
   image: {
     width: '100%',
@@ -67,6 +67,12 @@ const styles = StyleSheet.create({
   logoCell: {
     flex: 1,
     paddingRight: 10,
+  },
+  avoidBreak: {
+    break: 'avoid', // Evita que se dividan elementos grandes en páginas distintas
+  },
+  pageBreak: {
+    break: 'before', // Fuerza que una sección grande comience en una nueva página
   },
 });
 
@@ -133,13 +139,13 @@ const PDFDocument = ({ evento }) => {
               <Text>2</Text>
             </View>
             <View style={{ ...styles.tableCell, flex: 2 }}>
-              <Text>Pág. 1 de 2</Text>
+              <Text render={({ pageNumber, totalPages }) => `Pág. ${pageNumber} de ${totalPages}`} />
             </View>
           </View>
         </View>
       
         {/* Información del evento */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Planificación de evento</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
@@ -170,7 +176,7 @@ const PDFDocument = ({ evento }) => {
         </View>
 
         {/* Tabla de Costos */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Costos</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
@@ -210,7 +216,7 @@ const PDFDocument = ({ evento }) => {
         </View>
 
         {/* Especificaciones */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Especificaciones</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
@@ -245,7 +251,7 @@ const PDFDocument = ({ evento }) => {
         </View>
 
         {/* Productos para venta */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Productos para venta</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
@@ -268,7 +274,7 @@ const PDFDocument = ({ evento }) => {
         </View>
 
         {/* Datos de proveedores */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Datos de proveedores y seguimiento al pago</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
@@ -293,7 +299,7 @@ const PDFDocument = ({ evento }) => {
         </View>
 
         {/* Piezas digitales */}
-        <View style={styles.section}>
+        <View style={[styles.section]} wrap={false}>
           <Text style={styles.heading}>Piezas digitales</Text>
           <View style={styles.table}>
             <View style={styles.tableRow}>
