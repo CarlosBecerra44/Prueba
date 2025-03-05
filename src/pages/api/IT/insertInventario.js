@@ -1,4 +1,4 @@
-import InventarioIT from "@/models/inventario";
+import InventarioIT from "@/models/Inventario";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
