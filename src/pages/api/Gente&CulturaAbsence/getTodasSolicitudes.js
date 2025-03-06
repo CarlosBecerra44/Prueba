@@ -34,10 +34,10 @@ export default async function handler(req, res) {
         "extemporanea",
         "id_usuario",
         ["formulario", "formulario_usuario"],
-        [literal("CONVERT_TZ(fecha_subida, '+00:00', '+06:00')"), "fecha_subida"],
-        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
-        [literal("CONVERT_TZ(fecha_inicio, '+00:00', '+06:00')"), "fecha_inicio"],
-        [literal("CONVERT_TZ(fecha_fin, '+00:00', '+06:00')"), "fecha_fin"],
+        "fecha_subida",
+        "fecha_actualizacion",
+        "fecha_inicio",
+        "fecha_fin",
       ],
       include: [
         {
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
           ],
         },
       ],
-      order: [[literal("fecha_inicio"), "DESC"]],
+      order: [["fecha_inicio", "DESC"]],
       raw: true, // Devuelve los datos en formato plano
     });
 

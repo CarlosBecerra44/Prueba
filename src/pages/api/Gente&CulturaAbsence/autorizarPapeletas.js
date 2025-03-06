@@ -35,8 +35,8 @@ export default async function handler(req, res) {
         "tipo",
         "extemporanea",
         "id_usuario",
-        [literal("CONVERT_TZ(fecha_subida, '+00:00', '+06:00')"), "fecha_subida"],
-        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
+        "fecha_subida",
+        "fecha_actualizacion",
       ],
       include: [
         {
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
           ],
         },
       ],
-      order: [[literal("fecha_subida"), "DESC"]], // Ordenamos por fecha_subida DESC
+      order: [["fecha_subida", "DESC"]], // Ordenamos por fecha_subida DESC
       raw: true, // Queremos obtener los datos sin instancias de Sequelize
     });
 

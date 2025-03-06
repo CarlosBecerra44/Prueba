@@ -17,8 +17,8 @@ export default async function handler(req, res) {
         'pdf_path', 
         'eliminado', 
         'estatus',
-        [literal("CONVERT_TZ(fecha_envio, '+00:00', '+06:00')"), "fecha_envio"],
-        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
+        'fecha_envio',
+        'fecha_actualizacion',
         'firmas'
       ]
     });
