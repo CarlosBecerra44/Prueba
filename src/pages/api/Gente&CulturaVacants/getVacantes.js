@@ -1,33 +1,42 @@
-import pool from "@/lib/db"; // Asegúrate de que está correctamente configurado para MySQL
+import { literal } from "sequelize";
+import Vacante from "@/models/Vacantes";
+import Departamento from "@/models/Departamentos";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Método no permitido" });
   }
 
-  let connection;
-
   try {
-    // Obtener la conexión
-    connection = await pool.getConnection();
+    // Obtener los eventos desde la tabla 'vacantes' con la relación a 'departamentos'
+    const vacantes = await Vacante.findAll({
+      where: { eliminado: 0 },
+      attributes: [
+        "id",
+        "vacante",
+        "cantidad",
+        "gerencia",
+        "proceso_actual",
+        "ubicacion",
+        "salario",
+        [literal("CONVERT_TZ(fecha_apertura, '+00:00', '+06:00')"), "fecha_apertura"],
+        [literal("CONVERT_TZ(fecha_ingreso, '+00:00', '+06:00')"), "fecha_ingreso"],
+        "observaciones",
+        "eliminado",
+      ],
+      include: [
+        {
+          model: Departamento,
+          as: "departamento",
+          attributes: ["nombre"],
+        },
+      ],
+      order: [["id", "DESC"]],
+    });
 
-    // Consulta para obtener los eventos desde la tabla 'vacantes'
-    const [result] = await connection.execute(`
-      SELECT vacantes.*, departamentos.nombre 
-      FROM vacantes
-      INNER JOIN departamentos 
-      ON departamentos.id = CAST(vacantes.gerencia AS UNSIGNED)
-      WHERE vacantes.eliminado = 0
-      ORDER BY vacantes.id DESC
-    `);
-
-    // Retorna los eventos en formato JSON
-    res.status(200).json(result);
+    res.status(200).json(vacantes);
   } catch (error) {
     console.error("Error al obtener los eventos:", error);
     res.status(500).json({ message: "Error al obtener los eventos" });
-  } finally {
-    // Liberar la conexión
-    if (connection) connection.release();
   }
 }

@@ -795,6 +795,7 @@ export function CMD() {
                                 className="w-20 h-20 object-cover border rounded"
                               />
                             <button
+                              type="button" // Evita el envío del formulario
                               onClick={() => handleRemoveImage(index)}
                               className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
                             >

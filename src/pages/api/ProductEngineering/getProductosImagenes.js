@@ -1,4 +1,9 @@
-import pool from '@/lib/db';
+import Producto from '@/models/Productos';
+import Proveedor from '@/models/Proveedores';
+import TipoMateriaPrima from '@/models/TiposMateriasPrimas';
+import CategoriaMateriaPrima from '@/models/CategoriasMateriasPrimas';
+import SubcategoriaMateriaPrima from '@/models/SubcategoriasMateriasPrimas';
+import ImagenProducto from '@/models/ImagenesProductos';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -7,62 +12,64 @@ export default async function handler(req, res) {
 
   const { tipoId, categoriaId, subcategoriaId } = req.query;
 
-  let connection;
   try {
-    connection = await pool.getConnection();
+    // Construir los filtros
+    const filters = {
+      eliminado: 0,
+      ...(tipoId && { Tipo_id: tipoId }),
+      ...(categoriaId && { Categoria_id: categoriaId }),
+      ...(subcategoriaId && { Subcategoria_id: subcategoriaId }),
+    };
 
-    // Construir la consulta con filtros dinámicos
-    let query = `
-      SELECT 
-        p.*, 
-        pro.nombre AS nombre_proveedor, 
-        ma.nombre AS nombre_categoria, 
-        ca.nombre AS nombre_subcategoria, 
-        sub.nombre AS nombre_especificacion,
-        GROUP_CONCAT(img.ruta) AS imagenes
-      FROM productos p
-      JOIN proveedores pro ON p.proveedor_id = pro.id
-      JOIN tiposmaterialesprima ma ON p.Tipo_id = ma.id
-      JOIN categoriamaterialesprima ca ON p.Categoria_id = ca.id
-      LEFT JOIN subcategoriamaterialesprima sub ON p.Subcategoria_id = sub.id
-      LEFT JOIN imgproductos img ON img.producto_id = p.id
-      WHERE p.eliminado = 0
-    `;
-
-    const params = [];
-
-    if (tipoId) {
-      query += ` AND p.Tipo_id = ?`;
-      params.push(tipoId);
-    }
-
-    if (categoriaId) {
-      query += ` AND p.Categoria_id = ?`;
-      params.push(categoriaId);
-    }
-
-    if (subcategoriaId) {
-      query += ` AND p.Subcategoria_id = ?`;
-      params.push(subcategoriaId);
-    }
-
-    query += ` GROUP BY p.id ORDER BY p.id ASC`;
-
-    const [rows] = await connection.query(query, params);
-
-    // Procesar las imágenes para devolverlas como array
-    rows.forEach(product => {
-      product.imagenes = product.imagenes ? product.imagenes.split(",") : [];
+    // Obtener los productos filtrados
+    const productos = await Producto.findAll({
+      where: filters,
+      include: [
+        {
+          model: Proveedor,
+          attributes: ['nombre'],
+          as: 'proveedor',
+        },
+        {
+          model: TipoMateriaPrima,
+          attributes: ['nombre'],
+          as: 'categoria',
+        },
+        {
+          model: CategoriaMateriaPrima,
+          attributes: ['nombre'],
+          as: 'subcategoria',
+        },
+        {
+          model: SubcategoriaMateriaPrima,
+          attributes: ['nombre'],
+          as: 'especificacion',
+        },
+        {
+          model: ImagenProducto,
+          attributes: ['ruta'],
+          as: 'imagenes',
+        },
+      ],
+      order: [['id', 'ASC']],
     });
 
-    // Retorna los productos filtrados en formato JSON
-    return res.status(200).json({ success: true, products: rows });
+    // Procesar las imágenes para devolverlas como array
+    const productosConImagenes = productos.map(producto => {
+      const imagenes = producto.imagenes.map(img => img.ruta);
+      return {
+        ...producto.toJSON(),
+        nombre_proveedor: producto.proveedor?.nombre || null,
+        nombre_categoria: producto.categoria?.nombre || null,
+        nombre_subcategoria: producto.subcategoria?.nombre || null,
+        nombre_especificacion: producto.especificacion?.nombre || null,
+        imagenes,
+      };
+    });
+
+    return res.status(200).json({ success: true, products: productosConImagenes });
   } catch (error) {
     console.error('Error al obtener los productos:', error);
-    res.status(500).json({ message: 'Error al obtener los productos' });
-  } finally {
-    if (connection) {
-      connection.release();
-    }
+    return res.status(500).json({ message: 'Error al obtener los productos' });
   }
 }

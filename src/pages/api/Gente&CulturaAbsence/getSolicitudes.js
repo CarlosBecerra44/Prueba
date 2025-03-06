@@ -1,53 +1,75 @@
-import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
+import { Op, literal } from "sequelize";
+import FormulariosFaltas from "@/models/FormulariosFaltas";
+import Usuario from "@/models/Usuarios";
+import Departamento from "@/models/Departamentos";
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Método no permitido' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Método no permitido" });
   }
 
   const { id } = req.query;
-  let connection;
 
   try {
-    // Obtiene una conexión del pool
-    connection = await pool.getConnection();
+    const eventos = await FormulariosFaltas.findAll({
+      where: {
+        id_usuario: id,
+        eliminado: 0,
+        tipo: {
+          [Op.in]: ["Aumento sueldo", "Horas extras", "Bonos / Comisiones", "Faltas", "Suspension"],
+        },
+      },
+      attributes: [
+        "id",
+        "formulario",
+        "fecha_inicio",
+        "fecha_fin",
+        "estatus",
+        "archivo",
+        "eliminado",
+        "comentarios",
+        "tipo",
+        "extemporanea",
+        "id_usuario",
+        [literal("CONVERT_TZ(fecha_subida, '+00:00', '+06:00')"), "fecha_subida"],
+        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
+      ],
+      include: [
+        {
+          model: Usuario,
+          attributes: ["id", "numero_empleado", "nombre", "apellidos", "puesto", "jefe_directo"],
+          include: [
+            {
+              model: Departamento,
+              attributes: [["nombre", "nombre_departamento"]],
+            },
+          ],
+        },
+      ],
+      order: [[literal("fecha_actualizacion"), "DESC"]],
+      raw: true,
+    });
 
-    const query = `
-      SELECT 
-          f.*, 
-          u.*, 
-          f.id AS id_papeleta, 
-          d.nombre AS nombre_departamento,
-          CONVERT_TZ(f.fecha_subida, '+00:00', '+06:00') AS fecha_subida, 
-          CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion
-      FROM 
-          formularios_faltas f
-      JOIN 
-          usuarios u
-      ON 
-          f.id_usuario = u.id 
-      JOIN 
-          departamentos d
-      ON 
-          u.departamento_id = d.id
-      WHERE 
-          f.id_usuario = ? 
-          AND (f.tipo = 'Aumento sueldo' OR f.tipo = 'Horas extras' OR f.tipo = 'Bonos / Comisiones' OR f.tipo = 'Faltas' OR f.tipo = 'Suspension') 
-          AND f.eliminado = 0
-      ORDER BY 
-          f.fecha_actualizacion DESC;
-    `;
-    
-    const [result] = await connection.execute(query, [id]);
-    const eventos = result;
+    if (!eventos || eventos.length === 0) {
+      return res.status(404).json({ message: "No se encontraron eventos" });
+    }
 
-    // Retorna los eventos en formato JSON
-    res.status(200).json(eventos);
+    // Mapeamos los resultados para ajustar nombres y valores
+    const result = eventos.map(evento => ({
+      ...evento,
+      numero_empleado: evento["Usuario.numero_empleado"] || null,
+      nombre: evento["Usuario.nombre"] || null,
+      apellidos: evento["Usuario.apellidos"] || null,
+      puesto: evento["Usuario.puesto"] || null,
+      jefe_directo: evento["Usuario.jefe_directo"] || null,
+      id_papeleta: evento.id,
+      nombre_departamento: evento["Usuario.Departamento.nombre_departamento"] || null,
+      formulario: typeof evento.formulario === "string" ? JSON.parse(evento.formulario) : evento.formulario,
+    }));
+
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('Error al obtener los eventos:', error);
-    res.status(500).json({ message: 'Error al obtener los eventos' });
-  } finally {
-    // Liberar la conexión
-    if (connection) connection.release();
+    console.error("Error al obtener los eventos:", error);
+    return res.status(500).json({ message: "Error al obtener los eventos" });
   }
 }

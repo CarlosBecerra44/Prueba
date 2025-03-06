@@ -1,4 +1,5 @@
-import pool from '@/lib/db';
+import Pedido from '@/models/Pedidos'; // Modelo Cmd
+import PedidoDetalle from '@/models/PedidosDetalle'; // Modelo Cmddetalle
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,35 +16,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'El ID del usuario es requerido' });
   }
 
-  let connection;
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
-
     // 1. Crear el pedido en la tabla 'cmd'
-    const [cmdResult] = await connection.query(
-      'INSERT INTO cmd (created_for) VALUES (?)',
-      [userId]
-    );
+    const cmd = await Pedido.create({
+      created_for: userId,
+    });
 
-    const cmdId = cmdResult.insertId; // Obtener el ID del pedido recién creado
+    // 2. Insertar los productos seleccionados en la tabla intermedia 'cmddetalle'
+    const cmddetalleValues = productIds.map((productId) => ({
+      cmd_id: cmd.id,
+      producto_id: productId,
+    }));
 
-    // 2. Insertar los productos seleccionados en la tabla intermedia
-    const values = productIds.map((productId) => [cmdId, productId]);
-
-    await connection.query(
-      'INSERT INTO cmddetalle (cmd_id, producto_id) VALUES ?',
-      [values]
-    );
+    await PedidoDetalle.bulkCreate(cmddetalleValues);
 
     res.status(201).json({ success: true, message: 'Pedido guardado correctamente' });
   } catch (error) {
     console.error('Error guardando el pedido:', error);
     res.status(500).json({ message: 'Error en el servidor' });
-  } finally {
-    // Liberar la conexión
-    if (connection) {
-      connection.release();
-    }
   }
 }

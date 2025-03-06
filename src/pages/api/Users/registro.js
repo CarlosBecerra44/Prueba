@@ -1,4 +1,4 @@
-import pool from '@/lib/db';
+import Usuario from '@/models/Usuarios'; // Importa el modelo de Usuario
 import bcrypt from 'bcrypt';
 
 export default async function handler(req, res) {
@@ -6,41 +6,45 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { rol = 'estandar', name, email, password, confirmPassword } = req.body;
+  const { rol = 'Estándar', name, email, password, confirmPassword } = req.body;
 
   // Validar que las contraseñas coincidan
   if (password !== confirmPassword) {
     return res.status(400).json({ message: 'Las contraseñas no coinciden' });
   }
 
-  let connection;
-
   try {
-    // Obtener la conexión del pool
-    connection = await pool.getConnection();
-
-    // Verificar si el usuario ya existe
-    const [userExists] = await connection.execute('SELECT * FROM usuarios WHERE correo = ?', [email]);
-    if (userExists.length > 0) {
+    // Verificar si el usuario ya existe con Sequelize
+    const userExists = await Usuario.findOne({ where: { correo: email } });
+    if (userExists) {
       return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
 
     // Encriptar la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Guardar el nuevo usuario en la base de datos
-    const [newUser] = await connection.execute(
-      'INSERT INTO usuarios (rol, nombre, correo, password) VALUES (?, ?, ?, ?)',
-      [rol, name, email, hashedPassword]
-    );
+    // Crear el nuevo usuario en la base de datos con Sequelize
+    const newUser = await Usuario.create({
+      rol,
+      nombre: name,
+      correo: email,
+      password: hashedPassword,
+    });
 
     console.log({ message: 'Usuario registrado' });
-    res.status(201).json({ success: true, user: { rol, nombre: name, correo: email } });
+
+    // Responder con el usuario creado (sin la contraseña)
+    return res.status(201).json({
+      success: true,
+      user: {
+        id: newUser.id,         // Asegúrate de incluir el ID del nuevo usuario
+        rol: newUser.rol,       // Incluir los datos necesarios
+        nombre: newUser.nombre, 
+        correo: newUser.correo
+      }
+    });
   } catch (error) {
     console.error('Error registrando al usuario:', error);
-    res.status(500).json({ message: 'Error en el servidor' });
-  } finally {
-    // Liberar la conexión
-    if (connection) connection.release();
+    return res.status(500).json({ message: 'Error en el servidor' });
   }
 }

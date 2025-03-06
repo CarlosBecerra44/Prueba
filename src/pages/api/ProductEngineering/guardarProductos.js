@@ -1,8 +1,9 @@
-import path from 'path'; // Asegúrate de importar 'path'
-import pool from "@/lib/db";
-import { Client } from "basic-ftp";
-import formidable from "formidable";
 import fs from "fs";
+import { Client } from "basic-ftp";
+import path from "path";
+import formidable from "formidable";
+import Producto from "@/models/Productos";
+import ImagenProducto from "@/models/ImagenesProductos";
 
 // Configuración para evitar que Next.js maneje el bodyParser automáticamente
 export const config = {
@@ -37,22 +38,20 @@ export default async function handler(req, res) {
     // En caso de que los archivos sean un array o un solo archivo
     const imagenes = Array.isArray(files.imagenes) ? files.imagenes : [files.imagenes];
 
-    let connection;
-    let productId;
     try {
-      // Insertar el producto en la base de datos
-      connection = await pool.getConnection();
-      const [result] = await connection.execute(
-        `INSERT INTO productos (nombre, proveedor_id, Tipo_id, Categoria_id, Subcategoria_id, medicion, codigo, costo, cMinima, descripcion) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [fields.nombre, fields.proveedor, fields.categoriaGeneral, fields.subcategoria, fields.especificacion || null, fields.medicion, fields.codigo, fields.costo, fields.compraMinima, fields.descripcion]
-      );
-
-      productId = result.insertId;
-
-      if (!productId) {
-        throw new Error("No se pudo obtener el ID del producto.");
-      }
+      // Insertar el producto en la base de datos utilizando Sequelize
+      const producto = await Producto.create({
+        nombre: fields.nombre,
+        proveedor_id: fields.proveedor,
+        Tipo_id: fields.categoriaGeneral,
+        Categoria_id: fields.subcategoria,
+        Subcategoria_id: fields.especificacion || null,
+        medicion: fields.medicion,
+        codigo: fields.codigo,
+        costo: fields.costo,
+        cMinima: fields.compraMinima,
+        descripcion: fields.descripcion,
+      });
 
       // Conectar al servidor FTP
       const client = new Client();
@@ -83,7 +82,7 @@ export default async function handler(req, res) {
           return res.status(500).json({ message: "Error al subir el archivo al FTP" });
         }
 
-        uploadedImages.push({ ruta: filePath, producto_id: productId });
+        uploadedImages.push({ ruta: filePath, producto_id: producto.id });
 
         // Eliminar el archivo temporal después de subirlo
         try {
@@ -95,20 +94,19 @@ export default async function handler(req, res) {
 
       client.close();
 
-      // Guardar las rutas de las imágenes en la base de datos
-      for (const img of uploadedImages) {
-        await connection.execute(
-          `INSERT INTO imgproductos (ruta, producto_id) VALUES (?, ?)`,
-          [img.ruta, img.producto_id]
-        );
-      }
+      // Guardar las rutas de las imágenes en la base de datos utilizando Sequelize
+      const imgProductos = uploadedImages.map(img => ({
+        ruta: img.ruta,
+        producto_id: img.producto_id
+      }));
+
+      // Inserta las imágenes asociadas al producto
+      await ImagenProducto.bulkCreate(imgProductos);
 
       res.status(201).json({ success: true, message: "Producto e imágenes guardadas correctamente" });
     } catch (error) {
       console.error("Error registrando el producto:", error);
       res.status(500).json({ message: "Error en el servidor" });
-    } finally {
-      if (connection) connection.release();
     }
   });
 }

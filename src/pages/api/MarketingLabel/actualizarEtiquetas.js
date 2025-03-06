@@ -1,7 +1,6 @@
-import pool from '@/lib/db';
 import formidable from 'formidable';
-import fs from 'fs';
 import path from 'path';
+import FormulariosEtiquetas from '@/models/FormulariosEtiquetas';
 
 export const config = {
   api: {
@@ -23,32 +22,33 @@ export default async function guardarFormulario(req, res) {
         }
 
         const filePath = files.pdf[0].filepath; // Cambia esto según cómo quieras manejar los archivos
-        const datosFormulario = fields; // Los datos del formulario
+        const datosFormulario = fields.datos_formulario; // Los datos del formulario
         const id = fields.id;
 
-        let connection;
-
         try {
-          // Obtener una conexión del pool
-          connection = await pool.getConnection();
+          // Usando Sequelize para hacer la actualización
+          const result = await FormulariosEtiquetas.update(
+            {
+              datos_formulario: datosFormulario, // Datos del formulario
+              pdf_path: filePath, // Ruta del archivo
+            },
+            {
+              where: {
+                id: id, // Buscar por el ID que recibimos
+              },
+            }
+          );
 
-          const query = 'UPDATE etiquetas_form SET datos_formulario = ?, ruta_pdf = ? WHERE id = ?';
-          const [result] = await connection.query(query, [JSON.stringify(datosFormulario), filePath, id]);
-
-          if (result.affectedRows > 0) {
-            // Enviar la respuesta con éxito
+          if (result[0] > 0) {
+            // Si hay filas afectadas, el formulario se guardó correctamente
             res.status(200).json({ success: true, message: 'Formulario guardado correctamente' });
           } else {
+            // Si no se encuentra el formulario
             res.status(404).json({ success: false, message: 'Formulario no encontrado' });
           }
         } catch (error) {
           console.error('Error al guardar en la base de datos:', error);
           return res.status(500).json({ success: false, message: 'Error al guardar en la base de datos' });
-        } finally {
-          // Liberar la conexión
-          if (connection) {
-            connection.release();
-          }
         }
       });
     } catch (error) {

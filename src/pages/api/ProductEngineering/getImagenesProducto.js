@@ -1,4 +1,4 @@
-import pool from '@/lib/db';
+import ImagenProducto from '@/models/ImagenesProductos';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -11,19 +11,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'ID del producto requerido' });
   }
 
-  let connection;
   try {
-    connection = await pool.getConnection();
-    const [rows] = await connection.query(`
-      SELECT ruta FROM imgproductos WHERE producto_id = ?`, [id]);
+    // Obtener las imágenes del producto con el ID proporcionado
+    const imagenes = await ImagenProducto.findAll({
+      where: { producto_id: id },
+      attributes: ['ruta']
+    });
 
-    const imagenes = rows.map(row => row.ruta);
-    
-    return res.status(200).json({ success: true, imagenes });
+    // Extraer solo las rutas de las imágenes
+    const rutas = imagenes.map(img => img.ruta);
+
+    return res.status(200).json({ success: true, imagenes: rutas });
   } catch (error) {
     console.error('Error al obtener imágenes:', error);
-    res.status(500).json({ message: 'Error al obtener imágenes' });
-  } finally {
-    if (connection) connection.release();
+    return res.status(500).json({ message: 'Error al obtener imágenes' });
   }
 }

@@ -1,29 +1,20 @@
-import pool from '@/lib/db';
+import SubcategoriaMateriaPrima from '@/models/SubcategoriasMateriasPrimas';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  let connection;
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
+    // Obtener todas las subcategorías ordenadas por ID ascendente
+    const especificaciones = await SubcategoriaMateriaPrima.findAll({
+      order: [['id', 'ASC']]
+    });
 
-    // Consulta para obtener los eventos desde la tabla 'formularios_estrategias'
-    const [rows] = await connection.query(
-      `SELECT * FROM subcategoriamaterialesprima ORDER BY id ASC`
-    );
-
-    // Retorna los eventos en formato JSON
-    return res.status(200).json({ success: true, especificaciones: rows });
+    // Retornar las especificaciones en formato JSON
+    return res.status(200).json({ success: true, especificaciones });
   } catch (error) {
     console.error('Error al obtener las especificaciones:', error);
-    res.status(500).json({ message: 'Error al obtener las especificaciones' });
-  } finally {
-    // Liberar la conexión
-    if (connection) {
-      connection.release();
-    }
+    return res.status(500).json({ message: 'Error al obtener las especificaciones' });
   }
 }

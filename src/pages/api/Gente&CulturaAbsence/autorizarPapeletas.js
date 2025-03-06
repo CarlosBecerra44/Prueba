@@ -1,58 +1,77 @@
-import pool from '@/lib/db'; // Asegúrate de que tu pool esté configurado para MySQL
+import { Op, literal } from "sequelize";
+import FormulariosFaltas from "@/models/FormulariosFaltas";
+import Usuario from "@/models/Usuarios";
+import Departamento from "@/models/Departamentos";
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Método no permitido' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Método no permitido" });
   }
 
   const { id } = req.query;
-  let connection;
 
   try {
-    // Obtiene una conexión del pool
-    connection = await pool.getConnection();
-
-    const query = `
-      SELECT 
-          f.*, 
-          u.*, 
-          f.id AS id_papeleta, 
-          d.nombre AS nombre_departamento,
-          CONVERT_TZ(f.fecha_subida, '+00:00', '+06:00') AS fecha_subida, 
-          CONVERT_TZ(f.fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion
-      FROM 
-          formularios_faltas f
-      JOIN 
-          usuarios u
-      ON 
-          f.id_usuario = u.id 
-      JOIN 
-          departamentos d
-      ON 
-          u.departamento_id = d.id
-      WHERE 
-          f.id_usuario != ? AND u.jefe_directo = ? AND f.eliminado = 0 AND f.estatus = 'Pendiente' AND f.tipo NOT IN ('Aumento sueldo', 'Horas extras', 'Bonos / Comisiones', 'Faltas', 'Suspension')
-      ORDER BY 
-          f.fecha_subida DESC;
-    `;
-    
-    const [result] = await connection.execute(query, [id, id]);
-
-    // Procesamos el campo 'datos_formulario' (suponiendo que es un campo JSON)
-    const eventos = result.map(evento => {
-      return {
-        ...evento,
-        datos_formulario: evento.datos_formulario ? JSON.parse(evento.datos_formulario) : null, // Convertir a objeto si es JSON
-      };
+    // Realizamos la consulta con Sequelize
+    const eventos = await FormulariosFaltas.findAll({
+      where: {
+        id_usuario: {
+          [Op.ne]: id, // Equivalente a f.id_usuario != ?
+        },
+        eliminado: 0,
+        estatus: "Pendiente",
+        tipo: {
+          [Op.notIn]: ["Aumento sueldo", "Horas extras", "Bonos / Comisiones", "Faltas", "Suspension"], // Excluyendo ciertos tipos
+        },
+      },
+      attributes: [
+        "id",
+        "formulario",
+        "fecha_inicio",
+        "fecha_fin",
+        "estatus",
+        "archivo",
+        "eliminado",
+        "comentarios",
+        "tipo",
+        "extemporanea",
+        "id_usuario",
+        [literal("CONVERT_TZ(fecha_subida, '+00:00', '+06:00')"), "fecha_subida"],
+        [literal("CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00')"), "fecha_actualizacion"],
+      ],
+      include: [
+        {
+          model: Usuario,
+          where: { jefe_directo: id }, // Equivalente a u.jefe_directo = ?
+          attributes: ["id", "numero_empleado", "nombre", "apellidos", "puesto", "jefe_directo"],
+          include: [
+            {
+              model: Departamento,
+              attributes: [["nombre", "nombre_departamento"]],
+            },
+          ],
+        },
+      ],
+      order: [[literal("fecha_subida"), "DESC"]], // Ordenamos por fecha_subida DESC
+      raw: true, // Queremos obtener los datos sin instancias de Sequelize
     });
 
-    // Retorna los eventos en formato JSON
-    res.status(200).json(eventos);
+    // Procesamos los datos de la respuesta para ajustar los valores
+    const result = eventos.map(evento => ({
+      ...evento,
+      numero_empleado: evento["Usuario.numero_empleado"] || null,
+      nombre: evento["Usuario.nombre"] || null,
+      apellidos: evento["Usuario.apellidos"] || null,
+      puesto: evento["Usuario.puesto"] || null,
+      jefe_directo: evento["Usuario.jefe_directo"] || null,
+      id_papeleta: evento.id,
+      nombre_departamento: evento["Usuario.Departamento.nombre_departamento"] || null,
+      datos_formulario: evento.formulario ? JSON.parse(evento.formulario) : null, // Convertimos a objeto si es JSON
+    }));
+
+    // Enviamos la respuesta
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('Error al obtener los eventos:', error);
-    res.status(500).json({ message: 'Error al obtener los eventos' });
-  } finally {
-    // Liberar la conexión
-    if (connection) connection.release();
+    console.error("Error al obtener los eventos:", error);
+    return res.status(500).json({ message: "Error al obtener los eventos" });
   }
 }
