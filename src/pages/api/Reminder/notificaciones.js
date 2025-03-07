@@ -17,7 +17,6 @@ export default async function handler(req, res) {
     const notificaciones = await Notificacion.findAll({
       where: {
         id_usuario: id,
-        leido: false,
       },
       include: [
         {
