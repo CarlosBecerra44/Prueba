@@ -35,19 +35,30 @@ export function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const fetchNotificaciones = async () => {
       try {
         const response = await fetch(`/api/Reminder/notificaciones?id=${idUser}`);
         const data = await response.json();
         setNotificaciones(data);
         setHasNotifications(data.some(n => !n.leido));
       } catch (error) {
-        console.error("Error al refrescar notificaciones:", error);
+        console.error("Error al obtener notificaciones:", error);
       }
-    }, 1000);
+    };
   
-    return () => clearInterval(interval);
+    fetchNotificaciones();
   }, [idUser]);  
+
+  const fetchNotificacionesUpdate = async () => {
+    try {
+      const response = await fetch(`/api/Reminder/notificaciones?id=${idUser}`);
+      const data = await response.json();
+      setNotificaciones(data);
+      setHasNotifications(data.some(n => !n.leido));
+    } catch (error) {
+      console.error("Error al obtener notificaciones:", error);
+    }
+  };
 
   const marcarComoLeida = async (idNotificacion) => {
     try {
@@ -59,6 +70,7 @@ export function NotificationBell() {
       setNotificaciones((prev) => prev.map(n => 
         n.id === idNotificacion ? { ...n, leido: true } : n
       ));
+      fetchNotificacionesUpdate();
     } catch (error) {
       console.error("Error al marcar como leída:", error);
     }
@@ -71,6 +83,7 @@ export function NotificationBell() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: idNotificacion, idUsuario: idUser }),
       });
+      fetchNotificacionesUpdate();
     } catch (error) {
       console.error("Error al eliminar notificación:", error);
     }

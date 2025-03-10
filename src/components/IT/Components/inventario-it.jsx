@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -11,11 +12,11 @@ import Swal from 'sweetalert2';
 import { CheckIcon, PlusCircleIcon } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea';
 import axios from "axios"
-import { Select } from '@mui/material';
 
-
-export default function InventarioIT() {
+export function InventarioIT() {
   const [inventario, setInventario] = useState([])
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [nuevoEquipo, setNuevoEquipo] = useState({
     tipo: '',
     marca: '',
@@ -24,15 +25,29 @@ export default function InventarioIT() {
     fecha: '',
     observacion: '',
     ubicacion: '',
+    localidad: '',
+    estatus: '',
+    estado:'',
     etiquetas: []
   })
+  const [archivo, setArchivo] = useState(null);
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState([])
   const [newTag, setNewTag] = useState('')
   const [tipoFilter, setTipoFilter] = useState('')
   const [marcaFilter, setMarcaFilter] = useState('')
-
+  const localidadesPorUbicacion = {
+    "Colli": ["B4", "B7","B13","B15","Mantenimiento","Calidad"],
+    "Tepeyac": ["Marketing", "Ventas","Contabilidad","Recepción"],
+    "Tilma": ["TI", "Gente & Cultura"],
+    "Patria": ["Mezclado", "Acondicionado","Compras","Ingenería de productos","Maquilas","Dirección","Hornos","Vigilancia","Mantenimiento"],
+    "Carlos": ["Contabilidad"],
+    "Paraisos": ["Auditorias","Producción"],
+    "Eca": ["Dirección"],
+    // Agrega más opciones según tus ubicaciones
+   
+  };
   useEffect(() => {
     const fetchInventario = async () => {
       try {
@@ -52,10 +67,61 @@ export default function InventarioIT() {
     setNuevoEquipo(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleArchivoChange = (e) => {
+    setArchivo(e.target.files[0]);
+ 
+  };
 
+  const handleUpload = async () => {
+    if (!archivo) {
+      alert('Por favor selecciona un archivo.');
+      return;
+    }
 
+    const formData = new FormData();
+    formData.append('file', archivo);
+    console.log('Archivo seleccionado:', archivo);
+    try {
+      // const response = await axios.post('/api/IT/insertInventarioMasivo', formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      // });
+      fetch('/api/IT/insertInventarioMasivo', {
+        method: 'POST', // Asegúrate de que sea POST
+        body: formData, // FormData que contiene el archivo
+      });
 
+      alert('Guardado.');
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error al subir inventario:', error);
+      alert('Hubo un error al subir el archivo.',error);
+    }
+  };
+  const handleSelectChange = (value) => {
+    setNuevoEquipo((prevState) => ({
+      ...prevState,
+      tipo: value,
+      
+    }));
+  };
   
+  const handleSelectChange2 = (value) => {
+    setNuevoEquipo((prevState) => ({
+      ...prevState,
+      estado: value,
+      
+    }));
+  };
+  
+  const handleSelectChange3 = (value) => {
+    setNuevoEquipo((prevState) => ({
+      ...prevState,
+      estatus: value,
+      
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -105,6 +171,9 @@ const handleAddTag = () => {
     }))
   }
 
+
+  
+
   const toggleTagFilter = (tag) => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
@@ -121,6 +190,15 @@ const handleAddTag = () => {
 
   const allTags = Array.from(new Set(inventario.flatMap(equipo => equipo.etiquetas)))
  
+  const indexOfLastEvento = currentPage * itemsPerPage;
+  const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
+  const currentEventos = filteredInventario.slice(indexOfFirstEvento, indexOfLastEvento);
+  const totalPages = Math.ceil(filteredInventario.length / itemsPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
+
+  
   return (
     (<div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Inventario de Equipo de Cómputo - TI</h1>
@@ -163,21 +241,45 @@ const handleAddTag = () => {
             {tag}
           </Badge>
         ))}
+
+<div>
+      <input type="file" accept=".xlsx" onChange={handleArchivoChange} />
+ <button
+        onClick={handleUpload}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Subir Inventario
+      </button>
+    </div>  
       </div>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Agregar Nuevo Equipo</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="tipo">Tipo de Equipo</Label>
-              <Input
-                id="tipo"
-                name="tipo"
-                value={nuevoEquipo.tipo}
-                onChange={handleInputChange}
-                required />
-            </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ubicacion" className="text-right">
+                  Tipo
+                </Label>
+                <Select
+                  value={nuevoEquipo.tipo}
+                  onValueChange={handleSelectChange} // Usa el handler correcto
+                  >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione tipo de equipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pc">pc</SelectItem>
+                    <SelectItem value="laptop">laptop</SelectItem>
+                    <SelectItem value="nobreak">nobreak</SelectItem>
+                    <SelectItem value="perifericos">perifericos</SelectItem>
+                    <SelectItem value="monitores">monitores</SelectItem>
+                    
+                  </SelectContent>
+                </Select>
+              </div>
+
+
             <div>
               <Label htmlFor="marca">Marca</Label>
               <Input
@@ -215,16 +317,92 @@ const handleAddTag = () => {
                 onChange={handleInputChange}
                 required />
             </div>
-            <div>
-              <Label htmlFor="ubicacion">Ubicación</Label>
-              <Select
-                id="ubicacion"
-                name="ubicacion"
-          
-                value={nuevoEquipo.ubicacion}
-                onChange={handleInputChange}
-                required />
-            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ubicacion" className="text-right">
+                 Estado
+                </Label>
+                <Select
+                  value={nuevoEquipo.estado}
+                  onValueChange={handleSelectChange2} // Usa el handler correcto
+                  >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione tipo de equipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nuevo">NUEVO</SelectItem>
+                    <SelectItem value="buen estado">BUEN ESTADO</SelectItem>
+                    <SelectItem value="usado">USADO</SelectItem>
+                    <SelectItem value="dañado">DAÑADO</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ubicacion" className="text-right">
+                 Estatus
+                </Label>
+                <Select
+                  value={nuevoEquipo.estatus}
+                  onValueChange={handleSelectChange3} // Usa el handler correcto
+                  >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione tipo de equipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="disponible">Disponible</SelectItem>
+                    <SelectItem value="No disponible">No disponible</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ubicacion" className="text-right">
+                  Ubicación
+                </Label>
+                <Select
+                  value={nuevoEquipo.ubicacion}
+                  onValueChange={(value) =>
+                    setNuevoEquipo((prevState) => ({ ...prevState, ubicacion: value, localidad: '' }))
+                  }
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccione la ubicacion" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Colli">Colli</SelectItem>
+                    <SelectItem value="Tepeyac">Tepeyac</SelectItem>
+                    <SelectItem value="Tilma">Tilma</SelectItem>
+                    <SelectItem value="Patria">Patria</SelectItem>
+                    <SelectItem value="Carlos">Carlos Dickens</SelectItem>
+                    <SelectItem value="Paraisos">Paraisos</SelectItem>
+                    <SelectItem value="Eca">Eca</SelectItem>
+               </SelectContent>
+                </Select>
+              </div>
+              {nuevoEquipo.ubicacion && (
+  <div className="grid grid-cols-4 items-center gap-4 mt-4">
+    <Label htmlFor="localidad" className="text-right">
+      Localidad
+    </Label>
+    <Select
+      value={nuevoEquipo.localidad}
+      onValueChange={(value) =>
+        setNuevoEquipo((prevState) => ({ ...prevState, localidad: value }))
+      }
+    >
+      <SelectTrigger className="col-span-3">
+        <SelectValue placeholder="Seleccione la localidad" />
+      </SelectTrigger>
+      <SelectContent>
+        {localidadesPorUbicacion[nuevoEquipo.ubicacion]?.map((localidad, index) => (
+          <SelectItem key={index} value={localidad}>
+            {localidad}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+)}
             <div>
               <Label htmlFor="newTag">Etiquetas</Label>
               <div className="flex gap-2">
@@ -276,17 +454,21 @@ const handleAddTag = () => {
                 <TableHead>Modelo</TableHead>
                 <TableHead>Número de Serie</TableHead>
                 <TableHead>Caracteristicas</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead>Observaciones</TableHead>
+                <TableHead>Ubicación</TableHead>
+                <TableHead>Estatus</TableHead>
               </TableRow>
             </TableHeader>
                         <TableBody>
-              {filteredInventario.map((inventario) => (
+              {currentEventos.map((inventario) => (
                 <TableRow key={inventario.id}>
                   <TableCell>{inventario.fecha}</TableCell>
                   <TableCell>{inventario.tipo}</TableCell>
                   <TableCell>{inventario.marca}</TableCell>
                   <TableCell>{inventario.modelo}</TableCell>
                   <TableCell>{inventario.serie}</TableCell>
+                  
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {Array.isArray(inventario.etiqueta) && 
@@ -296,15 +478,31 @@ const handleAddTag = () => {
                       }
                     </div>
                    </TableCell>
+                   <TableCell>{inventario.estado}</TableCell>
                    <TableCell>{inventario.observacion}</TableCell>
                    <TableCell>{inventario.ubicacion}</TableCell>
+                   <TableCell>{inventario.estatus}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
-    </div>)
+       {/* Paginación */}
+       <div className="flex justify-center mt-4 mb-4">
+        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+          Anterior
+        </button><span style={{marginRight:"2rem"}}></span>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button style={{marginLeft:"1rem", marginRight: "1rem"}} key={index} onClick={() => paginate(index + 1)} className={currentPage === index + 1 ? "font-bold" : ""}>
+            {index + 1}
+          </button>
+        ))}
+        <span style={{marginLeft:"2rem"}}></span>
+        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+          Siguiente
+        </button>
+      </div>
+          </div>)
   );
 }
-

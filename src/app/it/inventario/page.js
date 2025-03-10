@@ -1,9 +1,9 @@
-import InventarioIT from '../../../components/IT/Components/inventario-it'
+import { InventarioIT as It } from "@/components/IT/Components/inventario-it";
 
 export default function Home() {
   return (
     <main>
-      <InventarioIT />
+      <It />
     </main>
   )
 }
