@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import styles from '../../../../public/CSS/spinner.css';
-import { ChevronRight, Search, UserPlus, X } from "lucide-react"
+import { ChevronRight, Search, UserPlus, X, KeyRound } from "lucide-react"
 import { useSession,  signOut } from "next-auth/react";
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -124,6 +124,9 @@ export function UserManagementTable() {
   const { user, isLoading, isMaster, isAdminGC, rol } = useUser();
   const [nuevaContraseña, setNuevaContraseña] = useState('');
   const [confirmarContraseña, setConfirmarContraseña] = useState('');
+  const [searchTermPass, setSearchTermPass] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const inputRef = useRef(null);
 
   const filteredUsers = users
     .filter(user => 
@@ -163,18 +166,24 @@ export function UserManagementTable() {
     }
   };
 
-  const handleChangeRoleUser = async (index, rol) => {
-    try {
-      const response = await axios.post(`/api/actualizarRolUsuarios?id=${index}&rol=${rol}`);
-      if (response.status === 200) {
-        await Swal.fire('Actualizado', 'El rol del usuario ha sido actualizado con éxito', 'success');
-      } else {
-        Swal.fire('Error', 'Error al actualizar el rol del usuario', 'error');
-      }
-    } catch (error) {
-      console.error('Error al actualizar el rol del usuario:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el rol del usuario', 'error');
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus(); // Enfoca el input al abrir el Select
     }
+  }, [searchTermPass]);
+
+  const handleSelectUser = (userId) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
+    if (!selectedUsers.some((u) => u.id === userId)) {
+      setSelectedUsers([...selectedUsers, user]);
+    }
+    setSearchTermPass(""); // Resetea la búsqueda después de seleccionar un usuario
+  };
+
+  const handleRemoveUser = (userId) => {
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
   };
 
   const openPermissionsDialog = (userId) => {
@@ -408,8 +417,50 @@ export function UserManagementTable() {
       setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
     }
   };
-  
 
+  const handleSubmitResetPass = async (e) => {
+    e.preventDefault();
+  
+    if (selectedUsers.length === 0) {
+      Swal.fire("Error", "Selecciona al menos un usuario", "error");
+      return;
+    }
+  
+    try {
+      const res = await fetch("/api/Users/resetPassword", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedUsers, 
+          resetPass: "NutriAdmin2035", // Enviar la contraseña directamente
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        Swal.fire("Error", data.message || "Hubo un problema al reestablecer las contraseñas", "error");
+        return;
+      }
+  
+      Swal.fire({
+        title: "Actualizadas",
+        text: "Las contraseñas se han reestablecido correctamente",
+        icon: "success",
+        timer: 3000,
+        showConfirmButton: false,
+      }).then(() => {
+        window.location.href = "/usuario";
+      });
+  
+    } catch (err) {
+      console.error("Error en la actualización:", err);
+      Swal.fire("Error", "Hubo un problema con la actualización. Por favor, intenta nuevamente.", "error");
+    }
+  };
+  
   const saveSelections = async () => {
     if (!selectedUserId) return; // Validación para asegurarnos que tenemos el ID
     const selectedData = [];
@@ -544,6 +595,11 @@ export function UserManagementTable() {
     setSelectedRole("");
   }
 
+  const handleCleanFormPass = () => {
+    setSelectedUsers([]);
+    setSearchTerm("");
+  }
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
@@ -576,9 +632,106 @@ export function UserManagementTable() {
               <SelectItem value="Máster">Máster</SelectItem>
               <SelectItem value="Administrador">Administrador</SelectItem>
               <SelectItem value="Estándar">Estándar</SelectItem>
+              <SelectItem value="Dado de baja">Dado de baja</SelectItem>
             </SelectContent>
           </Select>
         </div>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button onClick={handleCleanFormPass} style={{ marginLeft: "600px" }}>
+              <KeyRound className="mr-2 h-4 w-4" /> Cambiar contraseñas
+            </Button>
+          </DialogTrigger>
+          <DialogContent
+            className="border-none p-0 overflow-y-auto no-scrollbar"
+            style={{
+              width: "100%",
+              maxWidth: "800px",
+              height: "35vh",
+              maxHeight: "65vh",
+              padding: "30px",
+              marginLeft: "120px",
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Reestablecer contraseñas</DialogTitle>
+              <DialogDescription>Selecciona los usuarios a los que se les reestablecerá la contraseña.</DialogDescription>
+            </DialogHeader>
+
+            {/* Breadcrumbs de usuarios seleccionados */}
+            {selectedUsers.length > 0 && (
+              <div className="flex flex-wrap gap-2 border p-2 rounded-lg">
+                {selectedUsers.map((user) => (
+                  <span
+                    style={{fontSize: 12, backgroundColor: "lightgray"}}
+                    key={user.id}
+                    className="inline-flex items-center bg-gray-200 px-2 py-1 rounded-md"
+                  >
+                    {user.nombre} {user.apellidos}
+                    <X
+                      className="ml-2 h-4 w-4 cursor-pointer text-red-500"
+                      onClick={() => handleRemoveUser(user.id)}
+                    />
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Selección de usuarios con búsqueda manual */}
+            <div className="mb-4">
+              <Select onValueChange={handleSelectUser} value="">
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar usuarios" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                  <div className="p-2">
+                    <Input
+                      ref={inputRef}
+                      placeholder="Buscar usuario..."
+                      value={searchTermPass}
+                      onChange={(e) => setSearchTermPass(e.target.value)}
+                    />
+                  </div>
+                  
+                  {/* Filtrado sin selección automática */}
+                  {users.filter(user => 
+                    user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
+                    user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                  ).length === 0 ? (
+                    <div className="p-2 text-center text-gray-500">No se encontraron usuarios</div>
+                  ) : (
+                    users
+                      .filter(user => 
+                        user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
+                        user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                      )
+                      .map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Formulario de cambio de contraseña */}
+            <form onSubmit={handleSubmitResetPass}>
+              <input type="hidden" id="resetPass" value="NutriAdmin2035" />
+
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  disabled={selectedUsers.length === 0}
+                >
+                  Reestablecer contraseñas
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
         
         <Dialog>
           <DialogTrigger asChild>
@@ -735,6 +888,7 @@ export function UserManagementTable() {
                   <SelectItem value="Máster">Máster</SelectItem>
                   <SelectItem value="Administrador">Administrador</SelectItem>
                   <SelectItem value="Estándar">Estándar</SelectItem>
+                  <SelectItem value="Dado de baja">Dado de baja</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -943,6 +1097,7 @@ export function UserManagementTable() {
                   <SelectItem value="Máster">Máster</SelectItem>
                   <SelectItem value="Administrador">Administrador</SelectItem>
                   <SelectItem value="Estándar">Estándar</SelectItem>
+                  <SelectItem value="Dado de baja">Dado de baja</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

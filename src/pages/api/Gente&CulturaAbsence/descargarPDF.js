@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     await client.access({
       host: "50.6.199.166",  // Dirección del servidor FTP
       user: "aionnet",         // Usuario FTP
-      password: "$ZkSex&+PSbQ", // Contraseña FTP
+      password: "Rrio1003", // Contraseña FTP
       secure: false,
     });
 

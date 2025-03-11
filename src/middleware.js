@@ -39,6 +39,7 @@ export async function middleware(req) {
   // Definir roles
   const roles = {
     isMaster: rol === "Máster",
+    isDadoDeBaja: rol === "Dado de baja",
     isAdminMkt: rol === "Administrador" && idPermiso !== null && departamento === 2,
     isAdminGC: rol === "Administrador" && departamento === 5,
     isITMember: rol !== "Máster" && departamento === 1,
@@ -54,6 +55,11 @@ export async function middleware(req) {
   // Rutas permitidas por rol
   const roleRoutes = {
     isMaster: "*",
+    isDadoDeBaja: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+    ],
     isAdminMkt: [
       "/inicio",
       "/perfil",

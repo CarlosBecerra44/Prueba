@@ -23,7 +23,8 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, 
+    hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes, isDadoDeBaja } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -163,6 +164,7 @@ const toggleSection = (sectionId) => {
   const hasAccess = (category) => {
     if (category.includes("*")) return true;
     if (isMaster && category.includes("master")) return true;
+    if (isDadoDeBaja && category.includes("baja")) return true;
     if (isAdminMkt && category.includes("adminMkt")) return true;
     if (isStandardMkt && category.includes("standardMkt")) return true;
     if (isStandard && category.includes("standard")) return true;

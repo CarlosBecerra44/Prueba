@@ -92,7 +92,7 @@ export default async function handler(req, res) {
         await client.access({
           host: "50.6.199.166",
           user: "aionnet",
-          password: "$ZkSex&+PSbQ",
+          password: "Rrio1003",
           secure: false,
         });
 
