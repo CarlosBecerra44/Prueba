@@ -128,36 +128,34 @@ export function DocumentSigningForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formulario);
+
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Estamos procesando tu solicitud',
+      showConfirmButton: false,
+      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      }
+    });
   
     try {
-      // 1. Subir el archivo a Vercel Blob
-      const fileInput = document.querySelector('#nowPdf');
-      let fileUrl = null;
-  
-      if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-  
-        const { url } = await put(file.name, file.stream(), {
-          access: 'public', // El archivo será público
-          token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
-        });
-  
-        console.log(`Archivo subido a Vercel Blob: ${url}`);
-        fileUrl = url; // Guardar la URL del archivo subido
-      }
-  
-      // 2. Guardar el formulario en la base de datos
       const formData = new FormData();
+    
+      // Añadir todos los datos del formulario
       for (const key in formulario) {
         if (Array.isArray(formulario[key])) {
           formData.append(key, JSON.stringify(formulario[key]));
-        } else if (formulario[key] != null) {
+          // Asegurarse de que los arrays se envíen como JSON
+        } else {
           formData.append(key, formulario[key]);
         }
       }
-  
-      if (fileUrl) {
-        formData.append('fileUrl', fileUrl); // Añadir la URL del archivo subido
+
+      // Añadir el archivo PDF
+      const fileInput = document.querySelector('#nowPdf');
+      if (fileInput && fileInput.files.length > 0) {
+        formData.append('nowPdf', fileInput.files[0]);
       }
   
       const guardarFormulario = fetch('/api/MarketingLabel/GuardarEtiquetas', {
@@ -215,6 +213,8 @@ export function DocumentSigningForm() {
         enviarCorreos,
         enviarNotificacion,
       ]);
+
+      Swal.close();
   
       // Validar la respuesta de guardar el formulario
       if (formResponse.ok && emailResponse.ok && notificationResponse.ok) {
@@ -232,17 +232,47 @@ export function DocumentSigningForm() {
       }
     } catch (error) {
       console.error('Error al enviar el formulario:', error);
+      Swal.close();
       Swal.fire('Error', 'Error al procesar el formulario', 'error');
     }
   };  
-    
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+
     if (file) {
-      const pdfUrl = URL.createObjectURL(file); // Crear una URL de objeto para el archivo
-      setNowPdfPreview(pdfUrl); // Establecer la URL para la previsualización
+        const allowedTypes = ['application/pdf'];
+        const maxSize = 4 * 1024 * 1024; // 4MB
+
+        if (!allowedTypes.includes(file.type)) {
+            Swal.fire({
+                title: 'Tipo de archivo no permitido',
+                text: 'Solo se permiten archivos PDF.',
+                icon: 'error',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            e.target.value = ""; // Limpia el input
+            return;
+        }
+
+        if (file.size > maxSize) {
+            Swal.fire({
+                title: 'Archivo demasiado grande',
+                text: 'El tamaño máximo permitido es 4MB.',
+                icon: 'error',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            e.target.value = ""; // Limpia el input
+            return;
+        }
+
+        // Crear URL de previsualización para el PDF
+        const pdfUrl = URL.createObjectURL(file);
+        setNowPdfPreview(pdfUrl);
     }
-  };
+};
 
   const verifiers = [
     'Directora de marketing',
