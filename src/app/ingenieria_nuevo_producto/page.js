@@ -1,4 +1,4 @@
-import { Ingenieria_nuevo_producto as Ingenieria_nuevo_producto } from "@/components/ING PRODUCTO/Components/ingenieria_nuevo_producto";
+import { IngProducto as Ingenieria_nuevo_producto } from "@/components/ING PRODUCTO/Components/ingenieria_nuevo_producto";
 function page() {
     return (
         <div>

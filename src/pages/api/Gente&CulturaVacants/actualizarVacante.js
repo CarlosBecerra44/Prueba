@@ -1,50 +1,58 @@
-import pool from "@/lib/db";
+import Vacante from "@/models/Vacantes";
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { id, vacante, cantidad, gerencia, proceso_actual, ubicacion, salarioMin, salarioMax, fecha_apertura, fecha_ingreso, observaciones } = req.body;
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Método no permitido" });
+  }
 
+  const { 
+    id, 
+    vacante, 
+    cantidad, 
+    gerencia, 
+    proceso_actual, 
+    ubicacion, 
+    salarioMin, 
+    salarioMax, 
+    fecha_apertura, 
+    fecha_ingreso, 
+    observaciones 
+  } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: "ID es requerido" });
+  }
+
+  try {
     // Generar el rango de salario
     const salario = `${salarioMin}-${salarioMax}`;
     console.log("Salario mínimo:", salarioMin);
     console.log("Salario máximo:", salarioMax);
     console.log("Rango de salario:", salario);
 
-    let connection;
+    // Buscar y actualizar la vacante
+    const [updated] = await Vacante.update(
+      {
+        vacante,
+        cantidad,
+        gerencia,
+        proceso_actual,
+        ubicacion,
+        salario,
+        fecha_apertura,
+        fecha_ingreso,
+        observaciones
+      },
+      { where: { id } }
+    );
 
-    try {
-      // Obtener la conexión
-      connection = await pool.getConnection();
-
-      // Consulta parametrizada para MySQL
-      const [result] = await connection.execute(
-        `UPDATE vacantes 
-         SET vacante = ?, 
-             cantidad = ?, 
-             gerencia = ?, 
-             proceso_actual = ?, 
-             ubicacion = ?, 
-             salario = ?, 
-             fecha_apertura = ?, 
-             fecha_ingreso = ?, 
-             observaciones = ? 
-         WHERE id = ?`,
-        [vacante, cantidad, gerencia, proceso_actual, ubicacion, salario, fecha_apertura, fecha_ingreso, observaciones, id]
-      );
-
-      if (result.affectedRows > 0) {
-        return res.status(200).json({ message: 'Vacante actualizada exitosamente' });
-      } else {
-        return res.status(404).json({ message: 'Vacante no encontrada' });
-      }
-    } catch (err) {
-      console.error('Error al actualizar la vacante:', err);
-      return res.status(500).json({ message: 'Error al actualizar la vacante' });
-    } finally {
-      // Liberar la conexión
-      if (connection) connection.release();
+    if (updated > 0) {
+      return res.status(200).json({ message: "Vacante actualizada exitosamente" });
+    } else {
+      return res.status(404).json({ message: "Vacante no encontrada" });
     }
-  } else {
-    return res.status(405).json({ message: 'Método no permitido' });
+  } catch (error) {
+    console.error("Error al actualizar la vacante:", error);
+    return res.status(500).json({ message: "Error al actualizar la vacante" });
   }
 }

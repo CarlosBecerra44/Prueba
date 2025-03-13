@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,12 +9,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import styles from '../../../../public/CSS/spinner.css';
-import { ChevronRight, Search, UserPlus, X } from "lucide-react"
+import { ChevronRight, Search, UserPlus, X, KeyRound } from "lucide-react"
 import { useSession,  signOut } from "next-auth/react";
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import {useUser} from "@/pages/api/hooks";
-
 
 const formSections = [
   { 
@@ -90,6 +88,13 @@ const formSections = [
   },
 ]
 
+const plataformas = {
+  'aionet': 'Aionet',
+  'aionbusiness': 'AionBusiness',
+  'correo': 'Correo electrónico',
+  'synology': 'Synology',
+}
+
 export function UserManagementTable() {
   const [selectedSections, setSelectedSections] = useState([])
   const [name, setName] = useState('');
@@ -103,14 +108,12 @@ export function UserManagementTable() {
   const [company, setCompany] = useState('');
   const [workPlant, setWorkPlant] = useState('');
   const [selectedPermission, setSelectedPermission] = useState("")
-  const [selectedPermission1, setSelectedPermission1] = useState("")
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [roleFilter, setRoleFilter] = useState("all");
   const [selectedChanges, setSelectedChanges] = useState({});
   const [isChangeOptionsDialogOpen, setIsChangeOptionsDialogOpen] = useState(false)
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] = useState(false)
@@ -121,9 +124,13 @@ export function UserManagementTable() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
-  const { user, isLoading, isMaster, isAdminGC, rol } = useUser();
   const [nuevaContraseña, setNuevaContraseña] = useState('');
   const [confirmarContraseña, setConfirmarContraseña] = useState('');
+  const [searchTermPass, setSearchTermPass] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const inputRef = useRef(null);
+  const [selectedPlatforms, setSelectedPlatforms] = useState({});
+  const [open, setOpen] = useState(false);
 
   const filteredUsers = users
     .filter(user => 
@@ -163,18 +170,57 @@ export function UserManagementTable() {
     }
   };
 
-  const handleChangeRoleUser = async (index, rol) => {
-    try {
-      const response = await axios.post(`/api/actualizarRolUsuarios?id=${index}&rol=${rol}`);
-      if (response.status === 200) {
-        await Swal.fire('Actualizado', 'El rol del usuario ha sido actualizado con éxito', 'success');
-      } else {
-        Swal.fire('Error', 'Error al actualizar el rol del usuario', 'error');
-      }
-    } catch (error) {
-      console.error('Error al actualizar el rol del usuario:', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar actualizar el rol del usuario', 'error');
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus(); // Enfoca el input al abrir el Select
     }
+  }, [searchTermPass]);
+
+  const handleSelectUser = (userId) => {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+
+    if (!selectedUsers.some((u) => u.id === userId)) {
+      setSelectedUsers([...selectedUsers, user]);
+    }
+    setSearchTermPass(""); // Resetea la búsqueda después de seleccionar un usuario
+  };
+
+  const handleCheckboxChange = (key) => {
+    setSelectedPlatforms((prev) => ({
+      ...prev,
+      [key]: !prev[key], // Alterna entre true y false
+    }));
+  };
+
+  const handleCheckboxChangeEdit = (key) => {
+    setSelectedUser((prev) => {
+      let plataformas = prev.plataformas;
+  
+      // Verificar si plataformas es null o undefined
+      if (!plataformas) {
+        plataformas = {}; // Inicializar como un objeto vacío
+      } else if (typeof plataformas === "string") {
+        try {
+          plataformas = JSON.parse(plataformas);
+        } catch (error) {
+          console.error("Error al parsear plataformas:", error);
+          plataformas = {}; // Si falla el parseo, inicializar como objeto vacío
+        }
+      }
+  
+      return {
+        ...prev,
+        plataformas: {
+          ...plataformas,
+          [key]: !plataformas[key], // Alternar entre true y false
+        },
+      };
+    });
+  };    
+
+  const handleRemoveUser = (userId) => {
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
   };
 
   const openPermissionsDialog = (userId) => {
@@ -270,6 +316,18 @@ export function UserManagementTable() {
       setFilteredUsers([]);
     }
   }, [selectedUser?.departamento_id, users]);
+  const fetchEmployeeNumber = async () => {
+    try {
+      const response = await axios.get('/api/Users/obtenerNumeroEmpleado');
+      if (response.data.success) {
+        setEmployeeNumber(response.data.numeroEmpleado);
+      } else {
+        console.error('Error al obtener el numero de empleado:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error al hacer fetch del numero de empleado:', error);
+    }
+  };
   
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -301,13 +359,7 @@ export function UserManagementTable() {
 
   const handleEditUser = (userId) => {
     const userToEdit = users.find(user => user.id === userId); // Buscar el usuario en el estado
-    setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
-    console.log(userToEdit.fecha_ingreso)
-  };
-
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '';
-    return isoDate.split('T')[0]; // Extraer "YYYY-MM-DD"
+    setSelectedUser(userToEdit);
   };
   
   const handleSubmit = async (e) => {
@@ -325,7 +377,7 @@ export function UserManagementTable() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant }),
+        body: JSON.stringify({ name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant, selectedPlatforms }),
       });
 
       const data = await res.json();
@@ -379,6 +431,7 @@ export function UserManagementTable() {
           empresa_id: selectedUser.empresa_id,  
           planta: selectedUser.planta,  
           rol: selectedUser.rol,
+          plataformas: selectedUser.plataformas,
         }),
       });
   
@@ -408,8 +461,50 @@ export function UserManagementTable() {
       setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
     }
   };
-  
 
+  const handleSubmitResetPass = async (e) => {
+    e.preventDefault();
+  
+    if (selectedUsers.length === 0) {
+      Swal.fire("Error", "Selecciona al menos un usuario", "error");
+      return;
+    }
+  
+    try {
+      const res = await fetch("/api/Users/resetPassword", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedUsers, 
+          resetPass: "NutriAdmin2035", // Enviar la contraseña directamente
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        Swal.fire("Error", data.message || "Hubo un problema al reestablecer las contraseñas", "error");
+        return;
+      }
+  
+      Swal.fire({
+        title: "Actualizadas",
+        text: "Las contraseñas se han reestablecido correctamente",
+        icon: "success",
+        timer: 3000,
+        showConfirmButton: false,
+      }).then(() => {
+        window.location.href = "/usuario";
+      });
+  
+    } catch (err) {
+      console.error("Error en la actualización:", err);
+      Swal.fire("Error", "Hubo un problema con la actualización. Por favor, intenta nuevamente.", "error");
+    }
+  };
+  
   const saveSelections = async () => {
     if (!selectedUserId) return; // Validación para asegurarnos que tenemos el ID
     const selectedData = [];
@@ -528,10 +623,11 @@ export function UserManagementTable() {
   }
 
   const handleCleanForm = () => {
+    fetchEmployeeNumber();
+    setSelectedPlatforms({});
     setName("");
     setLastName("");
     setEmail("");
-    setEmployeeNumber("");
     setPosition("");
     setPhoneNumber("");
     setEntryDate("");
@@ -542,6 +638,11 @@ export function UserManagementTable() {
     setPassword("");
     setConfirmPassword("");
     setSelectedRole("");
+  }
+
+  const handleCleanFormPass = () => {
+    setSelectedUsers([]);
+    setSearchTerm("");
   }
 
   return (
@@ -576,177 +677,329 @@ export function UserManagementTable() {
               <SelectItem value="Máster">Máster</SelectItem>
               <SelectItem value="Administrador">Administrador</SelectItem>
               <SelectItem value="Estándar">Estándar</SelectItem>
+              <SelectItem value="Dado de baja">Dado de baja</SelectItem>
             </SelectContent>
           </Select>
         </div>
         
         <Dialog>
           <DialogTrigger asChild>
+            <Button onClick={handleCleanFormPass} style={{ marginLeft: "600px" }}>
+              <KeyRound className="mr-2 h-4 w-4" />Reestablecer contraseñas
+            </Button>
+          </DialogTrigger>
+          <DialogContent
+            className="border-none p-0 overflow-y-auto no-scrollbar"
+            style={{
+              width: "100%",
+              maxWidth: "800px",
+              height: "35vh",
+              maxHeight: "65vh",
+              padding: "30px",
+              marginLeft: "120px",
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Reestablecer contraseñas</DialogTitle>
+              <DialogDescription>Selecciona los usuarios a los que se les reestablecerá la contraseña.</DialogDescription>
+            </DialogHeader>
+
+            {/* Breadcrumbs de usuarios seleccionados */}
+            {selectedUsers.length > 0 && (
+              <div className="flex flex-wrap gap-2 border p-2 rounded-lg">
+                {selectedUsers.map((user) => (
+                  <span
+                    style={{fontSize: 12, backgroundColor: "lightgray"}}
+                    key={user.id}
+                    className="inline-flex items-center bg-gray-200 px-2 py-1 rounded-md"
+                  >
+                    {user.nombre} {user.apellidos}
+                    <X
+                      className="ml-2 h-4 w-4 cursor-pointer text-red-500"
+                      onClick={() => handleRemoveUser(user.id)}
+                    />
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Selección de usuarios con búsqueda manual */}
+            <div className="mb-4">
+              <Select onValueChange={handleSelectUser} value="">
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar usuarios" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                  <div className="p-2">
+                    <Input
+                      ref={inputRef}
+                      placeholder="Buscar usuario..."
+                      value={searchTermPass}
+                      onChange={(e) => setSearchTermPass(e.target.value)}
+                    />
+                  </div>
+                  
+                  {/* Filtrado sin selección automática */}
+                  {users.filter(user => 
+                    user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
+                    user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                  ).length === 0 ? (
+                    <div className="p-2 text-center text-gray-500">No se encontraron usuarios</div>
+                  ) : (
+                    users
+                      .filter(user => 
+                        user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
+                        user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                      )
+                      .map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.nombre} {user.apellidos}
+                        </SelectItem>
+                      ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Formulario de cambio de contraseña */}
+            <form onSubmit={handleSubmitResetPass}>
+              <input type="hidden" id="resetPass" value="NutriAdmin2035" />
+
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  disabled={selectedUsers.length === 0}
+                >
+                  Reestablecer contraseñas
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog>
+          <DialogTrigger asChild>
             <Button onClick={handleCleanForm}><UserPlus className="mr-2 h-4 w-4" /> Añadir usuario</Button>
           </DialogTrigger>
-          
-          <DialogContent>
+          <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+              width: "100%", // Ajusta el ancho
+              maxWidth: "1000px", // Límite del ancho
+              height: "70vh", // Ajusta la altura
+              maxHeight: "80vh", // Límite de la altura
+              padding: "20px", // Margen interno
+              marginLeft: "120px"
+            }}>
             <DialogHeader>
-              <DialogTitle>Nuevo Usuario</DialogTitle>
+              <DialogTitle>Nuevo usuario</DialogTitle>
               <DialogDescription>Ingresa los detalles del usuario.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre(s)*</Label>
-                <Input id="name" className="col-span-3" required value={name} onChange={(e) => setName(e.target.value)}/>
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="name">Nombre(s)*</Label>
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)}/>
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="lastName">Apellidos*</Label>
+                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lastName" className="text-right">Apellidos*</Label>
-                <Input id="lastName" className="col-span-3" required value={lastName} onChange={(e) => setLastName(e.target.value)}/>
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="employeeNumber">No. empleado*</Label>
+                  <Input id="employeeNumber" type="number" value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">Correo electrónico</Label>
-                <Input id="email" type="email" className="col-span-3" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-3 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="position">Puesto</Label>
+                  <Input id="position" value={position} onChange={(e) => setPosition(e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="phoneNumber">Teléfono</Label>
+                  <Input id="phoneNumber" type="number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="entryDate">Fecha de ingreso</Label>
+                  <Input id="entryDate" type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="employeeNumber" className="text-right">No. empleado*</Label>
-                <Input id="employeeNumber" type="number" className="col-span-3" required value={employeeNumber} onChange={(e) => setEmployeeNumber(e.target.value)} />
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="departamento">
+                    Departamento*
+                  </Label>
+                  <Select
+                    value={selectedDepartamento}
+                    onValueChange={(value) => {
+                      setSelectedDepartamento(value); // Actualizar departamento seleccionado
+                      setDirectBoss(""); // Reiniciar el jefe directo
+                    }}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione el departamento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">IT</SelectItem>
+                      <SelectItem value="2">Marketing</SelectItem>
+                      <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
+                      <SelectItem value="4">Contabilidad</SelectItem>
+                      <SelectItem value="5">Gente y Cultura</SelectItem>
+                      <SelectItem value="7">Calidad</SelectItem>
+                      <SelectItem value="8">Planeación</SelectItem>
+                      <SelectItem value="9">Laboratorio</SelectItem>
+                      <SelectItem value="10">Maquilas</SelectItem>
+                      <SelectItem value="11">Operaciones</SelectItem>
+                      <SelectItem value="12">Auditorías</SelectItem>
+                      <SelectItem value="13">Ventas</SelectItem>
+                      <SelectItem value="14">Almacén</SelectItem>
+                      <SelectItem value="15">Producción</SelectItem>
+                      <SelectItem value="16">Compras</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="directBoss">
+                    Jefe Directo
+                  </Label>
+                  <Select
+                    value={directBoss}
+                    onValueChange={(value) => setDirectBoss(value)}
+                    disabled={filteredUsersDpto.length === 0} // Deshabilitar si no hay usuarios disponibles
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione el jefe directo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredUsersDpto.length > 0 ? (
+                        filteredUsersDpto.map((user) => (
+                          <SelectItem key={user.id.toString()} value={user.id.toString()}>
+                            {user.nombre + " " + user.apellidos}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled>No hay usuarios disponibles en este departamento</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="position" className="text-right">Puesto*</Label>
-                <Input id="position" className="col-span-3" required value={position} onChange={(e) => setPosition(e.target.value)} />
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-3 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="company">
+                    Empresa*
+                  </Label>
+                  <Select
+                    value={company}
+                    onValueChange={(value) => {
+                      setCompany(value); // Actualizar departamento seleccionado
+                    }}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione la empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Asesoría y desarrollo...</SelectItem>
+                      <SelectItem value="2">Eren</SelectItem>
+                      <SelectItem value="3">Inik</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="workPlant">
+                    Planta*
+                  </Label>
+                  <Select
+                    value={workPlant}
+                    onValueChange={(value) => {
+                      setWorkPlant(value); // Actualizar departamento seleccionado
+                    }}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione una opción" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">No</SelectItem>
+                      <SelectItem value="1">Sí</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="role" className="text-right">Rol</Label>
+                  <Select onValueChange={(value) => setSelectedRole(value)}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccione el rol para el usuario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="Máster">Máster</SelectItem>
+                    <SelectItem value="Administrador">Administrador</SelectItem>
+                    <SelectItem value="Estándar">Estándar</SelectItem>
+                    <SelectItem value="Dado de baja">Dado de baja</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phoneNumber" className="text-right">Teléfono</Label>
-                <Input id="phoneNumber" type="number" className="col-span-3" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+              <div style={{marginBottom: "15px"}} className="grid grid-cols-3 gap-1">
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="password">Contraseña*</Label>
+                  <Input id="password" type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="confirmPassword"> Confirmar Contraseña*</Label>
+                  <Input id="confirmPassword" type="password" placeholder="********" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </div>
+                <div className="space-y-2 col-span-1">
+                  <Label htmlFor="platforms">Plataformas</Label><br />
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => setOpen(true)} style={{backgroundColor: "white", color: "#000000e8", border: "1px solid lightgray"}} className="w-full">Seleccionar plataformas</Button>
+                    </DialogTrigger>
+                    <DialogContent className=" overflow-y-auto no-scrollbar" onInteractOutside={(event) => event.preventDefault()}
+                      style={{
+                        width: "100%",
+                        maxWidth: "500px",
+                        height: "29vh",
+                        maxHeight: "35vh",
+                        padding: "30px",
+                        marginLeft: "120px",
+                    }}>
+                      <DialogHeader>
+                        <DialogTitle>Seleccionar plataformas</DialogTitle>
+                        <DialogDescription>
+                          Selecciona las plataformas que el usuario va a utilizar.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-2 col-span-1">
+                        {Object.keys(plataformas).map((key) => (
+                          <div key={key} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={key}
+                              checked={!!selectedPlatforms[key]}
+                              onCheckedChange={() => handleCheckboxChange(key)}
+                              className="cursor-pointer"
+                            />
+                            <Label htmlFor={key} className="cursor-pointer">{plataformas[key]}</Label>
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={() => setOpen(false)}>Aceptar</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="entryDate" className="text-right">Fecha de ingreso*</Label>
-                <Input id="entryDate" type="date" className="col-span-3" required value={entryDate} onChange={(e) => setEntryDate(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="departamento" className="text-right">
-                  Departamento*
-                </Label>
-                <Select
-                  value={selectedDepartamento}
-                  onValueChange={(value) => {
-                    setSelectedDepartamento(value); // Actualizar departamento seleccionado
-                    setDirectBoss(""); // Reiniciar el jefe directo
-                  }}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el departamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">IT</SelectItem>
-                    <SelectItem value="2">Marketing</SelectItem>
-                    <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
-                    <SelectItem value="4">Contabilidad</SelectItem>
-                    <SelectItem value="5">Gente y Cultura</SelectItem>
-                    <SelectItem value="7">Calidad</SelectItem>
-                    <SelectItem value="8">Planeación</SelectItem>
-                    <SelectItem value="9">Laboratorio</SelectItem>
-                    <SelectItem value="10">Maquilas</SelectItem>
-                    <SelectItem value="11">Operaciones</SelectItem>
-                    <SelectItem value="12">Auditorías</SelectItem>
-                    <SelectItem value="13">Ventas</SelectItem>
-                    <SelectItem value="14">Almacén</SelectItem>
-                    <SelectItem value="15">Producción</SelectItem>
-                    <SelectItem value="16">Compras</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="directBoss" className="text-right">
-                  Jefe Directo
-                </Label>
-                <Select
-                  value={directBoss}
-                  onValueChange={(value) => setDirectBoss(value)}
-                  disabled={filteredUsersDpto.length === 0} // Deshabilitar si no hay usuarios disponibles
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el jefe directo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredUsersDpto.length > 0 ? (
-                      filteredUsersDpto.map((user) => (
-                        <SelectItem key={user.id.toString()} value={user.id.toString()}>
-                          {user.nombre + " " + user.apellidos}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled>No hay usuarios disponibles en este departamento</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="company" className="text-right">
-                  Empresa*
-                </Label>
-                <Select
-                  value={company}
-                  onValueChange={(value) => {
-                    setCompany(value); // Actualizar departamento seleccionado
-                  }}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione la empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Asesoría y desarrollo...</SelectItem>
-                    <SelectItem value="2">Eren</SelectItem>
-                    <SelectItem value="3">Inik</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="workPlant" className="text-right">
-                  Planta*
-                </Label>
-                <Select
-                  value={workPlant}
-                  onValueChange={(value) => {
-                    setWorkPlant(value); // Actualizar departamento seleccionado
-                  }}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">No</SelectItem>
-                    <SelectItem value="1">Sí</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">Contraseña*</Label>
-                <Input id="password" type="password" className="col-span-3" required value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="confirmPassword" className="text-right"> Confirmar Contraseña*</Label>
-                <Input id="confirmPassword" type="password" className="col-span-3" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right">Rol</Label>
-                <Select onValueChange={(value) => setSelectedRole(value)}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el rol para el usuario" />
-                  </SelectTrigger>
-                  <SelectContent>
-                  <SelectItem value="Máster">Máster</SelectItem>
-                  <SelectItem value="Administrador">Administrador</SelectItem>
-                  <SelectItem value="Estándar">Estándar</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <DialogFooter>
-              <Button type="submit" disabled={!name || !lastName || !employeeNumber || !position || !entryDate || !selectedDepartamento || !company || !workPlant || !password || !confirmPassword} >Agregar usuario</Button>
+              <Button type="submit" disabled={!name || !lastName || !employeeNumber || !selectedDepartamento || !company || !workPlant || !password || !confirmPassword} >Agregar usuario</Button>
             </DialogFooter>
             </form>
           </DialogContent>
-         
         </Dialog>
-      
       </div>
 
       <Table>
@@ -788,45 +1041,60 @@ export function UserManagementTable() {
                     <DialogTrigger asChild>
                       <Button onClick={() => handleEditUser(user.id)} variant="outline" size="sm">Editar</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+                      width: "100%", // Ajusta el ancho
+                      maxWidth: "1000px", // Límite del ancho
+                      height: "70vh", // Ajusta la altura
+                      maxHeight: "80vh", // Límite de la altura
+                      padding: "20px", // Margen interno
+                      marginLeft: "120px"
+                    }}>
             <DialogHeader>
               <DialogTitle>Editar usuario</DialogTitle>
               <DialogDescription>Actualiza los detalles necesarios del usuario.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitUpdate}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre(s)</Label>
-                <Input id="name" className="col-span-3" value={selectedUser?.nombre || ''} onChange={(e) => setSelectedUser({...selectedUser, nombre: e.target.value})}/>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="name">Nombre(s)</Label>
+                <Input id="name" value={selectedUser?.nombre || ''} onChange={(e) => setSelectedUser({...selectedUser, nombre: e.target.value})}/>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lastName" className="text-right">Apellidos</Label>
-                <Input id="lastName" className="col-span-3" value={selectedUser?.apellidos || ''} onChange={(e) => setSelectedUser({...selectedUser, apellidos: e.target.value})}/>
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="lastName">Apellidos</Label>
+                <Input id="lastName" value={selectedUser?.apellidos || ''} onChange={(e) => setSelectedUser({...selectedUser, apellidos: e.target.value})}/>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">Correo electrónico</Label>
-                <Input id="email" type="email" className="col-span-3" value={selectedUser?.correo || ''} onChange={(e) => setSelectedUser({...selectedUser, correo: e.target.value})} />
+            </div>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input id="email" type="email" value={selectedUser?.correo || ''} onChange={(e) => setSelectedUser({...selectedUser, correo: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="employeeNumber" className="text-right">No. empleado</Label>
-                <Input id="employeeNumber" type="number" className="col-span-3" value={selectedUser?.numero_empleado || ''} onChange={(e) => setSelectedUser({...selectedUser, numero_empleado: e.target.value})} />
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="employeeNumber">No. empleado</Label>
+                <Input id="employeeNumber" type="number" value={selectedUser?.numero_empleado || ''} onChange={(e) => setSelectedUser({...selectedUser, numero_empleado: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="position" className="text-right">Puesto</Label>
-                <Input id="position" className="col-span-3" value={selectedUser?.puesto || ''} onChange={(e) => setSelectedUser({...selectedUser, puesto: e.target.value})} />
+            </div>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-3 gap-1">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="position">Puesto</Label>
+                <Input id="position" value={selectedUser?.puesto || ''} onChange={(e) => setSelectedUser({...selectedUser, puesto: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phoneNumber" className="text-right">Teléfono</Label>
-                <Input id="phoneNumber" type="number" className="col-span-3" value={selectedUser?.telefono || ''} onChange={(e) => setSelectedUser({...selectedUser, telefono: e.target.value})} />
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="phoneNumber">Teléfono</Label>
+                <Input id="phoneNumber" type="number" value={selectedUser?.telefono || ''} onChange={(e) => setSelectedUser({...selectedUser, telefono: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="entryDate" className="text-right">Fecha de ingreso</Label>
-                <Input id="entryDate" type="date" className="col-span-3" value={formatDate(selectedUser?.fecha_ingreso)} onChange={(e) => setSelectedUser({...selectedUser, fecha_ingreso: e.target.value})} />
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="entryDate">Fecha de ingreso</Label>
+                <Input id="entryDate" type="date" value={selectedUser?.fecha_ingreso || ''} onChange={(e) => setSelectedUser({...selectedUser, fecha_ingreso: e.target.value})} />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="departamento" className="text-right">Departamento</Label>
+            </div>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="departamento">
+                  Departamento
+                </Label>
                 <Select
-                  value={selectedUser?.departamento_id.toString() || ''} // Usar el valor del departamento del usuario seleccionado
+                  value={selectedUser?.departamento_id.toString() || ''}
                   onValueChange={(value) => {
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
@@ -857,9 +1125,8 @@ export function UserManagementTable() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="directBoss" className="text-right">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="directBoss">
                   Jefe Directo
                 </Label>
                 <Select
@@ -888,8 +1155,10 @@ export function UserManagementTable() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="company" className="text-right">
+            </div>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="company">
                   Empresa
                 </Label>
                 <Select
@@ -911,8 +1180,8 @@ export function UserManagementTable() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="workPlant" className="text-right">
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="workPlant">
                   Planta
                 </Label>
                 <Select
@@ -933,7 +1202,9 @@ export function UserManagementTable() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
+            </div>
+            <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+              <div className="space-y-2 col-span-1">
                 <Label htmlFor="role" className="text-right">Rol</Label>
                 <Select value={selectedUser?.rol || ''} onValueChange={(value) => setSelectedUser({...selectedUser, rol: value})}>
                   <SelectTrigger className="col-span-3">
@@ -943,8 +1214,53 @@ export function UserManagementTable() {
                   <SelectItem value="Máster">Máster</SelectItem>
                   <SelectItem value="Administrador">Administrador</SelectItem>
                   <SelectItem value="Estándar">Estándar</SelectItem>
+                  <SelectItem value="Dado de baja">Dado de baja</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2 col-span-1">
+                <Label htmlFor="platforms">Plataformas</Label><br />
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setOpen(true)} style={{backgroundColor: "white", color: "#000000e8", border: "1px solid lightgray"}} className="w-full">Seleccionar plataformas</Button>
+                  </DialogTrigger>
+                  <DialogContent className=" overflow-y-auto no-scrollbar" onInteractOutside={(event) => event.preventDefault()}
+                    style={{
+                      width: "100%",
+                      maxWidth: "500px",
+                      height: "29vh",
+                      maxHeight: "35vh",
+                      padding: "30px",
+                      marginLeft: "120px",
+                  }}>
+                    <DialogHeader>
+                      <DialogTitle>Seleccionar plataformas</DialogTitle>
+                      <DialogDescription>
+                        Selecciona las plataformas que el usuario va a utilizar.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2 col-span-1">
+                      {Object.keys(plataformas).map((key) => (
+                        <div key={key} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={key}
+                            checked={!!(
+                              typeof selectedUser?.plataformas === "string"
+                                ? JSON.parse(selectedUser.plataformas)[key]
+                                : selectedUser?.plataformas?.[key] || false
+                            )}
+                            onCheckedChange={() => handleCheckboxChangeEdit(key)}
+                            className="cursor-pointer"
+                          />
+                          <Label htmlFor={key} className="cursor-pointer">{plataformas[key]}</Label>
+                        </div>
+                      ))}
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={() => setOpen(false)}>Aceptar</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
             <DialogFooter>

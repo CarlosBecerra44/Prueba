@@ -1,29 +1,39 @@
-import pool from '@/lib/db';
+import FormulariosEstrategias from "@/models/FormulariosEstrategias"; // Modelo de FormulariosEstrategias
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Método no permitido' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Método no permitido" });
   }
 
-  let connection;
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
+    // Obtener los eventos de la tabla 'formularios_estrategias' donde 'eliminado' sea 0
+    const eventos = await FormulariosEstrategias.findAll({
+      where: { eliminado: 0 },
+      order: [["fecha_actualizacion", "DESC"]],
+    });
 
-    // Consulta para obtener los eventos desde la tabla 'formularios_estrategias'
-    const [eventos] = await connection.query(
-      'SELECT * FROM formularios_estrategias WHERE eliminado = 0 ORDER BY fecha_actualizacion DESC'
-    );
+    // Procesar los eventos para manejar el campo 'formulario' (JSON o texto)
+    const eventosProcesados = eventos.map(evento => {
+      let datos = evento.formulario;
+
+      // Intentar parsear el formulario si es un string JSON
+      try {
+        datos = JSON.parse(datos);
+      } catch (error) {
+        // Si no es un JSON válido, dejamos el valor tal cual
+        datos = evento.formulario; // Mantener el valor original
+      }
+
+      return {
+        ...evento.toJSON(), // Convertir el evento a objeto plano
+        formulario: datos, // Asignar el formulario procesado
+      };
+    });
 
     // Retorna los eventos en formato JSON
-    res.status(200).json(eventos);
+    res.status(200).json(eventosProcesados);
   } catch (error) {
-    console.error('Error al obtener los eventos:', error);
-    res.status(500).json({ message: 'Error al obtener los eventos' });
-  } finally {
-    // Liberar la conexión
-    if (connection) {
-      connection.release();
-    }
+    console.error("Error al obtener los eventos:", error);
+    res.status(500).json({ message: "Error al obtener los eventos" });
   }
 }

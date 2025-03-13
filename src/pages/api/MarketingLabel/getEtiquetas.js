@@ -1,32 +1,31 @@
-// Archivo: src/pages/api/getEstrategias.js
-import pool from '@/lib/db';
+import { literal } from "sequelize";
+import FormulariosEtiquetas from "@/models/FormulariosEtiquetas";
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  let connection;
-
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
-
-    // Consulta para obtener los eventos desde la tabla 'etiquetas_form'
-    const [rows] = await connection.query(`
-      SELECT id, datos_formulario, pdf_path,
-             eliminado, estatus, 
-             CONVERT_TZ(fecha_envio, '+00:00', '+06:00') AS fecha_envio, 
-             CONVERT_TZ(fecha_actualizacion, '+00:00', '+06:00') AS fecha_actualizacion, 
-             firmas 
-      FROM etiquetas_form 
-      WHERE eliminado = false 
-      ORDER BY fecha_actualizacion DESC
-    `);
+    // Consulta para obtener los eventos usando Sequelize
+    const rows = await FormulariosEtiquetas.findAll({
+      where: { eliminado: false },
+      order: [['fecha_actualizacion', 'DESC']],
+      attributes: [
+        'id', 
+        'datos_formulario', 
+        'pdf_path', 
+        'eliminado', 
+        'estatus',
+        'fecha_envio',
+        'fecha_actualizacion',
+        'firmas'
+      ]
+    });
 
     // Convertir datos_formulario y firmas a JSON si es necesario
     const parsedRows = rows.map(row => ({
-      ...row,
+      ...row.dataValues,
       datos_formulario: parseJSON(row.datos_formulario),
       firmas: parseJSON(row.firmas),
     }));
@@ -36,11 +35,6 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error al obtener los eventos:', error);
     res.status(500).json({ message: 'Error al obtener los eventos' });
-  } finally {
-    // Liberar la conexión
-    if (connection) {
-      connection.release();
-    }
   }
 }
 

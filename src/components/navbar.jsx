@@ -11,6 +11,8 @@ import styles from '../../public/CSS/spinner.css';
 import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 import "../../public/CSS/navbar.css"
 import {useUser} from "@/pages/api/hooks";
+import { CMD } from "./ING PRODUCTO/Components/cmd"
+import { ShoppingBag } from "lucide-react"
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState('');
@@ -21,7 +23,8 @@ export function Navbarv1() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
-  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes } = useUser();
+  const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, 
+    hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes, isDadoDeBaja } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -88,7 +91,7 @@ const toggleSection = (sectionId) => {
           id: 1,
           name: "Papeletas RH",
           href: "/gente_y_cultura/todas_papeletas",
-          icon: <PermisosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessPapeletas"]
+          icon: <RHIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessPapeletas"]
         },
         {
           id: 2,
@@ -100,16 +103,17 @@ const toggleSection = (sectionId) => {
           id: 3,
           name: "Ver mis solicitudes",
           href: "/gente_y_cultura/solicitudes",
-          icon: <PermisosSubIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessSolicitudes"]
+          icon: <SolicitudIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessSolicitudes"]
         },
 
         {
           id: 4,
-          name: "Usuarios",
-          href: "/usuario",
-          icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"],
+          name: "Usuarios y empresas",
+          href: "#",
+          icon: <UsuariosEmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"],
           subMenu: [
-            { id: 401, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
+            { id: 401, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
+            { id: 402, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
           ]
         },
         {
@@ -123,12 +127,34 @@ const toggleSection = (sectionId) => {
     { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
     { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
-    { id: 11, name: "Ingeniería de nuevo producto", href: "#", icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { 
+      id: 11, 
+      name: "Ingeniería de nuevo producto", 
+      href: "#", icon: <IngenieriaNuevoPIcon 
+      className="h-6 w-6 text-gray-400" />, 
+      roles: ["master"],
+      subMenu: [
+        {
+          id: 1,
+          name: "Catálogo de productos",
+          href: "/ingenieria_nuevo_producto",
+          icon: <ShoppingBag style={{width: "32px", height: "32px"}} className="h-6 w-6 text-gray-400" />, roles: ["master"]
+        },
+        {
+          id: 2,
+          name: "CMD",
+          href: "/ingenieria_nuevo_producto/catalogo_productos",
+          icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, roles: ["master"]
+        },
+      ]
+    },
     { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] }
+    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master"] },
+    { id: 18, name: "CMD", href: "/configuraciones/cmd", icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
   ];
 
   const filteredCategories = categories.filter((category) =>
@@ -138,6 +164,7 @@ const toggleSection = (sectionId) => {
   const hasAccess = (category) => {
     if (category.includes("*")) return true;
     if (isMaster && category.includes("master")) return true;
+    if (isDadoDeBaja && category.includes("baja")) return true;
     if (isAdminMkt && category.includes("adminMkt")) return true;
     if (isStandardMkt && category.includes("standardMkt")) return true;
     if (isStandard && category.includes("standard")) return true;
@@ -160,9 +187,9 @@ const toggleSection = (sectionId) => {
     <div className="flex flex-col w-64 h-screen min-h-screen bg-gray-800 text-white">
       <div style={{ borderBottomWidth: "2px", marginRight: "6px" }} className="flex items-center justify-between h-16 border-gray-700 px-4">
         <div style={{ color: "white" }} className="flex items-center">
-          <img src="/icon_user.png" alt="Logo" className="h-8 w-8" />
-          <a href="/perfil">
-            <span className="ml-2 font-medium">{nombre + ' ' + apellidos}</span>
+          <img style={{marginLeft: "15px"}} src="/icon_user.png" alt="Logo" className="h-8 w-8" />
+          <a style={{marginLeft: "15px", textAlign: "center"}} href="/perfil">
+            <span className="font-medium">{nombre} <br /> {apellidos}</span>
           </a>
         </div>
       </div>
@@ -185,7 +212,7 @@ const toggleSection = (sectionId) => {
             return (
               <div key={category.id} className="group">
               {/* Secciones principales con IDs específicos */}
-              {["principal", "departamentos", "cursos"].includes(category.id) ? (
+              {["principal", "departamentos", "cursos", "configuraciones"].includes(category.id) ? (
                 <div
                   className="text-gray-400 cursor-pointer flex items-center justify-between py-2"
                   onClick={() => toggleSection(category.id)}
@@ -473,10 +500,9 @@ function ForosIcon(props) {
 function AyudaIcon(props) {
   return (
     <svg
-      {...props}
       xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -513,14 +539,7 @@ function CapacitacionesIcon(props) {
 
 function PapeletasIcon(props) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-  <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h6l4 4v12a2 2 0 0 1 -2 2z" />
-  <path d="M9 9h1" />
-  <path d="M9 13h6" />
-  <path d="M9 17h6" />
-</svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
   )
 }
 
@@ -687,5 +706,92 @@ function InventarioIcon(props) {
     <svg class="w-[25px] h-[25px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13h3.439a.991.991 0 0 1 .908.6 3.978 3.978 0 0 0 7.306 0 .99.99 0 0 1 .908-.6H20M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6M4 13l2-9h12l2 9M9 7h6m-7 3h8"/>
 </svg>
+  )
+}
+
+function RHIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-user"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15 18a3 3 0 1 0-6 0"/><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><circle cx="12" cy="13" r="2"/></svg>
+  )
+}
+
+function CatalogoProductosIcon({ width = 24, height = 24, stroke = "white" }) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke={stroke}
+      strokeWidth="4"
+    >
+      {/* Portada del catálogo */}
+      <rect x="20" y="20" width="60" height="60" rx="5" fill="none" />
+      
+      {/* Líneas simulando texto */}
+      <line x1="30" y1="35" x2="70" y2="35" />
+      <line x1="30" y1="45" x2="70" y2="45" />
+      <line x1="30" y1="55" x2="50" y2="55" />
+
+      {/* Pequeño ícono de caja en la portada */}
+      <rect x="55" y="60" width="20" height="15" fill="none" />
+      <line x1="55" y1="60" x2="65" y2="50" />
+      <line x1="75" y1="60" x2="65" y2="50" />
+    </svg>
+  );
+}
+
+function UsuariosEmpresasIcon({ width =35, height = 35, stroke = "white" }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(0, 0)">
+    <path d="M18 21a8 8 0 0 0-16 0"/>
+    <circle cx="10" cy="8" r="5"/>
+    <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
+  </g>
+  <g transform="translate(24, 0)">
+    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+    <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+    <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+    <path d="M10 6h4"/>
+    <path d="M10 10h4"/>
+    <path d="M10 14h4"/>
+    <path d="M10 18h4"/>
+  </g>
+
+  
+</svg>
+  );
+}
+
+function SolicitudIcon(props) {
+  return (
+    <svg
+  width="24"
+  height="24"
+  viewBox="0 0 100 100"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  stroke="white"
+  stroke-width="3"
+>
+  <polygon points="10,30 50,60 90,30 90,80 10,80" fill="white"/>
+  <line x1="10" y1="30" x2="50" y2="10"/>
+  <line x1="90" y1="30" x2="50" y2="10"/>
+  <line x1="10" y1="80" x2="40" y2="55"/>
+  <line x1="90" y1="80" x2="60" y2="55"/>
+
+  <rect x="25" y="20" width="50" height="50" fill="none"/>
+  <line x1="30" y1="30" x2="70" y2="30"/>
+  <line x1="30" y1="40" x2="70" y2="40"/>
+  <line x1="30" y1="50" x2="70" y2="50"/>
+</svg>
+  )
+}
+
+function ConfigIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-terminal"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>
   )
 }

@@ -1,11 +1,100 @@
 "use client"
-import { useSession,  signOut } from "next-auth/react";
-import { useState, useMemo } from "react"
+
+import { useState, useMemo, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Button as Button2 } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useSession,  signOut } from "next-auth/react";
 import Link from "next/link"
 import styles from '../../../../public/CSS/spinner.css';
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import axios from "axios"
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function Ingenieria_nuevo_producto() {
+export function IngProducto() {
+  const [products, setProducts] = useState([]);
+  const [images, setImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(null); // Estado para controlar qué producto tiene el modal abierto
+
+  const openModal = (productId) => setIsModalOpen(productId); // Abre el modal para el producto específico
+  const closeModal = () => setIsModalOpen(null); // Cierra el modal
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('/api/ProductEngineering/getProductosImagenes');
+        if (response.data.success) {
+          setProducts(response.data.products);
+        } else {
+          console.error('Error al obtener los productos:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los productos:', error);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true
+  };
+
+  const PrevArrow = ({ onClick }) => (
+    <button 
+      onClick={onClick} 
+      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
+    >
+      <ChevronLeft className="w-6 h-6" />
+    </button>
+  );
+  
+  // Componente para la flecha derecha
+  const NextArrow = ({ onClick }) => (
+    <button 
+      onClick={onClick} 
+      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
+    >
+      <ChevronRight className="w-6 h-6" />
+    </button>
+  );
+
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState([])
+
+  const filteredProducts = products
+    .filter(product => 
+      Object.values(product)
+        .filter(value => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
+        .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase())) // Filtro por término de búsqueda
+    );
+  
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value)
+  }
+  console.log("PRODUCTOS: " + products)
+  const handleCategorySelect = (category) => {
+    if (selectedCategories.includes(category)) {
+      setSelectedCategories(selectedCategories.filter((c) => c !== category))
+    } else {
+      setSelectedCategories([...selectedCategories, category])
+    }
+  }
+  const categories = useMemo(() => {
+    return Array.from(new Set(products.map((p) => p.category)));
+  }, [products])
+
   const [openSection, setOpenSection] = useState(null)
   
   const {data: session,status}=useSession ();
@@ -33,337 +122,105 @@ export function Ingenieria_nuevo_producto() {
     );
   }
 
-  const ingenieriaNuevoProducto = "ingenieria_nuevo_producto";
+  const marketing = "marketing";
 
   return (
-    (<div className="w-full max-w-6xl mx-auto py-12 md:py-20">
-      <Link href={`/explorador_archivos?id=${ingenieriaNuevoProducto}`}>
-        <Button variant="outline" size="sm" className="fixed h-9 gap-2 right-4 top-10 bg-blue-500 text-white p-2 rounded-lg shadow-lg">
-          <div className="h-3.5 w-3.5" />
-          <FolderIcon className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Explorador de archivos</span>
-        </Button>
-      </Link>
-      <div className="px-4 md:px-6">
-        <div className="grid gap-8 md:gap-12">
-          <section>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Proceso de Desarrollo de Productos</h1>
-            <p className="mt-4 text-muted-foreground md:text-lg">
-              Descubre los pasos clave para crear nuevos productos de manera efectiva y exitosa.
-            </p>
-          </section>
-          <section>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Fases del Proceso</h2>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
-              <div className="grid gap-4">
-                <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                  <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                    <SearchIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Investigación de Mercado</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Analiza el mercado, la competencia y las necesidades de los clientes.
-                    </p>
-                  </div>
-                </div>
-                <img
-                  src="/placeholder.svg"
-                  width={600}
-                  height={400}
-                  alt="Investigación de mercado"
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "600/400", objectFit: "cover" }} />
-              </div>
-              <div className="grid gap-4">
-                <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                  <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                    <LightbulbIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Ideación</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Genera ideas innovadoras y creativas para nuevos productos.
-                    </p>
-                  </div>
-                </div>
-                <img
-                  src="/placeholder.svg"
-                  width={600}
-                  height={400}
-                  alt="Ideación"
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "600/400", objectFit: "cover" }} />
-              </div>
-              <div className="grid gap-4">
-                <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                  <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                    <LayersIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Prototipado</h3>
-                    <p className="text-muted-foreground text-sm">Crea prototipos para validar y refinar las ideas.</p>
-                  </div>
-                </div>
-                <img
-                  src="/placeholder.svg"
-                  width={600}
-                  height={400}
-                  alt="Prototipado"
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "600/400", objectFit: "cover" }} />
-              </div>
-              <div className="grid gap-4">
-                <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                  <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                    <BeakerIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Pruebas</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Realiza pruebas con usuarios para validar el producto.
-                    </p>
-                  </div>
-                </div>
-                <img
-                  src="/placeholder.svg"
-                  width={600}
-                  height={400}
-                  alt="Pruebas"
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "600/400", objectFit: "cover" }} />
-              </div>
-              <div className="grid gap-4">
-                <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                  <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                    <RocketIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Lanzamiento</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Lanza el producto al mercado y monitorea su rendimiento.
-                    </p>
-                  </div>
-                </div>
-                <img
-                  src="/placeholder.svg"
-                  width={600}
-                  height={400}
-                  alt="Lanzamiento"
-                  className="rounded-lg object-cover"
-                  style={{ aspectRatio: "600/400", objectFit: "cover" }} />
-              </div>
-            </div>
-          </section>
-          <section>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Beneficios de un Proceso Estructurado</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                  <CheckIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Enfoque Estratégico</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Un proceso estructurado ayuda a mantener el enfoque en las necesidades del mercado y los objetivos
-                    estratégicos.
-                  </p>
-                </div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                  <GaugeIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Eficiencia y Agilidad</h3>
-                  <p className="text-muted-foreground text-sm">
-                    El proceso permite iterar rápidamente, reducir riesgos y lanzar productos de manera más ágil.
-                  </p>
-                </div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                  <ThumbsUpIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Productos de Éxito</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Seguir un proceso estructurado aumenta las probabilidades de desarrollar productos que satisfagan
-                    las necesidades de los clientes.
-                  </p>
-                </div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 flex items-center gap-4">
-                <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                  <CombineIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Colaboración Efectiva</h3>
-                  <p className="text-muted-foreground text-sm">
-                    El proceso fomenta la colaboración entre diferentes equipos y disciplinas, lo que mejora la calidad
-                    y la innovación.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+    (<div className="w-full">
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">
+          Catálogo de productos
+        </CardTitle>
+      </div><br />
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="w-full sm:w-1/3">
+          <Label htmlFor="search" className="mb-2 block">Buscar</Label>
+          <SearchIcon style={{marginTop:"10px", marginLeft:"15px"}} className="absolute h-5 w-5 text-gray-400" />
+          <Input
+            id="search"
+            placeholder="Buscar por todas las características..."
+            className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-      </div>
+    </div>
+    <div>
+  {/* Verifica si la lista de productos está vacía */}
+  {filteredProducts.length === 0 ? (
+    <div className="text-center text-gray-500">
+    <p style={{marginTop: "200px"}}>No hay productos disponibles.</p>
+  </div> 
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {filteredProducts.map((product) => (
+        <div key={product.id}>
+          <Card className="w-full h-[450px] flex flex-col">
+            <div className="w-full h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-t-lg">
+              <img
+                src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(product.imagenes[0])}`}
+                alt={product.nombre}
+                width={400}
+                height={300}
+                className="rounded-t-lg object-cover w-full h-full"
+              />
+            </div>
+            <CardContent className="p-4 flex-1 flex flex-col">
+              <h3 className="text-lg font-bold mb-2">{product.nombre}</h3>
+              <p className="text-muted-foreground mb-2 flex-grow">{product.descripcion}</p>
+              <p className="mb-2">Costo: ${product.costo}</p>
+              <Button2
+                className="w-full mt-auto"
+                onClick={() => openModal(product.id)}
+              >
+                Ver más
+              </Button2>
+            </CardContent>
+          </Card>
+          {/* Modal para ver más información del producto */}
+          {isModalOpen === product.id && (
+            <div style={{marginLeft: "250px"}} className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+              <div
+                style={{backgroundColor: "white"}}
+                className="relative bg-white rounded-lg shadow-lg w-[90%] max-w-[800px] p-6"
+              >
+                {/* Carrusel de imágenes */}
+                <Slider {...settings} className="rounded-t-lg overflow-hidden" nextArrow={<NextArrow />} prevArrow={<PrevArrow />}>
+                  {product.imagenes.map((ruta, index) => (
+                    <div key={index} className="flex justify-center items-center">
+                      <img
+                        src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(ruta)}`}
+                        alt={`Imagen ${index + 1}`}
+                        className="w-full h-[400px] object-cover rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </Slider>
+
+                {/* Contenido del modal */}
+                <div className="p-4">
+                  <h3 className="text-lg font-bold mb-2">{product.nombre}</h3>
+                  <p className="text-muted-foreground mb-2">{product.descripcion}</p>
+                  <p className="mb-2">Tipo: {product.nombre_categoria}</p>
+                  <p className="mb-2">Subcategoría: {product.nombre_subcategoria}</p>
+                  <p className="mb-2">Especificación: {product.nombre_especificacion || "Sin datos"}</p>
+                  <p className="mb-2">Código: {product.codigo}</p>
+                  <p className="mb-2">Cantidad: {product.cMinima} {product.medicion}</p>
+                  <p className="mb-2">Costo: ${product.costo}</p>
+                  <Button2 onClick={closeModal} className="w-full">
+                    Cerrar
+                  </Button2>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
     </div>)
   );
 }
-
-function BeakerIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path d="M4.5 3h15" />
-      <path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3" />
-      <path d="M6 14h12" />
-    </svg>)
-  );
-}
-
-
-function CheckIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path d="M20 6 9 17l-5-5" />
-    </svg>)
-  );
-}
-
-
-function CombineIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <rect width="8" height="8" x="2" y="2" rx="2" />
-      <path d="M14 2c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2" />
-      <path d="M20 2c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2" />
-      <path d="M10 18H5c-1.7 0-3-1.3-3-3v-1" />
-      <polyline points="7 21 10 18 7 15" />
-      <rect width="8" height="8" x="14" y="14" rx="2" />
-    </svg>)
-  );
-}
-
-
-function GaugeIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path d="m12 14 4-4" />
-      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
-    </svg>)
-  );
-}
-
-
-function LayersIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path
-        d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
-      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
-      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
-    </svg>)
-  );
-}
-
-
-function LightbulbIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path
-        d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-      <path d="M9 18h6" />
-      <path d="M10 22h4" />
-    </svg>)
-  );
-}
-
-
-function RocketIcon(props) {
-  return (
-    (<svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round">
-      <path
-        d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path
-        d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-    </svg>)
-  );
-}
-
 
 function SearchIcon(props) {
   return (
@@ -384,8 +241,7 @@ function SearchIcon(props) {
   );
 }
 
-
-function ThumbsUpIcon(props) {
+function ChevronDownIcon(props) {
   return (
     (<svg
       {...props}
@@ -398,9 +254,7 @@ function ThumbsUpIcon(props) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round">
-      <path d="M7 10v12" />
-      <path
-        d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
+      <path d="m6 9 6 6 6-6" />
     </svg>)
   );
 }

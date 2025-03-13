@@ -1,4 +1,4 @@
-import pool from '@/lib/db'; // Asegúrate de que la conexión esté configurada para MySQL
+import FormulariosEstrategias from "@/models/FormulariosEstrategias"; // Modelo de FormularioEstrategia
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,29 +14,27 @@ export default async function handler(req, res) {
   const { formData } = req.body;
   console.log(formData);
 
-  let connection;
   try {
-    // Obtener una conexión del pool
-    connection = await pool.getConnection();
+    // Buscar el formulario por ID
+    const formulario = await FormulariosEstrategias.findByPk(id);
 
-    // Guardar el formulario en la base de datos
-    const [result] = await connection.query(
-      'UPDATE formularios_estrategias SET formulario = ?, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ?',
-      [JSON.stringify(formData), id]
-    );
-
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: 'Formulario guardado correctamente' });
-    } else {
-      res.status(404).json({ message: 'Formulario no encontrado' });
+    if (!formulario) {
+      return res.status(404).json({ message: 'Formulario no encontrado' });
     }
+
+    // Convertir formData a JSON string
+    const formDataString = JSON.stringify(formData);
+
+    // Actualizar el formulario con los nuevos valores
+    await formulario.update({
+      formulario: formDataString, // Usamos JSON.stringify en formData
+      fecha_actualizacion: new Date(), // Establecer la fecha de actualización a la fecha actual
+    });
+
+    return res.status(200).json({ message: 'Formulario guardado correctamente' });
+
   } catch (error) {
     console.error('Error guardando el formulario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
-  } finally {
-    // Liberar la conexión
-    if (connection) {
-      connection.release();
-    }
   }
 }

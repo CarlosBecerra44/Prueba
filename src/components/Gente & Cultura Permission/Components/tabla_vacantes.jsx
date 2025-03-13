@@ -345,7 +345,7 @@ export function TablaVacantes() {
       id: evento.id,
       vacante: evento.vacante,
       cantidad: evento.cantidad,
-      gerencia: evento.nombre,
+      gerencia: evento.departamento.nombre,
       proceso_actual: evento.proceso_actual,
       ubicacion: evento.ubicacion,
       salario: evento.salario,
@@ -383,7 +383,6 @@ export function TablaVacantes() {
       (!endDate || new Date(evento.fecha_apertura) <= new Date(endDate)) // Filtro por fecha de fin
   );
 
-  
   const {data: session,status}=useSession ();
   if (status === "loading" || permisos === null) {
     return (

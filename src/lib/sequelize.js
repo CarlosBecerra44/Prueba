@@ -1,8 +1,9 @@
 const { Sequelize } = require("sequelize");
 
-const sequelize = new Sequelize("aionnet_pruebas", "root", "", {
-  host: "localhost", // Cambia esto según tu servidor
+const sequelize = new Sequelize("aionnet_productivo", "aionnet", "Rrio1003", {
+  host: "50.6.199.166", // Cambia esto según tu servidor
   dialect: "mysql", // Cambia a "mysql", "sqlite" o "mssql" según tu BD
+  dialectModule: require("mysql2"),
 });
 
 (async () => {
@@ -13,3 +14,5 @@ const sequelize = new Sequelize("aionnet_pruebas", "root", "", {
     console.error("Error de conexión:", error);
   }
 })();
+
+module.exports = sequelize;

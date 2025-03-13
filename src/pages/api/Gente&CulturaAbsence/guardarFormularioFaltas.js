@@ -1,4 +1,5 @@
-import pool from '@/lib/db';
+import FormulariosFaltas from '@/models/FormulariosFaltas';
+import moment from 'moment-timezone';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,29 +10,23 @@ export default async function handler(req, res) {
   const { id } = req.query;
   const estatus = "Pendiente";
   const tipo = formularioNormalOExtemporaneo === "Extemporánea" ? 1 : 0;
-  let connection;
+
+  const fechaInicio = formData.fechaInicio ? new Date(formData.fechaInicio) : null;
+  let fechaFin = formData.fechaFin ? new Date(formData.fechaFin) : null;
 
   try {
-    connection = await pool.getConnection();
-
-    const fechaInicio = formData.fechaInicio ? new Date(formData.fechaInicio) : null;
-    let fechaFin = formData.fechaFin ? new Date(formData.fechaFin) : null;
-
     // Si no hay fechas, insertar un solo registro con valores NULL
     if (!fechaInicio && !fechaFin) {
-      await connection.execute(
-        'INSERT INTO formularios_faltas (formulario, id_usuario, estatus, archivo, tipo, fecha_inicio, fecha_fin, extemporanea) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          JSON.stringify(formData),
-          id,
-          estatus,
-          formData.comprobante || null,
-          tipoFormulario2,
-          null,
-          null,
-          tipo
-        ]
-      );
+      await FormulariosFaltas.create({
+        formulario: JSON.stringify(formData),
+        id_usuario: id,
+        estatus,
+        archivo: formData.comprobante || null,
+        tipo: tipoFormulario2,
+        fecha_inicio: null,
+        fecha_fin: null,
+        extemporanea: tipo,
+      });
       res.status(201).json({ message: 'Formulario guardado correctamente (sin fechas)' });
       return;
     }
@@ -55,20 +50,23 @@ export default async function handler(req, res) {
         currentEndDate = new Date(fechaFin);
       }
 
-      // Insertar en la base de datos
-      await connection.execute(
-        'INSERT INTO formularios_faltas (formulario, id_usuario, estatus, archivo, tipo, fecha_inicio, fecha_fin, extemporanea) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          JSON.stringify(formData),
-          id,
-          estatus,
-          formData.comprobante || null,
-          tipoFormulario2,
-          currentStartDate.toISOString().split('T')[0],
-          currentEndDate.toISOString().split('T')[0],
-          tipo
-        ]
-      );
+      // Convertir fechaFin a la zona horaria local
+      const fechaFinLocal = moment(currentEndDate).tz('America/Mexico_City').format();
+
+      // Convertir fechaInicio a la zona horaria local
+      const fechaInicioLocal = moment(currentStartDate).tz('America/Mexico_City').format();
+
+      // Insertar en la base de datos usando Sequelize
+      await FormulariosFaltas.create({
+        formulario: JSON.stringify(formData),
+        id_usuario: id,
+        estatus,
+        archivo: formData.comprobante || null,
+        tipo: tipoFormulario2,
+        fecha_inicio: fechaInicioLocal,
+        fecha_fin: fechaFinLocal,
+        extemporanea: tipo,
+      });
 
       // Mover la fecha de inicio al siguiente jueves
       currentStartDate = new Date(currentEndDate);
@@ -86,7 +84,5 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error guardando el formulario:', error);
     res.status(500).json({ message: 'Error en el servidor' });
-  } finally {
-    if (connection) connection.release();
   }
 }

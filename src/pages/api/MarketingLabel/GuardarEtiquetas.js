@@ -1,5 +1,5 @@
-import pool from '@/lib/db'; // Asegúrate de que db esté configurado correctamente
 import formidable from 'formidable';
+import FormulariosEtiquetas from '@/models/FormulariosEtiquetas';
 
 export const config = {
   api: {
@@ -35,23 +35,21 @@ export default async function handler(req, res) {
       });
     }
 
-    let connection;
     try {
-      // Obtener una conexión del pool
-      connection = await pool.getConnection();
+      // Usando Sequelize para guardar los datos en la base de datos
+      const formularioGuardado = await FormulariosEtiquetas.create({
+        datos_formulario: JSON.stringify(fields), // Los datos del formulario
+        pdf_path: fileUrl,         // Ruta del archivo PDF
+        eliminado: false,          // Establecer el estado de 'eliminado' como false
+        estatus: 'Pendiente',      // Establecer el estatus como 'Pendiente'
+      });
 
-      // Guardar la información en la base de datos
-      const [rows] = await connection.query(
-        'INSERT INTO etiquetas_form (datos_formulario, pdf_path, eliminado, estatus) VALUES (?, ?, ?, ?)',
-        [JSON.stringify(fields), fileUrl, false, 'Pendiente'] // Guardar los datos como JSON en la base de datos
-      );
-
-      console.log('Resultado de la base de datos:', rows);
+      console.log('Formulario guardado:', formularioGuardado);
 
       res.status(200).json({
         success: true,
         message: 'Formulario guardado correctamente.',
-        formularioGuardado: rows[0], // Retornar la fila guardada en la base de datos
+        formularioGuardado: formularioGuardado, // Retornar la fila guardada
       });
     } catch (error) {
       console.error('Error al procesar la solicitud:', error);
@@ -59,11 +57,6 @@ export default async function handler(req, res) {
         success: false,
         message: `Error al procesar la solicitud: ${error.message}`,
       });
-    } finally {
-      // Liberar la conexión
-      if (connection) {
-        connection.release();
-      }
     }
   });
 }
