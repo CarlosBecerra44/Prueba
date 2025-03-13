@@ -19,6 +19,7 @@ export default async function handler(req, res) {
     jefe_directo,
     empresa_id,
     planta,
+    plataformas,
   } = req.body;
 
   try {
@@ -43,6 +44,7 @@ export default async function handler(req, res) {
       jefe_directo: jefe_directo || null,
       empresa_id,
       planta,
+      plataformas,
     });
 
     return res.status(200).json({ success: true, message: "Usuario actualizado exitosamente" });

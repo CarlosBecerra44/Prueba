@@ -22,6 +22,26 @@ const Usuario = sequelize.define(
     empresa_id: { type: DataTypes.INTEGER, allowNull: true },
     planta: { type: DataTypes.INTEGER, allowNull: true },
     password: { type: DataTypes.STRING, allowNull: false },
+    plataformas: { 
+      type: DataTypes.TEXT, // Usamos TEXT en lugar de JSON
+      allowNull: true,
+      get() {
+        // Intentamos parsear el JSON si es posible
+        const rawValue = this.getDataValue("plataformas");
+        try {
+          return JSON.parse(rawValue);
+        } catch (error) {
+          return rawValue; // Si falla, devolvemos el valor original como texto
+        }
+      },
+      set(value) {
+        if (typeof value === "object") {
+          this.setDataValue("plataformas", JSON.stringify(value)); // Guardamos como JSON
+        } else {
+          this.setDataValue("plataformas", value); // Guardamos como texto si ya es string
+        }
+      }
+    },
     eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
   },
   {

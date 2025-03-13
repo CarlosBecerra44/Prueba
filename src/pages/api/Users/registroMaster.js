@@ -6,14 +6,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const { name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant } = req.body;
+  const { name, lastName, email, employeeNumber, position, selectedDepartamento, password, confirmPassword, role, phoneNumber, entryDate, directBoss, company, workPlant, selectedPlatforms } = req.body;
 
   const correo = email || null;
-  const rol = role || "Estándar";
+  const puesto = position || null;
   const telefono = phoneNumber || null;
-  const departamento = selectedDepartamento || null;
+  const fecha_ingreso = entryDate || null;
   const jefe_directo = directBoss || null;
-  const empresa = company || null;
+  const rol = role || "Estándar";
+  const plataformas = selectedPlatforms || null;
 
   // Validar que las contraseñas coincidan
   if (password !== confirmPassword) {
@@ -35,16 +36,17 @@ export default async function handler(req, res) {
       rol,
       nombre: name,
       numero_empleado: employeeNumber,
-      departamento_id: departamento,
+      departamento_id: selectedDepartamento,
       correo: correo,
       password: hashedPassword,
       apellidos: lastName,
-      puesto: position,
+      puesto: puesto,
       telefono: telefono,
-      fecha_ingreso: entryDate,
+      fecha_ingreso: fecha_ingreso,
       jefe_directo: jefe_directo,
-      empresa_id: empresa,
+      empresa_id: company,
       planta: workPlant,
+      plataformas: plataformas,
     });
 
     console.log({ message: 'Usuario registrado' });

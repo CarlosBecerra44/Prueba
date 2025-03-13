@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import styles from '../../../../public/CSS/spinner.css';
-import { ChevronRight, Search, UserPlus, X } from "lucide-react"
+import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react"
 import { useSession,  signOut } from "next-auth/react";
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -42,6 +42,8 @@ export function CMD() {
   const [openEdit, setOpenEdit] = useState(false);
   const { isMaster } = useUser();
   const [imagenes, setImagenes] = useState([]);
+  const [nombreProveedor, setNombreProveedor] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,6 +78,19 @@ export function CMD() {
     
     fetchProveedores();
   }, []);
+
+  const getProveedores = async () => {
+    try {
+      const response = await axios.get('/api/ProductEngineering/getProveedores');
+      if (response.data.success) {
+        setProveedores(response.data.proveedores);
+      } else {
+        console.error('Error al obtener los proveedores:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error al hacer fetch de los proveedores:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchCategoriaGeneral = async () => {
@@ -431,6 +446,45 @@ export function CMD() {
     }
   };  
 
+  const handleAgregarProveedor = async () => {
+    try {
+      const response = await axios.post("/api/ProductEngineering/agregarProveedor", {
+        nombre: nombreProveedor,
+      });
+  
+      if (response.data.success) {
+        setProveedores([...proveedores, response.data.proveedor]); // Agregar a la lista
+        getProveedores();
+        setNombreProveedor(""); // Limpiar input
+        setOpenDialog(false);
+        Swal.fire({
+          title: "Éxito",
+          text: "Proveedor agregado correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error al agregar proveedor:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo agregar el proveedor",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  };
+
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
 
@@ -585,12 +639,17 @@ export function CMD() {
                           name="proveedor"
                           value={proveedor || ""}
                           onValueChange={(value) => {
-                            const selectedProveedor = proveedores.find((p) => p.id === value);
-                            if (selectedProveedor) {
-                              setProveedor(selectedProveedor.id);
+                            if (value === "nuevo") {
+                              setNombreProveedor("");
+                              setOpenDialog(true); // Abre el modal si el usuario elige agregar proveedor
+                            } else {
+                              const selectedProveedor = proveedores.find((p) => p.id === value);
+                              if (selectedProveedor) {
+                                setProveedor(selectedProveedor.id);
+                              }
                             }
                           }}
-                          disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
+                          disabled={proveedores.length === 0}
                         >
                           <SelectTrigger className="col-span-3">
                             {proveedores.find((p) => p.id === proveedor)?.nombre || "Seleccionar proveedor"}
@@ -605,8 +664,38 @@ export function CMD() {
                             ) : (
                               <SelectItem disabled>No hay proveedores disponibles</SelectItem>
                             )}
+                            <SelectItem value="nuevo">
+                              <span className="flex items-center gap-2 text-primary">
+                                <Plus size={16} /> Agregar proveedor
+                              </span>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
+
+                        {/* Dialog para agregar proveedor */}
+                        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                          <DialogContent className=" overflow-y-auto no-scrollbar" onInteractOutside={(event) => event.preventDefault()}
+                            style={{
+                              width: "100%",
+                              maxWidth: "400px",
+                              height: "20vh",
+                              maxHeight: "35vh",
+                              padding: "30px",
+                              marginLeft: "120px",
+                          }}>
+                            <DialogHeader>
+                              <DialogTitle>Agregar nuevo proveedor</DialogTitle>
+                            </DialogHeader>
+                            <Input
+                              placeholder="Nombre del proveedor"
+                              value={nombreProveedor}
+                              onChange={(e) => setNombreProveedor(e.target.value)}
+                            />
+                            <DialogFooter>
+                              <Button onClick={handleAgregarProveedor} disabled={!nombreProveedor}>Guardar</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="categoriaGeneral">Categoría general</Label>
