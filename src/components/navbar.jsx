@@ -5,13 +5,12 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useSession,  signOut } from "next-auth/react";
-import { Weight } from "lucide-react"
+import { PackageOpen, ShoppingBasket, Weight } from "lucide-react"
 import { getSession } from 'next-auth/react';
 import styles from '../../public/CSS/spinner.css';
 import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons"
 import "../../public/CSS/navbar.css"
 import {useUser} from "@/pages/api/hooks";
-import { CMD } from "./ING PRODUCTO/Components/cmd"
 import { ShoppingBag } from "lucide-react"
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
@@ -112,8 +111,8 @@ const toggleSection = (sectionId) => {
           href: "#",
           icon: <UsuariosEmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"],
           subMenu: [
-            { id: 401, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
-            { id: 402, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
+            { id: 1, name: "Usuarios", href: "/usuario", icon: <UsuariosIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
+            { id: 2, name: "Empresas", href: "/usuario/empresas", icon: <EmpresasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminGC"] },
           ]
         },
         {
@@ -154,7 +153,27 @@ const toggleSection = (sectionId) => {
     { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
     { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master"] },
-    { id: 18, name: "CMD", href: "/configuraciones/cmd", icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { 
+      id: 18, 
+      name: "CMD", 
+      href: "#", 
+      icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, 
+      roles: ["master"],
+      subMenu: [
+        {
+          id: 1,
+          name: "CMD Productos",
+          href: "/configuraciones/cmd/productos",
+          icon: <ShoppingBasket className="h-6 w-6 text-gray-400" />, roles: ["master"]
+        },
+        {
+          id: 2,
+          name: "CMD Proveedores",
+          href: "/configuraciones/cmd/proveedores",
+          icon: <PackageOpen className="h-6 w-6 text-gray-400" />, roles: ["master"]
+        },
+      ]
+    },
   ];
 
   const filteredCategories = categories.filter((category) =>

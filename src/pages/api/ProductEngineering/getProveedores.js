@@ -8,6 +8,7 @@ export default async function handler(req, res) {
   try {
     // Obtener todos los proveedores ordenados por ID ascendente
     const proveedores = await Proveedor.findAll({
+      where: { eliminado: 0 },
       order: [['id', 'ASC']]
     });
 
