@@ -492,10 +492,7 @@ export function TablaPermisosFaltaUsuario() {
     try {
       // Subir el archivo al FTP
       const fileInput = document.getElementById("comprobante");
-      if (fileInput.files.length === 0) {
-        console.error("No se ha seleccionado un archivo");
-        return;
-      }
+      if (fileInput && fileInput.files.length > 0) {
   
       const file = fileInput.files[0];
       const reader = new FileReader();
@@ -553,6 +550,30 @@ export function TablaPermisosFaltaUsuario() {
       };
   
       reader.readAsDataURL(file); // Leer el archivo como base64
+    } else {
+      // Si no hay archivo, solo enviar el formulario
+      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+      });
+
+      if (response.ok) {
+        Swal.fire({
+          title: 'Creado',
+          text: 'Se ha creado correctamente',
+          icon: 'success',
+          timer: 3000, // La alerta desaparecerá después de 3 segundos
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href = "/papeletas_usuario";
+        });
+      } else {
+        Swal.fire("Error", "Error al crear la papeleta", "error");
+      }
+    }
     } catch (error) {
       console.error("Error en el formulario:", error);
     }
