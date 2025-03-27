@@ -447,8 +447,8 @@ export function TablaSolicitudes() {
   const eliminarProducto = (index) => {
     setFormData(prevData => ({
       ...prevData,
-      planTrabajo: {
-        otros: prevData.planTrabajo.otros.filter((_, i) => i !== index)
+      productos: {
+        otros: prevData.productos.otros.filter((_, i) => i !== index)
       }
     }))
   }
