@@ -490,30 +490,6 @@ export function TablaPermisosFaltaUsuario() {
     }
   
     try {
-      // Subir el formulario
-      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
-      });
-  
-      if (response.ok) {
-        Swal.fire({
-          title: 'Creado',
-          text: 'Se ha creado correctamente',
-          icon: 'success',
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/papeletas_usuario";
-        });
-      } else {
-        Swal.fire("Error", "Error al crear la papeleta", "error");
-        return;
-      }
-  
       // Subir el archivo al FTP
       const fileInput = document.getElementById("comprobante");
       if (fileInput.files.length === 0) {
@@ -542,6 +518,32 @@ export function TablaPermisosFaltaUsuario() {
           const ftpResult = await ftpResponse.json();
           if (ftpResponse.ok) {
             console.log("Archivo subido al FTP exitosamente", ftpResult);
+            
+            // Asignar el nombre del archivo subido a formData.comprobante
+            formData.comprobante = ftpResult.fileName;
+            
+            // Subir el formulario con el nombre del archivo
+            const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+            });
+  
+            if (response.ok) {
+              Swal.fire({
+                title: 'Creado',
+                text: 'Se ha creado correctamente',
+                icon: 'success',
+                timer: 3000, // La alerta desaparecerá después de 3 segundos
+                showConfirmButton: false,
+              }).then(() => {
+                window.location.href = "/papeletas_usuario";
+              });
+            } else {
+              Swal.fire("Error", "Error al crear la papeleta", "error");
+            }
           } else {
             console.error("Error al subir el archivo al FTP", ftpResult);
           }
@@ -554,7 +556,7 @@ export function TablaPermisosFaltaUsuario() {
     } catch (error) {
       console.error("Error en el formulario:", error);
     }
-  };  
+  };
 
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
