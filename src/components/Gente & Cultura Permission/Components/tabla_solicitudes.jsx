@@ -667,30 +667,6 @@ export function TablaSolicitudes() {
     }
   
     try {
-      // Subir el formulario
-      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
-      });
-  
-      if (response.ok) {
-        Swal.fire({
-          title: "Creado",
-          text: "Se ha creado correctamente",
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/gente_y_cultura/solicitudes";
-        });
-      } else {
-        Swal.fire("Error", "Error al crear la solicitud", "error");
-        return;
-      }
-  
       // Subir el archivo al FTP solo si hay un archivo seleccionado
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
@@ -715,20 +691,69 @@ export function TablaSolicitudes() {
             const ftpResult = await ftpResponse.json();
             if (ftpResponse.ok) {
               console.log("Archivo subido al FTP exitosamente", ftpResult);
+              
+              // Asignar el nombre del archivo subido a formData.comprobante
+              formData.comprobante = ftpResult.fileName;
             } else {
               console.error("Error al subir el archivo al FTP", ftpResult);
             }
           } catch (ftpError) {
             console.error("Error en la solicitud de FTP", ftpError);
           }
+  
+          // Subir el formulario con el nombre del archivo
+          const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+          });
+  
+          if (response.ok) {
+            Swal.fire({
+              title: "Creado",
+              text: "Se ha creado correctamente",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = "/gente_y_cultura/solicitudes";
+            });
+          } else {
+            Swal.fire("Error", "Error al crear la solicitud", "error");
+          }
         };
   
         reader.readAsDataURL(file); // Leer el archivo como base64
+      } else {
+        // Si no hay archivo, solo enviar el formulario
+        const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+        });
+  
+        if (response.ok) {
+          Swal.fire({
+            title: "Creado",
+            text: "Se ha creado correctamente",
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: false,
+          }).then(() => {
+            window.location.href = "/gente_y_cultura/solicitudes";
+          });
+        } else {
+          Swal.fire("Error", "Error al crear la solicitud", "error");
+        }
       }
     } catch (error) {
       console.error("Error en el formulario:", error);
     }
-  };  
+  };
 
   const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => {
     // Obtener la fecha actual sin horas
