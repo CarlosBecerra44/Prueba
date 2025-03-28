@@ -163,7 +163,7 @@ const toggleSection = (sectionId) => {
         {
           id: 1,
           name: "CMD Productos",
-          href: "/configuraciones/cmd/productos",
+          href: "/configuraciones/cmd/Productos",
           icon: <ShoppingBasket className="h-6 w-6 text-gray-400" />, roles: ["master"]
         },
         {
