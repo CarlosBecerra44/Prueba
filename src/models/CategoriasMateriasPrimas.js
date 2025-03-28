@@ -8,6 +8,7 @@ const CategoriaMateriaPrima = sequelize.define(
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING, allowNull: true },
     Tipo_id: { type: DataTypes.INTEGER, allowNull: true },
+    seguimiento: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "categoriamaterialesprima",
@@ -16,5 +17,6 @@ const CategoriaMateriaPrima = sequelize.define(
 );
 
 CategoriaMateriaPrima.belongsTo(TipoMateriaPrima, { foreignKey: "Tipo_id" });
+CategoriaMateriaPrima.belongsTo(TipoMateriaPrima, { foreignKey: "seguimiento" });
 
 export default CategoriaMateriaPrima;

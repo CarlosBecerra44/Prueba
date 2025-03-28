@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
 
-export function CMD() {
+export function CMDProductos() {
   const [nombre, setNombre] = useState('');
   const [proveedor, setProveedor] = useState('');
   const [categoriaGeneral, setCategoriaGeneral] = useState('');
@@ -235,7 +235,7 @@ export function CMD() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const {data: session,status}=useSession ();
-  if (status === "loading") {
+  if (status === "loading" || !isMaster) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -513,6 +513,8 @@ export function CMD() {
     formData.append('codigo', selectedProduct.codigo);
     formData.append('costo', selectedProduct.costo);
     formData.append('compraMinima', selectedProduct.cMinima);
+    formData.append('fecha_evaluacion', selectedProduct.evaluacion);
+    formData.append('veredicto', selectedProduct.veredicto);
     formData.append('descripcion', selectedProduct.descripcion);
   
     // Enviar imágenes existentes como texto (rutas de las imágenes en el servidor)
@@ -582,7 +584,7 @@ export function CMD() {
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
         <a href="/inicio" className="hover:underline">Inicio</a>
         <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/configuraciones/cmd" className="font-bold hover:underline text-primary">Administrador de productos</a>
+        <a href="/configuraciones/cmd/productos" className="font-bold hover:underline text-primary">Administrador de productos</a>
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Administrador de productos</h1>
@@ -1140,6 +1142,40 @@ export function CMD() {
                         type="number"
                         placeholder="Compra mínima"
                         />
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="fecha_evaluacion">Fecha de evaluación</Label>
+                        <Input
+                        id="fecha_evaluacion"
+                        name="fecha_evaluacion"
+                        value={selectedProduct?.evaluacion || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, evaluacion: e.target.value})}
+                        type="date"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="veredicto">Veredicto</Label>
+                        <Select
+                          id="veredicto"
+                          name="veredicto"
+                          value={selectedProduct?.veredicto ? selectedProduct.veredicto.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              veredicto: value,
+                            }));
+                          }}
+                        >
+                          <SelectTrigger id="veredicto">
+                            <SelectValue placeholder="Seleccionar veredicto" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Aceptado</SelectItem>
+                            <SelectItem value="2">No aceptado</SelectItem>
+                          </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">

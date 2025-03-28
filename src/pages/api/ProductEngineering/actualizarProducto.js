@@ -32,7 +32,8 @@ export default async function handler(req, res) {
     console.log('Archivos recibidos:', files);
     console.log('Campos recibidos:', fields); // Ahora veremos las imágenes existentes
 
-    const { id, nombre, proveedor, categoriaGeneral, subcategoria, especificacion, medicion, codigo, costo, compraMinima, descripcion } = fields;
+    const { id, nombre, proveedor, categoriaGeneral, subcategoria, especificacion, medicion, codigo, costo, 
+      compraMinima, descripcion, fecha_evaluacion, veredicto } = fields;
 
     const safeValues = {
       nombre: nombre || null,
@@ -45,6 +46,8 @@ export default async function handler(req, res) {
       cMinima: compraMinima || null,
       medicion: medicion || null,
       descripcion: descripcion || null,
+      evaluacion: fecha_evaluacion || null,
+      veredicto: veredicto || null
     };
 
     const imagenesExistentes = Object.keys(fields)

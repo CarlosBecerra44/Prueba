@@ -6,6 +6,7 @@ const Proveedor = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING, allowNull: true },
+    eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
   },
   {
     tableName: "proveedores",

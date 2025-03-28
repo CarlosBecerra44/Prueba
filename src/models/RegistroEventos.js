@@ -11,7 +11,7 @@ const RegistroEventos = sequelize.define(
     tipo: { type: DataTypes.TEXT, allowNull: false },
     descripcion: { type: DataTypes.TEXT, allowNull: false },
     id_usuario: { type: DataTypes.INTEGER, allowNull: false },
-    id_departamento: { type: DataTypes.INTEGER, allowNull: false },
+    id_departamento: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "registroeventos",
