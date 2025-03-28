@@ -49,7 +49,8 @@ export async function middleware(req) {
     hasAccessAutorizarPapeletas: rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
     hasAccessSolicitudes: rol !== "Máster" && tienePermiso("Papeletas", "Solicitudes"),
     hasAllAccessVacantes: rol === "Administrador" && departamento === 5 && tienePermiso("Gente y Cultura", "Vacantes"),
-    hasAccessVacantes: rol !== "Máster" && tienePermiso("Gente y Cultura", "Vacantes sin sueldo")
+    hasAccessVacantes: rol !== "Máster" && tienePermiso("Gente y Cultura", "Vacantes sin sueldo"),
+    hasAccessCMDProductos: rol !== "Máster" && tienePermiso("Ing. Productos", "CMD Productos")
   };
 
   // Rutas permitidas por rol
@@ -115,6 +116,12 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/gente_y_cultura/vacantes",
+    ],
+    hasAccessCMDProductos: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/ingenieria_nuevo_producto/catalogo_productos",
     ],
   };
 

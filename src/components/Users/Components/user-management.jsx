@@ -86,6 +86,11 @@ const formSections = [
     name: 'Marketing',
     changeOptions: ['Firmas']
   },
+  { 
+    id: 'Ing. Productos', 
+    name: 'Ing. Productos',
+    changeOptions: ['CMD Productos']
+  },
 ]
 
 const plataformas = {
