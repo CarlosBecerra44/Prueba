@@ -425,6 +425,33 @@ export function AutorizarPapeletas() {
       );
 
       if (response.status === 200) {
+            // Enviar notificación después de actualizar el estatus
+            try {
+              const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoAutorizarPapeletas', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      formData2: {
+                          tipo: 'Alerta de actualización de papeleta',
+                          descripcion: `<strong>${nombre + " " + apellidos}</strong> ha actualizado el estatus de la papeleta con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                          Puedes revisarla haciendo clic en este enlace: <a href="/papeletas_usuario" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`,
+                          id: idUser,
+                          dpto: null,
+                          idPapeleta: index
+                      },
+                  }),
+              });
+
+              if (!enviarNotificacion.ok) {
+                  console.error("Error al enviar la notificación");
+                  Swal.fire("Error", "Error al enviar la notificación", "error");
+              }
+          } catch (notiError) {
+              console.error("Error en la solicitud de notificación:", notiError);
+              Swal.fire("Error", "Error en la notificación", "error");
+          }
           fetchEventos();
           Swal.fire({
             title: 'Actualizado',

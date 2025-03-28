@@ -111,6 +111,7 @@ export function UserManagementTable() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [users, setUsers] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -302,7 +303,7 @@ export function UserManagementTable() {
     }
   
     const filtered = users.filter(
-      (usuario) => usuario.departamento_id.toString() === selectedDepartamento
+      (usuario) => usuario.departamento_id === selectedDepartamento || usuario.departamento_id === 17
     );
   
     console.log("Usuarios filtrados antes de actualizar el estado:", filtered);
@@ -311,11 +312,29 @@ export function UserManagementTable() {
 
   useEffect(() => {
     if (selectedUser?.departamento_id) {
-      setFilteredUsers(users.filter(user => user.departamento_id.toString() === selectedUser.departamento_id.toString()));
+      setFilteredUsers(users.filter(user => user.departamento_id.toString() === selectedUser.departamento_id.toString() 
+      || user.departamento_id === 17));
     } else {
       setFilteredUsers([]);
     }
   }, [selectedUser?.departamento_id, users]);
+
+  useEffect(() => {
+    const fetchDepartamentos = async () => {
+      try {
+        const response = await axios.get('/api/Users/getDepartamentos');
+        if (response.data.success) {
+          setDepartamentos(response.data.departments);
+        } else {
+          console.error('Error al obtener los departamentos:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error al hacer fetch de los departamentos:', error);
+      }
+    }
+
+    fetchDepartamentos();
+  }, []);
   const fetchEmployeeNumber = async () => {
     try {
       const response = await axios.get('/api/Users/obtenerNumeroEmpleado');
@@ -835,31 +854,29 @@ export function UserManagementTable() {
                     Departamento*
                   </Label>
                   <Select
-                    value={selectedDepartamento}
+                    value={selectedDepartamento || ""}
                     onValueChange={(value) => {
-                      setSelectedDepartamento(value); // Actualizar departamento seleccionado
-                      setDirectBoss(""); // Reiniciar el jefe directo
+                      const selectedDepartamento = departamentos.find((d) => d.id === value);
+                      if (selectedDepartamento) {
+                        setSelectedDepartamento(selectedDepartamento.id);
+                        setDirectBoss("");
+                      }
                     }}
+                    disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
                   >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione el departamento" />
+                    <SelectTrigger>
+                      {departamentos.find((d) => d.id === selectedDepartamento)?.nombre || "Seleccione el departamento"}
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">IT</SelectItem>
-                      <SelectItem value="2">Marketing</SelectItem>
-                      <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
-                      <SelectItem value="4">Contabilidad</SelectItem>
-                      <SelectItem value="5">Gente y Cultura</SelectItem>
-                      <SelectItem value="7">Calidad</SelectItem>
-                      <SelectItem value="8">Planeación</SelectItem>
-                      <SelectItem value="9">Laboratorio</SelectItem>
-                      <SelectItem value="10">Maquilas</SelectItem>
-                      <SelectItem value="11">Operaciones</SelectItem>
-                      <SelectItem value="12">Auditorías</SelectItem>
-                      <SelectItem value="13">Ventas</SelectItem>
-                      <SelectItem value="14">Almacén</SelectItem>
-                      <SelectItem value="15">Producción</SelectItem>
-                      <SelectItem value="16">Compras</SelectItem>
+                      {departamentos.length > 0 ? (
+                        departamentos.map((dep) => (
+                          <SelectItem key={dep.id} value={dep.id}>
+                            {dep.nombre}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled>No hay departamentos disponibles</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1094,7 +1111,7 @@ export function UserManagementTable() {
                   Departamento
                 </Label>
                 <Select
-                  value={selectedUser?.departamento_id.toString() || ''}
+                  value={selectedUser?.departamento_id?.toString() || ''}
                   onValueChange={(value) => {
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
@@ -1102,26 +1119,21 @@ export function UserManagementTable() {
                       jefe_directo: "", // Reiniciar el jefe directo
                     }));
                   }}
+                  disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
                 >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccione el departamento" />
+                  <SelectTrigger>
+                    {departamentos.find((d) => d.id === selectedUser?.departamento_id)?.nombre || "Seleccione el departamento"}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">IT</SelectItem>
-                    <SelectItem value="2">Marketing</SelectItem>
-                    <SelectItem value="3">Ingeniería Nuevo Producto</SelectItem>
-                    <SelectItem value="4">Contabilidad</SelectItem>
-                    <SelectItem value="5">Gente y Cultura</SelectItem>
-                    <SelectItem value="7">Calidad</SelectItem>
-                    <SelectItem value="8">Planeación</SelectItem>
-                    <SelectItem value="9">Laboratorio</SelectItem>
-                    <SelectItem value="10">Maquilas</SelectItem>
-                    <SelectItem value="11">Operaciones</SelectItem>
-                    <SelectItem value="12">Auditorías</SelectItem>
-                    <SelectItem value="13">Ventas</SelectItem>
-                    <SelectItem value="14">Almacén</SelectItem>
-                    <SelectItem value="15">Producción</SelectItem>
-                    <SelectItem value="16">Compras</SelectItem>
+                    {departamentos.length > 0 ? (
+                      departamentos.map((dep) => (
+                        <SelectItem key={dep.id} value={dep.id}>
+                          {dep.nombre}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled>No hay departamentos disponibles</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       jefe_directo: evento["Usuario.jefe_directo"] || null,
       id_papeleta: evento.id,
       nombre_departamento: evento["Usuario.Departamento.nombre_departamento"] || null,
-      datos_formulario: evento.formulario ? JSON.parse(evento.formulario) : null, // Convertimos a objeto si es JSON
+      datos_formulario: typeof evento.formulario === "string" ? JSON.parse(evento.formulario) : evento.formulario, // Convertimos a objeto si es JSON
     }));
 
     // Enviamos la respuesta

@@ -447,8 +447,8 @@ export function TablaSolicitudes() {
   const eliminarProducto = (index) => {
     setFormData(prevData => ({
       ...prevData,
-      planTrabajo: {
-        otros: prevData.planTrabajo.otros.filter((_, i) => i !== index)
+      productos: {
+        otros: prevData.productos.otros.filter((_, i) => i !== index)
       }
     }))
   }
@@ -667,30 +667,6 @@ export function TablaSolicitudes() {
     }
   
     try {
-      // Subir el formulario
-      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
-      });
-  
-      if (response.ok) {
-        Swal.fire({
-          title: "Creado",
-          text: "Se ha creado correctamente",
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/gente_y_cultura/solicitudes";
-        });
-      } else {
-        Swal.fire("Error", "Error al crear la solicitud", "error");
-        return;
-      }
-  
       // Subir el archivo al FTP solo si hay un archivo seleccionado
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
@@ -715,20 +691,89 @@ export function TablaSolicitudes() {
             const ftpResult = await ftpResponse.json();
             if (ftpResponse.ok) {
               console.log("Archivo subido al FTP exitosamente", ftpResult);
+              
+              // Asignar el nombre del archivo subido a formData.comprobante
+              formData.comprobante = ftpResult.fileName;
             } else {
               console.error("Error al subir el archivo al FTP", ftpResult);
+              Swal.fire("Error", "Error al subir el archivo", "error");
+              return;
             }
           } catch (ftpError) {
             console.error("Error en la solicitud de FTP", ftpError);
+            Swal.fire("Error", "Error en la subida del archivo", "error");
+            return;
           }
+
+          // Después de subir el archivo, enviar el formulario
+          await enviarFormulario();
         };
   
         reader.readAsDataURL(file); // Leer el archivo como base64
+      } else {
+        // Si no hay archivo, solo enviar el formulario
+        await enviarFormulario();
       }
     } catch (error) {
       console.error("Error en el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
     }
-  };  
+  };
+
+  const enviarFormulario = async () => {
+    try {
+      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+      });
+  
+      if (response.ok) {
+        try {
+          const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoSolicitudes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              formData2: {
+                tipo: 'Alerta de nueva solicitud',
+                descripcion: `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
+                Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`,
+                id: idUser,
+                dpto: null,
+              },
+            }),
+          });
+  
+          if (enviarNotificacion.ok) {
+            Swal.fire({
+              title: 'Creado',
+              text: 'Se ha creado correctamente',
+              icon: 'success',
+              timer: 3000,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = "/gente_y_cultura/solicitudes";
+            });
+          } else {
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
+          }
+        } catch (error) {
+          console.error("Error en la solicitud de notificación:", error);
+          Swal.fire("Error", "Error en la notificación", "error");
+        }
+      } else {
+        Swal.fire("Error", "Error al crear la solicitud", "error");
+      }
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
+    }
+  };
 
   const renderDatePicker = (label, date, handleChange, name, readOnly = false, removeSpacing = false) => {
     // Obtener la fecha actual sin horas
