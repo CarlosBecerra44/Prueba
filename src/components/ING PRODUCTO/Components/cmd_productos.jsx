@@ -384,7 +384,8 @@ export function CMDProductos() {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Mostrar el indicador de carga mientras se procesa la solicitud
     Swal.fire({
       title: 'Cargando...',
       text: 'Estamos procesando tu solicitud',
@@ -394,9 +395,12 @@ export function CMDProductos() {
         Swal.showLoading(); // Muestra el indicador de carga (spinner)
       }
     });
-
+  
     try {
+      // Crear un objeto FormData para enviar los datos
       const formData = new FormData();
+      
+      // Agregar los campos al FormData
       formData.append("nombre", nombre);
       formData.append("proveedor", proveedor);
       formData.append("categoriaGeneral", categoriaGeneral);
@@ -407,14 +411,31 @@ export function CMDProductos() {
       formData.append("costo", costo);
       formData.append("compraMinima", compraMinima);
       formData.append("descripcion", descripcion);
+      
+      // Agregar las imágenes al FormData
       imagenes.forEach((img) => formData.append("imagenes", img));
-
-      const res = await axios.post("/api/ProductEngineering/guardarProductos", formData);
-
+  
+      // Hacer la solicitud POST utilizando fetch
+      const res = await fetch("/api/ProductEngineering/guardarProductos", {
+        method: "POST",
+        body: formData,  // Pasar el FormData como cuerpo de la solicitud
+      });
+  
+      const data = await res.json();
+  
+      // Cerrar el indicador de carga
       Swal.close();
-
-      if (res.data.success) {
-        setOpen(false);
+  
+      // Si la respuesta no es exitosa, mostrar el error
+      if (!res.ok) {
+        setError(data.message);
+        Swal.fire("Error", data.message, "error");
+        return;
+      }
+  
+      // Si la respuesta es exitosa, hacer las acciones necesarias
+      if (res.ok) {
+        setOpen(false);  // Cerrar el formulario o modal
         fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
           title: "Creado",
@@ -423,8 +444,6 @@ export function CMDProductos() {
           timer: 3000,
           showConfirmButton: false,
         });
-      } else {
-        Swal.fire("Error", "Error al crear el producto", "error");
       }
     } catch (err) {
       console.error("Error en el registro:", err);
@@ -432,7 +451,7 @@ export function CMDProductos() {
       Swal.close();
       Swal.fire("Error", "Hubo un problema con el registro", "error");
     }
-};
+  };  
 
   const handleAgregarProveedor = async () => {
     try {
