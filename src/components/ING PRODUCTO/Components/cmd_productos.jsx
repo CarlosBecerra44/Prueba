@@ -487,73 +487,79 @@ export function CMDProductos() {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-  
+
     Swal.fire({
       title: 'Cargando...',
       text: 'Estamos procesando tu solicitud',
       showConfirmButton: false,
-      allowOutsideClick: false, 
+      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
       willOpen: () => {
-        Swal.showLoading();
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
       }
     });
   
+    const formData = new FormData();
+  
+    // Agregar los datos del producto
+    formData.append('id', selectedProduct.id);
+    formData.append('nombre', selectedProduct.nombre);
+    formData.append('proveedor', selectedProduct.proveedor_id);
+    formData.append('categoriaGeneral', selectedProduct.Tipo_id);
+    formData.append('subcategoria', selectedProduct.Categoria_id);
+    if (selectedProduct.Subcategoria_id) {
+      formData.append('especificacion', selectedProduct.Subcategoria_id);
+    }
+    formData.append('medicion', selectedProduct.medicion);
+    formData.append('codigo', selectedProduct.codigo);
+    formData.append('costo', selectedProduct.costo);
+    formData.append('compraMinima', selectedProduct.cMinima);
+    formData.append('fecha_evaluacion', selectedProduct.evaluacion);
+    formData.append('veredicto', selectedProduct.veredicto);
+    formData.append('descripcion', selectedProduct.descripcion);
+  
+    // Enviar imágenes existentes como texto (rutas de las imágenes en el servidor)
+    if (selectedProduct.imagenes && selectedProduct.imagenes.length > 0) {
+      selectedProduct.imagenes.forEach((image, index) => {
+        if (typeof image === 'string') {
+          formData.append(`imagenesExistentes[${index}]`, image); // Se envía como texto (ruta)
+        } else if (image instanceof File) {
+          formData.append('imagenes', image); // Se envía como archivo
+        }
+      });
+    }
+  
     try {
-      const formData = new FormData();
-  
-      // Agregar los datos del producto
-      formData.append('id', selectedProduct.id);
-      formData.append('nombre', selectedProduct.nombre);
-      formData.append('proveedor', selectedProduct.proveedor_id);
-      formData.append('categoriaGeneral', selectedProduct.Tipo_id);
-      formData.append('subcategoria', selectedProduct.Categoria_id);
-      if (selectedProduct.Subcategoria_id) {
-        formData.append('especificacion', selectedProduct.Subcategoria_id);
-      }
-      formData.append('medicion', selectedProduct.medicion);
-      formData.append('codigo', selectedProduct.codigo);
-      formData.append('costo', selectedProduct.costo);
-      formData.append('compraMinima', selectedProduct.cMinima);
-      formData.append('fecha_evaluacion', selectedProduct.evaluacion);
-      formData.append('veredicto', selectedProduct.veredicto);
-      formData.append('descripcion', selectedProduct.descripcion);
-  
-      // Agregar imágenes existentes (rutas) y nuevas imágenes
-      if (selectedProduct.imagenes && selectedProduct.imagenes.length > 0) {
-        selectedProduct.imagenes.forEach((image, index) => {
-          if (typeof image === 'string') {
-            formData.append(`imagenesExistentes[${index}]`, image); // Se envía la ruta
-          } else if (image instanceof File) {
-            formData.append('imagenes', image); // Se envía como archivo
-          }
-        });
-      }
-  
-      // Petición con Axios
-      const res = await axios.post('/api/ProductEngineering/actualizarProducto', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await fetch('/api/ProductEngineering/actualizarProducto', {
+        method: 'POST',
+        body: formData,
       });
   
+      const data = await res.json();
+
       Swal.close();
   
-      if (res.status !== 200) {
-        throw new Error(res.data.message || 'Hubo un problema al actualizar el producto');
+      if (!res.ok) {
+        setError(data.message || 'Hubo un problema al actualizar el producto');
+        Swal.fire("Error", data.message, "error");
+        return;
       }
   
-      setOpenEdit(false);
-      fetchProductsUpdate();
-  
-      Swal.fire({
-        title: 'Actualizado',
-        text: 'Los datos del producto se han actualizado correctamente',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false,
-      });
-  
+      if (res.ok) {
+        setOpenEdit(false);
+        fetchProductsUpdate();
+        Swal.fire({
+          title: 'Actualizado',
+          text: 'Los datos del producto se han actualizado correctamente',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire("Error", "Error al actualizar el producto", "error");
+      }
     } catch (err) {
       console.error('Error en la actualización:', err);
-      setError(err.response?.data?.message || 'Hubo un problema con la actualización. Por favor, intenta nuevamente.');
+      setError('Hubo un problema con la actualización. Por favor, intenta nuevamente.');
       Swal.close();
       Swal.fire("Error", "Hubo un problema con la actualización", "error");
     }
