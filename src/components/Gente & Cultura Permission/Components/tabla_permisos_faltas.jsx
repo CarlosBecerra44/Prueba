@@ -49,6 +49,9 @@ import HelpIcon from '@mui/icons-material/Help'; // Ícono de signo de interroga
 const MySwal = withReactContent(Swal);
 
 export function TablaPermisosFalta() {
+  const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
+  const [idUser, setID] = useState('');
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [eventos, setEventos] = useState([])
@@ -102,6 +105,30 @@ export function TablaPermisosFalta() {
     "Estatus",
     "Acción"
   ]
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch('/api/Users/getUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setNombre(userData.user.nombre);
+          setApellidos(userData.user.apellidos);
+          setID(userData.user.id);
+        } else {
+          alert('Error al obtener los datos del usuario');
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -185,57 +212,120 @@ export function TablaPermisosFalta() {
     setModalDataStatus({ id: null, estatus: "", tipo: "" });
   };
 
-  const handleChangeStatus = async (index, nuevoEstatus, comentarios) => {
+  const handleChangeStatus = async (index, nuevoEstatus, comentarios, tipo = null) => {
+    const solicitudesTipos = ["Horas extras", "Bonos / Comisiones", "Aumento sueldo", "Faltas", "Suspensión o castigo"];
+    const papeletasTipos = ["Llegada tarde / Salida antes", "Tiempo por tiempo", "Permiso", "Home Office", "Vacaciones"];
+
+    // Determinar el tipo a utilizar
+    const tipoSeleccionado = tipo || modalDataStatus.tipo || tipoFormulario2;
+
+    console.log("Tipo de formulario:", tipoSeleccionado);
+
     if (!index || !nuevoEstatus) {
-      
-      console.error("Error: Falta un valor en handleChangeStatus", { index, nuevoEstatus, comentarios });
-      Swal.fire({
-        title: 'Error',
-        text: 'Faltan valores para actualizar el estatus',
-        icon: 'error',
-        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-        showConfirmButton: false,
-      });
-      return;
+        console.error("Error: Falta un valor en handleChangeStatus", { index, nuevoEstatus, comentarios });
+        Swal.fire({
+            title: 'Error',
+            text: 'Faltan valores para actualizar el estatus',
+            icon: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+        });
+        return;
     }
 
     try {
-      const response = await axios.post(
-          `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
-          { id: index, estatus: nuevoEstatus, comentarios: comentarios || null } // Asegura que no sea undefined
-      );
+        const response = await axios.post(
+            `/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
+            { id: index, estatus: nuevoEstatus, comentarios: comentarios || null } // Asegura que no sea undefined
+        );
 
-      if (response.status === 200) {
-          {verPeticiones === "Todas las solicitudes" ? (verTSolicitudes()) : verPeticiones === "Todas las papeletas" ? (verTPapeletas()) 
-            : verPeticiones === "Papeletas extemporaneas" ? (verPSExtemporaneas()) : (fetchEventos())}
-          Swal.fire({
-            title: 'Actualizado',
-            text: 'El estatus de la papeleta ha sido actualizado correctamente',
-            icon: 'success',
-            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-            showConfirmButton: false,
-          });
-          setComentarios("");
-          handleCloseModalStatus();
-          closeModalEdit();
-      } else {
-          Swal.fire({
-            title: 'Error',
-            text: 'Error al actualizar el estatus de la papeleta',
-            icon: 'error',
-            timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-            showConfirmButton: false,
-          });
-      }
+        if (response.status === 200) {
+            // Enviar notificación después de actualizar el estatus
+            if (tipoSeleccionado) {
+                // Determinar el tipo de notificación
+                const esPapeleta = papeletasTipos.some(tipo => tipoSeleccionado.startsWith(tipo));
+                const esSolicitud = solicitudesTipos.some(tipo => tipoSeleccionado.startsWith(tipo));
+
+                const tipoNotificacion = esSolicitud
+                    ? "Alerta de actualización de solicitud"
+                    : "Alerta de actualización de papeleta";
+
+                const mensaje = esSolicitud
+                    ? `<strong>${nombre} ${apellidos}</strong> ha actualizado el estatus de la solicitud con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                       Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/solicitudes" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`
+                    : `<strong>${nombre} ${apellidos}</strong> ha actualizado el estatus de la papeleta con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                       Puedes revisarla haciendo clic en este enlace: <a href="/papeletas_usuario" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+
+                console.log("Notificación:", tipoNotificacion, mensaje);
+
+                // Enviar la notificación
+                try {
+                    const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoAutorizarPapeletas', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            formData2: {
+                                tipo: tipoNotificacion,
+                                descripcion: mensaje,
+                                id: idUser,
+                                dpto: null,
+                                idPapeleta: index
+                            },
+                        }),
+                    });
+
+                    if (!enviarNotificacion.ok) {
+                        console.error("Error al enviar la notificación");
+                        Swal.fire("Error", "Error al enviar la notificación", "error");
+                    }
+                } catch (notiError) {
+                    console.error("Error en la solicitud de notificación:", notiError);
+                    Swal.fire("Error", "Error en la notificación", "error");
+                }
+            }
+
+            // Actualizar la vista después de cambiar el estado
+            if (verPeticiones === "Todas las solicitudes") {
+                verTSolicitudes();
+            } else if (verPeticiones === "Todas las papeletas") {
+                verTPapeletas();
+            } else if (verPeticiones === "Papeletas extemporaneas") {
+                verPSExtemporaneas();
+            } else {
+                fetchEventos();
+            }
+
+            Swal.fire({
+                title: 'Actualizado',
+                text: 'El estatus de la papeleta ha sido actualizado correctamente',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false,
+            });
+
+            setComentarios("");
+            handleCloseModalStatus();
+            closeModalEdit();
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error al actualizar el estatus de la papeleta',
+                icon: 'error',
+                timer: 3000,
+                showConfirmButton: false,
+            });
+        }
     } catch (error) {
-      console.error('Error al actualizar el estatus de la papeleta:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Ocurrió un error al intentar actualizar el estatus de la papeleta',
-        icon: 'error',
-        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-        showConfirmButton: false,
-      });
+        console.error('Error al actualizar el estatus de la papeleta:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'Ocurrió un error al intentar actualizar el estatus de la papeleta',
+            icon: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+        });
     }
 };
 
@@ -952,7 +1042,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1026,7 +1116,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1160,7 +1250,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1320,7 +1410,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1526,7 +1616,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1634,7 +1724,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, 'Suspensión o castigo');
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, 'Suspensión o castigo');
                     }
                   }}
                 >
@@ -1689,6 +1779,56 @@ export function TablaPermisosFalta() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Firma</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
+                  ) : (
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null,
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2" style={{
                 color: (() => {
                   if (estatusFormulario.startsWith("Autorizada por RH")) return "green";
@@ -1708,7 +1848,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -1997,7 +2137,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -2329,7 +2469,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -2487,7 +2627,7 @@ export function TablaPermisosFalta() {
                     if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                       handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
-                      handleChangeStatus(idFormulario, value);
+                      handleChangeStatus(idFormulario, value, null, tipoFormulario2);
                     }
                   }}
                 >
@@ -2619,7 +2759,7 @@ export function TablaPermisosFalta() {
                           if (value.startsWith("Autorizada por RH") || value.startsWith("No autorizada")) {
                             handleOpenModalStatus(evento.id_papeleta, value, evento.tipo);
                           } else {
-                            handleChangeStatus(evento.id_papeleta, value);
+                            handleChangeStatus(evento.id_papeleta, value, null, evento.tipo);
                           }
                         }}
                       >

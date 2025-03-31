@@ -122,6 +122,9 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/ingenieria_nuevo_producto/catalogo_productos",
+      "/ingenieria_nuevo_producto",
+      "/configuraciones/cmd/Productos",
+      "/configuraciones/cmd/proveedores",
     ],
   };
 

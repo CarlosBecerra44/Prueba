@@ -1353,7 +1353,11 @@ export function UserManagementTable() {
         </TableBody>
       </Table>
       <Dialog open={isFormSectionsDialogOpen} onOpenChange={setIsFormSectionsDialogOpen}>
-    <DialogContent>
+    <DialogContent className="overflow-y-auto no-scrollbar" style={{
+      width: "30%", // Ajusta el ancho
+      maxWidth: "900px", // Límite del ancho
+      maxHeight: "82vh", // Límite de la altura
+    }}>
       <DialogHeader>
         <DialogTitle>{selectedPermission}</DialogTitle>
         <DialogDescription>Elige la sección del formulario para editar.</DialogDescription>
@@ -1395,7 +1399,11 @@ export function UserManagementTable() {
   </Dialog>
 
   <Dialog open={isChangeOptionsDialogOpen} onOpenChange={setIsChangeOptionsDialogOpen}>
-    <DialogContent>
+    <DialogContent className="overflow-y-auto no-scrollbar" style={{
+      width: "32%", // Ajusta el ancho
+      maxWidth: "900px", // Límite del ancho
+      maxHeight: "95vh", // Límite de la altura
+    }}>
       <DialogHeader>
         <DialogTitle>Selecciona las opciones</DialogTitle>
         <DialogDescription>Estas opciones estarán disponibles para editar.</DialogDescription>
