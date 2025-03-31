@@ -397,17 +397,6 @@ export function CMDProductos() {
     });
 
     try {
-      // Convertir las imágenes a Base64 o enviar solo sus nombres/rutas
-      const imagenesBase64 = await Promise.all(
-        imagenes.map(async (img) => {
-          const reader = new FileReader();
-          return new Promise((resolve) => {
-            reader.readAsDataURL(img);
-            reader.onloadend = () => resolve(reader.result); // Convertir a Base64
-          });
-        })
-      );
-
       // Crear el objeto con los datos en formato JSON
       const productoData = {
         nombre,
@@ -420,7 +409,6 @@ export function CMDProductos() {
         costo,
         compraMinima,
         descripcion,
-        imagenes: imagenesBase64, // Enviamos las imágenes en Base64 o URLs
       };
 
       // Enviar la solicitud con Axios
