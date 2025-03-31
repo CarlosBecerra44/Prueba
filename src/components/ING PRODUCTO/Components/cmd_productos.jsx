@@ -409,7 +409,7 @@ export function CMDProductos() {
       formData.append("descripcion", descripcion);
       imagenes.forEach((img) => formData.append("imagenes", img));
 
-      const res = await axios.post("/api/ProductEngineering/guardarProductos", formData);
+      const res = await axios.post("https://aionnet.vercel.app/api/ProductEngineering/guardarProductos", formData);
 
       Swal.close();
 
