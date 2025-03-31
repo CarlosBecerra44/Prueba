@@ -389,15 +389,14 @@ export function CMDProductos() {
       title: 'Cargando...',
       text: 'Estamos procesando tu solicitud',
       showConfirmButton: false,
-      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
+      allowOutsideClick: false,
       willOpen: () => {
         Swal.showLoading(); // Muestra el indicador de carga (spinner)
       }
     });
-  
+
     try {
       const formData = new FormData();
-
       formData.append("nombre", nombre);
       formData.append("proveedor", proveedor);
       formData.append("categoriaGeneral", categoriaGeneral);
@@ -409,23 +408,16 @@ export function CMDProductos() {
       formData.append("compraMinima", compraMinima);
       formData.append("descripcion", descripcion);
       imagenes.forEach((img) => formData.append("imagenes", img));
-  
-      const res = await fetch("/api/ProductEngineering/guardarProductos", {
-        method: "POST",
-        body: formData,
+
+      const res = await axios.post("/api/ProductEngineering/guardarProductos", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-  
-      const data = await res.json();
 
       Swal.close();
-  
-      if (!res.ok) {
-        setError(data.message);
-        Swal.fire("Error", data.message, "error");
-        return;
-      }
-  
-      if (res.ok) {
+
+      if (res.status === 201) {
         setOpen(false);
         fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
@@ -444,7 +436,7 @@ export function CMDProductos() {
       Swal.close();
       Swal.fire("Error", "Hubo un problema con el registro", "error");
     }
-  };  
+};
 
   const handleAgregarProveedor = async () => {
     try {
