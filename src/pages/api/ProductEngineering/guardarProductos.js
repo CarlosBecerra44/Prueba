@@ -7,12 +7,14 @@ import ImagenProducto from "@/models/ImagenesProductos";
 
 export const config = {
   api: {
-    bodyParser: false,
+    
   },
 };
 
 export default async function handler(req, res) {
-  
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Método no permitido" });
+  }
 
   const form = new formidable.IncomingForm({
     multiples: true,
@@ -76,7 +78,7 @@ export default async function handler(req, res) {
 
       await ImagenProducto.bulkCreate(uploadedImages);
 
-      res.status(201).json({ success: true, message: "Producto e imágenes guardadas correctamente" });
+      res.status(200).json({ success: true, message: "Producto e imágenes guardadas correctamente" });
     } catch (error) {
       console.error("Error registrando el producto:", error);
       res.status(500).json({ message: "Error en el servidor" });

@@ -413,7 +413,7 @@ export function CMDProductos() {
 
       Swal.close();
 
-      if (res.status === 201) {
+      if (res.status === 200) {
         setOpen(false);
         fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
