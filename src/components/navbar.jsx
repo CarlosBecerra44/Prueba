@@ -23,7 +23,8 @@ export function Navbarv1() {
   const [openMenus, setOpenMenus] = useState([]);
   const [openSections, setOpenSections] = useState({});
   const { user, isLoading, isMaster, isAdminMkt, isAdminGC, isITMember, isStandardMkt, isStandard, 
-    hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes, isDadoDeBaja } = useUser();
+    hasAccessPapeletas, hasAccessAutorizarPapeletas, hasAccessSolicitudes, hasAllAccessVacantes, hasAccessVacantes, isDadoDeBaja,
+    hasAccessCMDProductos } = useUser();
 // Función para abrir/cerrar secciones principales y submenús
 const toggleSection = (sectionId) => {
   setOpenSections((prev) => ({
@@ -79,7 +80,7 @@ const toggleSection = (sectionId) => {
     { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
     { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
     { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt"]},
+    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","hasAccessPapeletas","hasAccessAutorizarPapeletas","hasAccessSolicitudes","hasAllAccessVacantes","hasAccessVacantes","hasAccessCMDProductos"]},
     {
       id: 7,
       name: "Gente & Cultura",
@@ -131,19 +132,19 @@ const toggleSection = (sectionId) => {
       name: "Ingeniería de nuevo producto", 
       href: "#", icon: <IngenieriaNuevoPIcon 
       className="h-6 w-6 text-gray-400" />, 
-      roles: ["master"],
+      roles: ["master","hasAccessCMDProductos"],
       subMenu: [
         {
           id: 1,
           name: "Catálogo de productos",
           href: "/ingenieria_nuevo_producto",
-          icon: <ShoppingBag style={{width: "32px", height: "32px"}} className="h-6 w-6 text-gray-400" />, roles: ["master"]
+          icon: <ShoppingBag style={{width: "32px", height: "32px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessCMDProductos"]
         },
         {
           id: 2,
           name: "CMD",
           href: "/ingenieria_nuevo_producto/catalogo_productos",
-          icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, roles: ["master"]
+          icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessCMDProductos"]
         },
       ]
     },
@@ -152,25 +153,25 @@ const toggleSection = (sectionId) => {
     { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
     { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master"] },
+    { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master","hasAccessCMDProductos"] },
     { 
       id: 18, 
       name: "CMD", 
       href: "#", 
       icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, 
-      roles: ["master"],
+      roles: ["master","hasAccessCMDProductos"],
       subMenu: [
         {
           id: 1,
           name: "CMD Productos",
-          href: "/configuraciones/cmd/productos",
-          icon: <ShoppingBasket className="h-6 w-6 text-gray-400" />, roles: ["master"]
+          href: "/configuraciones/cmd/Productos",
+          icon: <ShoppingBasket className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessCMDProductos"]
         },
         {
           id: 2,
           name: "CMD Proveedores",
           href: "/configuraciones/cmd/proveedores",
-          icon: <PackageOpen className="h-6 w-6 text-gray-400" />, roles: ["master"]
+          icon: <PackageOpen className="h-6 w-6 text-gray-400" />, roles: ["master","hasAccessCMDProductos"]
         },
       ]
     },
@@ -194,6 +195,7 @@ const toggleSection = (sectionId) => {
     if (hasAccessSolicitudes && category.includes("hasAccessSolicitudes")) return true;
     if (hasAllAccessVacantes && category.includes("hasAllAccessVacantes")) return true;
     if (hasAccessVacantes && category.includes("hasAccessVacantes")) return true;
+    if (hasAccessCMDProductos && category.includes("hasAccessCMDProductos")) return true;
 
     return false;
   };

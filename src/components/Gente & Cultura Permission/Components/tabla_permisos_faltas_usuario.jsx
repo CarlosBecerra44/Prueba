@@ -256,6 +256,7 @@ export function TablaPermisosFaltaUsuario() {
   };
 
   const encabezados = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -544,6 +545,10 @@ export function TablaPermisosFaltaUsuario() {
   };
   
   const enviarFormulario = async () => {
+    const mensaje1 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva papeleta de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/autorizar_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+    const mensaje2 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva papeleta extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/autorizar_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
     try {
       const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
         method: "POST",
@@ -554,6 +559,7 @@ export function TablaPermisosFaltaUsuario() {
       });
   
       if (response.ok) {
+        const mensaje = formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
         try {
           const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoPapeletas', {
             method: 'POST',
@@ -563,8 +569,7 @@ export function TablaPermisosFaltaUsuario() {
             body: JSON.stringify({
               formData2: {
                 tipo: 'Alerta de nueva papeleta',
-                descripcion: `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva papeleta de tipo: <strong>${tipoFormulario2}</strong>.<br>
-                Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/autorizar_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`,
+                descripcion: mensaje,
                 id: idUser,
                 dpto: null,
                 jefe_directo: jefe_directo
@@ -1423,9 +1428,44 @@ export function TablaPermisosFaltaUsuario() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
+              <div className="space-y-2">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Firma</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                <input
+                    id="comprobante"
+                    name="comprobante"  // Asegúrate que sea "comprobante"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    required
+                    className="hidden"
+                  />
+                  <Button2
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("comprobante").click()}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Subir archivo (PDF, JPG, PNG) Max: 4MB
+                  </Button2>
+                  {formData.comprobante && (
+                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                  )}
+                </div>
+              </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -2032,6 +2072,56 @@ export function TablaPermisosFaltaUsuario() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Firma</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
+                  ) : (
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null,
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </form>
         </Card>
@@ -2107,6 +2197,7 @@ export function TablaPermisosFaltaUsuario() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
+                  <TableCell>{evento.id_papeleta || 'Sin ID de papeleta especificado'}</TableCell>
                   <TableCell>{evento.tipo === "Suspension" ? "Suspensión" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre de empleado especificado'}</TableCell>
@@ -2171,7 +2262,7 @@ export function TablaPermisosFaltaUsuario() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={12} className="text-center">
                   No se encontraron papeletas
                 </TableCell>
               </TableRow>

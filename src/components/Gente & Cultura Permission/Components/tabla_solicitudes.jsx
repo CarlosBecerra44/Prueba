@@ -362,6 +362,7 @@ export function TablaSolicitudes() {
   };
 
   const encabezadosSolicitudes = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -721,6 +722,10 @@ export function TablaSolicitudes() {
   };
 
   const enviarFormulario = async () => {
+    const mensaje1 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
+    const mensaje2 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
     try {
       const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
         method: "POST",
@@ -731,6 +736,7 @@ export function TablaSolicitudes() {
       });
   
       if (response.ok) {
+        const mensaje = formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
         try {
           const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoSolicitudes', {
             method: 'POST',
@@ -740,8 +746,7 @@ export function TablaSolicitudes() {
             body: JSON.stringify({
               formData2: {
                 tipo: 'Alerta de nueva solicitud',
-                descripcion: `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
-                Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`,
+                descripcion: mensaje,
                 id: idUser,
                 dpto: null,
               },
@@ -1855,7 +1860,7 @@ export function TablaSolicitudes() {
                       setFormData({
                         ...formData,
                         nombreColaborador: selectedUser.id,
-                        puestoColaborador: selectedUser.puesto,
+                        puestoColaborador: selectedUser.puesto || '',
                       });
                     }
                   }}
@@ -1884,10 +1889,10 @@ export function TablaSolicitudes() {
                 <Input
                   id="puestoColaborador"
                   name="puestoColaborador"
+                  onChange={handleChange}
                   type="text"
                   value={formData.puestoColaborador}
-                  placeholder="Puesto del colaborador..."
-                  readOnly={true} />
+                  placeholder="Puesto del colaborador..." />
               </div>
               <div className="space-y-2">
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
@@ -3002,6 +3007,7 @@ export function TablaSolicitudes() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
+                  <TableCell>{evento.id_papeleta || 'Sin ID de papeleta especificado'}</TableCell>
                   <TableCell>{evento.tipo === "Suspension" ? "Suspensión o castigo" : evento.tipo || "Sin tipo especificado"}</TableCell>
                   <TableCell>{evento.numero_empleado || 'Sin número de empleado especificado'}</TableCell>
                   <TableCell>{evento.nombre || 'Sin nombre de empleado especificado'}</TableCell>
@@ -3067,7 +3073,7 @@ export function TablaSolicitudes() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={12} className="text-center">
                     No se encontraron solicitudes
                 </TableCell>
               </TableRow>

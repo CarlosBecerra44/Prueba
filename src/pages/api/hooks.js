@@ -85,6 +85,7 @@ export function useUser() {
     hasAccessAutorizarPapeletas: (rol !== "Máster" && (tienePermiso("Papeletas", "Autorizar"))),
     hasAccessSolicitudes: (rol !== "Máster" && (tienePermiso("Papeletas", "Solicitudes"))),
     hasAllAccessVacantes: (rol === "Administrador" && departamento === "Gente y Cultura" && (tienePermiso("Gente y Cultura", "Vacantes"))),
-    hasAccessVacantes: (rol !== "Máster" && (tienePermiso("Gente y Cultura", "Vacantes sin sueldo")))
+    hasAccessVacantes: (rol !== "Máster" && (tienePermiso("Gente y Cultura", "Vacantes sin sueldo"))),
+    hasAccessCMDProductos: (rol !== "Máster" && (tienePermiso("Ing. Productos", "CMD Productos")))
   };
 }
