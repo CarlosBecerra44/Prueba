@@ -12,9 +12,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Método no permitido" });
-  }
+  
 
   const form = new formidable.IncomingForm({
     multiples: true,

@@ -409,11 +409,7 @@ export function CMDProductos() {
       formData.append("descripcion", descripcion);
       imagenes.forEach((img) => formData.append("imagenes", img));
 
-      const res = await axios.post("/api/ProductEngineering/guardarProductos", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await axios.post("/api/ProductEngineering/guardarProductos", formData);
 
       Swal.close();
 
