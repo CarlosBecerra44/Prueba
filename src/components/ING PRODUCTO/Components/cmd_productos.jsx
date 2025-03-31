@@ -384,58 +384,58 @@ export function CMDProductos() {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    // Mostrar el indicador de carga mientras se procesa la solicitud
+
+    // Mostrar indicador de carga con SweetAlert2
     Swal.fire({
       title: 'Cargando...',
       text: 'Estamos procesando tu solicitud',
       showConfirmButton: false,
       allowOutsideClick: false,
       willOpen: () => {
-        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+        Swal.showLoading();
       }
     });
-  
+
     try {
-      // Crear un objeto FormData para enviar los datos
-      const formData = new FormData();
-      
-      // Agregar los campos al FormData
-      formData.append("nombre", nombre);
-      formData.append("proveedor", proveedor);
-      formData.append("categoriaGeneral", categoriaGeneral);
-      formData.append("subcategoria", subcategoria);
-      formData.append("especificacion", especificacion);
-      formData.append("medicion", medicion);
-      formData.append("codigo", codigo);
-      formData.append("costo", costo);
-      formData.append("compraMinima", compraMinima);
-      formData.append("descripcion", descripcion);
-      
-      // Agregar las imágenes al FormData
-      imagenes.forEach((img) => formData.append("imagenes", img));
-  
-      // Hacer la solicitud POST utilizando fetch
-      const res = await fetch("/api/ProductEngineering/guardarProductos", {
-        method: "POST",
-        body: formData,  // Pasar el FormData como cuerpo de la solicitud
+      // Convertir las imágenes a Base64 o enviar solo sus nombres/rutas
+      const imagenesBase64 = await Promise.all(
+        imagenes.map(async (img) => {
+          const reader = new FileReader();
+          return new Promise((resolve) => {
+            reader.readAsDataURL(img);
+            reader.onloadend = () => resolve(reader.result); // Convertir a Base64
+          });
+        })
+      );
+
+      // Crear el objeto con los datos en formato JSON
+      const productoData = {
+        nombre,
+        proveedor,
+        categoriaGeneral,
+        subcategoria,
+        especificacion,
+        medicion,
+        codigo,
+        costo,
+        compraMinima,
+        descripcion,
+        imagenes: imagenesBase64, // Enviamos las imágenes en Base64 o URLs
+      };
+
+      // Enviar la solicitud con Axios
+      const res = await axios.post("/api/ProductEngineering/guardarProductos", productoData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-  
-      const data = await res.json();
-  
+
       // Cerrar el indicador de carga
       Swal.close();
-  
-      // Si la respuesta no es exitosa, mostrar el error
-      if (!res.ok) {
-        setError(data.message);
-        Swal.fire("Error", data.message, "error");
-        return;
-      }
-  
-      // Si la respuesta es exitosa, hacer las acciones necesarias
-      if (res.ok) {
-        setOpen(false);  // Cerrar el formulario o modal
+
+      // Manejar la respuesta
+      if (res.data.success) {
+        setOpen(false);  // Cerrar el modal/formulario
         fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
           title: "Creado",
@@ -444,14 +444,15 @@ export function CMDProductos() {
           timer: 3000,
           showConfirmButton: false,
         });
+      } else {
+        Swal.fire("Error", res.data.message, "error");
       }
     } catch (err) {
       console.error("Error en el registro:", err);
-      setError("Hubo un problema con el registro. Por favor, intenta nuevamente.");
       Swal.close();
       Swal.fire("Error", "Hubo un problema con el registro", "error");
     }
-  };  
+};
 
   const handleAgregarProveedor = async () => {
     try {
