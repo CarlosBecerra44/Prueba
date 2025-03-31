@@ -385,45 +385,48 @@ export function CMDProductos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mostrar indicador de carga con SweetAlert2
     Swal.fire({
       title: 'Cargando...',
       text: 'Estamos procesando tu solicitud',
       showConfirmButton: false,
-      allowOutsideClick: false,
+      allowOutsideClick: false,  // Evita que se cierre haciendo clic fuera de la alerta
       willOpen: () => {
-        Swal.showLoading();
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
       }
     });
-
+  
     try {
-      // Crear el objeto con los datos en formato JSON
-      const productoData = {
-        nombre,
-        proveedor,
-        categoriaGeneral,
-        subcategoria,
-        especificacion,
-        medicion,
-        codigo,
-        costo,
-        compraMinima,
-        descripcion,
-      };
+      const formData = new FormData();
 
-      // Enviar la solicitud con Axios
-      const res = await axios.post("/api/ProductEngineering/guardarProductos", productoData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      formData.append("nombre", nombre);
+      formData.append("proveedor", proveedor);
+      formData.append("categoriaGeneral", categoriaGeneral);
+      formData.append("subcategoria", subcategoria);
+      formData.append("especificacion", especificacion);
+      formData.append("medicion", medicion);
+      formData.append("codigo", codigo);
+      formData.append("costo", costo);
+      formData.append("compraMinima", compraMinima);
+      formData.append("descripcion", descripcion);
+      imagenes.forEach((img) => formData.append("imagenes", img));
+  
+      const res = await fetch("/api/ProductEngineering/guardarProductos", {
+        method: "POST",
+        body: formData,
       });
+  
+      const data = await res.json();
 
-      // Cerrar el indicador de carga
       Swal.close();
-
-      // Manejar la respuesta
-      if (res.data.success) {
-        setOpen(false);  // Cerrar el modal/formulario
+  
+      if (!res.ok) {
+        setError(data.message);
+        Swal.fire("Error", data.message, "error");
+        return;
+      }
+  
+      if (res.ok) {
+        setOpen(false);
         fetchProductsUpdate(); // Refrescar lista de productos
         Swal.fire({
           title: "Creado",
@@ -433,14 +436,15 @@ export function CMDProductos() {
           showConfirmButton: false,
         });
       } else {
-        Swal.fire("Error", res.data.message, "error");
+        Swal.fire("Error", "Error al crear el producto", "error");
       }
     } catch (err) {
       console.error("Error en el registro:", err);
+      setError("Hubo un problema con el registro. Por favor, intenta nuevamente.");
       Swal.close();
       Swal.fire("Error", "Hubo un problema con el registro", "error");
     }
-};
+  };  
 
   const handleAgregarProveedor = async () => {
     try {
