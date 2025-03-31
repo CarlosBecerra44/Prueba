@@ -79,7 +79,7 @@ export default async function handler(req, res) {
 
       await ImagenProducto.bulkCreate(uploadedImages);
 
-      res.status(200).json({ message: "Producto e imágenes guardadas correctamente" });
+      res.status(200).json({ success: true, message: "Producto e imágenes guardadas correctamente" });
     } catch (error) {
       console.error("Error registrando el producto:", error);
       res.status(500).json({ message: "Error en el servidor" });
