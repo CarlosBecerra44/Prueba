@@ -89,8 +89,8 @@ export function AutorizarPapeletas() {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
 
-  const handleOpenModalStatus = (id_papeleta, nuevoEstatus) => {
-    setModalDataStatus({ id: id_papeleta, estatus: nuevoEstatus });
+  const handleOpenModalStatus = (id_papeleta, nuevoEstatus, tipoPeticion) => {
+    setModalDataStatus({ id: id_papeleta, estatus: nuevoEstatus, tipo: tipoPeticion });
     setModalOpenStatus(true);
     setComentarios("");
   };
@@ -453,6 +453,34 @@ export function AutorizarPapeletas() {
               console.error("Error en la solicitud de notificación:", notiError);
               Swal.fire("Error", "Error en la notificación", "error");
           }
+
+          if (nuevoEstatus.startsWith("Autorizada")) {
+            const mensaje = `<strong>${nombre + " " + apellidos}</strong> ha autorizado una nueva papeleta con el id: <strong>${index}</strong>.<br>
+            Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+        
+            try {
+                const enviarNotificacionPapeleta = await fetch('/api/Reminder/EnvioEventoSolicitudes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        formData2: {
+                            tipo: 'Alerta de nueva papeleta autorizada',
+                            descripcion: mensaje,
+                            id: idUser,
+                            dpto: null,
+                        },
+                    }),
+                });
+        
+                if (!enviarNotificacionPapeleta.ok) {
+                    console.error("Error al enviar la notificación de la papeleta autorizada");
+                    Swal.fire("Error", "Error al enviar la notificación de la papeleta autorizada", "error");
+                }
+            } catch (error) {
+                console.error("Error en la solicitud de notificación de papeleta autorizada:", error);
+                Swal.fire("Error", "Error en la notificación de la papeleta autorizada", "error");
+            }
+        }        
           fetchEventos();
           Swal.fire({
             title: 'Actualizado',
@@ -705,7 +733,7 @@ export function AutorizarPapeletas() {
                   value={estatusFormulario}
                   onValueChange={(value) => {
                     if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                      handleOpenModalStatus(idFormulario, value);
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
                       handleChangeStatus(idFormulario, value);
                     }
@@ -782,8 +810,8 @@ export function AutorizarPapeletas() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     <a
                     href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
@@ -795,29 +823,7 @@ export function AutorizarPapeletas() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin comprobante agregado</span>
                     </>
                   )}
                 </div>
@@ -839,7 +845,7 @@ export function AutorizarPapeletas() {
                   value={estatusFormulario}
                   onValueChange={(value) => {
                     if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                      handleOpenModalStatus(idFormulario, value);
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
                       handleChangeStatus(idFormulario, value);
                     }
@@ -955,29 +961,7 @@ export function AutorizarPapeletas() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin comprobante agregado</span>
                     </>
                   )}
                 </div>
@@ -999,7 +983,7 @@ export function AutorizarPapeletas() {
                   value={estatusFormulario}
                   onValueChange={(value) => {
                     if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                      handleOpenModalStatus(idFormulario, value);
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
                       handleChangeStatus(idFormulario, value);
                     }
@@ -1205,7 +1189,7 @@ export function AutorizarPapeletas() {
                   value={estatusFormulario}
                   onValueChange={(value) => {
                     if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                      handleOpenModalStatus(idFormulario, value);
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
                       handleChangeStatus(idFormulario, value);
                     }
@@ -1329,7 +1313,7 @@ export function AutorizarPapeletas() {
                   value={estatusFormulario}
                   onValueChange={(value) => {
                     if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                      handleOpenModalStatus(idFormulario, value);
+                      handleOpenModalStatus(idFormulario, value, tipoFormulario2);
                     } else {
                       handleChangeStatus(idFormulario, value);
                     }
@@ -1484,7 +1468,7 @@ export function AutorizarPapeletas() {
                         value={evento.estatus}
                         onValueChange={(value) => {
                           if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                            handleOpenModalStatus(evento.id_papeleta, value);
+                            handleOpenModalStatus(evento.id_papeleta, value, evento.tipo);
                           } else {
                             handleChangeStatus(evento.id_papeleta, value);
                           }

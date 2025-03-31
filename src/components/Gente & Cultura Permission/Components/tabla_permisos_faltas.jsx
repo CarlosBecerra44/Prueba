@@ -1191,8 +1191,8 @@ export function TablaPermisosFalta() {
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
-                <div className="flex items-center space-x-2">
+                  <Label htmlFor="comprobante">Comprobante</Label>
+                  <div className="flex items-center space-x-2">
                   {formData.comprobante ? (
                     <a
                     href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
@@ -1204,29 +1204,7 @@ export function TablaPermisosFalta() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin comprobante agregado</span>
                     </>
                   )}
                 </div>
@@ -1364,29 +1342,7 @@ export function TablaPermisosFalta() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin comprobante agregado</span>
                     </>
                   )}
                 </div>

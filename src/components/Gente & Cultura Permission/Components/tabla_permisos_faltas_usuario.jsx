@@ -976,7 +976,6 @@ export function TablaPermisosFaltaUsuario() {
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
-                    required
                     className="hidden"
                   />
                   <Button2
@@ -993,36 +992,9 @@ export function TablaPermisosFaltaUsuario() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.horas || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.horas || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1114,7 +1086,6 @@ export function TablaPermisosFaltaUsuario() {
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
-                    required
                     className="hidden"
                   />
                   <Button2
@@ -1131,36 +1102,9 @@ export function TablaPermisosFaltaUsuario() {
                   )}
                 </div>
               </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.conSueldo || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.conSueldo || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo}>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1609,74 +1553,25 @@ export function TablaPermisosFaltaUsuario() {
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
-                  <div className="space-y-2">
-                  <Label htmlFor="comprobante">Comprobante</Label>
-                  <div className="flex items-center space-x-2">
-                    {formData.comprobante ? (
-                      <a
-                      href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      Descargar {formData.comprobante}
-                    </a>    
-                    ) : (
-                      <>
-                        <Input
-                          id="comprobante"
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            setFormData((prevFormData) => ({
-                              ...prevFormData,
-                              comprobante: file ? file.name : null,
-                            }));
-                          }}
-                          required
-                          className="hidden"
-                        />
-                        <Button2
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById("comprobante").click()}
-                          className="w-full"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Subir archivo (PDF, JPG, PNG)
-                        </Button2>
-                      </>
-                    )}
-                  </div>
-                </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
+              <div className="space-y-2">
+                <Label htmlFor="comprobante">Comprobante</Label>
+                <div className="flex items-center space-x-2">
+                {formData.comprobante ? (
+                  <a
+                  href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Descargar {formData.comprobante}
+                </a>    
+                ) : (
+                  <>
+                    <span style={{fontSize: 14}}>Sin comprobante agregado</span>
+                  </>
+                )}
               </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            </div>
             </CardContent>
           </form>
         </Card>
@@ -1777,59 +1672,10 @@ export function TablaPermisosFaltaUsuario() {
                   </a>    
                   ) : (
                     <>
-                      <Input
-                        id="comprobante"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setFormData((prevFormData) => ({
-                            ...prevFormData,
-                            comprobante: file ? file.name : null,
-                          }));
-                        }}
-                        required
-                        className="hidden"
-                      />
-                      <Button2
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById("comprobante").click()}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Subir archivo (PDF, JPG, PNG)
-                      </Button2>
+                      <span style={{fontSize: 14}}>Sin comprobante agregado</span>
                     </>
                   )}
                 </div>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
           </form>
