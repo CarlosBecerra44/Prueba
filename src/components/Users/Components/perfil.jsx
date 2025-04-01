@@ -27,7 +27,7 @@ export function Perfil() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ correo: session.user.email }),
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
         });
         const userData = await response.json();
         if (userData.success) {

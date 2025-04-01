@@ -20,7 +20,7 @@ export function NotificationBell() {
         const response = await fetch('/api/Users/getUser', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ correo: session.user.email }),
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
         });
         const userData = await response.json();
         if (userData.success) {

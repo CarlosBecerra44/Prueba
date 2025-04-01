@@ -6,14 +6,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, message: "Método no permitido" });
   }
 
-  const { correo } = req.body;
-  if (!correo) {
-    return res.status(400).json({ success: false, message: "El correo es requerido" });
+  const { correo, numero_empleado } = req.body;
+  if (!correo && !numero_empleado) {
+    return res.status(400).json({ success: false, message: "El correo o el número de empleado es requerido" });
   }
+
+  const field = correo ? "correo" : "numero_empleado";
+  const value = correo || numero_empleado;
 
   try {
     // Buscar el usuario por correo
-    const user = await Usuario.findOne({ where: { correo } });
+    const user = await Usuario.findOne({ where: { [field]: value } });
 
     if (!user) {
       return res.status(404).json({ success: false, message: "Usuario no encontrado" });

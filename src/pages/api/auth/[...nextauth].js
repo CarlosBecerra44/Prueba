@@ -45,6 +45,7 @@ export default NextAuth({
 
           return {
             id: user.id,
+            numero_empleado: user.numero_empleado,
             name: user.nombre,
             email: user.correo,
             rol: user.rol,
@@ -68,6 +69,7 @@ export default NextAuth({
       if (user) {
         token.name = user.name;
         token.email = user.email;
+        token.numero_empleado = user.numero_empleado;
         token.id = user.id;
         token.rol = user.rol;
         token.departamento = user.departamento;
@@ -79,6 +81,7 @@ export default NextAuth({
       if (session.user) {
         session.user.name = token.name;
         session.user.email = token.email;
+        session.user.numero_empleado = token.numero_empleado;
         session.user.id = token.id;
         session.user.rol = token.rol;
         session.user.departamento_id = token.departamento;

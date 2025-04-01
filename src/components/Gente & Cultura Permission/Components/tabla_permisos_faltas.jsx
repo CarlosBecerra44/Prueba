@@ -115,7 +115,7 @@ export function TablaPermisosFalta() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ correo: session.user.email }),
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
         });
         const userData = await response.json();
         if (userData.success) {
@@ -686,15 +686,19 @@ export function TablaPermisosFalta() {
     setVerPeticiones(value);
     switch (value) {
       case "Todas las papeletas":
+        setEventos([]);
         verTPapeletas();
         break;
       case "Todas las solicitudes":
+        setEventos([]);
         verTSolicitudes();
         break;
       case "Papeletas semana":
+        setEventos([]);
         verPapeletasSemana();
         break;
       case "Papeletas extemporaneas":
+        setEventos([]);
         verPSExtemporaneas();
         break;
       default:
