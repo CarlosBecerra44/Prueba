@@ -569,6 +569,40 @@ export function TablaSolicitudes() {
     }));
   };
 
+  const handleProductoChange = (e, index, field) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const nuevosOtros = [...prevState.productos.otros];
+      nuevosOtros[index] = {
+        ...nuevosOtros[index],
+        [field || name]: value,
+      };
+      return {
+        ...prevState,
+        productos: {
+          otros: nuevosOtros,
+        },
+      };
+    });
+  };
+
+  const handlePersonalChange = (e, index, field) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const nuevosOtros = [...prevState.personal.otros];
+      nuevosOtros[index] = {
+        ...nuevosOtros[index],
+        [field || name]: value,
+      };
+      return {
+        ...prevState,
+        personal: {
+          otros: nuevosOtros,
+        },
+      };
+    });
+  };
+
   const handleChangeBonos = (e, index = null, field = null) => {
     const { name, value } = e.target;
   
@@ -1321,9 +1355,10 @@ export function TablaSolicitudes() {
                  <Input
                      id={`noOrden-${index}`}
                      name={`noOrden-${index}`}
+                     value={otro.noOrden}
                      type="number"
                      style={{width: "80px"}}
-                     onChange={(e) => handleChange(e, index, "noOrden")}
+                     onChange={(e) => handleProductoChange(e, index, "noOrden")}
                      placeholder="No."
                      required />
                </div>
@@ -1331,9 +1366,10 @@ export function TablaSolicitudes() {
                  <Input
                      id={`nombreProducto-${index}`}
                      name={`nombreProducto-${index}`}
+                     value={otro.nombreProducto}
                      type="text"
                      style={{width: "300px", marginLeft: "35px"}}
-                     onChange={(e) => handleChange(e, index, "nombreProducto")}
+                     onChange={(e) => handleProductoChange(e, index, "nombreProducto")}
                      placeholder="Nombre del producto..."
                      required />
                </div>
@@ -1341,10 +1377,11 @@ export function TablaSolicitudes() {
                  <Input
                      id={`cantidadProgramada-${index}`}
                      name={`cantidadProgramada-${index}`}
+                     value={otro.cantidadProgramada}
                      type="number"
                      style={{width: "150px", marginLeft: "30px"
                      }}
-                     onChange={(e) => handleChange(e, index, "cantidadProgramada")}
+                     onChange={(e) => handleProductoChange(e, index, "cantidadProgramada")}
                      placeholder="Cantidad..."
                      required />
                </div>
@@ -1353,9 +1390,10 @@ export function TablaSolicitudes() {
                   <Input
                       id={`cantidadTerminada-${index}`}
                       name={`cantidadTerminada-${index}`}
+                      value={otro.cantidadTerminada}
                       type="number"
                       style={{width: "80px", marginLeft: "30px"}}
-                      onChange={(e) => handleChange(e, index, "cantidadTerminada")}
+                      onChange={(e) => handleProductoChange(e, index, "cantidadTerminada")}
                       placeholder="Cant..."
                       required />
                       <Button
@@ -1429,9 +1467,10 @@ export function TablaSolicitudes() {
                   <Input
                       id={`noPersonal-${index}`}
                       name={`noPersonal-${index}`}
+                      value={otro.noPersonal}
                       type="number"
                       style={{width: "80px"}}
-                      onChange={(e) => handleChange(e, index, "noPersonal")}
+                      onChange={(e) => handlePersonalChange(e, index, "noPersonal")}
                       placeholder="No."
                       required />
                 </div>
@@ -1439,9 +1478,10 @@ export function TablaSolicitudes() {
                   <Input
                       id={`nombrePersonal-${index}`}
                       name={`nombrePersonal-${index}`}
+                      value={otro.nombrePersonal}
                       type="text"
                       style={{width: "350px"}}
-                      onChange={(e) => handleChange(e, index, "nombrePersonal")}
+                      onChange={(e) => handlePersonalChange(e, index, "nombrePersonal")}
                       placeholder="Nombre del personal..."
                       required />
                 </div>
@@ -1450,10 +1490,11 @@ export function TablaSolicitudes() {
                   <Input
                       id={`area-${index}`}
                       name={`area-${index}`}
+                      value={otro.area}
                       type="text"
                       style={{width: "270px"
                       }}
-                      onChange={(e) => handleChange(e, index, "area")}
+                      onChange={(e) => handlePersonalChange(e, index, "area")}
                       placeholder="Área..."
                       required />
                       <Button
@@ -1478,11 +1519,11 @@ export function TablaSolicitudes() {
                 !formData.horaFin || !formData.motivo || !formData.noOrden || !formData.nombreProducto || !formData.cantidadProgramada || 
                 !formData.cantidadTerminada || !formData.noPersonal || !formData.nombrePersonal || !formData.area || 
                 formData.productos.otros.some((otro, index) =>
-                  !formData[`noOrden-${index}`] || !formData[`nombreProducto-${index}`] ||
-                  !formData[`cantidadProgramada-${index}`] || !formData[`cantidadTerminada-${index}`]
+                  !otro.noOrden || !otro.nombreProducto ||
+                  !otro.cantidadProgramada || !otro.cantidadTerminada
                 ) ||
                 formData.personal.otros.some((otro, index) =>
-                  !formData[`noPersonal-${index}`] || !formData[`nombrePersonal-${index}`] || !formData[`area-${index}`]
+                  !otro.noPersonal || !otro.nombrePersonal || !otro.area
                 )
               }>Enviar</Button2>
             </CardFooter>
@@ -1727,6 +1768,7 @@ export function TablaSolicitudes() {
                   <Input
                     id={`bonoCantidad-${index}`}
                     name={`bonoCantidad-${index}`}
+                    value={otro.bonoCantidad || ''}
                     type="number"
                     onChange={(e) => handleChangeBonos(e, index, "bonoCantidad")}
                     placeholder="Bono..."
@@ -1737,6 +1779,7 @@ export function TablaSolicitudes() {
                   <Input
                     id={`comision-${index}`}
                     name={`comision-${index}`}
+                    value={otro.comision || ''}
                     type="number"
                     onChange={(e) => handleChangeBonos(e, index, "comision")}
                     placeholder="Comisión..."
@@ -1747,8 +1790,9 @@ export function TablaSolicitudes() {
                   <Input
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
+                    value={otro.comentarios || ''}
                     type="text"
-                    onChange={(e) => handleChange(e, index, "comentarios")}
+                    onChange={(e) => handleChangeBonos(e, index, "comentarios")}
                     placeholder="Comentarios..."
                   />
                 </div>
@@ -1790,40 +1834,13 @@ export function TablaSolicitudes() {
                 Agregar
               </Button>
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
             <CardFooter>
               <Button2 type="submit" className="w-full" disabled={!formData.tipoSolicitud || !formData.mes || !formData.dias
                 || !formData.nombreBono || !formData.bonoCantidad || !formData.comision || !formData.comentarios
                 || !formData.total || 
                 formData.bonos.otros.some((otro, index) =>
-                  !otro.nombreBono || !otro.bonoCantidad || !otro.comision || !formData[`comentarios-${index}`] ||
+                  !otro.nombreBono || !otro.bonoCantidad || !otro.comision || !otro.comentarios ||
                   !otro.total
                 )
               }>Enviar</Button2>
@@ -2360,7 +2377,7 @@ export function TablaSolicitudes() {
                      name={`noOrden-${index}`}
                      type="number"
                      style={{width: "80px"}}
-                     value={formData[`noOrden-${index}`]}
+                     value={otro.noOrden}
                      onChange={(e) => handleChange(e, index, "noOrden")}
                      readOnly={true} />
                </div>
@@ -2370,7 +2387,7 @@ export function TablaSolicitudes() {
                      name={`nombreProducto-${index}`}
                      type="text"
                      style={{width: "300px", marginLeft: "35px"}}
-                     value={formData[`nombreProducto-${index}`]}
+                     value={otro.nombreProducto}
                      onChange={(e) => handleChange(e, index, "nombreProducto")}
                      readOnly={true} />
                </div>
@@ -2381,7 +2398,7 @@ export function TablaSolicitudes() {
                      type="number"
                      style={{width: "150px", marginLeft: "30px"
                      }}
-                     value={formData[`cantidadProgramada-${index}`]}
+                     value={otro.cantidadProgramada}
                      onChange={(e) => handleChange(e, index, "cantidadProgramada")}
                      readOnly={true} />
                </div>
@@ -2392,7 +2409,7 @@ export function TablaSolicitudes() {
                       name={`cantidadTerminada-${index}`}
                       type="number"
                       style={{width: "130px", marginLeft: "30px"}}
-                      value={formData[`cantidadTerminada-${index}`]}
+                      value={otro.cantidadTerminada}
                       onChange={(e) => handleChange(e, index, "cantidadTerminada")}
                       readOnly={true} />
                   </div>
@@ -2454,7 +2471,7 @@ export function TablaSolicitudes() {
                       name={`noPersonal-${index}`}
                       type="number"
                       style={{width: "80px"}}
-                      value={formData[`noPersonal-${index}`]}
+                      value={otro.noPersonal}
                       onChange={(e) => handleChange(e, index, "noPersonal")}
                       readOnly={true} />
                 </div>
@@ -2464,7 +2481,7 @@ export function TablaSolicitudes() {
                       name={`nombrePersonal-${index}`}
                       type="text"
                       style={{width: "350px"}}
-                      value={formData[`nombrePersonal-${index}`]}
+                      value={otro.nombrePersonal}
                       onChange={(e) => handleChange(e, index, "nombrePersonal")}
                       readOnly={true} />
                 </div>
@@ -2476,7 +2493,7 @@ export function TablaSolicitudes() {
                       type="text"
                       style={{width: "340px"
                       }}
-                      value={formData[`area-${index}`]}
+                      value={otro.area}
                       onChange={(e) => handleChange(e, index, "area")}
                       readOnly={true} />
                   </div>
@@ -2750,7 +2767,7 @@ export function TablaSolicitudes() {
                   <Input
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
-                    value={formData[`comentarios-${index}`]}
+                    value={otro.comentarios}
                     type="text"
                     onChange={(e) => handleChange(e, index, "comentarios")}
                     placeholder="Comentarios..."
@@ -2783,33 +2800,6 @@ export function TablaSolicitudes() {
                 />
               </div>
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </form>
         </Card>

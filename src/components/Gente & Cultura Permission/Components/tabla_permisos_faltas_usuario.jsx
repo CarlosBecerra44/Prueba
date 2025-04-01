@@ -1227,8 +1227,9 @@ export function TablaPermisosFaltaUsuario() {
                  <Input
                    id={`actividad-${index}`}
                    name={`actividad-${index}`}
+                   value={otro.actividad}
                    type="text"
-                   onChange={(e) => handleChange(e, index, "actividad")}
+                   onChange={(e) => handleTrabajoChange(e, index, "actividad")}
                    placeholder="Actividad..."
                    required
                  />
@@ -1237,8 +1238,9 @@ export function TablaPermisosFaltaUsuario() {
                  <Input
                    id={`descripcion-${index}`}
                    name={`descripcion-${index}`}
+                   value={otro.descripcion}
                    type="text"
-                   onChange={(e) => handleChange(e, index, "descripcion")}
+                   onChange={(e) => handleTrabajoChange(e, index, "descripcion")}
                    placeholder="Descripción de la actividad elaborada..."
                    required
                  />
@@ -1247,8 +1249,9 @@ export function TablaPermisosFaltaUsuario() {
                  <Input
                    id={`persona-${index}`}
                    name={`persona-${index}`}
+                   value={otro.persona}
                    type="text"
-                   onChange={(e) => handleChange(e, index, "persona")}
+                   onChange={(e) => handleTrabajoChange(e, index, "persona")}
                    placeholder="Persona..."
                    required
                  />
@@ -1257,8 +1260,9 @@ export function TablaPermisosFaltaUsuario() {
                  <Input
                    id={`tiempoRespuesta-${index}`}
                    name={`tiempoRespuesta-${index}`}
+                   value={otro.tiempoRespuesta}
                    type="text"
-                   onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
+                   onChange={(e) => handleTrabajoChange(e, index, "tiempoRespuesta")}
                    placeholder="Tiempo de respuesta..."
                    required
                  />
@@ -1268,9 +1272,10 @@ export function TablaPermisosFaltaUsuario() {
                <Input
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
+                    value={otro.comentarios}
                     type="text"
                     style={{width: "170px"}}
-                    onChange={(e) => handleChange(e, index, "comentarios")}
+                    onChange={(e) => handleTrabajoChange(e, index, "comentarios")}
                     placeholder="Comentarios..."
                     required
                   />
@@ -1290,33 +1295,6 @@ export function TablaPermisosFaltaUsuario() {
                 Agregar
               </Button>
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
             <CardFooter>
               <Button2 type="submit" className="w-full" disabled={
@@ -1329,8 +1307,8 @@ export function TablaPermisosFaltaUsuario() {
                 !formData.comentarios ||
                 // Validar otros campos dinámicos
                 formData.planTrabajo.otros.some((otro, index) =>
-                  !otro.fechaActividad || !formData[`actividad-${index}`] || !formData[`descripcion-${index}`] ||
-                  !formData[`tiempoRespuesta-${index}`] || !formData[`comentarios-${index}`]
+                  !otro.fechaActividad || !otro.actividad || !otro.descripcion ||
+                  !otro.tiempoRespuesta || !otro.comentarios
                 )
                 }>Enviar</Button2>
             </CardFooter>
@@ -1800,8 +1778,8 @@ export function TablaPermisosFaltaUsuario() {
                    id={`actividad-${index}`}
                    name={`actividad-${index}`}
                    type="text"
-                   value={formData[`actividad-${index}`]}
-                   onChange={(e) => handleChange(e, index, "actividad")}
+                   value={otro.actividad}
+                   onChange={(e) => handleTrabajoChange(e, index, "actividad")}
                    readOnly={true}
                  />
                </div>
@@ -1810,8 +1788,8 @@ export function TablaPermisosFaltaUsuario() {
                    id={`descripcion-${index}`}
                    name={`descripcion-${index}`}
                    type="text"
-                   value={formData[`descripcion-${index}`]}
-                   onChange={(e) => handleChange(e, index, "descripcion")}
+                   value={otro.descripcion}
+                   onChange={(e) => handleTrabajoChange(e, index, "descripcion")}
                    readOnly={true}
                  />
                </div>
@@ -1820,8 +1798,8 @@ export function TablaPermisosFaltaUsuario() {
                    id={`persona-${index}`}
                    name={`persona-${index}`}
                    type="text"
-                   value={formData[`persona-${index}`]}
-                   onChange={(e) => handleChange(e, index, "persona")}
+                   value={otro.persona}
+                   onChange={(e) => handleTrabajoChange(e, index, "persona")}
                    readOnly={true}
                  />
                </div>
@@ -1830,8 +1808,8 @@ export function TablaPermisosFaltaUsuario() {
                    id={`tiempoRespuesta-${index}`}
                    name={`tiempoRespuesta-${index}`}
                    type="text"
-                   value={formData[`tiempoRespuesta-${index}`]}
-                   onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
+                   value={otro.tiempoRespuesta}
+                   onChange={(e) => handleTrabajoChange(e, index, "tiempoRespuesta")}
                    readOnly={true}
                  />
                </div>
@@ -1841,8 +1819,8 @@ export function TablaPermisosFaltaUsuario() {
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
                     type="text"
-                    value={formData[`comentarios-${index}`]}
-                    onChange={(e) => handleChange(e, index, "comentarios")}
+                    value={otro.comentarios}
+                    onChange={(e) => handleTrabajoChange(e, index, "comentarios")}
                     readOnly={true}
                   />
                   </div>
@@ -1850,33 +1828,6 @@ export function TablaPermisosFaltaUsuario() {
              </div>
               ))}
             </div>
-              <div className="space-y-2" hidden>
-                <Label>¿La falta es justificada?</Label>
-                <RadioGroup
-                  onValueChange={handleChange}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Sí</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">No</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2" hidden>
-                <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                <Select onValueChange={handleChange}>
-                  <SelectTrigger id="pagada">
-                    <SelectValue placeholder="Selecciona una opción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="si">Sí, es pagada</SelectItem>
-                    <SelectItem value="no">No es pagada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </form>
         </Card>

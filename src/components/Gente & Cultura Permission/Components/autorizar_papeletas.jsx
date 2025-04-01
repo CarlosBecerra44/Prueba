@@ -1121,8 +1121,8 @@ export function AutorizarPapeletas() {
                  <Input
                    id={`actividad-${index}`}
                    name={`actividad-${index}`}
+                   value={otro.actividad}
                    type="text"
-                   value={formData[`actividad-${index}`]}
                    onChange={(e) => handleChange(e, index, "actividad")}
                    readOnly={true}
                  />
@@ -1131,8 +1131,8 @@ export function AutorizarPapeletas() {
                  <Input
                    id={`descripcion-${index}`}
                    name={`descripcion-${index}`}
+                   value={otro.descripcion}
                    type="text"
-                   value={formData[`descripcion-${index}`]}
                    onChange={(e) => handleChange(e, index, "descripcion")}
                    readOnly={true}
                  />
@@ -1141,8 +1141,8 @@ export function AutorizarPapeletas() {
                  <Input
                    id={`persona-${index}`}
                    name={`persona-${index}`}
+                   value={otro.persona}
                    type="text"
-                   value={formData[`persona-${index}`]}
                    onChange={(e) => handleChange(e, index, "persona")}
                    readOnly={true}
                  />
@@ -1151,8 +1151,8 @@ export function AutorizarPapeletas() {
                  <Input
                    id={`tiempoRespuesta-${index}`}
                    name={`tiempoRespuesta-${index}`}
+                   value={otro.tiempoRespuesta}
                    type="text"
-                   value={formData[`tiempoRespuesta-${index}`]}
                    onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
                    readOnly={true}
                  />
@@ -1162,8 +1162,8 @@ export function AutorizarPapeletas() {
                <Input
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
+                    value={otro.comentarios}
                     type="text"
-                    value={formData[`comentarios-${index}`]}
                     onChange={(e) => handleChange(e, index, "comentarios")}
                     readOnly={true}
                   />

@@ -1503,7 +1503,7 @@ export function TablaPermisosFalta() {
                    id={`actividad-${index}`}
                    name={`actividad-${index}`}
                    type="text"
-                   value={formData[`actividad-${index}`]}
+                   value={otro.actividad}
                    onChange={(e) => handleChange(e, index, "actividad")}
                    readOnly={true}
                  />
@@ -1513,7 +1513,7 @@ export function TablaPermisosFalta() {
                    id={`descripcion-${index}`}
                    name={`descripcion-${index}`}
                    type="text"
-                   value={formData[`descripcion-${index}`]}
+                   value={otro.descripcion}
                    onChange={(e) => handleChange(e, index, "descripcion")}
                    readOnly={true}
                  />
@@ -1523,7 +1523,7 @@ export function TablaPermisosFalta() {
                    id={`persona-${index}`}
                    name={`persona-${index}`}
                    type="text"
-                   value={formData[`persona-${index}`]}
+                   value={otro.persona}
                    onChange={(e) => handleChange(e, index, "persona")}
                    readOnly={true}
                  />
@@ -1533,7 +1533,7 @@ export function TablaPermisosFalta() {
                    id={`tiempoRespuesta-${index}`}
                    name={`tiempoRespuesta-${index}`}
                    type="text"
-                   value={formData[`tiempoRespuesta-${index}`]}
+                   value={otro.tiempoRespuesta}
                    onChange={(e) => handleChange(e, index, "tiempoRespuesta")}
                    readOnly={true}
                  />
@@ -1544,7 +1544,7 @@ export function TablaPermisosFalta() {
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
                     type="text"
-                    value={formData[`comentarios-${index}`]}
+                    value={otro.comentarios}
                     onChange={(e) => handleChange(e, index, "comentarios")}
                     readOnly={true}
                   />
@@ -1950,7 +1950,7 @@ export function TablaPermisosFalta() {
                      name={`noOrden-${index}`}
                      type="number"
                      style={{width: "80px"}}
-                     value={formData[`noOrden-${index}`]}
+                     value={otro.noOrden}
                      onChange={(e) => handleChange(e, index, "noOrden")}
                      readOnly={true} />
                </div>
@@ -1960,7 +1960,7 @@ export function TablaPermisosFalta() {
                      name={`nombreProducto-${index}`}
                      type="text"
                      style={{width: "300px", marginLeft: "35px"}}
-                     value={formData[`nombreProducto-${index}`]}
+                     value={otro.nombreProducto}
                      onChange={(e) => handleChange(e, index, "nombreProducto")}
                      readOnly={true} />
                </div>
@@ -1971,7 +1971,7 @@ export function TablaPermisosFalta() {
                      type="number"
                      style={{width: "150px", marginLeft: "30px"
                      }}
-                     value={formData[`cantidadProgramada-${index}`]}
+                     value={otro.cantidadProgramada}
                      onChange={(e) => handleChange(e, index, "cantidadProgramada")}
                      readOnly={true} />
                </div>
@@ -1982,7 +1982,7 @@ export function TablaPermisosFalta() {
                       name={`cantidadTerminada-${index}`}
                       type="number"
                       style={{width: "130px", marginLeft: "30px"}}
-                      value={formData[`cantidadTerminada-${index}`]}
+                      value={otro.cantidadTerminada}
                       onChange={(e) => handleChange(e, index, "cantidadTerminada")}
                       readOnly={true} />
                   </div>
@@ -2044,7 +2044,7 @@ export function TablaPermisosFalta() {
                       name={`noPersonal-${index}`}
                       type="number"
                       style={{width: "80px"}}
-                      value={formData[`noPersonal-${index}`]}
+                      value={otro.noPersonal}
                       onChange={(e) => handleChange(e, index, "noPersonal")}
                       readOnly={true} />
                 </div>
@@ -2054,7 +2054,7 @@ export function TablaPermisosFalta() {
                       name={`nombrePersonal-${index}`}
                       type="text"
                       style={{width: "350px"}}
-                      value={formData[`nombrePersonal-${index}`]}
+                      value={otro.nombrePersonal}
                       onChange={(e) => handleChange(e, index, "nombrePersonal")}
                       readOnly={true} />
                 </div>
@@ -2066,7 +2066,7 @@ export function TablaPermisosFalta() {
                       type="text"
                       style={{width: "340px"
                       }}
-                      value={formData[`area-${index}`]}
+                      value={otro.area}
                       onChange={(e) => handleChange(e, index, "area")}
                       readOnly={true} />
                   </div>
@@ -2373,7 +2373,7 @@ export function TablaPermisosFalta() {
                   <Input
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
-                    value={formData[`comentarios-${index}`]}
+                    value={otro.comentarios}
                     type="text"
                     onChange={(e) => handleChange(e, index, "comentarios")}
                     placeholder="Comentarios..."
