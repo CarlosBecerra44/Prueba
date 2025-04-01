@@ -62,6 +62,9 @@ import HelpIcon from "@mui/icons-material/Help"; // Ícono de signo de interroga
 const MySwal = withReactContent(Swal);
 
 export function TablaPermisosFalta() {
+  const [nombre, setNombre] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [idUser, setID] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [eventos, setEventos] = useState([]);
@@ -119,6 +122,30 @@ export function TablaPermisosFalta() {
     "Estatus",
     "Acción",
   ];
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch("/api/Users/getUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ correo: session.user.email }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setNombre(userData.user.nombre);
+          setApellidos(userData.user.apellidos);
+          setID(userData.user.id);
+        } else {
+          alert("Error al obtener los datos del usuario");
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -213,7 +240,32 @@ export function TablaPermisosFalta() {
     setModalDataStatus({ id: null, estatus: "", tipo: "" });
   };
 
-  const handleChangeStatus = async (index, nuevoEstatus, comentarios) => {
+  const handleChangeStatus = async (
+    index,
+    nuevoEstatus,
+    comentarios,
+    tipo = null
+  ) => {
+    const solicitudesTipos = [
+      "Horas extras",
+      "Bonos / Comisiones",
+      "Aumento sueldo",
+      "Faltas",
+      "Suspensión o castigo",
+    ];
+    const papeletasTipos = [
+      "Llegada tarde / Salida antes",
+      "Tiempo por tiempo",
+      "Permiso",
+      "Home Office",
+      "Vacaciones",
+    ];
+
+    // Determinar el tipo a utilizar
+    const tipoSeleccionado = tipo || modalDataStatus.tipo || tipoFormulario2;
+
+    console.log("Tipo de formulario:", tipoSeleccionado);
+
     if (!index || !nuevoEstatus) {
       console.error("Error: Falta un valor en handleChangeStatus", {
         index,
@@ -224,7 +276,7 @@ export function TablaPermisosFalta() {
         title: "Error",
         text: "Faltan valores para actualizar el estatus",
         icon: "error",
-        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        timer: 3000,
         showConfirmButton: false,
       });
       return;
@@ -237,22 +289,78 @@ export function TablaPermisosFalta() {
       );
 
       if (response.status === 200) {
-        {
-          verPeticiones === "Todas las solicitudes"
-            ? verTSolicitudes()
-            : verPeticiones === "Todas las papeletas"
-            ? verTPapeletas()
-            : verPeticiones === "Papeletas extemporaneas"
-            ? verPSExtemporaneas()
-            : fetchEventos();
+        // Enviar notificación después de actualizar el estatus
+        if (tipoSeleccionado) {
+          // Determinar el tipo de notificación
+          const esPapeleta = papeletasTipos.some((tipo) =>
+            tipoSeleccionado.startsWith(tipo)
+          );
+          const esSolicitud = solicitudesTipos.some((tipo) =>
+            tipoSeleccionado.startsWith(tipo)
+          );
+
+          const tipoNotificacion = esSolicitud
+            ? "Alerta de actualización de solicitud"
+            : "Alerta de actualización de papeleta";
+
+          const mensaje = esSolicitud
+            ? `<strong>${nombre} ${apellidos}</strong> ha actualizado el estatus de la solicitud con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                       Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/solicitudes" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`
+            : `<strong>${nombre} ${apellidos}</strong> ha actualizado el estatus de la papeleta con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                       Puedes revisarla haciendo clic en este enlace: <a href="/papeletas_usuario" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+
+          console.log("Notificación:", tipoNotificacion, mensaje);
+
+          // Enviar la notificación
+          try {
+            const enviarNotificacion = await fetch(
+              "/api/Reminder/EnvioEventoAutorizarPapeletas",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  formData2: {
+                    tipo: tipoNotificacion,
+                    descripcion: mensaje,
+                    id: idUser,
+                    dpto: null,
+                    idPapeleta: index,
+                  },
+                }),
+              }
+            );
+
+            if (!enviarNotificacion.ok) {
+              console.error("Error al enviar la notificación");
+              Swal.fire("Error", "Error al enviar la notificación", "error");
+            }
+          } catch (notiError) {
+            console.error("Error en la solicitud de notificación:", notiError);
+            Swal.fire("Error", "Error en la notificación", "error");
+          }
         }
+
+        // Actualizar la vista después de cambiar el estado
+        if (verPeticiones === "Todas las solicitudes") {
+          verTSolicitudes();
+        } else if (verPeticiones === "Todas las papeletas") {
+          verTPapeletas();
+        } else if (verPeticiones === "Papeletas extemporaneas") {
+          verPSExtemporaneas();
+        } else {
+          fetchEventos();
+        }
+
         Swal.fire({
           title: "Actualizado",
           text: "El estatus de la papeleta ha sido actualizado correctamente",
           icon: "success",
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          timer: 3000,
           showConfirmButton: false,
         });
+
         setComentarios("");
         handleCloseModalStatus();
         closeModalEdit();
@@ -261,7 +369,7 @@ export function TablaPermisosFalta() {
           title: "Error",
           text: "Error al actualizar el estatus de la papeleta",
           icon: "error",
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+          timer: 3000,
           showConfirmButton: false,
         });
       }
@@ -271,7 +379,7 @@ export function TablaPermisosFalta() {
         title: "Error",
         text: "Ocurrió un error al intentar actualizar el estatus de la papeleta",
         icon: "error",
-        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
+        timer: 3000,
         showConfirmButton: false,
       });
     }
@@ -1249,7 +1357,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -1372,7 +1485,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -1508,34 +1626,9 @@ export function TablaPermisosFalta() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1584,7 +1677,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -1764,34 +1862,9 @@ export function TablaPermisosFalta() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1840,7 +1913,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -2039,7 +2117,7 @@ export function TablaPermisosFalta() {
                                       id={`actividad-${index}`}
                                       name={`actividad-${index}`}
                                       type="text"
-                                      value={formData[`actividad-${index}`]}
+                                      value={otro.actividad}
                                       onChange={(e) =>
                                         handleChange(e, index, "actividad")
                                       }
@@ -2051,7 +2129,7 @@ export function TablaPermisosFalta() {
                                       id={`descripcion-${index}`}
                                       name={`descripcion-${index}`}
                                       type="text"
-                                      value={formData[`descripcion-${index}`]}
+                                      value={otro.descripcion}
                                       onChange={(e) =>
                                         handleChange(e, index, "descripcion")
                                       }
@@ -2063,7 +2141,7 @@ export function TablaPermisosFalta() {
                                       id={`persona-${index}`}
                                       name={`persona-${index}`}
                                       type="text"
-                                      value={formData[`persona-${index}`]}
+                                      value={otro.persona}
                                       onChange={(e) =>
                                         handleChange(e, index, "persona")
                                       }
@@ -2075,9 +2153,7 @@ export function TablaPermisosFalta() {
                                       id={`tiempoRespuesta-${index}`}
                                       name={`tiempoRespuesta-${index}`}
                                       type="text"
-                                      value={
-                                        formData[`tiempoRespuesta-${index}`]
-                                      }
+                                      value={otro.tiempoRespuesta}
                                       onChange={(e) =>
                                         handleChange(
                                           e,
@@ -2094,7 +2170,7 @@ export function TablaPermisosFalta() {
                                         id={`comentarios-${index}`}
                                         name={`comentarios-${index}`}
                                         type="text"
-                                        value={formData[`comentarios-${index}`]}
+                                        value={otro.comentarios}
                                         onChange={(e) =>
                                           handleChange(e, index, "comentarios")
                                         }
@@ -2149,7 +2225,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -2323,7 +2404,12 @@ export function TablaPermisosFalta() {
                                       "Suspensión o castigo"
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      "Suspensión o castigo"
+                                    );
                                   }
                                 }}
                               >
@@ -2406,6 +2492,75 @@ export function TablaPermisosFalta() {
                                 placeholder="Coloca tus observaciones aquí..."
                               />
                             </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Firma</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <Input
+                                      id="comprobante"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={(e) => {
+                                        const file =
+                                          e.target.files?.[0] || null;
+                                        setFormData((prevFormData) => ({
+                                          ...prevFormData,
+                                          comprobante: file ? file.name : null,
+                                        }));
+                                      }}
+                                      required
+                                      className="hidden"
+                                    />
+                                    <Button2
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() =>
+                                        document
+                                          .getElementById("comprobante")
+                                          .click()
+                                      }
+                                      className="w-full"
+                                    >
+                                      <Upload className="mr-2 h-4 w-4" />
+                                      Subir archivo (PDF, JPG, PNG)
+                                    </Button2>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                             <div
                               className="space-y-2"
                               style={{
@@ -2450,7 +2605,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -2700,7 +2860,7 @@ export function TablaPermisosFalta() {
                                       name={`noOrden-${index}`}
                                       type="number"
                                       style={{ width: "80px" }}
-                                      value={formData[`noOrden-${index}`]}
+                                      value={otro.noOrden}
                                       onChange={(e) =>
                                         handleChange(e, index, "noOrden")
                                       }
@@ -2716,9 +2876,7 @@ export function TablaPermisosFalta() {
                                         width: "300px",
                                         marginLeft: "35px",
                                       }}
-                                      value={
-                                        formData[`nombreProducto-${index}`]
-                                      }
+                                      value={otro.nombreProducto}
                                       onChange={(e) =>
                                         handleChange(e, index, "nombreProducto")
                                       }
@@ -2734,9 +2892,7 @@ export function TablaPermisosFalta() {
                                         width: "150px",
                                         marginLeft: "30px",
                                       }}
-                                      value={
-                                        formData[`cantidadProgramada-${index}`]
-                                      }
+                                      value={otro.cantidadProgramada}
                                       onChange={(e) =>
                                         handleChange(
                                           e,
@@ -2757,9 +2913,7 @@ export function TablaPermisosFalta() {
                                           width: "130px",
                                           marginLeft: "30px",
                                         }}
-                                        value={
-                                          formData[`cantidadTerminada-${index}`]
-                                        }
+                                        value={otro.cantidadTerminada}
                                         onChange={(e) =>
                                           handleChange(
                                             e,
@@ -2863,7 +3017,7 @@ export function TablaPermisosFalta() {
                                       name={`noPersonal-${index}`}
                                       type="number"
                                       style={{ width: "80px" }}
-                                      value={formData[`noPersonal-${index}`]}
+                                      value={otro.noPersonal}
                                       onChange={(e) =>
                                         handleChange(e, index, "noPersonal")
                                       }
@@ -2876,9 +3030,7 @@ export function TablaPermisosFalta() {
                                       name={`nombrePersonal-${index}`}
                                       type="text"
                                       style={{ width: "350px" }}
-                                      value={
-                                        formData[`nombrePersonal-${index}`]
-                                      }
+                                      value={otro.nombrePersonal}
                                       onChange={(e) =>
                                         handleChange(e, index, "nombrePersonal")
                                       }
@@ -2892,7 +3044,7 @@ export function TablaPermisosFalta() {
                                         name={`area-${index}`}
                                         type="text"
                                         style={{ width: "340px" }}
-                                        value={formData[`area-${index}`]}
+                                        value={otro.area}
                                         onChange={(e) =>
                                           handleChange(e, index, "area")
                                         }
@@ -2945,7 +3097,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -3282,7 +3439,7 @@ export function TablaPermisosFalta() {
                                     <Input
                                       id={`comentarios-${index}`}
                                       name={`comentarios-${index}`}
-                                      value={formData[`comentarios-${index}`]}
+                                      value={otro.comentarios}
                                       type="text"
                                       onChange={(e) =>
                                         handleChange(e, index, "comentarios")
@@ -3365,7 +3522,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -3630,7 +3792,12 @@ export function TablaPermisosFalta() {
                                       tipoFormulario2
                                     );
                                   } else {
-                                    handleChangeStatus(idFormulario, value);
+                                    handleChangeStatus(
+                                      idFormulario,
+                                      value,
+                                      null,
+                                      tipoFormulario2
+                                    );
                                   }
                                 }}
                               >
@@ -3817,7 +3984,12 @@ export function TablaPermisosFalta() {
                               evento.tipo
                             );
                           } else {
-                            handleChangeStatus(evento.id_papeleta, value);
+                            handleChangeStatus(
+                              evento.id_papeleta,
+                              value,
+                              null,
+                              evento.tipo
+                            );
                           }
                         }}
                       >

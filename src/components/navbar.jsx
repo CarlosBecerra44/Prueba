@@ -37,6 +37,7 @@ export function Navbarv1() {
     hasAllAccessVacantes,
     hasAccessVacantes,
     isDadoDeBaja,
+    hasAccessCMDProductos,
   } = useUser();
   // Función para abrir/cerrar secciones principales y submenús
   const toggleSection = (sectionId) => {
@@ -121,7 +122,19 @@ export function Navbarv1() {
       id: "departamentos",
       name: "Departamentos",
       href: "#",
-      roles: ["master", "adminMkt", "adminGC", "itMember", "standardMkt"],
+      roles: [
+        "master",
+        "adminMkt",
+        "adminGC",
+        "itMember",
+        "standardMkt",
+        "hasAccessPapeletas",
+        "hasAccessAutorizarPapeletas",
+        "hasAccessSolicitudes",
+        "hasAllAccessVacantes",
+        "hasAccessVacantes",
+        "hasAccessCMDProductos",
+      ],
     },
     {
       id: 7,
@@ -250,7 +263,7 @@ export function Navbarv1() {
       name: "Ingeniería de nuevo producto",
       href: "#",
       icon: <IngenieriaNuevoPIcon className="h-6 w-6 text-gray-400" />,
-      roles: ["master"],
+      roles: ["master", "hasAccessCMDProductos"],
       subMenu: [
         {
           id: 1,
@@ -262,14 +275,14 @@ export function Navbarv1() {
               className="h-6 w-6 text-gray-400"
             />
           ),
-          roles: ["master"],
+          roles: ["master", "hasAccessCMDProductos"],
         },
         {
           id: 2,
           name: "CMD",
           href: "/ingenieria_nuevo_producto/catalogo_productos",
           icon: <ConfigIcon className="h-6 w-6 text-gray-400" />,
-          roles: ["master"],
+          roles: ["master", "hasAccessCMDProductos"],
         },
       ],
     },
@@ -306,28 +319,28 @@ export function Navbarv1() {
       id: "configuraciones",
       name: "Configuraciones",
       href: "#",
-      roles: ["master"],
+      roles: ["master", "hasAccessCMDProductos"],
     },
     {
       id: 18,
       name: "CMD",
       href: "#",
       icon: <ConfigIcon className="h-6 w-6 text-gray-400" />,
-      roles: ["master"],
+      roles: ["master", "hasAccessCMDProductos"],
       subMenu: [
         {
           id: 1,
           name: "CMD Productos",
-          href: "/configuraciones/cmd/productos",
+          href: "/configuraciones/cmd/Productos",
           icon: <ShoppingBasket className="h-6 w-6 text-gray-400" />,
-          roles: ["master"],
+          roles: ["master", "hasAccessCMDProductos"],
         },
         {
           id: 2,
           name: "CMD Proveedores",
           href: "/configuraciones/cmd/proveedores",
           icon: <PackageOpen className="h-6 w-6 text-gray-400" />,
-          roles: ["master"],
+          roles: ["master", "hasAccessCMDProductos"],
         },
       ],
     },
@@ -358,6 +371,8 @@ export function Navbarv1() {
     if (hasAllAccessVacantes && category.includes("hasAllAccessVacantes"))
       return true;
     if (hasAccessVacantes && category.includes("hasAccessVacantes"))
+      return true;
+    if (hasAccessCMDProductos && category.includes("hasAccessCMDProductos"))
       return true;
 
     return false;

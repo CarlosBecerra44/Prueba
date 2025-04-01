@@ -404,6 +404,7 @@ export function TablaSolicitudes() {
   };
 
   const encabezadosSolicitudes = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -499,8 +500,8 @@ export function TablaSolicitudes() {
   const eliminarProducto = (index) => {
     setFormData((prevData) => ({
       ...prevData,
-      planTrabajo: {
-        otros: prevData.planTrabajo.otros.filter((_, i) => i !== index),
+      productos: {
+        otros: prevData.productos.otros.filter((_, i) => i !== index),
       },
     }));
   };
@@ -632,6 +633,40 @@ export function TablaSolicitudes() {
       ...prevFormData,
       [name]: value, // Actualiza dinámicamente el campo según el `name`
     }));
+  };
+
+  const handleProductoChange = (e, index, field) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const nuevosOtros = [...prevState.productos.otros];
+      nuevosOtros[index] = {
+        ...nuevosOtros[index],
+        [field || name]: value,
+      };
+      return {
+        ...prevState,
+        productos: {
+          otros: nuevosOtros,
+        },
+      };
+    });
+  };
+
+  const handlePersonalChange = (e, index, field) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const nuevosOtros = [...prevState.personal.otros];
+      nuevosOtros[index] = {
+        ...nuevosOtros[index],
+        [field || name]: value,
+      };
+      return {
+        ...prevState,
+        personal: {
+          otros: nuevosOtros,
+        },
+      };
+    });
   };
 
   const handleChangeBonos = (e, index = null, field = null) => {
@@ -792,18 +827,32 @@ export function TablaSolicitudes() {
             const ftpResult = await ftpResponse.json();
             if (ftpResponse.ok) {
               console.log("Archivo subido al FTP exitosamente", ftpResult);
+
+              // Asignar el nombre del archivo subido a formData.comprobante
+              formData.comprobante = ftpResult.fileName;
             } else {
               console.error("Error al subir el archivo al FTP", ftpResult);
+              Swal.fire("Error", "Error al subir el archivo", "error");
+              return;
             }
           } catch (ftpError) {
             console.error("Error en la solicitud de FTP", ftpError);
+            Swal.fire("Error", "Error en la subida del archivo", "error");
+            return;
           }
+
+          // Después de subir el archivo, enviar el formulario
+          await enviarFormulario();
         };
 
         reader.readAsDataURL(file); // Leer el archivo como base64
+      } else {
+        // Si no hay archivo, solo enviar el formulario
+        await enviarFormulario();
       }
     } catch (error) {
       console.error("Error en el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
     }
   };
 
@@ -1578,10 +1627,11 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`noOrden-${index}`}
                                 name={`noOrden-${index}`}
+                                value={otro.noOrden}
                                 type="number"
                                 style={{ width: "80px" }}
                                 onChange={(e) =>
-                                  handleChange(e, index, "noOrden")
+                                  handleProductoChange(e, index, "noOrden")
                                 }
                                 placeholder="No."
                                 required
@@ -1591,10 +1641,15 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`nombreProducto-${index}`}
                                 name={`nombreProducto-${index}`}
+                                value={otro.nombreProducto}
                                 type="text"
                                 style={{ width: "300px", marginLeft: "35px" }}
                                 onChange={(e) =>
-                                  handleChange(e, index, "nombreProducto")
+                                  handleProductoChange(
+                                    e,
+                                    index,
+                                    "nombreProducto"
+                                  )
                                 }
                                 placeholder="Nombre del producto..."
                                 required
@@ -1604,10 +1659,15 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`cantidadProgramada-${index}`}
                                 name={`cantidadProgramada-${index}`}
+                                value={otro.cantidadProgramada}
                                 type="number"
                                 style={{ width: "150px", marginLeft: "30px" }}
                                 onChange={(e) =>
-                                  handleChange(e, index, "cantidadProgramada")
+                                  handleProductoChange(
+                                    e,
+                                    index,
+                                    "cantidadProgramada"
+                                  )
                                 }
                                 placeholder="Cantidad..."
                                 required
@@ -1618,10 +1678,15 @@ export function TablaSolicitudes() {
                                 <Input
                                   id={`cantidadTerminada-${index}`}
                                   name={`cantidadTerminada-${index}`}
+                                  value={otro.cantidadTerminada}
                                   type="number"
                                   style={{ width: "80px", marginLeft: "30px" }}
                                   onChange={(e) =>
-                                    handleChange(e, index, "cantidadTerminada")
+                                    handleProductoChange(
+                                      e,
+                                      index,
+                                      "cantidadTerminada"
+                                    )
                                   }
                                   placeholder="Cant..."
                                   required
@@ -1742,10 +1807,11 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`noPersonal-${index}`}
                                 name={`noPersonal-${index}`}
+                                value={otro.noPersonal}
                                 type="number"
                                 style={{ width: "80px" }}
                                 onChange={(e) =>
-                                  handleChange(e, index, "noPersonal")
+                                  handlePersonalChange(e, index, "noPersonal")
                                 }
                                 placeholder="No."
                                 required
@@ -1755,10 +1821,15 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`nombrePersonal-${index}`}
                                 name={`nombrePersonal-${index}`}
+                                value={otro.nombrePersonal}
                                 type="text"
                                 style={{ width: "350px" }}
                                 onChange={(e) =>
-                                  handleChange(e, index, "nombrePersonal")
+                                  handlePersonalChange(
+                                    e,
+                                    index,
+                                    "nombrePersonal"
+                                  )
                                 }
                                 placeholder="Nombre del personal..."
                                 required
@@ -1769,10 +1840,11 @@ export function TablaSolicitudes() {
                                 <Input
                                   id={`area-${index}`}
                                   name={`area-${index}`}
+                                  value={otro.area}
                                   type="text"
                                   style={{ width: "270px" }}
                                   onChange={(e) =>
-                                    handleChange(e, index, "area")
+                                    handlePersonalChange(e, index, "area")
                                   }
                                   placeholder="Área..."
                                   required
@@ -1823,16 +1895,16 @@ export function TablaSolicitudes() {
                           !formData.area ||
                           formData.productos.otros.some(
                             (otro, index) =>
-                              !formData[`noOrden-${index}`] ||
-                              !formData[`nombreProducto-${index}`] ||
-                              !formData[`cantidadProgramada-${index}`] ||
-                              !formData[`cantidadTerminada-${index}`]
+                              !otro.noOrden ||
+                              !otro.nombreProducto ||
+                              !otro.cantidadProgramada ||
+                              !otro.cantidadTerminada
                           ) ||
                           formData.personal.otros.some(
                             (otro, index) =>
-                              !formData[`noPersonal-${index}`] ||
-                              !formData[`nombrePersonal-${index}`] ||
-                              !formData[`area-${index}`]
+                              !otro.noPersonal ||
+                              !otro.nombrePersonal ||
+                              !otro.area
                           )
                         }
                       >
@@ -2113,6 +2185,7 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`bonoCantidad-${index}`}
                                 name={`bonoCantidad-${index}`}
+                                value={otro.bonoCantidad || ""}
                                 type="number"
                                 onChange={(e) =>
                                   handleChangeBonos(e, index, "bonoCantidad")
@@ -2125,6 +2198,7 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`comision-${index}`}
                                 name={`comision-${index}`}
+                                value={otro.comision || ""}
                                 type="number"
                                 onChange={(e) =>
                                   handleChangeBonos(e, index, "comision")
@@ -2137,9 +2211,10 @@ export function TablaSolicitudes() {
                               <Input
                                 id={`comentarios-${index}`}
                                 name={`comentarios-${index}`}
+                                value={otro.comentarios || ""}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChange(e, index, "comentarios")
+                                  handleChangeBonos(e, index, "comentarios")
                                 }
                                 placeholder="Comentarios..."
                               />
@@ -2198,34 +2273,6 @@ export function TablaSolicitudes() {
                           Agregar
                         </Button>
                       </div>
-                      <div className="space-y-2" hidden>
-                        <Label>¿La falta es justificada?</Label>
-                        <RadioGroup
-                          onValueChange={handleChange}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="si" id="justificada-si" />
-                            <Label htmlFor="justificada-si">Sí</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="justificada-no" />
-                            <Label htmlFor="justificada-no">No</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="space-y-2" hidden>
-                        <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                        <Select onValueChange={handleChange}>
-                          <SelectTrigger id="pagada">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="si">Sí, es pagada</SelectItem>
-                            <SelectItem value="no">No es pagada</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -2245,7 +2292,7 @@ export function TablaSolicitudes() {
                               !otro.nombreBono ||
                               !otro.bonoCantidad ||
                               !otro.comision ||
-                              !formData[`comentarios-${index}`] ||
+                              !otro.comentarios ||
                               !otro.total
                           )
                         }
@@ -2301,7 +2348,7 @@ export function TablaSolicitudes() {
                               setFormData({
                                 ...formData,
                                 nombreColaborador: selectedUser.id,
-                                puestoColaborador: selectedUser.puesto,
+                                puestoColaborador: selectedUser.puesto || "",
                               });
                             }
                           }}
@@ -2338,10 +2385,10 @@ export function TablaSolicitudes() {
                         <Input
                           id="puestoColaborador"
                           name="puestoColaborador"
+                          onChange={handleChange}
                           type="text"
                           value={formData.puestoColaborador}
                           placeholder="Puesto del colaborador..."
-                          readOnly={true}
                         />
                       </div>
                       <div className="space-y-2">
@@ -3090,7 +3137,7 @@ export function TablaSolicitudes() {
                                       name={`noOrden-${index}`}
                                       type="number"
                                       style={{ width: "80px" }}
-                                      value={formData[`noOrden-${index}`]}
+                                      value={otro.noOrden}
                                       onChange={(e) =>
                                         handleChange(e, index, "noOrden")
                                       }
@@ -3106,9 +3153,7 @@ export function TablaSolicitudes() {
                                         width: "300px",
                                         marginLeft: "35px",
                                       }}
-                                      value={
-                                        formData[`nombreProducto-${index}`]
-                                      }
+                                      value={otro.nombreProducto}
                                       onChange={(e) =>
                                         handleChange(e, index, "nombreProducto")
                                       }
@@ -3124,9 +3169,7 @@ export function TablaSolicitudes() {
                                         width: "150px",
                                         marginLeft: "30px",
                                       }}
-                                      value={
-                                        formData[`cantidadProgramada-${index}`]
-                                      }
+                                      value={otro.cantidadProgramada}
                                       onChange={(e) =>
                                         handleChange(
                                           e,
@@ -3147,9 +3190,7 @@ export function TablaSolicitudes() {
                                           width: "130px",
                                           marginLeft: "30px",
                                         }}
-                                        value={
-                                          formData[`cantidadTerminada-${index}`]
-                                        }
+                                        value={otro.cantidadTerminada}
                                         onChange={(e) =>
                                           handleChange(
                                             e,
@@ -3253,7 +3294,7 @@ export function TablaSolicitudes() {
                                       name={`noPersonal-${index}`}
                                       type="number"
                                       style={{ width: "80px" }}
-                                      value={formData[`noPersonal-${index}`]}
+                                      value={otro.noPersonal}
                                       onChange={(e) =>
                                         handleChange(e, index, "noPersonal")
                                       }
@@ -3266,9 +3307,7 @@ export function TablaSolicitudes() {
                                       name={`nombrePersonal-${index}`}
                                       type="text"
                                       style={{ width: "350px" }}
-                                      value={
-                                        formData[`nombrePersonal-${index}`]
-                                      }
+                                      value={otro.nombrePersonal}
                                       onChange={(e) =>
                                         handleChange(e, index, "nombrePersonal")
                                       }
@@ -3282,7 +3321,7 @@ export function TablaSolicitudes() {
                                         name={`area-${index}`}
                                         type="text"
                                         style={{ width: "340px" }}
-                                        value={formData[`area-${index}`]}
+                                        value={otro.area}
                                         onChange={(e) =>
                                           handleChange(e, index, "area")
                                         }
@@ -3610,7 +3649,7 @@ export function TablaSolicitudes() {
                                     <Input
                                       id={`comentarios-${index}`}
                                       name={`comentarios-${index}`}
-                                      value={formData[`comentarios-${index}`]}
+                                      value={otro.comentarios}
                                       type="text"
                                       onChange={(e) =>
                                         handleChange(e, index, "comentarios")
@@ -3650,46 +3689,6 @@ export function TablaSolicitudes() {
                                   readOnly={true}
                                 />
                               </div>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
                             </div>
                           </CardContent>
                         </form>
@@ -4005,6 +4004,24 @@ export function TablaSolicitudes() {
                     {evento.puesto || "Sin puesto especificado"}
                   </TableCell>
                   <TableCell>
+                    {evento.tipo === "Suspension"
+                      ? "Suspensión o castigo"
+                      : evento.tipo || "Sin tipo especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.numero_empleado ||
+                      "Sin número de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.nombre || "Sin nombre de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.departamento || "Sin departamento especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.puesto || "Sin puesto especificado"}
+                  </TableCell>
+                  <TableCell>
                     {evento.jefe_directo
                       ? (() => {
                           const jefe = allUsers.find(
@@ -4083,7 +4100,7 @@ export function TablaSolicitudes() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={12} className="text-center">
                   No se encontraron solicitudes
                 </TableCell>
               </TableRow>

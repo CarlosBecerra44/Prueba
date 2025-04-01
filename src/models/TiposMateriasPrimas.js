@@ -6,6 +6,8 @@ const TipoMateriaPrima = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING, allowNull: true },
+    nivel: { type: DataTypes.INTEGER, allowNull: true },
+    skip: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "tiposmaterialesprima",

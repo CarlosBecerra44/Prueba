@@ -115,8 +115,12 @@ export function AutorizarPapeletas() {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
 
-  const handleOpenModalStatus = (id_papeleta, nuevoEstatus) => {
-    setModalDataStatus({ id: id_papeleta, estatus: nuevoEstatus });
+  const handleOpenModalStatus = (id_papeleta, nuevoEstatus, tipoPeticion) => {
+    setModalDataStatus({
+      id: id_papeleta,
+      estatus: nuevoEstatus,
+      tipo: tipoPeticion,
+    });
     setModalOpenStatus(true);
     setComentarios("");
   };
@@ -324,6 +328,7 @@ export function AutorizarPapeletas() {
   };
 
   const encabezados = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -489,6 +494,84 @@ export function AutorizarPapeletas() {
       );
 
       if (response.status === 200) {
+        // Enviar notificación después de actualizar el estatus
+        try {
+          const enviarNotificacion = await fetch(
+            "/api/Reminder/EnvioEventoAutorizarPapeletas",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                formData2: {
+                  tipo: "Alerta de actualización de papeleta",
+                  descripcion: `<strong>${
+                    nombre + " " + apellidos
+                  }</strong> ha actualizado el estatus de la papeleta con el id ${index} a: <strong>${nuevoEstatus}</strong>.<br>
+                          Puedes revisarla haciendo clic en este enlace: <a href="/papeletas_usuario" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`,
+                  id: idUser,
+                  dpto: null,
+                  idPapeleta: index,
+                },
+              }),
+            }
+          );
+
+          if (!enviarNotificacion.ok) {
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
+          }
+        } catch (notiError) {
+          console.error("Error en la solicitud de notificación:", notiError);
+          Swal.fire("Error", "Error en la notificación", "error");
+        }
+
+        if (nuevoEstatus.startsWith("Autorizada")) {
+          const mensaje = `<strong>${
+            nombre + " " + apellidos
+          }</strong> ha autorizado una nueva papeleta con el id: <strong>${index}</strong>.<br>
+            Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+
+          try {
+            const enviarNotificacionPapeleta = await fetch(
+              "/api/Reminder/EnvioEventoSolicitudes",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  formData2: {
+                    tipo: "Alerta de nueva papeleta autorizada",
+                    descripcion: mensaje,
+                    id: idUser,
+                    dpto: null,
+                  },
+                }),
+              }
+            );
+
+            if (!enviarNotificacionPapeleta.ok) {
+              console.error(
+                "Error al enviar la notificación de la papeleta autorizada"
+              );
+              Swal.fire(
+                "Error",
+                "Error al enviar la notificación de la papeleta autorizada",
+                "error"
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error en la solicitud de notificación de papeleta autorizada:",
+              error
+            );
+            Swal.fire(
+              "Error",
+              "Error en la notificación de la papeleta autorizada",
+              "error"
+            );
+          }
+        }
         fetchEventos();
         Swal.fire({
           title: "Actualizado",
@@ -808,7 +891,11 @@ export function AutorizarPapeletas() {
                                     value.startsWith("Autorizada") ||
                                     value.startsWith("No autorizada")
                                   ) {
-                                    handleOpenModalStatus(idFormulario, value);
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
                                   } else {
                                     handleChangeStatus(idFormulario, value);
                                   }
@@ -946,34 +1033,9 @@ export function AutorizarPapeletas() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1014,7 +1076,11 @@ export function AutorizarPapeletas() {
                                     value.startsWith("Autorizada") ||
                                     value.startsWith("No autorizada")
                                   ) {
-                                    handleOpenModalStatus(idFormulario, value);
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
                                   } else {
                                     handleChangeStatus(idFormulario, value);
                                   }
@@ -1196,34 +1262,9 @@ export function AutorizarPapeletas() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1264,7 +1305,11 @@ export function AutorizarPapeletas() {
                                     value.startsWith("Autorizada") ||
                                     value.startsWith("No autorizada")
                                   ) {
-                                    handleOpenModalStatus(idFormulario, value);
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
                                   } else {
                                     handleChangeStatus(idFormulario, value);
                                   }
@@ -1464,8 +1509,8 @@ export function AutorizarPapeletas() {
                                     <Input
                                       id={`actividad-${index}`}
                                       name={`actividad-${index}`}
+                                      value={otro.actividad}
                                       type="text"
-                                      value={formData[`actividad-${index}`]}
                                       onChange={(e) =>
                                         handleChange(e, index, "actividad")
                                       }
@@ -1476,8 +1521,8 @@ export function AutorizarPapeletas() {
                                     <Input
                                       id={`descripcion-${index}`}
                                       name={`descripcion-${index}`}
+                                      value={otro.descripcion}
                                       type="text"
-                                      value={formData[`descripcion-${index}`]}
                                       onChange={(e) =>
                                         handleChange(e, index, "descripcion")
                                       }
@@ -1488,8 +1533,8 @@ export function AutorizarPapeletas() {
                                     <Input
                                       id={`persona-${index}`}
                                       name={`persona-${index}`}
+                                      value={otro.persona}
                                       type="text"
-                                      value={formData[`persona-${index}`]}
                                       onChange={(e) =>
                                         handleChange(e, index, "persona")
                                       }
@@ -1500,10 +1545,8 @@ export function AutorizarPapeletas() {
                                     <Input
                                       id={`tiempoRespuesta-${index}`}
                                       name={`tiempoRespuesta-${index}`}
+                                      value={otro.tiempoRespuesta}
                                       type="text"
-                                      value={
-                                        formData[`tiempoRespuesta-${index}`]
-                                      }
                                       onChange={(e) =>
                                         handleChange(
                                           e,
@@ -1519,8 +1562,8 @@ export function AutorizarPapeletas() {
                                       <Input
                                         id={`comentarios-${index}`}
                                         name={`comentarios-${index}`}
+                                        value={otro.comentarios}
                                         type="text"
-                                        value={formData[`comentarios-${index}`]}
                                         onChange={(e) =>
                                           handleChange(e, index, "comentarios")
                                         }
@@ -1567,7 +1610,11 @@ export function AutorizarPapeletas() {
                                     value.startsWith("Autorizada") ||
                                     value.startsWith("No autorizada")
                                   ) {
-                                    handleOpenModalStatus(idFormulario, value);
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
                                   } else {
                                     handleChangeStatus(idFormulario, value);
                                   }
@@ -1652,6 +1699,75 @@ export function AutorizarPapeletas() {
                                 placeholder="Coloca tus observaciones aquí..."
                               />
                             </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Firma</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <Input
+                                      id="comprobante"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={(e) => {
+                                        const file =
+                                          e.target.files?.[0] || null;
+                                        setFormData((prevFormData) => ({
+                                          ...prevFormData,
+                                          comprobante: file ? file.name : null,
+                                        }));
+                                      }}
+                                      required
+                                      className="hidden"
+                                    />
+                                    <Button2
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() =>
+                                        document
+                                          .getElementById("comprobante")
+                                          .click()
+                                      }
+                                      className="w-full"
+                                    >
+                                      <Upload className="mr-2 h-4 w-4" />
+                                      Subir archivo (PDF, JPG, PNG)
+                                    </Button2>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                             <div
                               className="space-y-2"
                               style={{
@@ -1688,7 +1804,11 @@ export function AutorizarPapeletas() {
                                     value.startsWith("Autorizada") ||
                                     value.startsWith("No autorizada")
                                   ) {
-                                    handleOpenModalStatus(idFormulario, value);
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
                                   } else {
                                     handleChangeStatus(idFormulario, value);
                                   }
@@ -1785,6 +1905,27 @@ export function AutorizarPapeletas() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
+                  <TableCell>
+                    {evento.id_papeleta || "Sin ID de papeleta especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.tipo === "Suspension"
+                      ? "Suspensión o castigo"
+                      : evento.tipo || "Sin tipo especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.numero_empleado ||
+                      "Sin número de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.nombre || "Sin nombre de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.departamento || "Sin departamento especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.puesto || "Sin puesto especificado"}
+                  </TableCell>
                   <TableCell>
                     {evento.tipo === "Suspension"
                       ? "Suspensión o castigo"
@@ -1899,7 +2040,11 @@ export function AutorizarPapeletas() {
                               value.startsWith("Autorizada") ||
                               value.startsWith("No autorizada")
                             ) {
-                              handleOpenModalStatus(evento.id_papeleta, value);
+                              handleOpenModalStatus(
+                                evento.id_papeleta,
+                                value,
+                                evento.tipo
+                              );
                             } else {
                               handleChangeStatus(evento.id_papeleta, value);
                             }
@@ -2022,7 +2167,7 @@ export function AutorizarPapeletas() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   No se encontraron papeletas
                 </TableCell>
               </TableRow>

@@ -283,6 +283,7 @@ export function TablaPermisosFaltaUsuario() {
   };
 
   const encabezados = [
+    "ID",
     "Tipo",
     "Número de empleado",
     "Nombre",
@@ -570,7 +571,72 @@ export function TablaPermisosFaltaUsuario() {
     }
 
     try {
-      // Subir el formulario
+      // Subir el archivo al FTP
+      const fileInput = document.getElementById("comprobante");
+      if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+          const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
+
+          try {
+            const ftpResponse = await fetch(
+              "/api/Gente&CulturaPermission/subirPDFPapeletas",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  fileName: file.name,
+                  fileContent: base64File, // Enviar el archivo en Base64
+                }),
+              }
+            );
+
+            const ftpResult = await ftpResponse.json();
+            if (ftpResponse.ok) {
+              console.log("Archivo subido al FTP exitosamente", ftpResult);
+
+              // Asignar el nombre del archivo subido a formData.comprobante
+              formData.comprobante = ftpResult.fileName;
+            } else {
+              console.error("Error al subir el archivo al FTP", ftpResult);
+              Swal.fire("Error", "Error al subir el archivo", "error");
+              return;
+            }
+          } catch (ftpError) {
+            console.error("Error en la solicitud de FTP", ftpError);
+            Swal.fire("Error", "Error en la subida del archivo", "error");
+            return;
+          }
+
+          // Después de subir el archivo, enviar el formulario
+          await enviarFormulario();
+        };
+
+        reader.readAsDataURL(file); // Leer el archivo como base64
+      } else {
+        // Si no hay archivo, solo enviar el formulario
+        await enviarFormulario();
+      }
+    } catch (error) {
+      console.error("Error en el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
+    }
+  };
+
+  const enviarFormulario = async () => {
+    const mensaje1 = `<strong>${
+      nombre + " " + apellidos
+    }</strong> ha subido una nueva papeleta de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/autorizar_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+    const mensaje2 = `<strong>${
+      nombre + " " + apellidos
+    }</strong> ha subido una nueva papeleta extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/autorizar_papeletas" style="color: blue; text-decoration: underline;">Revisar papeleta</a>`;
+    try {
       const response = await fetch(
         `/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`,
         {
@@ -587,62 +653,52 @@ export function TablaPermisosFaltaUsuario() {
       );
 
       if (response.ok) {
-        Swal.fire({
-          title: "Creado",
-          text: "Se ha creado correctamente",
-          icon: "success",
-          timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/papeletas_usuario";
-        });
-      } else {
-        Swal.fire("Error", "Error al crear la papeleta", "error");
-        return;
-      }
-
-      // Subir el archivo al FTP
-      const fileInput = document.getElementById("comprobante");
-      if (fileInput.files.length === 0) {
-        console.error("No se ha seleccionado un archivo");
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-
-      reader.onload = async (e) => {
-        const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
-
+        const mensaje =
+          formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
         try {
-          const ftpResponse = await fetch(
-            "/api/Gente&CulturaPermission/subirPDFPapeletas",
+          const enviarNotificacion = await fetch(
+            "/api/Reminder/EnvioEventoPapeletas",
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                fileName: file.name,
-                fileContent: base64File, // Enviar el archivo en Base64
+                formData2: {
+                  tipo: "Alerta de nueva papeleta",
+                  descripcion: mensaje,
+                  id: idUser,
+                  dpto: null,
+                  jefe_directo: jefe_directo,
+                },
               }),
             }
           );
 
-          const ftpResult = await ftpResponse.json();
-          if (ftpResponse.ok) {
-            console.log("Archivo subido al FTP exitosamente", ftpResult);
+          if (enviarNotificacion.ok) {
+            Swal.fire({
+              title: "Creado",
+              text: "Se ha creado correctamente",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = "/papeletas_usuario";
+            });
           } else {
-            console.error("Error al subir el archivo al FTP", ftpResult);
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
           }
-        } catch (ftpError) {
-          console.error("Error en la solicitud de FTP", ftpError);
+        } catch (error) {
+          console.error("Error en la solicitud de notificación:", error);
+          Swal.fire("Error", "Error en la notificación", "error");
         }
-      };
-
-      reader.readAsDataURL(file); // Leer el archivo como base64
+      } else {
+        Swal.fire("Error", "Error al crear la papeleta", "error");
+      }
     } catch (error) {
-      console.error("Error en el formulario:", error);
+      console.error("Error al enviar el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
     }
   };
 
@@ -1115,7 +1171,6 @@ export function TablaPermisosFaltaUsuario() {
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png"
                             onChange={handleFileChange}
-                            required
                             className="hidden"
                           />
                           <Button2
@@ -1136,34 +1191,6 @@ export function TablaPermisosFaltaUsuario() {
                           )}
                         </div>
                       </div>
-                      <div className="space-y-2" hidden>
-                        <Label>¿La falta es justificada?</Label>
-                        <RadioGroup
-                          onValueChange={handleChange}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="si" id="justificada-si" />
-                            <Label htmlFor="justificada-si">Sí</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="justificada-no" />
-                            <Label htmlFor="justificada-no">No</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="space-y-2" hidden>
-                        <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                        <Select onValueChange={handleChange}>
-                          <SelectTrigger id="pagada">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="si">Sí, es pagada</SelectItem>
-                            <SelectItem value="no">No es pagada</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -1174,8 +1201,7 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.horas ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo ||
-                          !formData.comprobante
+                          !formData.motivo
                         }
                       >
                         Enviar
@@ -1312,7 +1338,6 @@ export function TablaPermisosFaltaUsuario() {
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png"
                             onChange={handleFileChange}
-                            required
                             className="hidden"
                           />
                           <Button2
@@ -1333,34 +1358,6 @@ export function TablaPermisosFaltaUsuario() {
                           )}
                         </div>
                       </div>
-                      <div className="space-y-2" hidden>
-                        <Label>¿La falta es justificada?</Label>
-                        <RadioGroup
-                          onValueChange={handleChange}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="si" id="justificada-si" />
-                            <Label htmlFor="justificada-si">Sí</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="justificada-no" />
-                            <Label htmlFor="justificada-no">No</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="space-y-2" hidden>
-                        <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                        <Select onValueChange={handleChange}>
-                          <SelectTrigger id="pagada">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="si">Sí, es pagada</SelectItem>
-                            <SelectItem value="no">No es pagada</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -1371,8 +1368,7 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo ||
-                          !formData.comprobante
+                          !formData.motivo
                         }
                       >
                         Enviar
@@ -1542,9 +1538,10 @@ export function TablaPermisosFaltaUsuario() {
                               <Input
                                 id={`actividad-${index}`}
                                 name={`actividad-${index}`}
+                                value={otro.actividad}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChange(e, index, "actividad")
+                                  handleTrabajoChange(e, index, "actividad")
                                 }
                                 placeholder="Actividad..."
                                 required
@@ -1554,9 +1551,10 @@ export function TablaPermisosFaltaUsuario() {
                               <Input
                                 id={`descripcion-${index}`}
                                 name={`descripcion-${index}`}
+                                value={otro.descripcion}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChange(e, index, "descripcion")
+                                  handleTrabajoChange(e, index, "descripcion")
                                 }
                                 placeholder="Descripción de la actividad elaborada..."
                                 required
@@ -1566,9 +1564,10 @@ export function TablaPermisosFaltaUsuario() {
                               <Input
                                 id={`persona-${index}`}
                                 name={`persona-${index}`}
+                                value={otro.persona}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChange(e, index, "persona")
+                                  handleTrabajoChange(e, index, "persona")
                                 }
                                 placeholder="Persona..."
                                 required
@@ -1578,9 +1577,14 @@ export function TablaPermisosFaltaUsuario() {
                               <Input
                                 id={`tiempoRespuesta-${index}`}
                                 name={`tiempoRespuesta-${index}`}
+                                value={otro.tiempoRespuesta}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChange(e, index, "tiempoRespuesta")
+                                  handleTrabajoChange(
+                                    e,
+                                    index,
+                                    "tiempoRespuesta"
+                                  )
                                 }
                                 placeholder="Tiempo de respuesta..."
                                 required
@@ -1591,10 +1595,11 @@ export function TablaPermisosFaltaUsuario() {
                                 <Input
                                   id={`comentarios-${index}`}
                                   name={`comentarios-${index}`}
+                                  value={otro.comentarios}
                                   type="text"
                                   style={{ width: "170px" }}
                                   onChange={(e) =>
-                                    handleChange(e, index, "comentarios")
+                                    handleTrabajoChange(e, index, "comentarios")
                                   }
                                   placeholder="Comentarios..."
                                   required
@@ -1625,34 +1630,6 @@ export function TablaPermisosFaltaUsuario() {
                           Agregar
                         </Button>
                       </div>
-                      <div className="space-y-2" hidden>
-                        <Label>¿La falta es justificada?</Label>
-                        <RadioGroup
-                          onValueChange={handleChange}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="si" id="justificada-si" />
-                            <Label htmlFor="justificada-si">Sí</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="justificada-no" />
-                            <Label htmlFor="justificada-no">No</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="space-y-2" hidden>
-                        <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                        <Select onValueChange={handleChange}>
-                          <SelectTrigger id="pagada">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="si">Sí, es pagada</SelectItem>
-                            <SelectItem value="no">No es pagada</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -1670,10 +1647,10 @@ export function TablaPermisosFaltaUsuario() {
                           formData.planTrabajo.otros.some(
                             (otro, index) =>
                               !otro.fechaActividad ||
-                              !formData[`actividad-${index}`] ||
-                              !formData[`descripcion-${index}`] ||
-                              !formData[`tiempoRespuesta-${index}`] ||
-                              !formData[`comentarios-${index}`]
+                              !otro.actividad ||
+                              !otro.descripcion ||
+                              !otro.tiempoRespuesta ||
+                              !otro.comentarios
                           )
                         }
                       >
@@ -1735,6 +1712,54 @@ export function TablaPermisosFaltaUsuario() {
                           placeholder="Coloca tus observaciones aquí..."
                         />
                       </div>
+                      <div className="space-y-2">
+                        <div
+                          style={{
+                            position: "relative",
+                            display: "inline-flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Label htmlFor="comprobante">Firma</Label>
+                          <div style={{ marginLeft: "10px" }}>
+                            <Tooltip
+                              title={`<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`}
+                              arrow
+                            >
+                              <HelpIcon
+                                style={{ cursor: "pointer", fontSize: 18 }}
+                              />
+                            </Tooltip>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            id="comprobante"
+                            name="comprobante" // Asegúrate que sea "comprobante"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleFileChange}
+                            required
+                            className="hidden"
+                          />
+                          <Button2
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              document.getElementById("comprobante").click()
+                            }
+                            className="w-full"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Subir archivo (PDF, JPG, PNG) Max: 4MB
+                          </Button2>
+                          {formData.comprobante && (
+                            <span className="text-sm text-muted-foreground">
+                              {formData.comprobante}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -1744,7 +1769,8 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo
+                          !formData.motivo ||
+                          !formData.comprobante
                         }
                       >
                         Enviar
@@ -1982,77 +2008,12 @@ export function TablaPermisosFaltaUsuario() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
                             </div>
                           </CardContent>
                         </form>
@@ -2214,77 +2175,12 @@ export function TablaPermisosFaltaUsuario() {
                                   </a>
                                 ) : (
                                   <>
-                                    <Input
-                                      id="comprobante"
-                                      type="file"
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                      onChange={(e) => {
-                                        const file =
-                                          e.target.files?.[0] || null;
-                                        setFormData((prevFormData) => ({
-                                          ...prevFormData,
-                                          comprobante: file ? file.name : null,
-                                        }));
-                                      }}
-                                      required
-                                      className="hidden"
-                                    />
-                                    <Button2
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        document
-                                          .getElementById("comprobante")
-                                          .click()
-                                      }
-                                      className="w-full"
-                                    >
-                                      <Upload className="mr-2 h-4 w-4" />
-                                      Subir archivo (PDF, JPG, PNG)
-                                    </Button2>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin comprobante agregado
+                                    </span>
                                   </>
                                 )}
                               </div>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
                             </div>
                           </CardContent>
                         </form>
@@ -2465,9 +2361,13 @@ export function TablaPermisosFaltaUsuario() {
                                       id={`actividad-${index}`}
                                       name={`actividad-${index}`}
                                       type="text"
-                                      value={formData[`actividad-${index}`]}
+                                      value={otro.actividad}
                                       onChange={(e) =>
-                                        handleChange(e, index, "actividad")
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "actividad"
+                                        )
                                       }
                                       readOnly={true}
                                     />
@@ -2477,9 +2377,13 @@ export function TablaPermisosFaltaUsuario() {
                                       id={`descripcion-${index}`}
                                       name={`descripcion-${index}`}
                                       type="text"
-                                      value={formData[`descripcion-${index}`]}
+                                      value={otro.descripcion}
                                       onChange={(e) =>
-                                        handleChange(e, index, "descripcion")
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "descripcion"
+                                        )
                                       }
                                       readOnly={true}
                                     />
@@ -2489,9 +2393,9 @@ export function TablaPermisosFaltaUsuario() {
                                       id={`persona-${index}`}
                                       name={`persona-${index}`}
                                       type="text"
-                                      value={formData[`persona-${index}`]}
+                                      value={otro.persona}
                                       onChange={(e) =>
-                                        handleChange(e, index, "persona")
+                                        handleTrabajoChange(e, index, "persona")
                                       }
                                       readOnly={true}
                                     />
@@ -2501,11 +2405,9 @@ export function TablaPermisosFaltaUsuario() {
                                       id={`tiempoRespuesta-${index}`}
                                       name={`tiempoRespuesta-${index}`}
                                       type="text"
-                                      value={
-                                        formData[`tiempoRespuesta-${index}`]
-                                      }
+                                      value={otro.tiempoRespuesta}
                                       onChange={(e) =>
-                                        handleChange(
+                                        handleTrabajoChange(
                                           e,
                                           index,
                                           "tiempoRespuesta"
@@ -2520,9 +2422,13 @@ export function TablaPermisosFaltaUsuario() {
                                         id={`comentarios-${index}`}
                                         name={`comentarios-${index}`}
                                         type="text"
-                                        value={formData[`comentarios-${index}`]}
+                                        value={otro.comentarios}
                                         onChange={(e) =>
-                                          handleChange(e, index, "comentarios")
+                                          handleTrabajoChange(
+                                            e,
+                                            index,
+                                            "comentarios"
+                                          )
                                         }
                                         readOnly={true}
                                       />
@@ -2530,46 +2436,6 @@ export function TablaPermisosFaltaUsuario() {
                                   </div>
                                 </div>
                               ))}
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
                             </div>
                           </CardContent>
                         </form>
@@ -2633,6 +2499,75 @@ export function TablaPermisosFaltaUsuario() {
                                 className="min-h-[100px]"
                                 placeholder="Coloca tus observaciones aquí..."
                               />
+                            </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Firma</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <Input
+                                      id="comprobante"
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={(e) => {
+                                        const file =
+                                          e.target.files?.[0] || null;
+                                        setFormData((prevFormData) => ({
+                                          ...prevFormData,
+                                          comprobante: file ? file.name : null,
+                                        }));
+                                      }}
+                                      required
+                                      className="hidden"
+                                    />
+                                    <Button2
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() =>
+                                        document
+                                          .getElementById("comprobante")
+                                          .click()
+                                      }
+                                      className="w-full"
+                                    >
+                                      <Upload className="mr-2 h-4 w-4" />
+                                      Subir archivo (PDF, JPG, PNG)
+                                    </Button2>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </form>
@@ -2734,6 +2669,27 @@ export function TablaPermisosFaltaUsuario() {
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
                   <TableCell>
+                    {evento.id_papeleta || "Sin ID de papeleta especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.tipo === "Suspension"
+                      ? "Suspensión"
+                      : evento.tipo || "Sin tipo especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.numero_empleado ||
+                      "Sin número de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.nombre || "Sin nombre de empleado especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.departamento || "Sin departamento especificado"}
+                  </TableCell>
+                  <TableCell>
+                    {evento.puesto || "Sin puesto especificado"}
+                  </TableCell>
+                  <TableCell>
                     {evento.tipo === "Suspension"
                       ? "Suspensión"
                       : evento.tipo || "Sin tipo especificado"}
@@ -2829,7 +2785,7 @@ export function TablaPermisosFaltaUsuario() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="text-center">
+                <TableCell colSpan={12} className="text-center">
                   No se encontraron papeletas
                 </TableCell>
               </TableRow>

@@ -303,7 +303,7 @@ export function CMDProductos() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { data: session, status } = useSession();
-  if (status === "loading" || !isMaster) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -664,7 +664,7 @@ export function CMDProductos() {
         </a>
         <ChevronRight className="mx-2 h-4 w-4" />
         <a
-          href="/configuraciones/cmd/productos"
+          href="/configuraciones/cmd/Productos"
           className="font-bold hover:underline text-primary"
         >
           Administrador de productos
