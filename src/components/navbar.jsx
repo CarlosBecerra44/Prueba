@@ -77,9 +77,9 @@ const toggleSection = (sectionId) => {
   const categories = [
     { id: "principal", name: "Principal", href: "#", roles: ["*"]},
     { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    { id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    //{ id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
     { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    { id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+    //{ id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
     { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","hasAccessPapeletas","hasAccessAutorizarPapeletas","hasAccessSolicitudes","hasAllAccessVacantes","hasAccessVacantes","hasAccessCMDProductos"]},
     {
       id: 7,
@@ -125,7 +125,7 @@ const toggleSection = (sectionId) => {
       ]
     },
     { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
-    { id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    //{ id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
     { 
       id: 11, 
@@ -148,11 +148,11 @@ const toggleSection = (sectionId) => {
         },
       ]
     },
-    { id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
-    { id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    //{ id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    //{ id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    //{ id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    //{ id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
+    //{ id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master","hasAccessCMDProductos"] },
     { 
       id: 18, 
