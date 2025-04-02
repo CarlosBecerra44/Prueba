@@ -87,7 +87,7 @@ export function TablaPermisosFaltaUsuario() {
       const minutes = now.getMinutes();
 
       // Deshabilitar los miércoles a las 12 PM (12:00 - 23:59)
-      if (day === 3 && hours >= 12) {
+      if (day === 3 && hours >= 19) {
         setIsDisabled(true);
       }
       // Habilitar el jueves a las 12 AM (00:00 en adelante)
