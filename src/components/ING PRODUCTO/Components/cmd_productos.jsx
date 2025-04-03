@@ -216,6 +216,7 @@ export function CMDProductos() {
       compraMinima: product.cMinima,
       medicion: product.medicion,
       descripcion: product.descripcion,
+      catalogoProductos: product.catalogo,
     }
   }
 
@@ -484,6 +485,78 @@ export function CMDProductos() {
       });
     }
   };
+
+  const handleAgregarAlCatalogo = async (index) => {
+    try {
+      const response = await axios.post("/api/ProductEngineering/agregarAlCatalogo", {
+        id: index,
+      });
+  
+      if (response.data.success) {
+        fetchProductsUpdate();
+        Swal.fire({
+          title: "Éxito",
+          text: "Producto agregado al catálogo correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error al agregar el producto al catálogo:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo agregar el producto al catálogo",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  }
+
+  const handleQuitarDelCatalogo = async (index) => {
+    try {
+      const response = await axios.post("/api/ProductEngineering/quitarDelCatalogo", {
+        id: index,
+      });
+  
+      if (response.data.success) {
+        fetchProductsUpdate();
+        Swal.fire({
+          title: "Éxito",
+          text: "Producto eliminado del catálogo correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar el producto del catálogo:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo eliminar el producto del catálogo",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  }
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
@@ -910,9 +983,7 @@ export function CMDProductos() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
             <TableHead>Nombre</TableHead>
-            <TableHead>Proveedor</TableHead>
             <TableHead>Categoría general</TableHead>
             <TableHead>Subcategoría</TableHead>
             <TableHead>Especificación</TableHead>
@@ -927,9 +998,7 @@ export function CMDProductos() {
         <TableBody>
           {currentUsers.length >0 ?( currentUsers.map((user,index) => (
             <TableRow key={index}>
-              <TableCell>{user.id || "Sin datos"}</TableCell>
               <TableCell>{user.nombre || "Sin datos"}</TableCell>
-              <TableCell>{user.proveedor || "Sin datos"}</TableCell>
               <TableCell>{user.categoriaGeneral || "Sin datos"}</TableCell>
               <TableCell>{user.subcategoria || "Sin datos"}</TableCell>
               <TableCell>{user.especificacion || "Sin datos"}</TableCell>
@@ -1246,15 +1315,15 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
+                  {user.catalogoProductos === 1 ? <Button size="sm" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button variant="outline" size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px"}}>Enviar al catálogo</Button>}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
-               
               </TableCell>
             </TableRow>
                     ))
             ) : (
               <TableRow>
-                <TableCell colSpan={12} className="text-center">
+                <TableCell colSpan={10} className="text-center">
                   No se encontraron productos
                 </TableCell>
               </TableRow>

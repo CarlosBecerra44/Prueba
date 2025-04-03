@@ -25,6 +25,7 @@ const Producto = sequelize.define(
     veredicto: { type: DataTypes.INTEGER, allowNull: true },
     desviacion: { type: DataTypes.DOUBLE, allowNull: true },
     eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
+    catalogo: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   },
   {
     tableName: "productos",
