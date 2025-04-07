@@ -1714,6 +1714,17 @@ export function TablaPermisosFalta() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
+                <Label htmlFor="puestoVacaciones">Puesto</Label>
+                <Input
+                  id="puestoVacaciones"
+                  name="puestoVacaciones"
+                  type="text"
+                  value={formData.puestoVacaciones}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Puesto..." />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="motivo">Días</Label>
                 <Input
                   id="dias"
@@ -1741,10 +1752,11 @@ export function TablaPermisosFalta() {
               </div>
               <div className="space-y-2">
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Firma</Label>
+                  <Label htmlFor="comprobante">Formato</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
+                        `<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`
                       } arrow>
                       <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
                     </Tooltip>

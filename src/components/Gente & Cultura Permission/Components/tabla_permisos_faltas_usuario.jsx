@@ -46,6 +46,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import '../../../../public/CSS/spinner.css';
 import Link from "next/link"
 import { PlusCircle, X } from "lucide-react"
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const MySwal = withReactContent(Swal);
 
@@ -78,6 +80,7 @@ export function TablaPermisosFaltaUsuario() {
   const [fechaFinPapeleta, setFechaFin] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkTime = () => {
@@ -302,6 +305,68 @@ export function TablaPermisosFaltaUsuario() {
       console.error('Error al obtener el formulario:', error);
     }
   }; 
+
+  const handleDownload = (formData, nombre, apellido, departamento) => {
+    setLoading(true);
+
+    const doc = new jsPDF();
+  
+    doc.addImage("/logo.png", "JPEG", 50, 7, 50, 20, undefined, 'MEDIUM');
+  
+    // Título
+    doc.setFontSize(14);
+    doc.text("Solicitud de Vacaciones", 130, 20, { align: "center" });
+  
+    // Función para formatear fecha dd/mm/yyyy
+    const formatDate = (date) => {
+      if (!date) return "";
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+  
+    const today = formatDate(new Date());
+    const fechaInicio = formatDate(formData.fechaInicio);
+    const fechaFin = formatDate(formData.fechaFin);
+  
+    // Tabla de datos clave
+    const tableData = [
+      ["Fecha de solicitud", today],
+      ["Nombre", `${nombre} ${apellido}`],
+      ["Departamento", departamento],
+      ["Puesto", formData.puestoVacaciones || "Sin puesto especificado"],
+      ["Vacaciones", `Días: ${formData.dias || ""}    Del: ${fechaInicio}    Al: ${fechaFin}`],
+      ["Observaciones", formData.motivo || "Ninguna"],
+    ];
+  
+    autoTable(doc, {
+      startY: 45,
+      body: tableData,
+      styles: { fontSize: 11, cellPadding: 4 },
+      headStyles: { fillColor: [200, 200, 200], textColor: 0 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 120 },
+      },
+    });
+  
+    // Firma centrada al final
+    const finalY = doc.lastAutoTable.finalY + 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const lineWidth = 80;
+    const lineX = (pageWidth - lineWidth) / 2;
+  
+    doc.line(lineX, finalY, lineX + lineWidth, finalY);
+    doc.setFontSize(12);
+    doc.text("Firma del empleado", pageWidth / 2, finalY + 7, { align: "center" });
+  
+    doc.save(`Formato vacaciones - ${nombre} ${apellido}.pdf`);
+
+    setLoading(false);
+  };
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -1327,13 +1392,21 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
+                <Label htmlFor="puestoVacaciones">Puesto</Label>
+                <Input
+                  id="puestoVacaciones"
+                  name="puestoVacaciones"
+                  type="text"
+                  onChange={handleChange}
+                  placeholder="Puesto..." />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="motivo">Días</Label>
                 <Input
                   id="dias"
                   name="dias"
                   type="number"
                   onChange={handleChange}
-                  required
                   placeholder="Dias..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1346,25 +1419,30 @@ export function TablaPermisosFaltaUsuario() {
                   id="motivo"
                   name="motivo"
                   onChange={handleChange}
-                  required
                   className="min-h-[100px]"
                   placeholder="Coloca tus observaciones aquí..." />
               </div>
               <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Firma</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px" }}>
+                <Label htmlFor="comprobante">Formato</Label>
+
+                <Tooltip
+                  title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                  arrow
+                >
+                  <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                </Tooltip>
+
+                {/* Botón personalizado para descargar el PDF */}
+                <Button2 variant="outline" onClick={() => handleDownload(formData, nombre, apellidos, departamento)} disabled={loading}>
+                  {loading ? "Descargando..." : "Descargar formato"}
+                </Button2>
+              </div>
                 <div className="flex items-center space-x-2">
-                <input
+                  <input
                     id="comprobante"
-                    name="comprobante"  // Asegúrate que sea "comprobante"
+                    name="comprobante"
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
@@ -1381,13 +1459,15 @@ export function TablaPermisosFaltaUsuario() {
                     Subir archivo (PDF, JPG, PNG) Max: 4MB
                   </Button2>
                   {formData.comprobante && (
-                    <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {formData.comprobante}
+                    </span>
                   )}
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+              <Button2 type="submit" className="w-full" disabled={!formData.puestoVacaciones || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
             </CardFooter>
           </form>
         </Card>
@@ -1844,6 +1924,17 @@ export function TablaPermisosFaltaUsuario() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
+                <Label htmlFor="puestoVacaciones">Puesto</Label>
+                <Input
+                  id="puestoVacaciones"
+                  name="puestoVacaciones"
+                  type="text"
+                  value={formData.puestoVacaciones}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Puesto..." />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="motivo">Días</Label>
                 <Input
                   id="dias"
@@ -1871,10 +1962,11 @@ export function TablaPermisosFaltaUsuario() {
               </div>
               <div className="space-y-2">
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Firma</Label>
+                  <Label htmlFor="comprobante">Formato</Label>
                   <div style={{marginLeft: "10px"}}>
                     <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`
+                        `<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`
                       } arrow>
                       <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
                     </Tooltip>
