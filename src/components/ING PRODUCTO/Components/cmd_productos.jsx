@@ -16,6 +16,7 @@ import Swal from 'sweetalert2';
 import { Textarea } from "@/components/ui/textarea"
 import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
+import Link from "next/link";
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState('');
@@ -48,7 +49,7 @@ export function CMDProductos() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('/api/ProductEngineering/getProductos');
+        const response = await axios.get('/api/ProductEngineering/getCMDProductos');
         if (response.data.success) {
           setProducts(response.data.products);
         } else {
@@ -161,7 +162,7 @@ export function CMDProductos() {
 
   const fetchProductsUpdate = async () => {
     try {
-      const response = await axios.get('/api/ProductEngineering/getProductos');
+      const response = await axios.get('/api/ProductEngineering/getCMDProductos');
       if (response.data.success) {
         setProducts(response.data.products);
       } else {
@@ -1315,7 +1316,8 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
-                  {user.catalogoProductos === 1 ? <Button size="sm" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button variant="outline" size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px"}}>Enviar al catálogo</Button>}
+                  {user.nombre.startsWith("Fórmula") ? <Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link> : <div hidden></div>}
+                  {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
               </TableCell>

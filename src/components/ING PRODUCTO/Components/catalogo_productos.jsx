@@ -491,6 +491,7 @@ export function CatalogoProductos() {
       setNuevoProducto5(null);
     
       setNivelActivo("Tipo");
+      fetchComplementos();
     };    
 
     useEffect(() => {

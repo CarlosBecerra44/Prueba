@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const productos = await Producto.findAll({
-      where: { eliminado: 0, catalogo: 1 },
+      where: { eliminado: 0 },
       include: [
         { model: Proveedor, as: "proveedor", attributes: ["nombre"] },
         { model: TipoMateriaPrima, as: "categoria", attributes: ["nombre"] },
