@@ -60,13 +60,15 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getSession } from "next-auth/react";
-import { Checkbox } from "@/components/ui/checkbox";
-import "../../../../public/CSS/spinner.css";
-import Link from "next/link";
-import { PlusCircle, X } from "lucide-react";
+} from "@/components/ui/popover"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { getSession } from 'next-auth/react';
+import { Checkbox } from "@/components/ui/checkbox"
+import '../../../../public/CSS/spinner.css';
+import Link from "next/link"
+import { PlusCircle, X } from "lucide-react"
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const MySwal = withReactContent(Swal);
 
@@ -102,6 +104,7 @@ export function TablaPermisosFaltaUsuario() {
   const [fechaFinPapeleta, setFechaFin] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkTime = () => {
@@ -332,6 +335,68 @@ export function TablaPermisosFaltaUsuario() {
     } catch (error) {
       console.error("Error al obtener el formulario:", error);
     }
+  };
+
+  const handleDownload = (formData, nombre, apellido, departamento) => {
+    setLoading(true);
+
+    const doc = new jsPDF();
+  
+    doc.addImage("/logo.png", "JPEG", 50, 7, 50, 20, undefined, 'MEDIUM');
+  
+    // Título
+    doc.setFontSize(14);
+    doc.text("Solicitud de Vacaciones", 130, 20, { align: "center" });
+  
+    // Función para formatear fecha dd/mm/yyyy
+    const formatDate = (date) => {
+      if (!date) return "";
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+  
+    const today = formatDate(new Date());
+    const fechaInicio = formatDate(formData.fechaInicio);
+    const fechaFin = formatDate(formData.fechaFin);
+  
+    // Tabla de datos clave
+    const tableData = [
+      ["Fecha de solicitud", today],
+      ["Nombre", `${nombre} ${apellido}`],
+      ["Departamento", departamento],
+      ["Puesto", formData.puestoVacaciones || "Sin puesto especificado"],
+      ["Vacaciones", `Días: ${formData.dias || ""}    Del: ${fechaInicio}    Al: ${fechaFin}`],
+      ["Observaciones", formData.motivo || "Ninguna"],
+    ];
+  
+    autoTable(doc, {
+      startY: 45,
+      body: tableData,
+      styles: { fontSize: 11, cellPadding: 4 },
+      headStyles: { fillColor: [200, 200, 200], textColor: 0 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 120 },
+      },
+    });
+  
+    // Firma centrada al final
+    const finalY = doc.lastAutoTable.finalY + 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const lineWidth = 80;
+    const lineX = (pageWidth - lineWidth) / 2;
+  
+    doc.line(lineX, finalY, lineX + lineWidth, finalY);
+    doc.setFontSize(12);
+    doc.text("Firma del empleado", pageWidth / 2, finalY + 7, { align: "center" });
+  
+    doc.save(`Formato vacaciones - ${nombre} ${apellido}.pdf`);
+
+    setLoading(false);
   };
 
   // Función para extraer los datos relevantes
@@ -1664,122 +1729,95 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-              <DialogContent
-                className="border-none p-0"
-                onInteractOutside={(event) => event.preventDefault()}
-              >
-                <Card className="w-full max-w-lg">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center">
-                      Vacaciones
-                    </CardTitle>
-                  </CardHeader>
-                  <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="motivo">Días</Label>
-                        <Input
-                          id="dias"
-                          name="dias"
-                          type="number"
-                          onChange={handleChange}
-                          required
-                          placeholder="Dias..."
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {renderDatePicker(
-                          "Fecha de inicio",
-                          formData.fechaInicio,
-                          handleChange,
-                          "fechaInicio"
-                        )}
-                        {renderDatePicker(
-                          "Fecha de fin",
-                          formData.fechaFin,
-                          handleChange,
-                          "fechaFin"
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="motivo">Observaciones</Label>
-                        <Textarea
-                          id="motivo"
-                          name="motivo"
-                          onChange={handleChange}
-                          required
-                          className="min-h-[100px]"
-                          placeholder="Coloca tus observaciones aquí..."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="comprobante">Firma</Label>
-                          <div style={{ marginLeft: "10px" }}>
-                            <Tooltip
-                              title={`<p style="margin:0;padding:5px;text-align:justify;">Firma en una hoja en blanco, escanea dicha hoja y adjúntala en este apartado en cualquiera de los formatos permitidos.</p>`}
-                              arrow
-                            >
-                              <HelpIcon
-                                style={{ cursor: "pointer", fontSize: 18 }}
-                              />
-                            </Tooltip>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            id="comprobante"
-                            name="comprobante" // Asegúrate que sea "comprobante"
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={handleFileChange}
-                            required
-                            className="hidden"
-                          />
-                          <Button2
-                            type="button"
-                            variant="outline"
-                            onClick={() =>
-                              document.getElementById("comprobante").click()
-                            }
-                            className="w-full"
-                          >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Subir archivo (PDF, JPG, PNG) Max: 4MB
-                          </Button2>
-                          {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
-                              {formData.comprobante}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button2
-                        type="submit"
-                        className="w-full"
-                        disabled={
-                          !formData.dias ||
-                          !formData.fechaInicio ||
-                          !formData.fechaFin ||
-                          !formData.motivo ||
-                          !formData.comprobante
-                        }
-                      >
-                        Enviar
-                      </Button2>
-                    </CardFooter>
-                  </form>
-                </Card>
-              </DialogContent>
-            </Dialog>
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="puestoVacaciones">Puesto</Label>
+                <Input
+                  id="puestoVacaciones"
+                  name="puestoVacaciones"
+                  type="text"
+                  onChange={handleChange}
+                  placeholder="Puesto..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  onChange={handleChange}
+                  placeholder="Dias..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
+                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  onChange={handleChange}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px" }}>
+                <Label htmlFor="comprobante">Formato</Label>
+
+                <Tooltip
+                  title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                  arrow
+                >
+                  <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                </Tooltip>
+
+                {/* Botón personalizado para descargar el PDF */}
+                <Button2 variant="outline" onClick={() => handleDownload(formData, nombre, apellidos, departamento)} disabled={loading}>
+                  {loading ? "Descargando..." : "Descargar formato"}
+                </Button2>
+              </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="comprobante"
+                    name="comprobante"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    required
+                    className="hidden"
+                  />
+                  <Button2
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("comprobante").click()}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Subir archivo (PDF, JPG, PNG) Max: 4MB
+                  </Button2>
+                  {formData.comprobante && (
+                    <span className="text-sm text-muted-foreground">
+                      {formData.comprobante}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button2 type="submit" className="w-full" disabled={!formData.puestoVacaciones || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
+            </CardFooter>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
           )}
         </div>
       )}
@@ -2576,10 +2614,241 @@ export function TablaPermisosFaltaUsuario() {
                   </Dialog>
                 )}
               </div>
-            </Card>
-          </DialogContent>
-        </Dialog>
-      )}
+              <div className="grid grid-cols-7 gap-1">
+                <div>
+                  {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario", true)}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="actividad">Actividad</Label>
+                  <Input
+                    id="actividad"
+                    name="actividad"
+                    type="text"
+                    value={formData.actividad}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Input
+                    id="descripcion"
+                    name="descripcion"
+                    type="text"
+                    value={formData.descripcion}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="persona">Persona respuesta</Label>
+                  <Input
+                    id="persona"
+                    name="persona"
+                    type="text"
+                    value={formData.persona}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tiempoRespuesta">Tiempo de respuesta</Label>
+                  <Input
+                    id="tiempoRespuesta"
+                    name="tiempoRespuesta"
+                    type="text"
+                    value={formData.tiempoRespuesta}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comentarios">Comentarios</Label>
+                  <Input
+                    id="comentarios"
+                    name="comentarios"
+                    type="text"
+                    value={formData.comentarios}
+                    onChange={handleChange}
+                    readOnly={true}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+              {formData.planTrabajo.otros.map((otro, index) => (
+               <div key={index} className="grid grid-cols-7 gap-1">
+               <div>
+                {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", true, true)}
+              </div>
+               <div>
+                 <Input
+                   id={`actividad-${index}`}
+                   name={`actividad-${index}`}
+                   type="text"
+                   value={otro.actividad}
+                   onChange={(e) => handleTrabajoChange(e, index, "actividad")}
+                   readOnly={true}
+                 />
+               </div>
+               <div className="col-span-2">
+                 <Input
+                   id={`descripcion-${index}`}
+                   name={`descripcion-${index}`}
+                   type="text"
+                   value={otro.descripcion}
+                   onChange={(e) => handleTrabajoChange(e, index, "descripcion")}
+                   readOnly={true}
+                 />
+               </div>
+               <div >
+                 <Input
+                   id={`persona-${index}`}
+                   name={`persona-${index}`}
+                   type="text"
+                   value={otro.persona}
+                   onChange={(e) => handleTrabajoChange(e, index, "persona")}
+                   readOnly={true}
+                 />
+               </div>
+               <div >
+                 <Input
+                   id={`tiempoRespuesta-${index}`}
+                   name={`tiempoRespuesta-${index}`}
+                   type="text"
+                   value={otro.tiempoRespuesta}
+                   onChange={(e) => handleTrabajoChange(e, index, "tiempoRespuesta")}
+                   readOnly={true}
+                 />
+               </div>
+               <div>
+               <div>
+               <Input
+                    id={`comentarios-${index}`}
+                    name={`comentarios-${index}`}
+                    type="text"
+                    value={otro.comentarios}
+                    onChange={(e) => handleTrabajoChange(e, index, "comentarios")}
+                    readOnly={true}
+                  />
+                  </div>
+               </div>
+             </div>
+              ))}
+            </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+          {tipoFormulario2 === "Vacaciones" && (
+            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
+            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
+            <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="puestoVacaciones">Puesto</Label>
+                <Input
+                  id="puestoVacaciones"
+                  name="puestoVacaciones"
+                  type="text"
+                  value={formData.puestoVacaciones}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Puesto..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Días</Label>
+                <Input
+                  id="dias"
+                  name="dias"
+                  type="number"
+                  value={formData.dias}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="Dias..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
+                  {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motivo">Observaciones</Label>
+                <Textarea
+                  id="motivo"
+                  name="motivo"
+                  value={formData.motivo}
+                  onChange={handleChange}
+                  readOnly={true}
+                  className="min-h-[100px]"
+                  placeholder="Coloca tus observaciones aquí..." />
+              </div>
+              <div className="space-y-2">
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <Label htmlFor="comprobante">Formato</Label>
+                  <div style={{marginLeft: "10px"}}>
+                    <Tooltip title={
+                        `<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`
+                      } arrow>
+                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
+                    </Tooltip>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {formData.comprobante ? (
+                    <a
+                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Descargar {formData.comprobante}
+                  </a>    
+                  ) : (
+                    <>
+                      <Input
+                        id="comprobante"
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            comprobante: file ? file.name : null,
+                          }));
+                        }}
+                        required
+                        className="hidden"
+                      />
+                      <Button2
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("comprobante").click()}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Subir archivo (PDF, JPG, PNG)
+                      </Button2>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </form>
+        </Card>
+            </DialogContent>
+          </Dialog>
+          )}
+        </div>
+      </Card>
+    </DialogContent>
+  </Dialog>
+)}
 
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
