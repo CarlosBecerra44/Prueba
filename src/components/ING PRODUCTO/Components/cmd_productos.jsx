@@ -280,8 +280,9 @@ export function CMDProductos() {
       compraMinima: product.cMinima,
       medicion: product.medicion,
       descripcion: product.descripcion,
-    };
-  };
+      catalogoProductos: product.catalogo,
+    }
+  }
 
   // Filtrar eventos según el término de búsqueda y estatus
   const filteredProducts = products.map(extractData).filter(
@@ -559,6 +560,78 @@ export function CMDProductos() {
       });
     }
   };
+
+  const handleAgregarAlCatalogo = async (index) => {
+    try {
+      const response = await axios.post("/api/ProductEngineering/agregarAlCatalogo", {
+        id: index,
+      });
+  
+      if (response.data.success) {
+        fetchProductsUpdate();
+        Swal.fire({
+          title: "Éxito",
+          text: "Producto agregado al catálogo correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error al agregar el producto al catálogo:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo agregar el producto al catálogo",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  }
+
+  const handleQuitarDelCatalogo = async (index) => {
+    try {
+      const response = await axios.post("/api/ProductEngineering/quitarDelCatalogo", {
+        id: index,
+      });
+  
+      if (response.data.success) {
+        fetchProductsUpdate();
+        Swal.fire({
+          title: "Éxito",
+          text: "Producto eliminado del catálogo correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error al eliminar el producto del catálogo:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo eliminar el producto del catálogo",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  }
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
@@ -1069,9 +1142,7 @@ export function CMDProductos() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
             <TableHead>Nombre</TableHead>
-            <TableHead>Proveedor</TableHead>
             <TableHead>Categoría general</TableHead>
             <TableHead>Subcategoría</TableHead>
             <TableHead>Especificación</TableHead>
@@ -1084,28 +1155,65 @@ export function CMDProductos() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentUsers.length > 0 ? (
-            currentUsers.map((user, index) => (
-              <TableRow key={index}>
-                <TableCell>{user.id || "Sin datos"}</TableCell>
-                <TableCell>{user.nombre || "Sin datos"}</TableCell>
-                <TableCell>{user.proveedor || "Sin datos"}</TableCell>
-                <TableCell>{user.categoriaGeneral || "Sin datos"}</TableCell>
-                <TableCell>{user.subcategoria || "Sin datos"}</TableCell>
-                <TableCell>{user.especificacion || "Sin datos"}</TableCell>
-                <TableCell>{user.codigo || "Sin datos"}</TableCell>
-                <TableCell>{"$" + user.costo || "Sin datos"}</TableCell>
-                <TableCell>{user.compraMinima || "Sin datos"}</TableCell>
-                <TableCell>{user.medicion || "Sin datos"}</TableCell>
-                <TableCell>{user.descripcion || "Sin datos"}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-                      <DialogTrigger asChild>
-                        <Button
-                          onClick={() => handleEditProduct(user.id)}
-                          variant="outline"
-                          size="sm"
+          {currentUsers.length >0 ?( currentUsers.map((user,index) => (
+            <TableRow key={index}>
+              <TableCell>{user.id || "Sin datos"}</TableCell>
+              <TableCell>{user.nombre || "Sin datos"}</TableCell>
+              <TableCell>{user.proveedor || "Sin datos"}</TableCell>
+              <TableCell>{user.categoriaGeneral || "Sin datos"}</TableCell>
+              <TableCell>{user.subcategoria || "Sin datos"}</TableCell>
+              <TableCell>{user.especificacion || "Sin datos"}</TableCell>
+              <TableCell>{user.codigo || "Sin datos"}</TableCell>
+              <TableCell>{"$" + user.costo || "Sin datos"}</TableCell>
+              <TableCell>{user.compraMinima || "Sin datos"}</TableCell>
+              <TableCell>{user.medicion || "Sin datos"}</TableCell>
+              <TableCell>{user.descripcion || "Sin datos"}</TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => handleEditProduct(user.id)} variant="outline" size="sm">Editar</Button>
+                    </DialogTrigger>
+                    <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+                        width: "100%", // Ajusta el ancho
+                        maxWidth: "800px", // Límite del ancho
+                        height: "80vh", // Ajusta la altura
+                        maxHeight: "80vh", // Límite de la altura
+                        padding: "20px", // Margen interno
+                        marginLeft: "120px"
+                        }}>
+            <DialogHeader>
+              <DialogTitle>Editar producto</DialogTitle>
+              <DialogDescription>Actualiza los detalles necesarios del producto.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmitUpdate}>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2 col-span-2">
+                        <Label htmlFor="nombre">Nombre</Label>
+                        <Input
+                        id="nombre"
+                        name="nombre"
+                        value={selectedProduct?.nombre || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, nombre: e.target.value})}
+                        type="text"
+                        placeholder="Nombre del producto"
+                        />
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="proveedor">Proveedor</Label>
+                        <Select
+                          id="proveedor"
+                          name="proveedor"
+                          value={selectedProduct?.proveedor_id ? selectedProduct.proveedor_id.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              proveedor_id: Number(value), // Convertimos el valor a número
+                            }));
+                          }}
+                          disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
                         >
                           Editar
                         </Button>
@@ -1560,16 +1668,27 @@ export function CMDProductos() {
                       <div hidden></div>
                     )}
                   </div>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={12} className="text-center">
-                No se encontraron productos
+                </div>
+            <DialogFooter>
+              <Button type="submit">Actualizar producto</Button>
+            </DialogFooter>
+            </form>
+          </DialogContent>
+                  </Dialog>
+                  {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
+                </div>
+               
               </TableCell>
             </TableRow>
-          )}
+                    ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={12} className="text-center">
+                  No se encontraron productos
+                </TableCell>
+              </TableRow>
+            )}
+          
         </TableBody>
       </Table>
       {/* Paginación */}

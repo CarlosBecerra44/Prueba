@@ -16,6 +16,7 @@ export default async function handler(req, res) {
     // Construir los filtros
     const filters = {
       eliminado: 0,
+      catalogo: 1,
       ...(tipoId && { Tipo_id: tipoId }),
       ...(categoriaId && { Categoria_id: categoriaId }),
       ...(subcategoriaId && { Subcategoria_id: subcategoriaId }),
