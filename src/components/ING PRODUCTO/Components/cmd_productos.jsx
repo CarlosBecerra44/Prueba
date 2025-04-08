@@ -1,42 +1,22 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import styles from "../../../../public/CSS/spinner.css";
-import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import axios from "axios";
-import Swal from "sweetalert2";
-import { Textarea } from "@/components/ui/textarea";
-import { useUser } from "@/pages/api/hooks";
-import { Upload } from "lucide-react";
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import styles from '../../../../public/CSS/spinner.css';
+import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react"
+import { useSession,  signOut } from "next-auth/react";
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { Textarea } from "@/components/ui/textarea"
+import {useUser} from "@/pages/api/hooks";
+import { Upload } from 'lucide-react'
+import Link from "next/link";
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState("");
@@ -69,9 +49,8 @@ export function CMDProductos() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(
-          "/api/ProductEngineering/getProductos"
-        );
+        const response = await axios.get('/api/ProductEngineering/getCMDProductos');
+
         if (response.data.success) {
           setProducts(response.data.products);
         } else {
@@ -215,7 +194,8 @@ export function CMDProductos() {
 
   const fetchProductsUpdate = async () => {
     try {
-      const response = await axios.get("/api/ProductEngineering/getProductos");
+      const response = await axios.get('/api/ProductEngineering/getCMDProductos');
+
       if (response.data.success) {
         setProducts(response.data.products);
       } else {
@@ -1675,6 +1655,9 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
+                  {user.nombre.startsWith("Fórmula") ? <Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link> : <div hidden></div>}
+                  {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
+
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
                
