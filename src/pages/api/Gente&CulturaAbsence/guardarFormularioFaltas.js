@@ -1,11 +1,13 @@
 import FormulariosFaltas from '@/models/FormulariosFaltas';
 import moment from 'moment-timezone';
+import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
+  const formulario_id = uuidv4();
   const { formData, tipoFormulario2, formularioNormalOExtemporaneo } = req.body;
   const { id } = req.query;
   const estatus = "Pendiente";
@@ -18,6 +20,7 @@ export default async function handler(req, res) {
     // Si no hay fechas, insertar un solo registro con valores NULL
     if (!fechaInicio && !fechaFin) {
       await FormulariosFaltas.create({
+        formulario_id,
         formulario: JSON.stringify(formData),
         id_usuario: id,
         estatus,
@@ -58,6 +61,7 @@ export default async function handler(req, res) {
 
       // Insertar en la base de datos usando Sequelize
       await FormulariosFaltas.create({
+        formulario_id,
         formulario: JSON.stringify(formData),
         id_usuario: id,
         estatus,
