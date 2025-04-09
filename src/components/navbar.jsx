@@ -56,7 +56,10 @@ export function Navbarv1() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
+          body: JSON.stringify({
+            correo: session.user.email,
+            numero_empleado: session.user.numero_empleado,
+          }),
         });
         const userData = await response.json();
         if (userData.success) {
@@ -89,12 +92,7 @@ export function Navbarv1() {
   }
 
   const categories = [
-    { id: "principal", name: "Principal", href: "#", roles: ["*"]},
-    { id: 2, name: "Inicio", href: "/inicio", icon: <InicioIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    //{ id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    { id: 4, name: "Ver mis papeletas", href: '/papeletas_usuario', icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    //{ id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
-    { id: "departamentos", name: "Departamentos", href: "#", roles: ["master","adminMkt","adminGC","itMember","standardMkt","hasAccessPapeletas","hasAccessAutorizarPapeletas","hasAccessSolicitudes","hasAllAccessVacantes","hasAccessVacantes","hasAccessCMDProductos"]},
+    { id: "principal", name: "Principal", href: "#", roles: ["*"] },
     {
       id: 2,
       name: "Inicio",
@@ -102,13 +100,7 @@ export function Navbarv1() {
       icon: <InicioIcon className="h-6 w-6 text-gray-400" />,
       roles: ["*"],
     },
-    {
-      id: 3,
-      name: "Noticias",
-      href: "#",
-      icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />,
-      roles: ["*"],
-    },
+    //{ id: 3, name: "Noticias", href: "#", icon: <NoticiasIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
     {
       id: 4,
       name: "Ver mis papeletas",
@@ -116,13 +108,8 @@ export function Navbarv1() {
       icon: <PapeletasIcon className="h-6 w-6 text-gray-400" />,
       roles: ["*"],
     },
-    {
-      id: 5,
-      name: "Ayuda",
-      href: "#",
-      icon: <AyudaIcon className="h-6 w-6 text-gray-400" />,
-      roles: ["*"],
-    },
+    //{ id: 5, name: "Ayuda", href: "#", icon: <AyudaIcon className="h-6 w-6 text-gray-400" />, roles: ["*"] },
+
     {
       id: "departamentos",
       name: "Departamentos",
@@ -210,17 +197,15 @@ export function Navbarv1() {
         },
       ],
     },
-    { id: 8, name: "Mercadotecnia", href: "#", icon: <MarketingIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"], subMenu: [{ name: "Estrategias", href: "/marketing/estrategias", icon: <EstrategiaIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt"] }, { name: "Firmas", href: "/marketing/etiquetas/tabla_general", icon: <FirmasIcon className="h-6 w-6 text-gray-400" />, roles: ["master","adminMkt","standardMkt"] }]   },
-    //{ id: 9, name: "Operaciones", href: "#", icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: 10, name: "IT", href: "#", icon: <ITIcon className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"], subMenu: [{ name: "Inventario", href: "/it/inventario", icon: <InventarioIcon style={{marginLeft:"20px"}} className="h-6 w-6 text-gray-400" />, roles: ["master","itMember"] }] },
-    { 
-      id: 11, 
-      name: "Ingeniería de nuevo producto", 
-      href: "#", icon: <IngenieriaNuevoPIcon 
-      className="h-6 w-6 text-gray-400" />, 
-      roles: ["master","hasAccessCMDProductos"],
+    {
+      id: 8,
+      name: "Mercadotecnia",
+      href: "#",
+      icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,
+      roles: ["master", "adminMkt", "standardMkt"],
       subMenu: [
         {
+          id: 1,
           name: "Estrategias",
           href: "/marketing/estrategias",
           icon: (
@@ -232,6 +217,7 @@ export function Navbarv1() {
           roles: ["master", "adminMkt"],
         },
         {
+          id: 2,
           name: "Firmas",
           href: "/marketing/etiquetas/tabla_general",
           icon: <FirmasIcon className="h-6 w-6 text-gray-400" />,
@@ -254,6 +240,7 @@ export function Navbarv1() {
       roles: ["master", "itMember"],
       subMenu: [
         {
+          id: 1,
           name: "Inventario",
           href: "/it/inventario",
           icon: (
@@ -299,13 +286,18 @@ export function Navbarv1() {
     //{ id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     //{ id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
     //{ id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    { id: "configuraciones", name: "Configuraciones", href: "#", roles: ["master","hasAccessCMDProductos"] },
-    { 
-      id: 18, 
-      name: "CMD", 
-      href: "#", 
-      icon: <ConfigIcon className="h-6 w-6 text-gray-400" />, 
-      roles: ["master","hasAccessCMDProductos"],
+    {
+      id: "configuraciones",
+      name: "Configuraciones",
+      href: "#",
+      roles: ["master", "hasAccessCMDProductos"],
+    },
+    {
+      id: 18,
+      name: "CMD",
+      href: "#",
+      icon: <ConfigIcon className="h-6 w-6 text-gray-400" />,
+      roles: ["master", "hasAccessCMDProductos"],
       subMenu: [
         {
           id: 1,
