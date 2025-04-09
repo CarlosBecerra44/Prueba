@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     const formulario = await FormulariosFaltas.findOne({
       attributes: [
         'id',
+        'formulario_id',
         'formulario',
         'id_usuario',
         'fecha_inicio',

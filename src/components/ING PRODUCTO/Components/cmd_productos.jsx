@@ -1195,457 +1195,258 @@ export function CMDProductos() {
                           }}
                           disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
                         >
-                          Editar
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent
-                        onInteractOutside={(event) => event.preventDefault()}
-                        className="border-none p-0 overflow-y-auto no-scrollbar"
-                        style={{
-                          width: "100%", // Ajusta el ancho
-                          maxWidth: "800px", // Límite del ancho
-                          height: "80vh", // Ajusta la altura
-                          maxHeight: "80vh", // Límite de la altura
-                          padding: "20px", // Margen interno
-                          marginLeft: "120px",
-                        }}
-                      >
-                        <DialogHeader>
-                          <DialogTitle>Editar producto</DialogTitle>
-                          <DialogDescription>
-                            Actualiza los detalles necesarios del producto.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmitUpdate}>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-2">
-                              <Label htmlFor="nombre">Nombre</Label>
-                              <Input
-                                id="nombre"
-                                name="nombre"
-                                value={selectedProduct?.nombre || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    nombre: e.target.value,
-                                  })
-                                }
-                                type="text"
-                                placeholder="Nombre del producto"
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2">
-                              <Label htmlFor="proveedor">Proveedor</Label>
-                              <Select
-                                id="proveedor"
-                                name="proveedor"
-                                value={
-                                  selectedProduct?.proveedor_id
-                                    ? selectedProduct.proveedor_id.toString()
-                                    : ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedProduct((prevProduct) => ({
-                                    ...prevProduct,
-                                    proveedor_id: Number(value), // Convertimos el valor a número
-                                  }));
-                                }}
-                                disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  {proveedores.find(
-                                    (prov) =>
-                                      prov.id === selectedProduct?.proveedor_id
-                                  )?.nombre || "Seleccionar proveedor"}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {proveedores.length > 0 ? (
-                                    proveedores.map((pro) => (
-                                      <SelectItem
-                                        key={pro.id}
-                                        value={pro.id.toString()}
-                                      >
-                                        {pro.nombre}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem disabled>
-                                      No hay proveedores disponibles
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="categoriaGeneral">
-                                Categoría general
-                              </Label>
-                              <Select
-                                id="categoriaGeneral"
-                                name="categoriaGeneral"
-                                value={
-                                  selectedProduct?.Tipo_id
-                                    ? selectedProduct.Tipo_id.toString()
-                                    : ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedProduct((prevProduct) => ({
-                                    ...prevProduct,
-                                    Categoria_id: null,
-                                    Tipo_id: Number(value), // Convertimos el valor a número
-                                  }));
-                                }}
-                                disabled={categorias.length === 0} // Deshabilitar si no hay categorías disponibles
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  {categorias.find(
-                                    (cat) => cat.id === selectedProduct?.Tipo_id
-                                  )?.nombre || "Seleccionar categoría"}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {categorias.length > 0 ? (
-                                    categorias.map((cat) => (
-                                      <SelectItem
-                                        key={cat.id}
-                                        value={cat.id.toString()}
-                                      >
-                                        {cat.nombre}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem disabled>
-                                      No hay categorías disponibles
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2">
-                              <Label htmlFor="subcategoria">Subcategoría</Label>
-                              <Select
-                                id="subcategoria"
-                                name="subcategoria"
-                                value={
-                                  selectedProduct?.Categoria_id
-                                    ? selectedProduct.Categoria_id.toString()
-                                    : ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedProduct((prevProduct) => ({
-                                    ...prevProduct,
-                                    Subcategoria_id: null,
-                                    Categoria_id: Number(value), // Convertimos el valor a número
-                                  }));
-                                }}
-                                disabled={
-                                  subcategoriasFiltradasEdit.length === 0
-                                } // Deshabilitar si no hay subcategorías
-                              >
-                                <SelectTrigger>
-                                  {subcategoriasFiltradasEdit.find(
-                                    (s) =>
-                                      s.id === selectedProduct?.Categoria_id
-                                  )?.nombre || "Seleccionar subcategoría"}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {subcategoriasFiltradasEdit.length > 0 ? (
-                                    subcategoriasFiltradasEdit.map((sub) => (
-                                      <SelectItem
-                                        key={sub.id}
-                                        value={sub.id.toString()}
-                                      >
-                                        {sub.nombre}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem disabled>
-                                      No hay subcategorías disponibles
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="especificacion">
-                                Especificación
-                              </Label>
-                              <Select
-                                id="especificacion"
-                                name="especificacion"
-                                value={
-                                  selectedProduct?.Subcategoria_id
-                                    ? selectedProduct.Subcategoria_id.toString()
-                                    : ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedProduct((prevProduct) => ({
-                                    ...prevProduct,
-                                    Subcategoria_id: Number(value), // Convertimos el valor a número
-                                  }));
-                                }}
-                                disabled={
-                                  especificacionesFiltradasEdit.length === 0
-                                } // Deshabilitar si no hay opciones
-                              >
-                                <SelectTrigger>
-                                  {especificacionesFiltradasEdit.find(
-                                    (s) =>
-                                      s.id === selectedProduct?.Subcategoria_id
-                                  )?.nombre || "Seleccionar especificación"}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {especificacionesFiltradasEdit.length > 0 ? (
-                                    especificacionesFiltradasEdit.map((esp) => (
-                                      <SelectItem
-                                        key={esp.id}
-                                        value={esp.id.toString()}
-                                      >
-                                        {esp.nombre}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem disabled>
-                                      No hay especificaciones disponibles
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2">
-                              <Label htmlFor="medicion">Medición</Label>
-                              <Input
-                                id="medicion"
-                                name="medicion"
-                                value={selectedProduct?.medicion || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    medicion: e.target.value,
-                                  })
-                                }
-                                type="text"
-                                placeholder="Piezas, kilos, millares"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="codigo">Código</Label>
-                              <Input
-                                id="codigo"
-                                name="codigo"
-                                value={selectedProduct?.codigo || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    codigo: e.target.value,
-                                  })
-                                }
-                                type="text"
-                                placeholder="Código Odoo"
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2">
-                              <Label htmlFor="costo">Costo</Label>
-                              <Input
-                                id="costo"
-                                name="costo"
-                                value={selectedProduct?.costo || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    costo: e.target.value,
-                                  })
-                                }
-                                type="number"
-                                placeholder="$"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="compraMinima">
-                                Compra mínima
-                              </Label>
-                              <Input
-                                id="compraMinima"
-                                name="compraMinima"
-                                value={selectedProduct?.cMinima || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    cMinima: e.target.value,
-                                  })
-                                }
-                                type="number"
-                                placeholder="Compra mínima"
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2">
-                              <Label htmlFor="fecha_evaluacion">
-                                Fecha de evaluación
-                              </Label>
-                              <Input
-                                id="fecha_evaluacion"
-                                name="fecha_evaluacion"
-                                value={selectedProduct?.evaluacion || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    evaluacion: e.target.value,
-                                  })
-                                }
-                                type="date"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="veredicto">Veredicto</Label>
-                              <Select
-                                id="veredicto"
-                                name="veredicto"
-                                value={
-                                  selectedProduct?.veredicto
-                                    ? selectedProduct.veredicto.toString()
-                                    : ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedProduct((prevProduct) => ({
-                                    ...prevProduct,
-                                    veredicto: value,
-                                  }));
-                                }}
-                              >
-                                <SelectTrigger id="veredicto">
-                                  <SelectValue placeholder="Seleccionar veredicto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1">Aceptado</SelectItem>
-                                  <SelectItem value="2">No aceptado</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-2">
-                              <Label htmlFor="descripcion">Descripción</Label>
-                              <Textarea
-                                id="descripcion"
-                                name="descripcion"
-                                value={selectedProduct?.descripcion || ""}
-                                onChange={(e) =>
-                                  setSelectedProduct({
-                                    ...selectedProduct,
-                                    descripcion: e.target.value,
-                                  })
-                                }
-                                type="text"
-                                placeholder="Descripción del producto"
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="space-y-2 col-span-2"
-                          >
-                            <Label htmlFor="imagenes">Imágenes</Label>
-                            <div className="flex flex-col space-y-2">
-                              <input
-                                id="imagenes"
-                                name="imagenes"
-                                type="file"
-                                multiple
-                                accept=".jpg,.jpeg,.png"
-                                onChange={handleFileChangeEdit}
-                                className="hidden"
-                              />
-                              <Button
-                                type="button" // Evita que se envíe el formulario
-                                variant="outline"
-                                onClick={() =>
-                                  document.getElementById("imagenes").click()
-                                }
-                                className="w-full"
-                              >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
-                              </Button>
+                          <SelectTrigger className="col-span-3">
+                            {proveedores.find((prov) => prov.id === selectedProduct?.proveedor_id)?.nombre || "Seleccionar proveedor"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {proveedores.length > 0 ? (
+                              proveedores.map((pro) => (
+                                <SelectItem key={pro.id} value={pro.id.toString()}>
+                                  {pro.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay proveedores disponibles</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="categoriaGeneral">Categoría general</Label>
+                        <Select
+                          id="categoriaGeneral"
+                          name="categoriaGeneral"
+                          value={selectedProduct?.Tipo_id ? selectedProduct.Tipo_id.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              Categoria_id: null,
+                              Tipo_id: Number(value), // Convertimos el valor a número
+                            }));
+                          }}
+                          disabled={categorias.length === 0} // Deshabilitar si no hay categorías disponibles
+                        >
+                          <SelectTrigger className="col-span-3">
+                            {categorias.find((cat) => cat.id === selectedProduct?.Tipo_id)?.nombre || "Seleccionar categoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categorias.length > 0 ? (
+                              categorias.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id.toString()}>
+                                  {cat.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay categorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="subcategoria">Subcategoría</Label>
+                        <Select
+                          id="subcategoria"
+                          name="subcategoria"
+                          value={selectedProduct?.Categoria_id ? selectedProduct.Categoria_id.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              Subcategoria_id: null,
+                              Categoria_id: Number(value), // Convertimos el valor a número
+                            }));
+                          }}
+                          disabled={subcategoriasFiltradasEdit.length === 0} // Deshabilitar si no hay subcategorías
+                        >
+                          <SelectTrigger>
+                            {subcategoriasFiltradasEdit.find((s) => s.id === selectedProduct?.Categoria_id)?.nombre || "Seleccionar subcategoría"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subcategoriasFiltradasEdit.length > 0 ? (
+                              subcategoriasFiltradasEdit.map((sub) => (
+                                <SelectItem key={sub.id} value={sub.id.toString()}>
+                                  {sub.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay subcategorías disponibles</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="especificacion">Especificación</Label>
+                        <Select
+                          id="especificacion"
+                          name="especificacion"
+                          value={selectedProduct?.Subcategoria_id ? selectedProduct.Subcategoria_id.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              Subcategoria_id: Number(value), // Convertimos el valor a número
+                            }));
+                          }}
+                          disabled={especificacionesFiltradasEdit.length === 0} // Deshabilitar si no hay opciones
+                        >
+                          <SelectTrigger>
+                            {especificacionesFiltradasEdit.find((s) => s.id === selectedProduct?.Subcategoria_id)?.nombre || "Seleccionar especificación"}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {especificacionesFiltradasEdit.length > 0 ? (
+                              especificacionesFiltradasEdit.map((esp) => (
+                                <SelectItem key={esp.id} value={esp.id.toString()}>
+                                  {esp.nombre}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem disabled>No hay especificaciones disponibles</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="medicion">Medición</Label>
+                        <Input
+                        id="medicion"
+                        name="medicion"
+                        value={selectedProduct?.medicion || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, medicion: e.target.value})}
+                        type="text"
+                        placeholder="Piezas, kilos, millares"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="codigo">Código</Label>
+                        <Input
+                        id="codigo"
+                        name="codigo"
+                        value={selectedProduct?.codigo || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, codigo: e.target.value})}
+                        type="text"
+                        placeholder="Código Odoo"
+                        />
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="costo">Costo</Label>
+                        <Input
+                        id="costo"
+                        name="costo"
+                        value={selectedProduct?.costo || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, costo: e.target.value})}
+                        type="number"
+                        placeholder="$"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="compraMinima">Compra mínima</Label>
+                        <Input
+                        id="compraMinima"
+                        name="compraMinima"
+                        value={selectedProduct?.cMinima || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, cMinima: e.target.value})}
+                        type="number"
+                        placeholder="Compra mínima"
+                        />
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2">
+                        <Label htmlFor="fecha_evaluacion">Fecha de evaluación</Label>
+                        <Input
+                        id="fecha_evaluacion"
+                        name="fecha_evaluacion"
+                        value={selectedProduct?.evaluacion || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, evaluacion: e.target.value})}
+                        type="date"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="veredicto">Veredicto</Label>
+                        <Select
+                          id="veredicto"
+                          name="veredicto"
+                          value={selectedProduct?.veredicto ? selectedProduct.veredicto.toString() : ""}
+                          onValueChange={(value) => {
+                            setSelectedProduct((prevProduct) => ({
+                              ...prevProduct,
+                              veredicto: value,
+                            }));
+                          }}
+                        >
+                          <SelectTrigger id="veredicto">
+                            <SelectValue placeholder="Seleccionar veredicto" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Aceptado</SelectItem>
+                            <SelectItem value="2">No aceptado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
+                    <div className="space-y-2 col-span-2">
+                        <Label htmlFor="descripcion">Descripción</Label>
+                        <Textarea
+                        id="descripcion"
+                        name="descripcion"
+                        value={selectedProduct?.descripcion || ''} 
+                        onChange={(e) => setSelectedProduct({...selectedProduct, descripcion: e.target.value})}
+                        type="text"
+                        placeholder="Descripción del producto"
+                        />
+                    </div>
+                </div>
+                <div style={{ marginBottom: "15px" }} className="space-y-2 col-span-2">
+                  <Label htmlFor="imagenes">Imágenes</Label>
+                  <div className="flex flex-col space-y-2">
+                    <input
+                      id="imagenes"
+                      name="imagenes"
+                      type="file"
+                      multiple
+                      accept=".jpg,.jpeg,.png"
+                      onChange={handleFileChangeEdit}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button" // Evita que se envíe el formulario
+                      variant="outline"
+                      onClick={() => document.getElementById("imagenes").click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
+                    </Button>
 
-                              {/* Vista previa de imágenes */}
-                              {selectedProduct?.imagenes.length > 0 && (
-                                <div className="grid grid-cols-4 gap-2">
-                                  {selectedProduct.imagenes.map(
-                                    (img, index) => (
-                                      <div key={index} className="relative">
-                                        <img
-                                          src={
-                                            img instanceof File
-                                              ? URL.createObjectURL(img)
-                                              : `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-                                                  img
-                                                )}`
-                                          }
-                                          alt={`imagen ${index + 1}`}
-                                          className="w-20 h-20 object-cover border rounded"
-                                        />
-                                        <button
-                                          type="button" // Evita el envío del formulario
-                                          onClick={() =>
-                                            handleRemoveImageEdit(index)
-                                          }
-                                          className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
-                                        >
-                                          X
-                                        </button>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                    {/* Vista previa de imágenes */}
+                    {selectedProduct?.imagenes.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {selectedProduct.imagenes.map((img, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={
+                                img instanceof File
+                                  ? URL.createObjectURL(img)
+                                  : `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(img)}`
+                              }
+                              alt={`imagen ${index + 1}`}
+                              className="w-20 h-20 object-cover border rounded"
+                            />
+                            <button
+                              type="button" // Evita el envío del formulario
+                              onClick={() => handleRemoveImageEdit(index)}
+                              className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
+                            >
+                              X
+                            </button>
                           </div>
-                          <DialogFooter>
-                            <Button type="submit">Actualizar producto</Button>
-                          </DialogFooter>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                    {isMaster ? (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    ) : (
-                      <div hidden></div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1657,10 +1458,8 @@ export function CMDProductos() {
                   </Dialog>
                   {user.nombre.startsWith("Fórmula") ? <Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link> : <div hidden></div>}
                   {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
-
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
-               
               </TableCell>
             </TableRow>
                     ))
