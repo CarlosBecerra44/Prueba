@@ -6,6 +6,7 @@ const FormulariosFaltas = sequelize.define(
   "FormulariosFaltas",
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    formulario_id: { type: DataTypes.UUID, allowNull: true },
     formulario: { 
         type: DataTypes.TEXT, // Usamos TEXT en lugar de JSON
         allowNull: false,
