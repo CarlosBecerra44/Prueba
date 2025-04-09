@@ -27,7 +27,7 @@ export default function RootLayout({ children}) {
       <meta name="description" content="Bienvenido a AIONET, la plataforma ..." />
       <link rel="icon" type="image/png" sizes="16x16" href="/logo1.png" />
     </head> */}
-    <body suppressHydrationWarning={true}>
+    <body suppressHydrationWarning={true} className={inter.className}>
     <SessionProvider> 
     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
   {/* Navbar */}
