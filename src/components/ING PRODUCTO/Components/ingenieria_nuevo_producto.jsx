@@ -83,7 +83,7 @@ export function IngProducto() {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value)
   }
-  console.log("PRODUCTOS: " + products)
+  
   const handleCategorySelect = (category) => {
     if (selectedCategories.includes(category)) {
       setSelectedCategories(selectedCategories.filter((c) => c !== category))

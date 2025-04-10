@@ -2563,24 +2563,6 @@ export function TablaPermisosFaltaUsuario() {
                     {evento.puesto || "Sin puesto especificado"}
                   </TableCell>
                   <TableCell>
-                    {evento.tipo === "Suspension"
-                      ? "Suspensión"
-                      : evento.tipo || "Sin tipo especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.numero_empleado ||
-                      "Sin número de empleado especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.nombre || "Sin nombre de empleado especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.departamento || "Sin departamento especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.puesto || "Sin puesto especificado"}
-                  </TableCell>
-                  <TableCell>
                     {evento.jefe_directo
                       ? (() => {
                           const jefe = allUsers.find(
