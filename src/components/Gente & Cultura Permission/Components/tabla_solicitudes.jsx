@@ -767,67 +767,33 @@ export function TablaSolicitudes() {
       console.log("No se ha iniciado sesión");
       return;
     }
-
+  
     try {
-      // Subir el formulario
-      const response = await fetch(
-        `/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            formData,
-            tipoFormulario2,
-            formularioNormalOExtemporaneo,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        Swal.fire({
-          title: "Creado",
-          text: "Se ha creado correctamente",
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/gente_y_cultura/solicitudes";
-        });
-      } else {
-        Swal.fire("Error", "Error al crear la solicitud", "error");
-        return;
-      }
-
       // Subir el archivo al FTP solo si hay un archivo seleccionado
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         const reader = new FileReader();
-
+  
         reader.onload = async (e) => {
           const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
-
+  
           try {
-            const ftpResponse = await fetch(
-              "/api/Gente&CulturaPermission/subirPDFPapeletas",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  fileName: file.name,
-                  fileContent: base64File, // Enviar el archivo en Base64
-                }),
-              }
-            );
-
+            const ftpResponse = await fetch("/api/Gente&CulturaPermission/subirPDFPapeletas", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                fileName: file.name,
+                fileContent: base64File, // Enviar el archivo en Base64
+              }),
+            });
+  
             const ftpResult = await ftpResponse.json();
             if (ftpResponse.ok) {
               console.log("Archivo subido al FTP exitosamente", ftpResult);
-
+              
               // Asignar el nombre del archivo subido a formData.comprobante
               formData.comprobante = ftpResult.fileName;
             } else {
@@ -844,7 +810,7 @@ export function TablaSolicitudes() {
           // Después de subir el archivo, enviar el formulario
           await enviarFormulario();
         };
-
+  
         reader.readAsDataURL(file); // Leer el archivo como base64
       } else {
         // Si no hay archivo, solo enviar el formulario
@@ -852,6 +818,65 @@ export function TablaSolicitudes() {
       }
     } catch (error) {
       console.error("Error en el formulario:", error);
+      Swal.fire("Error", "Error al enviar el formulario", "error");
+    }
+  };
+
+  const enviarFormulario = async () => {
+    const mensaje1 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
+    const mensaje2 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
+      Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
+    try {
+      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
+      });
+  
+      if (response.ok) {
+        const mensaje = formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
+        try {
+          const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoSolicitudes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              formData2: {
+                tipo: 'Alerta de nueva solicitud',
+                descripcion: mensaje,
+                id: idUser,
+                dpto: null,
+              },
+            }),
+          });
+  
+          if (enviarNotificacion.ok) {
+            Swal.fire({
+              title: 'Creado',
+              text: 'Se ha creado correctamente',
+              icon: 'success',
+              timer: 3000,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = "/gente_y_cultura/solicitudes";
+            });
+          } else {
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
+          }
+        } catch (error) {
+          console.error("Error en la solicitud de notificación:", error);
+          Swal.fire("Error", "Error en la notificación", "error");
+        }
+      } else {
+        Swal.fire("Error", "Error al crear la solicitud", "error");
+      }
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error);
       Swal.fire("Error", "Error al enviar el formulario", "error");
     }
   };
@@ -3986,22 +4011,7 @@ export function TablaSolicitudes() {
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
                   <TableCell>
-                    {evento.tipo === "Suspension"
-                      ? "Suspensión o castigo"
-                      : evento.tipo || "Sin tipo especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.numero_empleado ||
-                      "Sin número de empleado especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.nombre || "Sin nombre de empleado especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.departamento || "Sin departamento especificado"}
-                  </TableCell>
-                  <TableCell>
-                    {evento.puesto || "Sin puesto especificado"}
+                    {evento.id || "Sin ID especificado"}
                   </TableCell>
                   <TableCell>
                     {evento.tipo === "Suspension"
