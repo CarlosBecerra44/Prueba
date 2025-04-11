@@ -108,7 +108,7 @@ export function ValidarProducto() {
                 {productoAValidar?.identificadores?.filter((i) => i.medicion !== "MM.").length === 0 ? (
                     <p style={{marginTop: "45px"}} className="text-center text-gray-500">No hay identificadores con otras mediciones.</p>
                 ) : (
-                    productoAValidar.identificadores
+                    productoAValidar?.identificadores
                     .filter((identificador) => identificador.medicion !== "MM.")
                     .map((identificador) => (
                         <div key={identificador.id} className="space-y-2">
@@ -166,7 +166,7 @@ export function ValidarProducto() {
                 {productoAValidar?.identificadores?.filter((i) => i.medicion === "MM.").length === 0 ? (
                     <p style={{marginTop: "45px"}} className="text-center text-gray-500">No hay identificadores con medición en mm.</p>
                 ) : (
-                    productoAValidar.identificadores
+                    productoAValidar?.identificadores
                     .filter((identificador) => identificador.medicion === "MM.")
                     .map((identificador) => (
                         <div key={identificador.id} className="space-y-2">
