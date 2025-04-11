@@ -14,52 +14,44 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Buscar el producto con su identificador relacionado
-    const producto = await IdentificadorProducto.findOne({
+    const identificadorProducto = await IdentificadorProducto.findAll({
       where: { producto_id: id },
       include: [
         {
           model: Identificador,
-          attributes: [
-            "id",
-            "nombre",
-            "no_articulo",
-            "categoria",
-            "linea",
-            "formato",
-            "presentacion_sugerida",
-            "modo_empleo",
-            "ingredientes",
-            "funcion_principal",
-            "funcion_especifica",
-            "recomendado_para",
-            "productos_complementarios",
-          ],
+          attributes: ["id", "nombre", "medicion", "calculable"],
+        },
+        {
+          model: Producto,
+          attributes: ["id", "nombre", "codigo"],
         },
       ],
     });
 
-    if (!producto) {
+    if (!identificadorProducto || identificadorProducto.length === 0) {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
 
-    // Estructura el resultado incluyendo datos del Identificador
-    const identificador = producto.Identificador || {};
-
     const result = {
-      ...producto.toJSON(), // convierte producto a objeto simple
-      nombre: identificador.nombre || null,
-      no_articulo: identificador.no_articulo || null,
-      categoria: identificador.categoria || null,
-      linea: identificador.linea || null,
-      formato: identificador.formato || null,
-      presentacion_sugerida: identificador.presentacion_sugerida || null,
-      modo_empleo: identificador.modo_empleo || null,
-      ingredientes: identificador.ingredientes || null,
-      funcion_principal: identificador.funcion_principal || null,
-      funcion_especifica: identificador.funcion_especifica || null,
-      recomendado_para: identificador.recomendado_para || null,
-      productos_complementarios: identificador.productos_complementarios || null,
+      identificadoresProductos: identificadorProducto.map((item) => ({
+        id: item.id || null,
+        identificador_id: item.identificador_id || null,
+        producto_id: item.producto_id || null,
+        tolerado: item.tolerado || null,
+        registroV: item.registroV || null,
+        registroN: item.registroN || null,
+      })),
+      producto: {
+        id: identificadorProducto[0].Producto?.id || null,
+        nombre: identificadorProducto[0].Producto?.nombre || null,
+        codigo: identificadorProducto[0].Producto?.codigo || null,
+      },
+      identificadores: identificadorProducto.map((item) => ({
+        id: item.Identificador?.id || null,
+        nombre: item.Identificador?.nombre || null,
+        medicion: item.Identificador?.medicion || null,
+        calculable: item.Identificador?.calculable || null,
+      })),
     };
 
     return res.status(200).json({ success: true, producto: result });

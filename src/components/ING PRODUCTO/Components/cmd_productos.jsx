@@ -1454,7 +1454,9 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
-                  {user.nombre?.startsWith("Fórmula") ? (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) : (<div hidden></div>)}
+                  {user.nombre?.startsWith("Fórmula") ? 
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) :
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>)}
                   {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>

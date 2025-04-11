@@ -12,7 +12,6 @@ const IdentificadorProducto = sequelize.define(
     tolerado: { type: DataTypes.INTEGER, allowNull: true },
     registroV: { type: DataTypes.STRING, allowNull: true },
     registroN: { type: DataTypes.DOUBLE, allowNull: true },
-    calculable: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "identificadores_productos",
