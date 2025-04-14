@@ -1368,7 +1368,7 @@ export function CMDProductos() {
                         <Select
                           id="veredicto"
                           name="veredicto"
-                          value={selectedProduct?.veredicto ? selectedProduct.veredicto.toString() : ""}
+                          value={selectedProduct?.veredicto.toString() || ''}
                           onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
                               ...prevProduct,
@@ -1380,8 +1380,8 @@ export function CMDProductos() {
                             <SelectValue placeholder="Seleccionar veredicto" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">Aceptado</SelectItem>
-                            <SelectItem value="2">No aceptado</SelectItem>
+                            <SelectItem value='1'>Aceptado</SelectItem>
+                            <SelectItem value='0'>No aceptado</SelectItem>
                           </SelectContent>
                         </Select>
                     </div>

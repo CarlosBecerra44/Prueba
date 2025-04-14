@@ -1,6 +1,7 @@
 import Producto from "@/models/Productos";
 import Identificador from "@/models/Identificadores";
 import IdentificadorProducto from "@/models/IdentificadoresProductos";
+import IdentificadorTipoProducto from "@/models/IdentificadoresTiposProductos";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -14,39 +15,45 @@ export default async function handler(req, res) {
   }
 
   try {
-    const identificadorProducto = await IdentificadorProducto.findAll({
-      where: { producto_id: id },
+    const producto = await Producto.findOne({
+      where: { id },
+    });
+
+    const identificadorTipoProducto = await IdentificadorTipoProducto.findAll({
+      where: { tipo_id: producto.Tipo_id },
       include: [
         {
           model: Identificador,
           attributes: ["id", "nombre", "medicion", "calculable"],
         },
-        {
-          model: Producto,
-          attributes: ["id", "nombre", "codigo"],
-        },
       ],
     });
 
-    if (!identificadorProducto || identificadorProducto.length === 0) {
+    const identificadorProducto = await IdentificadorProducto.findAll({
+      where: { producto_id: id },
+    });
+
+    if (!identificadorTipoProducto || identificadorTipoProducto.length === 0) {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
 
     const result = {
       identificadoresProductos: identificadorProducto.map((item) => ({
-        id: item.id || null,
-        identificador_id: item.identificador_id || null,
-        producto_id: item.producto_id || null,
-        tolerado: item.tolerado || null,
-        registroV: item.registroV || null,
-        registroN: item.registroN || null,
+        id: item?.id || null,
+        identificador_id: item?.identificador_id || null,
+        producto_id: item?.producto_id || null,
+        tolerado: item?.tolerado || null,
+        registroV: item?.registroV || null,
+        registroN: item?.registroN || null,
       })),
       producto: {
-        id: identificadorProducto[0].Producto?.id || null,
-        nombre: identificadorProducto[0].Producto?.nombre || null,
-        codigo: identificadorProducto[0].Producto?.codigo || null,
+        id: producto?.id || null,
+        nombre: producto?.nombre || null,
+        codigo: producto?.codigo || null,
+        veredicto: producto?.veredicto,
+        tipo: producto?.Tipo_id || null,
       },
-      identificadores: identificadorProducto.map((item) => ({
+      identificadores: identificadorTipoProducto.map((item) => ({
         id: item.Identificador?.id || null,
         nombre: item.Identificador?.nombre || null,
         medicion: item.Identificador?.medicion || null,
