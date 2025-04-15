@@ -1368,7 +1368,7 @@ export function CMDProductos() {
                         <Select
                           id="veredicto"
                           name="veredicto"
-                          value={selectedProduct?.veredicto.toString() || ''}
+                          value={selectedProduct?.veredicto?.toString() || ''}
                           onValueChange={(value) => {
                             setSelectedProduct((prevProduct) => ({
                               ...prevProduct,
