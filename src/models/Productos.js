@@ -26,6 +26,10 @@ const Producto = sequelize.define(
     desviacion: { type: DataTypes.DOUBLE, allowNull: true },
     eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
     catalogo: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    doc_id: { type: DataTypes.INTEGER, allowNull: true },
+    creado_por: { type: DataTypes.INTEGER, allowNull: true },
+    validado_por: { type: DataTypes.INTEGER, allowNull: true },
+    tolerancias_por: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "productos",
