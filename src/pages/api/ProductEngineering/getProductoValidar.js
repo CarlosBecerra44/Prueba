@@ -2,6 +2,7 @@ import Producto from "@/models/Productos";
 import Identificador from "@/models/Identificadores";
 import IdentificadorProducto from "@/models/IdentificadoresProductos";
 import IdentificadorTipoProducto from "@/models/IdentificadoresTiposProductos";
+import ImagenProducto from "@/models/ImagenesProductos";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -33,6 +34,11 @@ export default async function handler(req, res) {
       where: { producto_id: id },
     });
 
+    const imagenes = await ImagenProducto.findAll({
+      where: { producto_id: id },
+      attributes: ["ruta"]
+    });
+
     if (!identificadorTipoProducto || identificadorTipoProducto.length === 0) {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
@@ -53,10 +59,16 @@ export default async function handler(req, res) {
         veredicto: producto?.veredicto,
         tipo: producto?.Tipo_id || null,
         descripcion: producto?.descripcion || null,
+        composicion: producto?.composicion || null,
+        modo_empleo: producto?.modo_empleo || null,
+        condiciones: producto?.condiciones || null,
+        distribucion: producto?.distribucion || null,
+        consideracion: producto?.consideracion || null,
         creado_por: producto?.creado_por || null,
         validado_por: producto?.validado_por || null,
         tolerancias_por: producto?.tolerancias_por || null,
       },
+      imagenes: imagenes.map((item) => item.ruta),
       identificadores: identificadorTipoProducto.map((item) => ({
         id: item.Identificador?.id || null,
         nombre: item.Identificador?.nombre || null,

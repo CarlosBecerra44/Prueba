@@ -26,6 +26,7 @@ export function FichaTecnica() {
   const [idUser, setID] = useState("");
   const [imagenes, setImagenes] = useState([]);
   const [tipoProducto, setTipoProducto] = useState("");
+  const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
   const imagenesBolsas = ["/public/imagenesValidaciones/dibujo bolsa 1.jpg", "/public/imagenesValidaciones/dibujo bolsa 2.jpg"];
   const imagenesPastilleros = ["/public/imagenesValidaciones/dibujo envase 1.jpg", "/public/imagenesValidaciones/dibujo envase 3.jpg", "/public/imagenesValidaciones/dibujo envase 2.jpg"];
@@ -74,6 +75,7 @@ export function FichaTecnica() {
                     producto: producto.producto,
                     identificadores: producto.identificadores,
                     identificadoresProductos: registros,
+                    imagenes: producto.imagenes
                   });
 
                 setTipoProducto(producto.producto.tipo);
@@ -125,7 +127,7 @@ export function FichaTecnica() {
         });
       
         try {
-          const blob = await pdf(<FichaTecnicaPDF producto={productoAValidar} />).toBlob();
+          const blob = await pdf(<FichaTecnicaPDF producto={productoAValidar} imagenAdicional={imagenSeleccionada} />).toBlob();
           const url = URL.createObjectURL(blob);
           window.open(url, "_blank");
       
@@ -139,6 +141,34 @@ export function FichaTecnica() {
           });
         }
     };      
+
+    const handleImagenSeleccionada = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagenSeleccionada(reader.result); // Guarda base64
+        };
+        reader.readAsDataURL(file);
+      }
+    };    
+
+    const todasToleranciasLlenas = productoAValidar?.identificadoresProductos?.every(
+      (p) => p.tolerancia !== undefined && p.tolerancia !== ""
+    );
+    
+    const formularioCompleto = () => {
+      return (
+        productoAValidar?.composicion?.trim() &&
+        productoAValidar?.modo_empleo?.trim() &&
+        productoAValidar?.condiciones?.trim() &&
+        productoAValidar?.distribucion?.trim() &&
+        productoAValidar?.consideracion?.trim() &&
+        imagenSeleccionada &&
+        todasToleranciasLlenas
+      );
+    };
+    
 
   if (status === "loading") {
     return (
@@ -165,6 +195,41 @@ export function FichaTecnica() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        "/api/ProductEngineering/generarFichaTecnica",
+        {
+          idProductoValidar, productoAValidar, imagenSeleccionada, idUser
+        }
+      );
+
+      if (response.data.success) {
+        Swal.fire({
+          title: "Éxito",
+          text: "Ficha tecnica generada correctamente",
+          icon: "success",
+          showConfirmButton: true,
+        }).then(() => {
+          window.location.href = "/configuraciones/cmd/Productos";
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response.data.message,
+          icon: "error",
+          showConfirmButton: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error al agregar proveedor:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo generar la ficha técnica",
+        icon: "error",
+        showConfirmButton: true,
+      });
+    }
   };
 
   return (
@@ -180,6 +245,12 @@ export function FichaTecnica() {
                 onSubmit={handleSubmit} 
                 className="w-[1400px] border border-gray-300 rounded-lg shadow-md p-6 bg-white"
             >
+                <div style={{backgroundColor: "lightgreen"}} className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="space-y-2 col-span-2 text-center">
+                        <Label style={{fontSize: "20px"}}>Información general del producto</Label>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
@@ -188,6 +259,17 @@ export function FichaTecnica() {
                 <div className="space-y-2">
                     <Label htmlFor="no_articulo">No. de artículo (Código Odoo)</Label>
                     <Input style={{borderColor: "black", borderWidth: "2px", backgroundColor: "#f7f7f7"}} id="no_articulo" name="no_articulo" type="text" value={productoAValidar?.producto.codigo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, codigo: e.target.value},})} placeholder="Código Odoo" readOnly={true} />
+                </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="space-y-2">
+                    <Label htmlFor="nombre">Composición</Label>
+                    <Input id="nombre" name="nombre" type="text" value={productoAValidar?.producto.composicion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, composicion: e.target.value})} placeholder="Composición del producto" required/>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="no_articulo">Modo de empleo (uso)</Label>
+                    <Input id="no_articulo" name="no_articulo" type="text" value={productoAValidar?.modo_empleo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, modo_empleo: e.target.value})} placeholder="Modo de empleo del producto" required/>
                 </div>
                 </div>
 
@@ -276,6 +358,7 @@ export function FichaTecnica() {
                             id={`${identificador.nombre}-tolerancia`}
                             name={`${identificador.nombre}-tolerancia`}
                             type="number"
+                            required
                             value={
                                 productoAValidar.identificadoresProductos.find(i => i.identificador_id === identificador.id)?.tolerancia || ''
                             }
@@ -382,6 +465,7 @@ export function FichaTecnica() {
                             id={`${identificador.nombre}-tolerancia`}
                             name={`${identificador.nombre}-tolerancia`}
                             type="number"
+                            required
                             value={
                                 productoAValidar.identificadoresProductos.find(i => i.identificador_id === identificador.id)?.tolerancia || ''
                             }
@@ -419,23 +503,40 @@ export function FichaTecnica() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
                     <Label htmlFor="condiciones">Condiciones de almacenamiento</Label>
-                    <Textarea id="condiciones" name="condiciones" value={productoAValidar?.condiciones || ''} onChange={(e) => setProductoAValidar({...productoAValidar, condiciones: e.target.value})} placeholder="..." />
+                    <Textarea id="condiciones" name="condiciones" value={productoAValidar?.condiciones || ''} onChange={(e) => setProductoAValidar({...productoAValidar, condiciones: e.target.value})} placeholder="..." required />
                 </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
                     <Label htmlFor="distribucion">Distribución</Label>
-                    <Textarea id="distribucion" name="distribucion" value={productoAValidar?.distribucion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, distribucion: e.target.value})} placeholder="..." />
+                    <Textarea id="distribucion" name="distribucion" value={productoAValidar?.distribucion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, distribucion: e.target.value})} placeholder="..." required />
                 </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
                     <Label htmlFor="consideracion">Consideración sobre la disposición</Label>
-                    <Textarea id="consideracion" name="consideracion" value={productoAValidar?.consideracion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, consideracion: e.target.value})} placeholder="..." />
+                    <Textarea id="consideracion" name="consideracion" value={productoAValidar?.consideracion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, consideracion: e.target.value})} placeholder="..." required />
                 </div>
                 </div>
-                <Button onClick={handleAbrirPDF}>
-                Generar PDF
+
+                <div style={{backgroundColor: "lightgreen"}} className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="space-y-2 col-span-2 text-center">
+                        <Label style={{fontSize: "20px"}}>Imagen</Label>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2 col-span-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImagenSeleccionada(e)}
+                      className="mx-auto"
+                      required
+                    />
+                </div>
+                </div>
+                <Button onClick={handleAbrirPDF} type="submit" className="w-full" disabled={!formularioCompleto()}>
+                  Guardar ficha técnica
                 </Button>
             </form>
         </div>

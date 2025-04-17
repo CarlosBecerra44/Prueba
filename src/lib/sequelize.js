@@ -14,5 +14,4 @@ const sequelize = new Sequelize("aionnet_productivo", "aionnet", "Rrio1003", {
     console.error("Error de conexión:", error);
   }
 })();
-
 module.exports = sequelize;

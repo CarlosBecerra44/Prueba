@@ -76,6 +76,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000',
     marginVertical: 2,
   },  
+  planoMecanico: {
+    width: 150,
+    height: 250,
+  },
 });
 
 const Encabezado = () => (
@@ -125,7 +129,7 @@ const Encabezado = () => (
   );  
 
 // Componente principal
-const FichaTecnicaPDF = ({ producto }) => {
+const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
     const body = [
     ["Característica", "Unidad", "Máximo", "Mínimo", "Método de inspección"],
     ...producto.identificadores
@@ -196,7 +200,7 @@ const FichaTecnicaPDF = ({ producto }) => {
             {/* Fila 5 */}
             <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Composición</Text>
-            <Text style={styles.tableCol}>{producto.producto.composicion || "Sin datos"}</Text>
+            <Text style={styles.tableCol}>{producto.composicion || "Sin datos"}</Text>
             </View>
 
             {/* Fila 6 */}
@@ -208,7 +212,7 @@ const FichaTecnicaPDF = ({ producto }) => {
             {/* Fila 7 */}
             <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Modo de empleo (Uso)</Text>
-            <Text style={styles.tableCol}>{producto.producto.modo_empleo || "Sin datos"}</Text>
+            <Text style={styles.tableCol}>{producto.modo_empleo || "Sin datos"}</Text>
             </View>
 
         </View>
@@ -225,6 +229,28 @@ const FichaTecnicaPDF = ({ producto }) => {
               ))}
             </View>
           ))}
+        </View>
+
+        {/* Plano mecánico */}
+        <View style={styles.table} wrap={false}>
+          {/* Fila 1: Encabezado (una sola columna) */}
+          <View style={styles.tableRow}>
+            <View style={{ ...styles.tableCell, flex: 1 }}>
+              <Text style={{ fontWeight: 'bold' }}>Plano mecánico</Text>
+            </View>
+          </View>
+
+          {/* Fila 2: Contenido en dos columnas */}
+          <View style={styles.tableRow}>
+            <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Image src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(producto.imagenes?.[0] || '')}`} style={styles.planoMecanico} />
+            </View>
+            {imagenAdicional && (
+              <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Image src={imagenAdicional} style={styles.planoMecanico} />
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Sección 1 */}
