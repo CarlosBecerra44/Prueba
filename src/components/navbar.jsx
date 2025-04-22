@@ -12,6 +12,8 @@ import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons";
 import "../../public/CSS/navbar.css";
 import { useUser } from "@/pages/api/hooks";
 import { ShoppingBag } from "lucide-react";
+import { Users } from 'lucide-react';
+
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
   const [nombre, setNombre] = useState("");
@@ -311,6 +313,13 @@ export function Navbarv1() {
           name: "CMD Proveedores",
           href: "/configuraciones/cmd/proveedores",
           icon: <PackageOpen className="h-6 w-6 text-gray-400" />,
+          roles: ["master", "hasAccessCMDProductos"],
+        },
+        {
+          id: 3,
+          name: "CMD Actores",
+          href: "/configuraciones/cmd/actores",
+          icon: <Users className="h-6 w-6 text-gray-400" />,
           roles: ["master", "hasAccessCMDProductos"],
         },
       ],
