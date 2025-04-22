@@ -445,10 +445,10 @@ export function CMDActores() {
                 <SelectTrigger><SelectValue placeholder="Seleccione la sección" /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="1">Ingeniero de productos</SelectItem>
-                    <SelectItem value="2">Diseñador gráfico</SelectItem>
-                    <SelectItem value="3">Sección 3</SelectItem>
-                    <SelectItem value="4">Sección 4</SelectItem>
-                    <SelectItem value="5">Sección 5</SelectItem>
+                    <SelectItem value="2">Calidad</SelectItem>
+                    <SelectItem value="3">Ejecutivo de cuenta</SelectItem>
+                    <SelectItem value="4">Diseño </SelectItem>
+                    <SelectItem value="5">Nutricion </SelectItem>
                 </SelectContent>
                 </Select>
                 </div>
