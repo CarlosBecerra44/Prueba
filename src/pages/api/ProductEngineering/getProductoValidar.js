@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     const imagenes = await ImagenProducto.findAll({
       where: { producto_id: id },
-      attributes: ["ruta"]
+      attributes: ["ruta", "tipo"]
     });
 
     if (!identificadorTipoProducto || identificadorTipoProducto.length === 0) {
@@ -68,7 +68,10 @@ export default async function handler(req, res) {
         validado_por: producto?.validado_por || null,
         tolerancias_por: producto?.tolerancias_por || null,
       },
-      imagenes: imagenes.map((item) => item.ruta),
+      imagenes: imagenes.map((item) => ({
+        ruta: item.ruta,
+        tipo: item.tipo,
+      })),
       identificadores: identificadorTipoProducto.map((item) => ({
         id: item.Identificador?.id || null,
         nombre: item.Identificador?.nombre || null,

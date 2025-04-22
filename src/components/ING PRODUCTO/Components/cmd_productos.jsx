@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
 import Link from "next/link";
+import { getSession } from 'next-auth/react';
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState("");
@@ -45,7 +46,29 @@ export function CMDProductos() {
   const [imagenes, setImagenes] = useState([]);
   const [nombreProveedor, setNombreProveedor] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-  const [productoAValidar, setProductoAValidar] = useState(null);
+  const [idUser, setID] = useState("");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch("/api/Users/getUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+        } else {
+          alert("Error al obtener los datos del usuario");
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -90,67 +113,6 @@ export function CMDProductos() {
 
     fetchProveedores();
   }, []);
-
-  const fetchProductoAValidar = async (id) => {
-    if (!id) {
-      console.error('ID de producto no proporcionado');
-      return;
-    }
-  
-    try {
-      const response = await axios.post(`/api/ProductEngineering/getProductoValidar?id=${id}`);
-      if (response.data.success) {
-        const producto = response.data.producto;
-  
-        const registros = producto.identificadores.map((identificador) => {
-          const existente = producto.identificadoresProductos.find(
-            (p) => p.identificador_id === identificador.id
-          );
-  
-          return {
-            identificador_id: identificador.id,
-            registroN: existente?.registroN ?? '',
-            registroV: existente?.registroV ?? '',
-          };
-        });
-  
-        const paquete = {
-          producto: producto.producto,
-          identificadores: producto.identificadores,
-          identificadoresProductos: registros,
-        };
-  
-        setProductoAValidar(paquete); // si lo necesitas en otro lado
-  
-        generarFichaTecnica(paquete); // ⬅️ le pasamos directamente el objeto listo
-      } else {
-        console.error('Error al obtener el producto a validar:', response.data.message);
-      }
-    } catch (error) {
-      console.error('Error al hacer fetch del producto a validar:', error);
-    }
-  };
-  
-  const generarFichaTecnica = async (productoParaPDF) => {
-    if (!productoParaPDF) {
-      console.error('Producto a validar no proporcionado');
-      return;
-    }
-  
-    try {
-      const response = await axios.post(`/api/ProductEngineering/generarFichaTecnica`, productoParaPDF, {
-        responseType: 'blob',
-      });
-  
-      const file = new Blob([response.data], { type: 'application/pdf' });
-      const fileURL = URL.createObjectURL(file);
-      window.open(fileURL);
-    } catch (error) {
-      console.error('Error generando la ficha técnica:', error);
-    }
-  };  
-
-  console.log(productoAValidar);
 
   const getProveedores = async () => {
     try {
@@ -513,6 +475,7 @@ export function CMDProductos() {
     try {
       const formData = new FormData();
 
+      formData.append("idUser", idUser);
       formData.append("nombre", nombre);
       formData.append("proveedor", proveedor);
       formData.append("categoriaGeneral", categoriaGeneral);
@@ -1425,6 +1388,7 @@ export function CMDProductos() {
                         value={selectedProduct?.evaluacion || ''} 
                         onChange={(e) => setSelectedProduct({...selectedProduct, evaluacion: e.target.value})}
                         type="date"
+                        readOnly={true}
                         />
                     </div>
                     <div className="space-y-2">
@@ -1439,9 +1403,10 @@ export function CMDProductos() {
                               veredicto: value,
                             }));
                           }}
+                          disabled={true}
                         >
                           <SelectTrigger id="veredicto">
-                            <SelectValue placeholder="Seleccionar veredicto" />
+                            <SelectValue placeholder="Aún sin veredicto" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value='1'>Aceptado</SelectItem>

@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const Encabezado = () => (
+const Encabezado = ({ producto, imagenAdicional }) => (
     <View style={styles.header} fixed>
       <View style={styles.table}>
         {/* Primera fila */}
@@ -106,7 +106,7 @@ const Encabezado = () => (
           <View style={{ ...styles.tableCell, flex: 3 }}>
             <Text style={styles.tableCellHeader}>Código</Text>
             <View style={styles.divider} />
-            <Text></Text>
+            <Text>{imagenAdicional ? `FI-ING-${producto.producto?.id}` : ""}</Text>
           </View>
         </View>
   
@@ -129,7 +129,7 @@ const Encabezado = () => (
   );  
 
 // Componente principal
-const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
+const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValidacion, nombreTolerancias }) => {
     const body = [
     ["Característica", "Unidad", "Máximo", "Mínimo", "Método de inspección"],
     ...producto.identificadores
@@ -167,7 +167,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-      <Encabezado />
+        <Encabezado producto={producto} imagenAdicional={imagenAdicional} />
 
         {/* Información del evento */}
         <View style={[styles.section]} wrap={false}>
@@ -200,7 +200,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
             {/* Fila 5 */}
             <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Composición</Text>
-            <Text style={styles.tableCol}>{producto.composicion || "Sin datos"}</Text>
+            <Text style={styles.tableCol}>{producto.producto?.composicion || "Sin datos"}</Text>
             </View>
 
             {/* Fila 6 */}
@@ -212,7 +212,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
             {/* Fila 7 */}
             <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Modo de empleo (Uso)</Text>
-            <Text style={styles.tableCol}>{producto.modo_empleo || "Sin datos"}</Text>
+            <Text style={styles.tableCol}>{producto.producto?.modo_empleo || "Sin datos"}</Text>
             </View>
 
         </View>
@@ -243,13 +243,19 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
           {/* Fila 2: Contenido en dos columnas */}
           <View style={styles.tableRow}>
             <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Image src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(producto.imagenes?.[0] || '')}`} style={styles.planoMecanico} />
+            <Image src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(producto.imagenes?.[0].ruta || '')}`} style={styles.planoMecanico} />
             </View>
-            {imagenAdicional && (
+            {imagenAdicional ? (
               <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Image src={imagenAdicional} style={styles.planoMecanico} />
               </View>
-            )}
+            ) : (
+              <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Image src={"/banIcon.png"} style={styles.planoMecanico} />
+                <Text>Sin plano mecánico agregado</Text>
+              </View>
+            )
+            }
           </View>
         </View>
 
@@ -266,7 +272,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
         <View style={styles.tableRow}>
             <View style={styles.tableCell}>
             <Text>
-                {producto.condiciones}
+                {producto.producto?.condiciones}
             </Text>
             </View>
         </View>
@@ -285,7 +291,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
         <View style={styles.tableRow}>
             <View style={styles.tableCell}>
             <Text>
-                {producto.distribucion}
+                {producto.producto?.distribucion}
             </Text>
             </View>
         </View>
@@ -304,7 +310,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
         <View style={styles.tableRow}>
             <View style={styles.tableCell}>
             <Text>
-                {producto.consideracion}
+                {producto.producto?.consideracion}
             </Text>
             </View>
         </View>
@@ -359,13 +365,13 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional }) => {
         {/* Fila 2: Contenido */}
         <View style={styles.tableRow}>
             <View style={styles.tableCell}>
-            <Text>{producto.producto.creado_por ?? ""}</Text>
+            <Text>{nombreCreado ?? ""}</Text>
             </View>
             <View style={styles.tableCell}>
-            <Text>{producto.producto.validado_por ?? ""}</Text>
+            <Text>{nombreValidacion ?? ""}</Text>
             </View>
             <View style={styles.tableCell}>
-            <Text>{producto.producto.tolerancias_por ?? ""}</Text>
+            <Text>{nombreTolerancias ?? ""}</Text>
             </View>
         </View>
         </View>

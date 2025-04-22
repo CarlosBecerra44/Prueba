@@ -48,7 +48,7 @@ export default async function handler(req, res) {
         },
         {
           model: ImagenProducto,
-          attributes: ['ruta'],
+          attributes: ['ruta', 'tipo'],
           as: 'imagenes',
         },
       ],
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
     // Procesar las imágenes para devolverlas como array
     const productosConImagenes = productos.map(producto => {
-      const imagenes = producto.imagenes.map(img => img.ruta);
+      const imagenes = producto.imagenes.filter((img) => img.tipo === 1).map(img => img.ruta);
       return {
         ...producto.toJSON(),
         nombre_proveedor: producto.proveedor?.nombre || null,
