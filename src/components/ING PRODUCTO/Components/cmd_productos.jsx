@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
 import Link from "next/link";
+import { getSession } from 'next-auth/react';
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState("");
@@ -45,6 +46,29 @@ export function CMDProductos() {
   const [imagenes, setImagenes] = useState([]);
   const [nombreProveedor, setNombreProveedor] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [idUser, setID] = useState("");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const session = await getSession();
+      if (session) {
+        const response = await fetch("/api/Users/getUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+          setID(userData.user.id);
+        } else {
+          alert("Error al obtener los datos del usuario");
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -53,6 +77,7 @@ export function CMDProductos() {
 
         if (response.data.success) {
           setProducts(response.data.products);
+          console.log(response.data.products);
         } else {
           console.error(
             "Error al obtener los productos:",
@@ -261,6 +286,7 @@ export function CMDProductos() {
       medicion: product.medicion,
       descripcion: product.descripcion,
       catalogoProductos: product.catalogo,
+      veredicto: product.veredicto,
     }
   }
 
@@ -449,6 +475,7 @@ export function CMDProductos() {
     try {
       const formData = new FormData();
 
+      formData.append("idUser", idUser);
       formData.append("nombre", nombre);
       formData.append("proveedor", proveedor);
       formData.append("categoriaGeneral", categoriaGeneral);
@@ -1361,6 +1388,7 @@ export function CMDProductos() {
                         value={selectedProduct?.evaluacion || ''} 
                         onChange={(e) => setSelectedProduct({...selectedProduct, evaluacion: e.target.value})}
                         type="date"
+                        readOnly={true}
                         />
                     </div>
                     <div className="space-y-2">
@@ -1375,9 +1403,10 @@ export function CMDProductos() {
                               veredicto: value,
                             }));
                           }}
+                          disabled={true}
                         >
                           <SelectTrigger id="veredicto">
-                            <SelectValue placeholder="Seleccionar veredicto" />
+                            <SelectValue placeholder="Aún sin veredicto" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value='1'>Aceptado</SelectItem>
@@ -1457,6 +1486,7 @@ export function CMDProductos() {
                   {user.nombre?.startsWith("Fórmula") ? 
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) :
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>)}
+                  {user.veredicto === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : user.veredicto === 0 ? <span>Producto no aceptado</span> : (<div hidden></div>)}
                   {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
