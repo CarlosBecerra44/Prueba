@@ -20,7 +20,6 @@ export default async function handler(req, res) {
           identificador_id: identificador.identificador_id,
         },
         defaults: {
-          tolerado: identificador.tolerado || null,
           registroV: identificador.registroV || null,
           registroN: identificador.registroN || null,
         },
@@ -29,7 +28,6 @@ export default async function handler(req, res) {
       if (!creado) {
         // Ya existía, hacemos update
         await registro.update({
-          tolerado: identificador.tolerado || null,
           registroV: identificador.registroV || null,
           registroN: identificador.registroN || null,
         });

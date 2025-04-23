@@ -23,6 +23,9 @@ export function ValidarProducto() {
   const [idUser, setID] = useState("");
   const [imagenes, setImagenes] = useState([]);
   const [tipoProducto, setTipoProducto] = useState("");
+  const [actores, setActores] = useState([]);
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [apellidosUsuario, setApellidosUsuario] = useState("");
 
   const imagenesBolsas = ["/public/imagenesValidaciones/dibujo bolsa 1.jpg", "/public/imagenesValidaciones/dibujo bolsa 2.jpg"];
   const imagenesPastilleros = ["/public/imagenesValidaciones/dibujo envase 1.jpg", "/public/imagenesValidaciones/dibujo envase 3.jpg", "/public/imagenesValidaciones/dibujo envase 2.jpg"];
@@ -98,6 +101,8 @@ export function ValidarProducto() {
           const userData = await response.json();
           if (userData.success) {
             setID(userData.user.id);
+            setNombreUsuario(userData.user.nombre);
+            setApellidosUsuario(userData.user.apellidos);
           } else {
             alert("Error al obtener los datos del usuario");
           }
@@ -105,6 +110,29 @@ export function ValidarProducto() {
       };
       fetchUserData();
     }, []);
+
+    useEffect(() => {
+        const fetchActores = async () => {
+          try {
+            const response = await axios.get(
+              "/api/ProductEngineering/getActores"
+            );
+            if (response.data.success) {
+              setActores(response.data.actores);
+              console.log(response.data.actores);
+            } else {
+              console.error(
+                "Error al obtener los actores:",
+                response.data.message
+              );
+            }
+          } catch (error) {
+            console.error("Error al hacer fetch de los actores:", error);
+          }
+        };
+    
+        fetchActores();
+      }, []);
 
   if (status === "loading") {
     return (
@@ -132,6 +160,8 @@ export function ValidarProducto() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const usuariosANotificar = actores.filter((actor) => actor.tipo === 4 && actor.eliminado === 0);
+
     Swal.fire({
         title: "Cargando...",
         text: "Estamos procesando tu solicitud",
@@ -155,15 +185,55 @@ export function ValidarProducto() {
         }
 
         if (response.data.success) {
-        Swal.fire({
-            title: "Validado",
-            text: "El producto ha sido validado correctamente",
-            icon: "success",
-            timer: 3000,
-            showConfirmButton: false,
-        }).then(() => {
-            window.location.href = "/configuraciones/cmd/Productos";
-        });
+            if (tipoProducto.toString() !== "6" && productoAValidar?.producto?.veredicto?.toString() === "1") {
+                try {
+                  const enviarNotificacion = await fetch("/api/Reminder/envioEventoActores", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      formData2: {
+                        tipo: "Alerta de producto validado",
+                        descripcion: `<strong>${nombreUsuario} ${apellidosUsuario}</strong> ha validado el producto con el nombre: 
+                        <strong>${productoAValidar?.producto.nombre}</strong>.<br>
+                          Puedes revisarlo haciendo clic en este enlace: <a href="/configuraciones/cmd/Productos" style="color: blue; text-decoration: underline;">Revisar producto</a>`,
+                        id: idUser,
+                        dpto: null,
+                        actores: usuariosANotificar,
+                      },
+                    }),
+                  });
+              
+                  if (enviarNotificacion.ok) {
+                    Swal.fire({
+                      title: "Validado",
+                      text: "El producto ha sido validado correctamente",
+                      icon: "success",
+                      timer: 3000,
+                      showConfirmButton: false,
+                    }).then(() => {
+                      window.location.href = "/configuraciones/cmd/Productos";
+                    });
+                  } else {
+                    console.error("Error al enviar la notificación");
+                    Swal.fire("Error", "Error al enviar la notificación", "error");
+                  }
+                } catch (error) {
+                  console.error("Error en la solicitud de notificación:", error);
+                  Swal.fire("Error", "Error en la notificación", "error");
+                }
+              } else {
+                Swal.fire({
+                    title: "Validado",
+                    text: "El producto ha sido validado correctamente",
+                    icon: "success",
+                    timer: 3000,
+                    showConfirmButton: false,
+                  }).then(() => {
+                    window.location.href = "/configuraciones/cmd/Productos";
+                  });
+              }              
         } else {
         Swal.fire("Error", "Error al validar el producto", "error");
         }

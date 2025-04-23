@@ -165,10 +165,10 @@ export function CMDActores() {
   const transformarActorParaBusqueda = (actorToTransform) => {
     const roles = {
       1: "Ingeniero de productos",
-      2: "Diseñador gráfico",
-      3: "Sección 3",
-      4: "Sección 4",
-      5: "Sección 5",
+      2: "Calidad",
+      3: "Ejecutivo de cuenta",
+      4: "Diseño",
+      5: "Nutrición",
     };
   
     return {
@@ -447,8 +447,8 @@ export function CMDActores() {
                     <SelectItem value="1">Ingeniero de productos</SelectItem>
                     <SelectItem value="2">Calidad</SelectItem>
                     <SelectItem value="3">Ejecutivo de cuenta</SelectItem>
-                    <SelectItem value="4">Diseño </SelectItem>
-                    <SelectItem value="5">Nutricion </SelectItem>
+                    <SelectItem value="4">Diseño</SelectItem>
+                    <SelectItem value="5">Nutrición</SelectItem>
                 </SelectContent>
                 </Select>
                 </div>
@@ -575,10 +575,10 @@ export function CMDActores() {
                             <SelectTrigger><SelectValue placeholder="Seleccione la sección" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="1">Ingeniero de productos</SelectItem>
-                                <SelectItem value="2">Diseñador gráfico</SelectItem>
-                                <SelectItem value="3">Sección 3</SelectItem>
-                                <SelectItem value="4">Sección 4</SelectItem>
-                                <SelectItem value="5">Sección 5</SelectItem>
+                                <SelectItem value="2">Calidad</SelectItem>
+                                <SelectItem value="3">Ejecutivo de cuenta</SelectItem>
+                                <SelectItem value="4">Diseño</SelectItem>
+                                <SelectItem value="5">Nutrición</SelectItem>
                             </SelectContent>
                             </Select>
                             </div>

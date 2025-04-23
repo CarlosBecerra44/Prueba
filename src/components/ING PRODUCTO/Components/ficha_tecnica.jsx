@@ -164,6 +164,14 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
         }),
     ];      
 
+    const imagenPlano = producto.imagenes?.find(
+      (img) => img.tipo === 1 || img.tipo === 3
+    );
+    
+    const rutaPlano = imagenPlano?.ruta
+      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(imagenPlano.ruta)}`
+      : null;    
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -243,7 +251,9 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
           {/* Fila 2: Contenido en dos columnas */}
           <View style={styles.tableRow}>
             <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Image src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(producto.imagenes?.[0].ruta || '')}`} style={styles.planoMecanico} />
+            {rutaPlano && (
+              <Image src={rutaPlano} style={styles.planoMecanico} />
+            )}
             </View>
             {imagenAdicional ? (
               <View style={{ ...styles.tableCell, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
