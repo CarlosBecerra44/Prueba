@@ -25,6 +25,9 @@ export function FichaTecnica() {
   const [idUser, setID] = useState("");
   const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
+  const [actores, setActores] = useState([]);
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [apellidosUsuario, setApellidosUsuario] = useState("");
 
   useEffect(() => {
       const fetchUsers = async () => {
@@ -112,12 +115,37 @@ export function FichaTecnica() {
           const userData = await response.json();
           if (userData.success) {
             setID(userData.user.id);
+            setNombreUsuario(userData.user.nombre);
+            setApellidosUsuario(userData.user.apellidos);
           } else {
             alert("Error al obtener los datos del usuario");
           }
         }
       };
       fetchUserData();
+    }, []);
+
+    useEffect(() => {
+      const fetchActores = async () => {
+        try {
+          const response = await axios.get(
+            "/api/ProductEngineering/getActores"
+          );
+          if (response.data.success) {
+            setActores(response.data.actores);
+            console.log(response.data.actores);
+          } else {
+            console.error(
+              "Error al obtener los actores:",
+              response.data.message
+            );
+          }
+        } catch (error) {
+          console.error("Error al hacer fetch de los actores:", error);
+        }
+      };
+  
+      fetchActores();
     }, []);
 
     const getNombreCompleto = (id) => {
@@ -167,10 +195,13 @@ export function FichaTecnica() {
       }
     };
 
-    const todasToleranciasLlenas = productoAValidar?.identificadoresProductos?.every(
-      (p) => p.tolerancia !== undefined && p.tolerancia !== ""
-    );
-    
+    const todasToleranciasLlenas = productoAValidar?.identificadoresProductos
+    ?.filter((p) => {
+      const identificador = productoAValidar.identificadores.find(i => i.id === p.identificador_id);
+      return identificador?.medicion?.trim(); // Solo pasa si existe y no está vacía
+    })
+    .every((p) => p.tolerancia !== undefined && p.tolerancia !== "");
+
     const formularioCompleto = () => {
       return (
         productoAValidar?.producto?.composicion?.trim() &&
@@ -208,6 +239,8 @@ export function FichaTecnica() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const usuariosANotificar = actores.filter((actor) => actor.tipo === 2 && actor.eliminado === 0);
+
     try {
       const response = await axios.post(
         "/api/ProductEngineering/generarFichaTecnica",
@@ -217,14 +250,41 @@ export function FichaTecnica() {
       );
 
       if (response.data.success) {
-        Swal.fire({
-          title: "Éxito",
-          text: "Ficha técnica generada correctamente",
-          icon: "success",
-          showConfirmButton: true,
-        }).then(() => {
-          window.location.href = "/configuraciones/cmd/Productos";
-        });
+        try {
+          const enviarNotificacion = await fetch("/api/Reminder/envioEventoActores", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              formData2: {
+                tipo: "Alerta de nueva ficha técnica",
+                descripcion: `<strong>${nombreUsuario} ${apellidosUsuario}</strong> ha generado una nueva ficha técnica del producto con el nombre: 
+                <strong>${productoAValidar?.producto.nombre}</strong>.`,
+                id: idUser,
+                dpto: null,
+                actores: usuariosANotificar,
+              },
+            }),
+          });
+      
+          if (enviarNotificacion.ok) {
+            Swal.fire({
+              title: "Éxito",
+              text: "Ficha técnica generada correctamente",
+              icon: "success",
+              showConfirmButton: true,
+            }).then(() => {
+              window.location.href = "/configuraciones/cmd/Productos";
+            });
+          } else {
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
+          }
+        } catch (error) {
+          console.error("Error en la solicitud de notificación:", error);
+          Swal.fire("Error", "Error en la notificación", "error");
+        }
       } else {
         Swal.fire({
           title: "Error",

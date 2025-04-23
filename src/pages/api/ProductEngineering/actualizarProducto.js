@@ -4,7 +4,7 @@ import path from "path";
 import formidable from "formidable";
 import Producto from "@/models/Productos";
 import ImagenProducto from "@/models/ImagenesProductos";
-const { uploadDir } = require("@/lib/configUpload");
+import { Op } from "sequelize";
 
 // Configuración para evitar que Next.js maneje el bodyParser automáticamente
 export const config = {
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   const form = new formidable.IncomingForm({
     multiples: true,
-    uploadDir,
+    uploadDir: "/tmp",
     keepExtensions: true,
   });
 
@@ -46,9 +46,7 @@ export default async function handler(req, res) {
       costo: costo || null,
       cMinima: compraMinima || null,
       medicion: medicion || null,
-      descripcion: descripcion || null,
-      evaluacion: null,
-      veredicto: null
+      descripcion: descripcion || null
     };
 
     const imagenesExistentes = Object.keys(fields)
@@ -69,7 +67,12 @@ export default async function handler(req, res) {
       console.log("✅ Datos del producto actualizados correctamente.");
 
       const currentImages = await ImagenProducto.findAll({
-        where: { producto_id: id },
+        where: {
+          producto_id: id,
+          tipo: {
+            [Op.in]: [1, 3],
+          },
+        },
         attributes: ['id', 'ruta'],
       });
 
@@ -88,7 +91,7 @@ export default async function handler(req, res) {
       const uploadedImages = [];
       for (const file of imagenesNuevas) {
         const filePath = `/uploads/imagenesProductos/${file.name}`;
-        uploadedImages.push({ ruta: filePath, producto_id: id, tipo: 1 });
+        uploadedImages.push({ ruta: filePath, producto_id: id, tipo: 3 });
 
         // Subir al FTP
         const client = new Client();

@@ -18,6 +18,7 @@ import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
 import Link from "next/link";
 import { getSession } from 'next-auth/react';
+import { set } from "date-fns"
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState("");
@@ -47,6 +48,10 @@ export function CMDProductos() {
   const [nombreProveedor, setNombreProveedor] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [idUser, setID] = useState("");
+  const [actores, setActores] = useState([]);
+  const [permiso, setPermiso] = useState(null);
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [apellidosUsuario, setApellidosUsuario] = useState("");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -62,6 +67,8 @@ export function CMDProductos() {
         const userData = await response.json();
         if (userData.success) {
           setID(userData.user.id);
+          setNombreUsuario(userData.user.nombre);
+          setApellidosUsuario(userData.user.apellidos);
         } else {
           alert("Error al obtener los datos del usuario");
         }
@@ -112,6 +119,29 @@ export function CMDProductos() {
     };
 
     fetchProveedores();
+  }, []);
+
+  useEffect(() => {
+    const fetchActores = async () => {
+      try {
+        const response = await axios.get(
+          "/api/ProductEngineering/getActores"
+        );
+        if (response.data.success) {
+          setActores(response.data.actores);
+          console.log(response.data.actores);
+        } else {
+          console.error(
+            "Error al obtener los actores:",
+            response.data.message
+          );
+        }
+      } catch (error) {
+        console.error("Error al hacer fetch de los actores:", error);
+      }
+    };
+
+    fetchActores();
   }, []);
 
   const getProveedores = async () => {
@@ -230,6 +260,17 @@ export function CMDProductos() {
       console.error("Error al hacer fetch de los productos:", error);
     }
   };
+
+  useEffect(() => {
+    const obtenerPermiso = async () => {
+      if (!idUser || !actores?.length) return;
+  
+      const permisoUsuario = actores.find((actor) => actor.user_id === idUser);
+      setPermiso(permisoUsuario);
+    };
+  
+    obtenerPermiso();
+  }, [idUser, actores]);
 
   const handleDelete = async (index) => {
     try {
@@ -462,6 +503,8 @@ export function CMDProductos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const usuariosANotificar = actores.filter((actor) => actor.tipo === 5 && actor.eliminado === 0);
+
     Swal.fire({
       title: "Cargando...",
       text: "Estamos procesando tu solicitud",
@@ -504,15 +547,55 @@ export function CMDProductos() {
       }
 
       if (res.ok) {
-        setOpen(false);
-        fetchProductsUpdate(); // Refrescar lista de productos
-        Swal.fire({
-          title: "Creado",
-          text: "El producto ha sido creado correctamente",
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        });
+        if (categoriaGeneral.toString() === "6") {
+          try {
+            const enviarNotificacion = await fetch("/api/Reminder/envioEventoActores", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                formData2: {
+                  tipo: "Alerta de nuevo producto de tipo fórmula estrella",
+                  descripcion: `<strong>${nombreUsuario} ${apellidosUsuario}</strong> ha agregado un nuevo producto de tipo fórmula estrella con el nombre: 
+                  <strong>${nombre}</strong>.<br>
+                    Puedes revisarlo haciendo clic en este enlace: <a href="/configuraciones/cmd/Productos" style="color: blue; text-decoration: underline;">Revisar producto</a>`,
+                  id: idUser,
+                  dpto: null,
+                  actores: usuariosANotificar,
+                },
+              }),
+            });
+        
+            if (enviarNotificacion.ok) {
+              setOpen(false);
+              fetchProductsUpdate(); // Refrescar lista de productos
+              Swal.fire({
+                title: "Creado",
+                text: "El producto ha sido creado correctamente",
+                icon: "success",
+                timer: 3000,
+                showConfirmButton: false,
+              });
+            } else {
+              console.error("Error al enviar la notificación");
+              Swal.fire("Error", "Error al enviar la notificación", "error");
+            }
+          } catch (error) {
+            console.error("Error en la solicitud de notificación:", error);
+            Swal.fire("Error", "Error en la notificación", "error");
+          }
+        } else {
+          setOpen(false);
+          fetchProductsUpdate(); // Refrescar lista de productos
+          Swal.fire({
+            title: "Creado",
+            text: "El producto ha sido creado correctamente",
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: false,
+          });
+        }          
       } else {
         Swal.fire("Error", "Error al crear el producto", "error");
       }
@@ -569,20 +652,54 @@ export function CMDProductos() {
   };
 
   const handleAgregarAlCatalogo = async (index) => {
+    const usuariosANotificar = actores.filter((actor) => actor.tipo === 3 && actor.eliminado === 0);
+
     try {
       const response = await axios.post("/api/ProductEngineering/agregarAlCatalogo", {
         id: index,
       });
   
       if (response.data.success) {
-        fetchProductsUpdate();
-        Swal.fire({
-          title: "Éxito",
-          text: "Producto agregado al catálogo correctamente",
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        });
+        try {
+          const enviarNotificacion = await fetch(
+            "/api/Reminder/envioEventoActores",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                formData2: {
+                  tipo: "Alerta de producto agregado al catálogo",
+                  descripcion: `<strong>${
+                    nombreUsuario + " " + apellidosUsuario
+                  }</strong> ha agregado un nuevo producto al catálogo.<br>
+                    Puedes revisarlo haciendo clic en este enlace: <a href="/ingenieria_nuevo_producto" style="color: blue; text-decoration: underline;">Revisar producto</a>`,
+                  id: idUser,
+                  dpto: null,
+                  actores: usuariosANotificar,
+                },
+              }),
+            }
+          );
+
+          if (enviarNotificacion.ok) {
+            fetchProductsUpdate();
+            Swal.fire({
+              title: "Éxito",
+              text: "Producto agregado al catálogo correctamente",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+            });
+          } else {
+            console.error("Error al enviar la notificación");
+            Swal.fire("Error", "Error al enviar la notificación", "error");
+          }
+        } catch (error) {
+          console.error("Error en la solicitud de notificación:", error);
+          Swal.fire("Error", "Error en la notificación", "error");
+        }
       } else {
         Swal.fire({
           title: "Error",
@@ -1202,6 +1319,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, nombre: e.target.value})}
                         type="text"
                         placeholder="Nombre del producto"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                 </div>
@@ -1218,7 +1336,7 @@ export function CMDProductos() {
                               proveedor_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
-                          disabled={proveedores.length === 0} // Deshabilitar si no hay categorías disponibles
+                          disabled={proveedores.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay categorías disponibles
                         >
                           <SelectTrigger className="col-span-3">
                             {proveedores.find((prov) => prov.id === selectedProduct?.proveedor_id)?.nombre || "Seleccionar proveedor"}
@@ -1249,7 +1367,7 @@ export function CMDProductos() {
                               Tipo_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
-                          disabled={categorias.length === 0} // Deshabilitar si no hay categorías disponibles
+                          disabled={categorias.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay categorías disponibles
                         >
                           <SelectTrigger className="col-span-3">
                             {categorias.find((cat) => cat.id === selectedProduct?.Tipo_id)?.nombre || "Seleccionar categoría"}
@@ -1282,7 +1400,7 @@ export function CMDProductos() {
                               Categoria_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
-                          disabled={subcategoriasFiltradasEdit.length === 0} // Deshabilitar si no hay subcategorías
+                          disabled={subcategoriasFiltradasEdit.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay subcategorías
                         >
                           <SelectTrigger>
                             {subcategoriasFiltradasEdit.find((s) => s.id === selectedProduct?.Categoria_id)?.nombre || "Seleccionar subcategoría"}
@@ -1312,7 +1430,7 @@ export function CMDProductos() {
                               Subcategoria_id: Number(value), // Convertimos el valor a número
                             }));
                           }}
-                          disabled={especificacionesFiltradasEdit.length === 0} // Deshabilitar si no hay opciones
+                          disabled={especificacionesFiltradasEdit.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay opciones
                         >
                           <SelectTrigger>
                             {especificacionesFiltradasEdit.find((s) => s.id === selectedProduct?.Subcategoria_id)?.nombre || "Seleccionar especificación"}
@@ -1341,6 +1459,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, medicion: e.target.value})}
                         type="text"
                         placeholder="Piezas, kilos, millares"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                     <div className="space-y-2">
@@ -1352,6 +1471,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, codigo: e.target.value})}
                         type="text"
                         placeholder="Código Odoo"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                 </div>
@@ -1365,6 +1485,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, costo: e.target.value})}
                         type="number"
                         placeholder="$"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                     <div className="space-y-2">
@@ -1376,6 +1497,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, cMinima: e.target.value})}
                         type="number"
                         placeholder="Compra mínima"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                 </div>
@@ -1425,6 +1547,7 @@ export function CMDProductos() {
                         onChange={(e) => setSelectedProduct({...selectedProduct, descripcion: e.target.value})}
                         type="text"
                         placeholder="Descripción del producto"
+                        readOnly={permiso?.tipo !== 1}
                         />
                     </div>
                 </div>
@@ -1445,6 +1568,7 @@ export function CMDProductos() {
                       variant="outline"
                       onClick={() => document.getElementById("imagenes").click()}
                       className="w-full"
+                      disabled={permiso?.tipo !== 4}
                     >
                       <Upload className="mr-2 h-4 w-4" />
                       Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
@@ -1468,6 +1592,7 @@ export function CMDProductos() {
                               type="button" // Evita el envío del formulario
                               onClick={() => handleRemoveImageEdit(index)}
                               className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
+                              disabled={permiso?.tipo !== 4}
                             >
                               X
                             </button>
@@ -1483,11 +1608,24 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
-                  {user.nombre?.startsWith("Fórmula") ? 
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) :
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>)}
-                  {user.veredicto === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : user.veredicto === 0 ? <span>Producto no aceptado</span> : (<div hidden></div>)}
-                  {user.catalogoProductos === 1 ? <Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button> : <Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>}
+                  {/* Botones de validacion */}
+                  {user.nombre?.startsWith("Fórmula") && permiso?.tipo === 5 ? 
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
+                  !user.nombre?.startsWith("Fórmula") && permiso?.tipo === 1 ?
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) : 
+                  (<div hidden></div>)}
+
+                  {/* Botones de ficha tecnica */}
+                  {user.veredicto === 1 && permiso?.tipo === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : <div hidden></div>}
+                  
+                  {/* Botones de catalogo */}
+                  {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
+                  (<Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button>) : 
+                  user.catalogoProductos === 0 && user.veredicto === 1 && permiso?.tipo === 1 ?
+                  (<Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>) :
+                  (<div hidden></div>)}
+
+                  {/* Boton de eliminar */}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
                 </div>
               </TableCell>

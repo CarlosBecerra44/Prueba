@@ -4,7 +4,6 @@ import path from "path";
 import formidable from "formidable";
 import Producto from "@/models/Productos";
 import ImagenProducto from "@/models/ImagenesProductos";
-const { uploadDir } = require("@/lib/configUpload");
 
 // Configuración para evitar que Next.js maneje el bodyParser automáticamente
 export const config = {
@@ -20,7 +19,7 @@ export default async function handler(req, res) {
 
   const form = new formidable.IncomingForm({
     multiples: true,
-    uploadDir,
+    uploadDir: "/tmp",
     keepExtensions: true,
   });
 
