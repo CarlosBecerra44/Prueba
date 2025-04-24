@@ -328,6 +328,7 @@ export function CMDProductos() {
       descripcion: product.descripcion,
       catalogoProductos: product.catalogo,
       veredicto: product.veredicto,
+      categoria: product.Tipo_id,
     }
   }
 
@@ -1609,14 +1610,14 @@ export function CMDProductos() {
           </DialogContent>
                   </Dialog>
                   {/* Botones de validacion */}
-                  {user.nombre?.startsWith("Fórmula") && permiso?.tipo === 5 ? 
+                  {user.categoria.toString() === "6" && permiso?.tipo === 5 ? 
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
-                  !user.nombre?.startsWith("Fórmula") && permiso?.tipo === 1 ?
+                  user.categoria.toString() !== "6" && permiso?.tipo === 1 ?
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) : 
                   (<div hidden></div>)}
 
                   {/* Botones de ficha tecnica */}
-                  {user.veredicto === 1 && permiso?.tipo === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : <div hidden></div>}
+                  {user.categoria.toString() !== "6" && user.veredicto === 1 && permiso?.tipo === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : <div hidden></div>}
                   
                   {/* Botones de catalogo */}
                   {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
