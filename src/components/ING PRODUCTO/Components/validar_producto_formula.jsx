@@ -14,12 +14,14 @@ import { CornerDownLeft } from 'lucide-react';
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
 export function ValidarProductoFormula() {
   const {data: session, status} = useSession();
   const searchParams = useSearchParams();
   const idProductoValidar = searchParams.get('id');
   const [productoAValidar, setProductoAValidar] = useState(null);
+  const [idUser, setID] = useState("");
 
   useEffect(() => {
     const fetchProductoAValidar = async () => {
@@ -31,8 +33,23 @@ export function ValidarProductoFormula() {
         try {
             const response = await axios.post(`/api/ProductEngineering/getProductoValidar?id=${idProductoValidar}`);
             if (response.data.success) {
-                setProductoAValidar(response.data.producto);
-                console.log(response.data.producto);
+                const producto = response.data.producto;
+                const registros = producto.identificadores.map((identificador) => {
+                    const existente = producto.identificadoresProductos.find(
+                      (p) => p.identificador_id === identificador.id
+                    );
+              
+                    return {
+                      identificador_id: identificador.id,
+                      registroV: existente?.registroV ?? '',
+                    };
+                  });
+              
+                  setProductoAValidar({
+                    producto: producto.producto,
+                    identificadores: producto.identificadores,
+                    identificadoresProductos: registros,
+                  });
             } else {
                 console.error('Error al obtener el producto a validar:', response.data.message);
             }
@@ -43,6 +60,28 @@ export function ValidarProductoFormula() {
 
     fetchProductoAValidar();
   }, [idProductoValidar]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+        const session = await getSession();
+        if (session) {
+        const response = await fetch("/api/Users/getUser", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
+        });
+        const userData = await response.json();
+        if (userData.success) {
+            setID(userData.user.id);
+        } else {
+            alert("Error al obtener los datos del usuario");
+        }
+        }
+    };
+    fetchUserData();
+  }, []);
 
   if (status === "loading") {
     return (
@@ -70,52 +109,53 @@ export function ValidarProductoFormula() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    Swal.fire({
+        title: "Cargando...",
+        text: "Estamos procesando tu solicitud",
+        showConfirmButton: false,
+        allowOutsideClick: false, // Evita que se cierre haciendo clic fuera de la alerta
+        willOpen: () => {
+            Swal.showLoading(); // Muestra el indicador de carga (spinner)
+        },
+    });
+
     try {
-        const res = await fetch('/api/ProductEngineering/validarProducto', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
+        const productoAValidarConVeredicto = {
+            ...productoAValidar,
+            producto: {
+                ...productoAValidar?.producto,
+                veredicto: "1",
             },
-            body: JSON.stringify({
-            id: idProductoValidar,
-            nombre: productoAValidar?.nombre,
-            noArticulo: productoAValidar?.no_articulo,
-            categoria: productoAValidar?.categoria,
-            linea: productoAValidar?.linea,
-            formato: productoAValidar?.formato,
-            presentacionSugerida: productoAValidar?.presentacion_sugerida,
-            modoEmpleo: productoAValidar?.modo_empleo,
-            ingredientes: productoAValidar?.ingredientes,
-            funcionPrincipal: productoAValidar?.funcion_principal,
-            funcionEspecifica: productoAValidar?.funcion_especifica,
-            RecomendadoPara: productoAValidar?.recomendado_para,
-            productosComplementarios: productoAValidar?.productos_complementarios,
-            }),
-        });
+        }
 
-        const data = await res.json();
+        const response = await axios.post("/api/ProductEngineering/validarProducto", 
+            {idUser, idProductoValidar, productoAValidar: productoAValidarConVeredicto},
+        );
 
-        if (!res.ok) {
-            setError(data.message || 'Hubo un problema al validar el producto');
+        Swal.close();
+
+        if (!response.data.success) {
+            Swal.fire("Error", response.data.message, "error");
             return;
         }
 
-        if (res.ok) {
+        if (response.data.success) {
             Swal.fire({
-            title: 'Validado',
-            text: 'El producto se ha validado correctamente',
-            icon: 'success',            
-            timer: 3000, // La alerta desaparecerá luego de 1.5 segundos
-            showConfirmButton: false,
+                title: "Validado",
+                text: "El producto ha sido validado correctamente",
+                icon: "success",
+                timer: 3000,
+                showConfirmButton: false,
             }).then(() => {
                 window.location.href = "/configuraciones/cmd/Productos";
-            })
+            });
         } else {
-            Swal.fire('Error', 'Error al validar el producto', 'error');
+            Swal.fire("Error", "Error al validar el producto", "error");
         }
-    } catch (error) {
-        console.error('Error al validar el producto:', error);
-        setError('Hubo un problema al validar el producto');
+    } catch (err) {
+        console.error("Error en el registro:", err);
+        Swal.close();
+        Swal.fire("Error", "Hubo un problema con la validación", "error");
     }
   };
 
@@ -135,11 +175,11 @@ export function ValidarProductoFormula() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2">
                     <Label htmlFor="nombre">Nombre</Label>
-                    <Input style={{borderColor: "black", borderWidth: "2px", backgroundColor: "#f7f7f7"}} id="nombre" name="nombre" type="text" value={productoAValidar?.nombre || ''} onChange={(e) => setProductoAValidar({...productoAValidar, nombre: e.target.value})} placeholder="Nombre del producto" />
+                    <Input style={{borderColor: "black", borderWidth: "2px", backgroundColor: "#f7f7f7"}} id="nombre" name="nombre" type="text" value={productoAValidar?.producto.nombre || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, nombre: e.target.value},})} placeholder="Nombre del producto" readOnly={true} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="no_articulo">No. de artículo (Código Odoo)</Label>
-                    <Input style={{borderColor: "black", borderWidth: "2px", backgroundColor: "#f7f7f7"}} id="no_articulo" name="no_articulo" type="text" value={productoAValidar?.codigo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, codigo: e.target.value})} placeholder="Código Odoo" />
+                    <Input style={{borderColor: "black", borderWidth: "2px", backgroundColor: "#f7f7f7"}} id="no_articulo" name="no_articulo" type="text" value={productoAValidar?.producto.codigo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, codigo: e.target.value},})} placeholder="Código Odoo" readOnly={true} />
                 </div>
                 </div>
 
@@ -149,18 +189,26 @@ export function ValidarProductoFormula() {
                     <Select 
                         id="categoria" 
                         name="categoria" 
-                        value={productoAValidar?.categoria || ''} 
+                        value={productoAValidar?.identificadoresProductos[0]?.registroV || ''} 
                         onValueChange={(value) => {
-                            setProductoAValidar((productoAValidar) => ({...productoAValidar, categoria: value}));
-                        }}
+                            const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                            nuevosIdentificadores[0] = {
+                              ...nuevosIdentificadores[0],
+                              registroV: value,
+                            };
+                            setProductoAValidar({
+                              ...productoAValidar,
+                              identificadoresProductos: nuevosIdentificadores,
+                            });
+                        }}                          
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione la categoría" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Categoría 1">Categoría 1</SelectItem>
-                        <SelectItem value="Categoría 2">Categoría 2</SelectItem>
-                        <SelectItem value="Categoría 3">Categoría 3</SelectItem>
-                        <SelectItem value="Categoría 4">Categoría 4</SelectItem>
-                        <SelectItem value="Categoría 5">Categoría 5</SelectItem>
+                        <SelectItem value="1">Categoría 1</SelectItem>
+                        <SelectItem value="2">Categoría 2</SelectItem>
+                        <SelectItem value="3">Categoría 3</SelectItem>
+                        <SelectItem value="4">Categoría 4</SelectItem>
+                        <SelectItem value="5">Categoría 5</SelectItem>
                     </SelectContent>
                     </Select>
                 </div>
@@ -169,18 +217,26 @@ export function ValidarProductoFormula() {
                     <Select 
                         id="linea" 
                         name="linea" 
-                        value={productoAValidar?.linea || ''} 
+                        value={productoAValidar?.identificadoresProductos[1]?.registroV || ''} 
                         onValueChange={(value) => {
-                            setProductoAValidar((productoAValidar) => ({...productoAValidar, linea: value}));
-                        }}
+                            const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                            nuevosIdentificadores[1] = {
+                              ...nuevosIdentificadores[1],
+                              registroV: value,
+                            };
+                            setProductoAValidar({
+                              ...productoAValidar,
+                              identificadoresProductos: nuevosIdentificadores,
+                            });
+                        }} 
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione la línea" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Línea 1">Línea 1</SelectItem>
-                        <SelectItem value="Línea 2">Línea 2</SelectItem>
-                        <SelectItem value="Línea 3">Línea 3</SelectItem>
-                        <SelectItem value="Línea 4">Línea 4</SelectItem>
-                        <SelectItem value="Línea 5">Línea 5</SelectItem>
+                        <SelectItem value="1">Línea 1</SelectItem>
+                        <SelectItem value="2">Línea 2</SelectItem>
+                        <SelectItem value="3">Línea 3</SelectItem>
+                        <SelectItem value="4">Línea 4</SelectItem>
+                        <SelectItem value="5">Línea 5</SelectItem>
                     </SelectContent>
                     </Select>
                 </div>
@@ -192,66 +248,172 @@ export function ValidarProductoFormula() {
                     <Select 
                         id="formato" 
                         name="formato" 
-                        value={productoAValidar?.formato || ''} 
+                        value={productoAValidar?.identificadoresProductos[2]?.registroV || ''} 
                         onValueChange={(value) => {
-                            setProductoAValidar((productoAValidar) => ({...productoAValidar, formato: value}));
-                        }}
+                            const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                            nuevosIdentificadores[2] = {
+                              ...nuevosIdentificadores[2],
+                              registroV: value,
+                            };
+                            setProductoAValidar({
+                              ...productoAValidar,
+                              identificadoresProductos: nuevosIdentificadores,
+                            });
+                        }} 
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione el formato" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Formato 1">Formato 1</SelectItem>
-                        <SelectItem value="Formato 2">Formato 2</SelectItem>
-                        <SelectItem value="Formato 3">Formato 3</SelectItem>
-                        <SelectItem value="Formato 4">Formato 4</SelectItem>
-                        <SelectItem value="Formato 5">Formato 5</SelectItem>
+                        <SelectItem value="1">Formato 1</SelectItem>
+                        <SelectItem value="2">Formato 2</SelectItem>
+                        <SelectItem value="3">Formato 3</SelectItem>
+                        <SelectItem value="4">Formato 4</SelectItem>
+                        <SelectItem value="5">Formato 5</SelectItem>
                     </SelectContent>
                     </Select>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="presentacionSugerida">Presentación sugerida</Label>
-                    <Input id="presentacionSugerida" name="presentacionSugerida" type="text" value={productoAValidar?.presentacion_sugerida || ''} onChange={(e) => setProductoAValidar({...productoAValidar, presentacion_sugerida: e.target.value})} placeholder="Presentación" />
+                    <Input id="presentacionSugerida" name="presentacionSugerida" type="text" 
+                    value={productoAValidar?.identificadoresProductos[3]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[3] = {
+                          ...nuevosIdentificadores[3],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }} 
+                    placeholder="Presentación" />
                 </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
                     <Label htmlFor="modoEmpleo">Modo de empleo</Label>
-                    <Input id="modoEmpleo" name="modoEmpleo" type="text" value={productoAValidar?.modo_empleo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, modo_empleo: e.target.value})} placeholder="Modo" />
+                    <Input id="modoEmpleo" name="modoEmpleo" type="text" 
+                    value={productoAValidar?.identificadoresProductos[4]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[4] = {
+                          ...nuevosIdentificadores[4],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }}  
+                    placeholder="Modo" />
                 </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
                     <Label htmlFor="ingredientes">Ingredientes</Label>
-                    <Textarea id="ingredientes" name="ingredientes" value={productoAValidar?.ingredientes || ''} onChange={(e) => setProductoAValidar({...productoAValidar, ingredientes: e.target.value})} placeholder="Ingredientes" />
+                    <Textarea id="ingredientes" name="ingredientes" 
+                    value={productoAValidar?.identificadoresProductos[5]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[5] = {
+                          ...nuevosIdentificadores[5],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }}  
+                    placeholder="Ingredientes" />
                 </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2">
                     <Label htmlFor="funcionPrincipal">Función principal</Label>
-                    <Input id="funcionPrincipal" name="funcionPrincipal" type="text" value={productoAValidar?.funcion_principal || ''} onChange={(e) => setProductoAValidar({...productoAValidar, funcion_principal: e.target.value})} placeholder="Función principal" />
+                    <Input id="funcionPrincipal" name="funcionPrincipal" type="text" 
+                    value={productoAValidar?.identificadoresProductos[6]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[6] = {
+                          ...nuevosIdentificadores[6],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }}  
+                    placeholder="Función principal" />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="funcionEspecifica">Función específica</Label>
-                    <Input id="funcionEspecifica" name="funcionEspecifica" type="text" value={productoAValidar?.funcion_especifica || ''} onChange={(e) => setProductoAValidar({...productoAValidar, funcion_especifica: e.target.value})} placeholder="Función específica" />
+                    <Input id="funcionEspecifica" name="funcionEspecifica" type="text" 
+                    value={productoAValidar?.identificadoresProductos[7]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[7] = {
+                          ...nuevosIdentificadores[7],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }} 
+                    placeholder="Función específica" />
                 </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2">
                     <Label htmlFor="recomendadoPara">Recomendado para</Label>
-                    <Input id="recomendadoPara" name="recomendadoPara" type="text" value={productoAValidar?.recomendado_para || ''} onChange={(e) => setProductoAValidar({...productoAValidar, recomendado_para: e.target.value})} placeholder="Recomendado para" />
+                    <Input id="recomendadoPara" name="recomendadoPara" type="text" 
+                    value={productoAValidar?.identificadoresProductos[8]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[8] = {
+                          ...nuevosIdentificadores[8],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }}  
+                    placeholder="Recomendado para" />
                 </div>
                 <div className="space-y-2">
                     <div className="space-y-2">
                     <Label htmlFor="productosComplementarios">Productos complementarios</Label>
-                    <Input id="productosComplementarios" name="productosComplementarios" type="text" value={productoAValidar?.productos_complementarios || ''} onChange={(e) => setProductoAValidar({...productoAValidar, productos_complementarios: e.target.value})} placeholder="Productos complementarios" />
+                    <Input id="productosComplementarios" name="productosComplementarios" type="text" 
+                    value={productoAValidar?.identificadoresProductos[9]?.registroV || ''}  
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const nuevosIdentificadores = [...productoAValidar.identificadoresProductos];
+                        nuevosIdentificadores[9] = {
+                          ...nuevosIdentificadores[9],
+                          registroV: value,
+                        };
+                        setProductoAValidar({
+                          ...productoAValidar,
+                          identificadoresProductos: nuevosIdentificadores,
+                        });
+                    }} 
+                    placeholder="Productos complementarios" />
                     </div>
                 </div>
                 </div>
                 <Button type="submit" className="w-full mt-4">
-                    Enviar
+                    Enviar validación
                 </Button>
             </form>
         </div>

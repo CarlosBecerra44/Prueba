@@ -25,7 +25,7 @@ export default async function handler(req, res) {
           separate: true, // Para que no afecte el `GROUP BY`
         },
       ],
-      order: [["id", "ASC"]],
+      order: [["id", "DESC"]],
     });
 
     // Convertir imágenes a un array de strings

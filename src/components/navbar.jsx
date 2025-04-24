@@ -227,13 +227,13 @@ export function Navbarv1() {
         },
       ],
     },
-    {
+    /*{
       id: 9,
       name: "Operaciones",
       href: "#",
       icon: <OperacionesIcon className="h-6 w-6 text-gray-400" />,
       roles: ["master"],
-    },
+    },*/
     {
       id: 10,
       name: "IT",
