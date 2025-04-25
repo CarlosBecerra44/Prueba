@@ -18,7 +18,8 @@ import {useUser} from "@/pages/api/hooks";
 import { Upload } from 'lucide-react'
 import Link from "next/link";
 import { getSession } from 'next-auth/react';
-import { set } from "date-fns"
+import { pdf } from "@react-pdf/renderer";
+import FichaTecnicaPDF from "./ficha_tecnica";
 
 export function CMDProductos() {
   const [nombre, setNombre] = useState("");
@@ -52,6 +53,9 @@ export function CMDProductos() {
   const [permiso, setPermiso] = useState(null);
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [apellidosUsuario, setApellidosUsuario] = useState("");
+  const [productoAValidar, setProductoAValidar] = useState(null);
+  const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -75,6 +79,26 @@ export function CMDProductos() {
       }
     };
     fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("/api/Users/getUsers");
+        if (response.data.success) {
+          setAllUsers(response.data.users);
+        } else {
+          console.error(
+            "Error al obtener los usuarios:",
+            response.data.message
+          );
+        }
+      } catch (error) {
+        console.error("Error al hacer fetch de los usuarios:", error);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -329,6 +353,7 @@ export function CMDProductos() {
       catalogoProductos: product.catalogo,
       veredicto: product.veredicto,
       categoria: product.Tipo_id,
+      tolerancias: product.tolerancias_por,
     }
   }
 
@@ -374,6 +399,95 @@ export function CMDProductos() {
       )
     );
   }
+
+  const getNombreCompleto = (id) => {
+    const user = allUsers.find(user => user.id === id);
+    return user ? `${user.nombre} ${user.apellidos}` : "";
+  };
+
+  const fetchProductoAValidar = async (id) => {
+    if (!id) return null;
+  
+    try {
+      const response = await axios.post(`/api/ProductEngineering/getProductoValidar?id=${id}`);
+      if (response.data.success) {
+        const producto = response.data.producto;
+        const registros = producto.identificadores.map((identificador) => {
+          const existente = producto.identificadoresProductos.find(
+            (p) => p.identificador_id === identificador.id
+          );
+  
+          return {
+            identificador_id: identificador.id,
+            registroN: existente?.registroN ?? '',
+            registroV: existente?.registroV ?? '',
+            tolerancia: existente?.tolerancia ?? '',
+          };
+        });
+  
+        const productoCargado = {
+          producto: producto.producto,
+          identificadores: producto.identificadores,
+          identificadoresProductos: registros,
+          imagenes: producto.imagenes,
+        };
+  
+        setProductoAValidar(productoCargado);
+        return productoCargado;
+      } else {
+        console.error('Error al obtener el producto:', response.data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al hacer fetch del producto:', error);
+      return null;
+    }
+  };  
+
+  const productoAPlanoMecanico = async (id) => {
+    const producto = await fetchProductoAValidar(id);
+  
+    if (!producto) return;
+  
+    const imagenTipo2 = producto.imagenes?.find((img) => img.tipo === 2);
+    const imagenURL = imagenTipo2?.ruta
+      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(imagenTipo2.ruta)}`
+      : null;
+  
+    setImagenSeleccionadaPreview(imagenURL);
+    handleAbrirPDF(producto, imagenURL);
+  };  
+
+  const handleAbrirPDF = async (producto, imagenAdicional) => {
+    // Mostrar alerta de carga
+    Swal.fire({
+      title: 'Generando...',
+      text: 'Estamos procesando el archivo, por favor espere...',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+  
+    try {
+      const creadoPor = getNombreCompleto(producto.producto?.creado_por);
+      const validadoPor = getNombreCompleto(producto.producto?.validado_por);
+      const toleranciasPor = getNombreCompleto(producto.producto?.tolerancias_por);
+      const blob = await pdf(<FichaTecnicaPDF producto={producto} imagenAdicional={imagenAdicional} nombreCreado={creadoPor} nombreValidacion={validadoPor} nombreTolerancias={toleranciasPor} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+  
+      Swal.close(); // solo cerrar cuando termine
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error...",
+        text: "Hubo un error al generar el PDF.",
+      });
+    }
+};      
 
   const handleEditProduct = (productId) => {
     const productToEdit = products.find((product) => product.id === productId); // Buscar el usuario en el estado
@@ -1613,11 +1727,15 @@ export function CMDProductos() {
                   {user.categoria.toString() === "6" && permiso?.tipo === 5 ? 
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
                   user.categoria.toString() !== "6" && permiso?.tipo === 1 ?
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Validar</Button></Link>) : 
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Evaluar</Button></Link>) : 
                   (<div hidden></div>)}
 
                   {/* Botones de ficha tecnica */}
-                  {user.categoria.toString() !== "6" && user.veredicto === 1 && permiso?.tipo === 1 ? <Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link> : <div hidden></div>}
+                  {user.categoria.toString() !== "6" && user.tolerancias === null && user.veredicto === 1 && permiso?.tipo === 1 ? 
+                  (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
+                  user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
+                  (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
+                  (<div hidden></div>)}
                   
                   {/* Botones de catalogo */}
                   {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
