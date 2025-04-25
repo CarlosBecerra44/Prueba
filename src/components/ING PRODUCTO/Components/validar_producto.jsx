@@ -207,8 +207,8 @@ export function ValidarProducto() {
               
                   if (enviarNotificacion.ok) {
                     Swal.fire({
-                      title: "Validado",
-                      text: "El producto ha sido validado correctamente",
+                      title: "Éxito",
+                      text: "El producto ha sido evaluado correctamente",
                       icon: "success",
                       timer: 3000,
                       showConfirmButton: false,
@@ -225,8 +225,8 @@ export function ValidarProducto() {
                 }
               } else {
                 Swal.fire({
-                    title: "Validado",
-                    text: "El producto ha sido validado correctamente",
+                    title: "Éxito",
+                    text: "El producto ha sido evaluado correctamente",
                     icon: "success",
                     timer: 3000,
                     showConfirmButton: false,
@@ -235,12 +235,12 @@ export function ValidarProducto() {
                   });
               }              
         } else {
-        Swal.fire("Error", "Error al validar el producto", "error");
+        Swal.fire("Error", "Error al evaluar el producto", "error");
         }
     } catch (err) {
         console.error("Error en el registro:", err);
         Swal.close();
-        Swal.fire("Error", "Hubo un problema con la validación", "error");
+        Swal.fire("Error", "Hubo un problema con la evaluación", "error");
     }
   };
 
@@ -250,7 +250,7 @@ export function ValidarProducto() {
             <Link href="/configuraciones/cmd/Productos"><Button><CornerDownLeft className="h-4 w-4" />Regresar</Button></Link>
         </div>
         <div className="flex justify-center items-center text-center mb-8">
-            <CardTitle className="text-3xl font-bold">Validar producto</CardTitle>
+            <CardTitle className="text-3xl font-bold">Evaluar producto</CardTitle>
         </div>
         <div className="flex justify-center mb-4">
             <form 
@@ -474,7 +474,7 @@ export function ValidarProducto() {
                     );
                 })}
                 </div>
-                <Button type="submit" className="w-full mt-4">Enviar validación</Button>
+                <Button type="submit" className="w-full mt-4">Terminar evaluación</Button>
             </form>
         </div>
     </div>

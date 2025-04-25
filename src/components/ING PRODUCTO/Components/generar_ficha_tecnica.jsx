@@ -99,8 +99,6 @@ export function FichaTecnica() {
     fetchProductoAValidar();
   }, [idProductoValidar]);
 
-  console.log("PRODUCTO A VALIDAR",productoAValidar);
-
   useEffect(() => {
       const fetchUserData = async () => {
         const session = await getSession();

@@ -141,8 +141,8 @@ export function ValidarProductoFormula() {
 
         if (response.data.success) {
             Swal.fire({
-                title: "Validado",
-                text: "El producto ha sido validado correctamente",
+                title: "Éxito",
+                text: "El producto ha sido evaluado correctamente",
                 icon: "success",
                 timer: 3000,
                 showConfirmButton: false,
@@ -150,12 +150,12 @@ export function ValidarProductoFormula() {
                 window.location.href = "/configuraciones/cmd/Productos";
             });
         } else {
-            Swal.fire("Error", "Error al validar el producto", "error");
+            Swal.fire("Error", "Error al evaluar el producto", "error");
         }
     } catch (err) {
         console.error("Error en el registro:", err);
         Swal.close();
-        Swal.fire("Error", "Hubo un problema con la validación", "error");
+        Swal.fire("Error", "Hubo un problema con la evaluación", "error");
     }
   };
 
@@ -165,7 +165,7 @@ export function ValidarProductoFormula() {
             <Link href="/configuraciones/cmd/Productos"><Button><CornerDownLeft className="h-4 w-4" />Regresar</Button></Link>
         </div>
         <div className="flex justify-center items-center text-center mb-8">
-            <CardTitle className="text-3xl font-bold">Validar producto</CardTitle>
+            <CardTitle className="text-3xl font-bold">Evaluar producto</CardTitle>
         </div>
         <div className="flex justify-center mb-4">
             <form 
@@ -413,7 +413,7 @@ export function ValidarProductoFormula() {
                 </div>
                 </div>
                 <Button type="submit" className="w-full mt-4">
-                    Enviar validación
+                    Terminar evaluación
                 </Button>
             </form>
         </div>
