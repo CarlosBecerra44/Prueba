@@ -62,6 +62,34 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'left',
   },
+  tableColHeaderFull: {
+    width: '100%',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: '#000',
+    padding: 5,
+    fontWeight: 'bold',
+    fontSize: 10,
+    textAlign: 'center',
+  },
+
+   // Columnas específicas
+   colCaracteristica: {
+    flex: 4,
+  },
+  colUnidad: {
+    flex: 1, // más pequeña
+  },
+  colMax: {
+    flex: 2,
+  },
+  colMin: {
+    flex: 2,
+  },
+  colMetodo: {
+    flex: 3,
+  },
+  ///////
   tableCol: {
     width: '60%',
     borderStyle: 'solid',
@@ -82,6 +110,15 @@ const styles = StyleSheet.create({
   },
 });
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Componente para mostrar el encabezado de la ficha técnica de un producto
+ * Recibe como parámetros el objeto de producto y una imagen adicional
+ * Muestra el logo de la empresa, el nombre de la empresa, la fecha de última revisión,
+ * la vigencia y el código del producto
+ * @param {Object} producto - Objeto con la información del producto
+
+/*******  f5f30e0f-87ce-40e2-9e04-2b2728e1e6f6  *******/
 const Encabezado = ({ producto, imagenAdicional }) => (
     <View style={styles.header} fixed>
       <View style={styles.table}>
@@ -106,14 +143,14 @@ const Encabezado = ({ producto, imagenAdicional }) => (
           <View style={{ ...styles.tableCell, flex: 3 }}>
             <Text style={styles.tableCellHeader}>Código</Text>
             <View style={styles.divider} />
-            <Text>{imagenAdicional ? `FI-ING-${producto.producto?.id}` : ""}</Text>
+            <Text>{imagenAdicional ? `FI-ING-${producto.producto.id}` : ""}</Text>
           </View>
         </View>
   
         {/* Segunda fila */}
         <View style={styles.tableRow}>
           <View style={{ ...styles.tableCell, flex: 4 }}>
-            <Text style={styles.tableCellHeader}>FICHA TÉCNICA</Text>
+            <Text style={styles.tableCellHeader}>FICHA TÉCNICA DE {producto.producto.tipo}</Text>
           </View>
           <View style={{ ...styles.tableCell, flex: 2 }}>
             <Text style={styles.tableCellHeader}>Edición</Text>
@@ -188,10 +225,11 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
             </View>
 
             {/* Fila 2 */}
-            <View style={styles.tableRow}>
+            {/* <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Folio</Text>
             <Text style={styles.tableCol}>001</Text>
-            </View>
+            </View>   */}
+            
 
             {/* Fila 3 */}
             <View style={styles.tableRow}>
@@ -218,26 +256,39 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
             </View>
 
             {/* Fila 7 */}
-            <View style={styles.tableRow}>
+            {/* <View style={styles.tableRow}>
             <Text style={styles.tableColHeader}>Modo de empleo (Uso)</Text>
             <Text style={styles.tableCol}>{producto.producto?.modo_empleo || "Sin datos"}</Text>
-            </View>
+            </View> */}
 
         </View>
         </View>
 
         {/* Tabla de datos */}
         <View style={styles.table} wrap={false}>
-          {body.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.tableRow}>
-              {row.map((cell, cellIndex) => (
-                <View key={cellIndex} style={styles.tableCell}>
-                  <Text>{cell}</Text>
-                </View>
-              ))}
-            </View>
-          ))}
-        </View>
+  <Text style={styles.tableColHeaderFull}>Inspección Dimensional</Text>
+
+  {body.map((row, rowIndex) => (
+    <View key={rowIndex} style={styles.tableRow}>
+      {row.map((cell, cellIndex) => {
+        // Asignar estilos según columna
+        let cellStyle = [styles.tableCell]; // Siempre como arreglo
+
+        if (cellIndex === 0) cellStyle.push(styles.colCaracteristica);
+        else if (cellIndex === 1) cellStyle.push(styles.colUnidad);
+        else if (cellIndex === 2) cellStyle.push(styles.colMax);
+        else if (cellIndex === 3) cellStyle.push(styles.colMin);
+        else if (cellIndex === 4) cellStyle.push(styles.colMetodo);
+
+        return (
+          <View key={cellIndex} style={cellStyle}>
+            <Text>{cell}</Text>
+          </View>
+        );
+      })}
+    </View>
+  ))}
+</View>
 
         {/* Plano mecánico */}
         <View style={styles.table} wrap={false}>
@@ -289,23 +340,23 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
         </View>
 
         {/* Sección 2 */}
-        <View style={styles.table} wrap={false}>
+        {/* <View style={styles.table} wrap={false}> */}
         {/* Fila 1: Encabezado */}
-        <View style={styles.tableRow}>
+        {/* <View style={styles.tableRow}>
             <View style={styles.tableCell}>
             <Text style={{ fontWeight: 'bold' }}>Distribución</Text>
             </View>
-        </View>
+        </View> */}
 
         {/* Fila 2: Contenido */}
-        <View style={styles.tableRow}>
+        {/* <View style={styles.tableRow}>
             <View style={styles.tableCell}>
             <Text>
                 {producto.producto?.distribucion}
             </Text>
             </View>
-        </View>
-        </View>
+        </View> */}
+        {/* </View> */}
         
         {/* Sección 3 */}
         <View style={styles.table} wrap={false}>
@@ -332,7 +383,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
             flexDirection: 'row',
             justifyContent: 'space-between',
             marginBottom: 10,
-            paddingRight: 335,            // espacio desde el borde derecho
+            paddingRight: 325,            // espacio desde el borde derecho
         }}
         wrap={false}
         >
@@ -344,11 +395,13 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
             style={{
             flexDirection: 'column',
             alignItems: 'flex-start',  // que los textos empiecen en el inicio del bloque
-            marginRight: 20,           // margen extra si lo quieres todavía más separado
+            // marginRight:335,           // margen extra si lo quieres todavía más separado
             }}
         >
             <Text>NMX‑E‑285‑NYCE‑2021</Text>
             <Text>ISO 15270:2008</Text>
+            <Text>FDA 21 CFR 174, 176, 177</Text>
+
         </View>
         </View>
 
@@ -362,13 +415,13 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
         {/* Fila 1: Encabezado */}
         <View style={styles.tableRow}>
             <View style={styles.tableCell}>
-            <Text style={{ fontWeight: 'bold' }}>Elaborado por</Text>
+            <Text style={{ fontWeight: 'bold' }}>Elaboró por</Text>
             </View>
             <View style={styles.tableCell}>
-            <Text style={{ fontWeight: 'bold' }}>Aprobado por</Text>
+            <Text style={{ fontWeight: 'bold' }}>Aprobó por</Text>
             </View>
             <View style={styles.tableCell}>
-            <Text style={{ fontWeight: 'bold' }}>Autorizado por</Text>
+            <Text style={{ fontWeight: 'bold' }}>Revisó por</Text>
             </View>
         </View>
 
