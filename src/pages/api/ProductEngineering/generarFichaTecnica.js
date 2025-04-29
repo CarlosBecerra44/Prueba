@@ -82,7 +82,7 @@ export default async function handler(req, res) {
       modo_empleo: productoAValidar.producto?.modo_empleo, 
       condiciones: productoAValidar.producto?.condiciones,
       consideracion: productoAValidar.producto?.consideracion,
-      distribucion: productoAValidar.producto?.distribucion,
+      materia_extraña: productoAValidar.producto?.materia_extraña,
       tolerancias_por: idUser
     });
 
