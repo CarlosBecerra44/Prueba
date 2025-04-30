@@ -3,6 +3,7 @@ import Identificador from "@/models/Identificadores";
 import IdentificadorProducto from "@/models/IdentificadoresProductos";
 import IdentificadorTipoProducto from "@/models/IdentificadoresTiposProductos";
 import ImagenProducto from "@/models/ImagenesProductos";
+import TipoMateriaPrima from "@/models/TiposMateriasPrimas";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -18,6 +19,11 @@ export default async function handler(req, res) {
   try {
     const producto = await Producto.findOne({
       where: { id },
+    });
+
+    const tipoMateriaPrima = await TipoMateriaPrima.findOne({
+      where: { id: producto.Tipo_id },
+      attributes: ["id", "nombre"],
     });
 
     const identificadorTipoProducto = await IdentificadorTipoProducto.findAll({
@@ -57,12 +63,12 @@ export default async function handler(req, res) {
         nombre: producto?.nombre || null,
         codigo: producto?.codigo || null,
         veredicto: producto?.veredicto,
-        tipo: producto?.Tipo_id || null,
+        tipo: tipoMateriaPrima?.nombre || null,
         descripcion: producto?.descripcion || null,
         composicion: producto?.composicion || null,
         modo_empleo: producto?.modo_empleo || null,
         condiciones: producto?.condiciones || null,
-        distribucion: producto?.distribucion || null,
+        materia_extraña: producto?.materia_extraña || null,
         consideracion: producto?.consideracion || null,
         creado_por: producto?.creado_por || null,
         validado_por: producto?.validado_por || null,

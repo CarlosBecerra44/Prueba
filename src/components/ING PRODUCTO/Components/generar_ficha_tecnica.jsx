@@ -205,7 +205,7 @@ export function FichaTecnica() {
         productoAValidar?.producto?.composicion?.trim() &&
         productoAValidar?.producto?.modo_empleo?.trim() &&
         productoAValidar?.producto?.condiciones?.trim() &&
-        productoAValidar?.producto?.distribucion?.trim() &&
+        productoAValidar?.producto?.materia_extraña?.trim() &&
         productoAValidar?.producto?.consideracion?.trim() &&
         todasToleranciasLlenas
       );
@@ -572,14 +572,14 @@ export function FichaTecnica() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
-                    <Label htmlFor="condiciones">Condiciones de almacenamiento</Label>
-                    <Textarea id="condiciones" name="condiciones" value={productoAValidar?.producto?.condiciones || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, condiciones: e.target.value},})} placeholder="..." required />
+                    <Label htmlFor="materia_extraña">Materia extraña</Label>
+                    <Textarea id="materia_extraña" name="materia_extraña" value={productoAValidar?.producto?.materia_extraña || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, materia_extraña: e.target.value},})} placeholder="..." required />
                 </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2 col-span-2">
-                    <Label htmlFor="distribucion">Distribución</Label>
-                    <Textarea id="distribucion" name="distribucion" value={productoAValidar?.producto?.distribucion || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, distribucion: e.target.value},})} placeholder="..." required />
+                    <Label htmlFor="condiciones">Condiciones de almacenamiento</Label>
+                    <Textarea id="condiciones" name="condiciones" value={productoAValidar?.producto?.condiciones || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, condiciones: e.target.value},})} placeholder="..." required />
                 </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">

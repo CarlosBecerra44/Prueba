@@ -27,7 +27,7 @@ const Producto = sequelize.define(
     eliminado: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
     catalogo: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     condiciones: { type: DataTypes.STRING, allowNull: true },
-    distribucion: { type: DataTypes.STRING, allowNull: true },
+    materia_extraña: { type: DataTypes.STRING, allowNull: true },
     consideracion: { type: DataTypes.STRING, allowNull: true },
     modo_empleo: { type: DataTypes.STRING, allowNull: true },
     composicion: { type: DataTypes.STRING, allowNull: true },
