@@ -1,21 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import styles from '../../../../public/CSS/spinner.css';
-import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react"
+import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react";
 import { useSession,  signOut } from "next-auth/react";
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
 import {useUser} from "@/pages/api/hooks";
-import { Upload } from 'lucide-react'
+import { Upload } from 'lucide-react';
 import Link from "next/link";
 import { getSession } from 'next-auth/react';
 import { pdf } from "@react-pdf/renderer";
@@ -353,6 +352,7 @@ export function CMDProductos() {
       catalogoProductos: product.catalogo,
       veredicto: product.veredicto,
       categoria: product.Tipo_id,
+      validado: product.validado_por,
       tolerancias: product.tolerancias_por,
     }
   }
@@ -487,7 +487,50 @@ export function CMDProductos() {
         text: "Hubo un error al generar el PDF.",
       });
     }
-};      
+  };      
+
+  const formulaAPDF = async (id) => {
+    const producto = await fetchProductoAValidar(id);
+  
+    if (!producto) return;
+  
+    const imagenDiseño = producto.imagenes?.find((img) => img.tipo === 3 || img.tipo === 1);
+    const imagenURL = imagenDiseño?.ruta
+      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(imagenDiseño.ruta)}`
+      : null;
+  
+    setImagenSeleccionadaPreview(imagenURL);
+    handleAbrirPDFFormula(producto, imagenURL);
+  };  
+
+  const handleAbrirPDFFormula = async (producto, imagenAdicional) => {
+    // Mostrar alerta de carga
+    Swal.fire({
+      title: 'Generando...',
+      text: 'Estamos procesando el archivo, por favor espere...',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+  
+    try {
+      const { default: FichaTecnicaPDFFormula } = await import('./ficha_tecnica_formula');
+      const blob = await pdf(<FichaTecnicaPDFFormula producto={producto} imagenAdicional={imagenAdicional}/>).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+  
+      Swal.close(); // solo cerrar cuando termine
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error...",
+        text: "Hubo un error al generar el PDF.",
+      });
+    }
+  };      
 
   const handleEditProduct = (productId) => {
     const productToEdit = products.find((product) => product.id === productId); // Buscar el usuario en el estado
@@ -1735,6 +1778,8 @@ export function CMDProductos() {
                   (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
                   user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
                   (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
+                  user.categoria.toString() === "6" && user.validado !== null && user.veredicto === 1 && permiso?.tipo === 5 ?
+                  (<Button variant="outline" size="sm" onClick={() => formulaAPDF(user.id)}>Descargar ficha técnica</Button>) : 
                   (<div hidden></div>)}
                   
                   {/* Botones de catalogo */}

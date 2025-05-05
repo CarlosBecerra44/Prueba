@@ -64,6 +64,7 @@ export default async function handler(req, res) {
         codigo: producto?.codigo || null,
         veredicto: producto?.veredicto,
         tipo: tipoMateriaPrima?.nombre || null,
+        tipoEvaluacion: producto?.Tipo_id || null,
         descripcion: producto?.descripcion || null,
         composicion: producto?.composicion || null,
         modo_empleo: producto?.modo_empleo || null,

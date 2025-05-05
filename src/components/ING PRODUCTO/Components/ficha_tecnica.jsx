@@ -31,8 +31,8 @@ const styles = StyleSheet.create({
   table: {
     display: "table",
     width: "auto",
-    borderStyle: "solid",
-    borderWidth: 1,
+    /*borderStyle: "solid",
+    borderWidth: 1,*/
     marginBottom: 20,
   },
   tableRow: {
