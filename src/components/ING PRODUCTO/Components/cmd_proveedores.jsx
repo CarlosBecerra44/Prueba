@@ -309,15 +309,7 @@ export function CMDProveedores() {
 
           <DialogContent
             onInteractOutside={(event) => event.preventDefault()}
-            className="border-none p-0 overflow-y-auto no-scrollbar"
-            style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "500px", // Límite del ancho
-              height: "25vh", // Ajusta la altura
-              maxHeight: "30vh", // Límite de la altura
-              padding: "20px", // Margen interno
-              marginLeft: "120px",
-            }}
+            className="border-none p-5 overflow-y-auto w-full max-w-[60vh] max-h-[40vh] ml-[15vh] shadow-lg"
           >
             <DialogHeader>
               <DialogTitle className="flex justify-center items-center text-center">
@@ -382,19 +374,11 @@ export function CMDProveedores() {
                       </DialogTrigger>
                       <DialogContent
                         onInteractOutside={(event) => event.preventDefault()}
-                        className="border-none p-0 overflow-y-auto no-scrollbar"
-                        style={{
-                          width: "100%", // Ajusta el ancho
-                          maxWidth: "500px", // Límite del ancho
-                          height: "25vh", // Ajusta la altura
-                          maxHeight: "30vh", // Límite de la altura
-                          padding: "20px", // Margen interno
-                          marginLeft: "120px",
-                        }}
+                        className="border-none p-5 overflow-y-auto w-full max-w-[60vh] max-h-[40vh] ml-[15vh] shadow-md"
                       >
                         <DialogHeader>
-                          <DialogTitle>Editar proveedor</DialogTitle>
-                          <DialogDescription>
+                          <DialogTitle className="flex justify-center items-center text-center">Editar proveedor</DialogTitle>
+                          <DialogDescription className="flex justify-center items-center text-center">
                             Actualiza los detalles necesarios del proveedor.
                           </DialogDescription>
                         </DialogHeader>
