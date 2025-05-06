@@ -204,7 +204,7 @@ export function ValidarProductoFormula() {
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione la categoría" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="1">Categoría 1</SelectItem>
+                        <SelectItem value="1">Herbal</SelectItem>
                         <SelectItem value="2">Categoría 2</SelectItem>
                         <SelectItem value="3">Categoría 3</SelectItem>
                         <SelectItem value="4">Categoría 4</SelectItem>
@@ -232,7 +232,7 @@ export function ValidarProductoFormula() {
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione la línea" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="1">Línea 1</SelectItem>
+                        <SelectItem value="1">Económica</SelectItem>
                         <SelectItem value="2">Línea 2</SelectItem>
                         <SelectItem value="3">Línea 3</SelectItem>
                         <SelectItem value="4">Línea 4</SelectItem>
@@ -263,7 +263,7 @@ export function ValidarProductoFormula() {
                     >
                     <SelectTrigger><SelectValue placeholder="Seleccione el formato" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="1">Formato 1</SelectItem>
+                        <SelectItem value="1">Líquido</SelectItem>
                         <SelectItem value="2">Formato 2</SelectItem>
                         <SelectItem value="3">Formato 3</SelectItem>
                         <SelectItem value="4">Formato 4</SelectItem>

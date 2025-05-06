@@ -75,7 +75,7 @@ export function ValidarProducto() {
                     identificadoresProductos: registros,
                   });
 
-                setTipoProducto(producto.producto.tipo);
+                setTipoProducto(producto.producto.tipoEvaluacion);
             } else {
                 console.error('Error al obtener el producto a validar:', response.data.message);
             }
