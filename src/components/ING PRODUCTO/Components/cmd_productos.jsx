@@ -1050,15 +1050,7 @@ export function CMDProductos() {
 
           <DialogContent
             onInteractOutside={(event) => event.preventDefault()}
-            className="border-none p-0 overflow-y-auto no-scrollbar"
-            style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "800px", // Límite del ancho
-              height: "80vh", // Ajusta la altura
-              maxHeight: "80vh", // Límite de la altura
-              padding: "20px", // Margen interno
-              marginLeft: "120px",
-            }}
+            className="border-none p-5 overflow-y-auto w-full max-w-[100vh] max-h-[70vh] ml-[15vh] mt-[2vh] shadow-lg"
           >
             <DialogHeader>
               <DialogTitle className="flex justify-center items-center text-center">
@@ -1137,20 +1129,13 @@ export function CMDProductos() {
                   {/* Dialog para agregar proveedor */}
                   <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                     <DialogContent
-                      className=" overflow-y-auto no-scrollbar"
                       onInteractOutside={(event) => event.preventDefault()}
-                      style={{
-                        width: "100%",
-                        maxWidth: "400px",
-                        height: "20vh",
-                        maxHeight: "35vh",
-                        padding: "30px",
-                        marginLeft: "120px",
-                      }}
+                      className="border-none p-5 overflow-y-auto w-full max-w-[50vh] max-h-[30vh] ml-[15vh] mt-[2vh] shadow-lg"
                     >
                       <DialogHeader>
-                        <DialogTitle>Agregar nuevo proveedor</DialogTitle>
+                        <DialogTitle className="flex justify-center items-center text-center">Agregar nuevo proveedor</DialogTitle>
                       </DialogHeader>
+                      <Label htmlFor="nombre">Nombre</Label>
                       <Input
                         placeholder="Nombre del proveedor"
                         value={nombreProveedor}
@@ -1454,17 +1439,17 @@ export function CMDProductos() {
                     <DialogTrigger asChild>
                       <Button onClick={() => handleEditProduct(user.id)} variant="outline" size="sm">Editar</Button>
                     </DialogTrigger>
-                    <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "800px", // Límite del ancho
-                        height: "80vh", // Ajusta la altura
-                        maxHeight: "80vh", // Límite de la altura
-                        padding: "20px", // Margen interno
-                        marginLeft: "120px"
-                        }}>
+                    <DialogContent 
+                      onInteractOutside={(event) => event.preventDefault()} 
+                      className="border-none p-5 overflow-y-auto w-full max-w-[100vh] max-h-[70vh] ml-[15vh] mt-[2vh] shadow-md"
+                    >
             <DialogHeader>
-              <DialogTitle>Editar producto</DialogTitle>
-              <DialogDescription>Actualiza los detalles necesarios del producto.</DialogDescription>
+              <DialogTitle className="flex justify-center items-center text-center">
+                Editar producto
+              </DialogTitle>
+              <DialogDescription className="flex justify-center items-center text-center">
+                Actualiza los detalles necesarios del producto.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitUpdate}>
                 <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
