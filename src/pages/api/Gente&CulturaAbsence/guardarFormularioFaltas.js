@@ -7,11 +7,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método no permitido' });
   }
 
-  const formulario_id = uuidv4();
   const { formData, tipoFormulario2, formularioNormalOExtemporaneo } = req.body;
   const { id } = req.query;
   const estatus = "Pendiente";
   const tipo = formularioNormalOExtemporaneo === "Extemporánea" ? 1 : 0;
+  const formulario_id = uuidv4();
 
   const fechaInicio = formData.fechaInicio ? new Date(formData.fechaInicio) : null;
   let fechaFin = formData.fechaFin ? new Date(formData.fechaFin) : null;

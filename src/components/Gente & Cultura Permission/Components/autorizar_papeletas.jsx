@@ -722,11 +722,11 @@ export function AutorizarPapeletas() {
               )}
               disabled={readOnly}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               {date ? (
-                format(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
-                <span>Selecciona una fecha</span>
+                <span className="truncate">Selecciona una fecha</span>
               )}
             </Button2>
           </PopoverTrigger>
@@ -793,7 +793,7 @@ export function AutorizarPapeletas() {
           onOpenChange={closeModalFormsEdit}
         >
           <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
+            <Card className="w-full max-w-lg" hidden>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   {tipoFormulario2}
@@ -809,10 +809,10 @@ export function AutorizarPapeletas() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Llegada tarde / Salida antes
@@ -929,16 +929,16 @@ export function AutorizarPapeletas() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Tiempo por tiempo
                           </CardTitle>
                           <DialogDescription className="text-center">
-                            TIempo que puedes reponer llegando temprano o
+                            Tiempo que puedes reponer llegando temprano o
                             saliendo tarde
                           </DialogDescription>
                         </CardHeader>
@@ -987,6 +987,18 @@ export function AutorizarPapeletas() {
                                 onChange={handleChange}
                                 readOnly={true}
                                 placeholder="Horas..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="minutos">Minutos</Label>
+                              <Input
+                                id="minutos"
+                                name="minutos"
+                                type="number"
+                                value={formData.minutos}
+                                onChange={handleChange}
+                                readOnly={true}
+                                placeholder="Minutos..."
                               />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1114,10 +1126,10 @@ export function AutorizarPapeletas() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Permiso
@@ -1171,7 +1183,7 @@ export function AutorizarPapeletas() {
                                     id="justificada-si"
                                   />
                                   <Label htmlFor="justificada-si">
-                                    Con sueldo
+                                    Con goce de sueldo
                                   </Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -1180,7 +1192,7 @@ export function AutorizarPapeletas() {
                                     id="justificada-no"
                                   />
                                   <Label htmlFor="justificada-no">
-                                    Sin sueldo
+                                    Sin goce de sueldo
                                   </Label>
                                 </div>
                               </RadioGroup>
@@ -1344,17 +1356,9 @@ export function AutorizarPapeletas() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "1600px", // Límite del ancho
-                        height: "65vh", // Ajusta la altura
-                        maxHeight: "65vh", // Límite de la altura
-                        padding: "30px", // Margen interno
-                        marginLeft: "120px",
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
                     >
-                      <Card className="w-full xl">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Home Office
@@ -1414,8 +1418,8 @@ export function AutorizarPapeletas() {
                                 </Tooltip>
                               </div>
                             </div>
-                            <div className="grid grid-cols-7 gap-1">
-                              <div>
+                            <div className="grid grid-cols-6 gap-1">
+                              <div className="flex flex-col justify-end min-w-0">
                                 {renderDatePicker(
                                   "Fecha",
                                   formData.fechaFormulario,
@@ -1424,8 +1428,8 @@ export function AutorizarPapeletas() {
                                   true
                                 )}
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="actividad">Actividad</Label>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label htmlFor="actividad" className="truncate block">Actividad</Label>
                                 <Input
                                   id="actividad"
                                   name="actividad"
@@ -1435,8 +1439,8 @@ export function AutorizarPapeletas() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2 col-span-2">
-                                <Label htmlFor="descripcion">Descripción</Label>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
                                 <Input
                                   id="descripcion"
                                   name="descripcion"
@@ -1446,8 +1450,8 @@ export function AutorizarPapeletas() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="persona">
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label htmlFor="persona" className="truncate block">
                                   Persona respuesta
                                 </Label>
                                 <Input
@@ -1459,8 +1463,8 @@ export function AutorizarPapeletas() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="tiempoRespuesta">
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label htmlFor="tiempoRespuesta" className="truncate block">
                                   Tiempo de respuesta
                                 </Label>
                                 <Input
@@ -1472,8 +1476,8 @@ export function AutorizarPapeletas() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="comentarios">Comentarios</Label>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
                                 <Input
                                   id="comentarios"
                                   name="comentarios"
@@ -1488,7 +1492,7 @@ export function AutorizarPapeletas() {
                               {formData.planTrabajo.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  className="grid grid-cols-7 gap-1"
+                                  className="grid grid-cols-6 gap-1"
                                 >
                                   <div>
                                     {renderDatePicker(
@@ -1517,7 +1521,7 @@ export function AutorizarPapeletas() {
                                       readOnly={true}
                                     />
                                   </div>
-                                  <div className="col-span-2">
+                                  <div>
                                     <Input
                                       id={`descripcion-${index}`}
                                       name={`descripcion-${index}`}
@@ -1564,6 +1568,7 @@ export function AutorizarPapeletas() {
                                         name={`comentarios-${index}`}
                                         value={otro.comentarios}
                                         type="text"
+                                        className="w-full"
                                         onChange={(e) =>
                                           handleChange(e, index, "comentarios")
                                         }
@@ -1644,8 +1649,11 @@ export function AutorizarPapeletas() {
                 )}
                 {tipoFormulario2 === "Vacaciones" && (
                   <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-                  <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-                  <Card className="w-full max-w-lg">
+                  <DialogContent 
+                    className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                    onInteractOutside={(event) => event.preventDefault()}
+                  >
+                  <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
                 </CardHeader>
@@ -1972,12 +1980,12 @@ export function AutorizarPapeletas() {
                           onOpenChange={handleCloseModalStatus}
                         >
                           <DialogContent
-                            className="border-none p-0"
+                            className="border-none p-0 overflow-y-auto w-full max-w-[80vh] max-h-[60vh] shadow-none ml-[13vh] mt-auto"
                             onInteractOutside={(event) =>
                               event.preventDefault()
                             }
                           >
-                            <Card className="w-full max-w-lg">
+                            <Card>
                               <CardHeader>
                                 {modalDataStatus.estatus.startsWith(
                                   "Autorizada"
