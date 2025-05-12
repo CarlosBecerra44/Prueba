@@ -93,8 +93,7 @@ export function TablaPermisosFaltaUsuario() {
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
-  const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] =
-    useState(false); // Estado para abrir el formulario
+  const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
   const [tipoFormularioAbierto, setTipoFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
   const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] = useState(""); // Estado para abrir el formulario
@@ -646,67 +645,87 @@ export function TablaPermisosFaltaUsuario() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    Swal.fire({
+      title: "Cargando...",
+      text: "Estamos procesando tu solicitud",
+      showConfirmButton: false,
+      allowOutsideClick: false, // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      },
+    });
+  
     if (!session) {
       console.log("No se ha iniciado sesión");
       return;
     }
-
+  
     try {
-      // Subir el archivo al FTP
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = async (e) => {
-          const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
-
-          try {
-            const ftpResponse = await fetch(
-              "/api/Gente&CulturaPermission/subirPDFPapeletas",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  fileName: file.name,
-                  fileContent: base64File, // Enviar el archivo en Base64
-                }),
-              }
-            );
-
-            const ftpResult = await ftpResponse.json();
-            if (ftpResponse.ok) {
-              console.log("Archivo subido al FTP exitosamente", ftpResult);
-
-              // Asignar el nombre del archivo subido a formData.comprobante
-              formData.comprobante = ftpResult.fileName;
-            } else {
-              console.error("Error al subir el archivo al FTP", ftpResult);
-              Swal.fire("Error", "Error al subir el archivo", "error");
-              return;
+  
+        // Crear FormData y agregar archivo
+        const formDataFTP = new FormData();
+        formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
+  
+        try {
+          const ftpResponse = await fetch(
+            "/api/Gente&CulturaPermission/subirPDFPapeletas",
+            {
+              method: "POST",
+              body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
             }
-          } catch (ftpError) {
-            console.error("Error en la solicitud de FTP", ftpError);
-            Swal.fire("Error", "Error en la subida del archivo", "error");
+          );
+  
+          const ftpResult = await ftpResponse.json();
+
+          Swal.close();
+
+          if (ftpResponse.ok) {
+            console.log("Archivo subido al FTP exitosamente", ftpResult);
+  
+            // Asignar el nombre del archivo subido a formData.comprobante
+            formData.comprobante = ftpResult.fileName;
+          } else {
+            console.error("Error al subir el archivo al FTP", ftpResult);
+            Swal.fire({
+              title: 'Error',
+              text: 'Error al subir el archivo',
+              icon: 'error',
+              timer: 3000,
+              showConfirmButton: false,
+            });
             return;
           }
-
-          // Después de subir el archivo, enviar el formulario
-          await enviarFormulario();
-        };
-
-        reader.readAsDataURL(file); // Leer el archivo como base64
-      } else {
-        // Si no hay archivo, solo enviar el formulario
-        await enviarFormulario();
+        } catch (ftpError) {
+          console.error("Error en la solicitud de FTP", ftpError);
+          Swal.fire({
+            title: 'Error',
+            text: 'Error en la subida del archivo',
+            icon: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+          });
+          return;
+        }
       }
+  
+      // Luego de subir el archivo (o si no hay), enviar el resto del formulario
+      await enviarFormulario();
     } catch (error) {
       console.error("Error en el formulario:", error);
-      Swal.fire("Error", "Error al enviar el formulario", "error");
+      Swal.close();
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al enviar el formulario',
+        icon: 'error',
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
-  };
+  };  
 
   const enviarFormulario = async () => {
     const mensaje1 = `<strong>${
@@ -768,79 +787,128 @@ export function TablaPermisosFaltaUsuario() {
             });
           } else {
             console.error("Error al enviar la notificación");
-            Swal.fire("Error", "Error al enviar la notificación", "error");
+            Swal.fire({
+              title: 'Error',
+              text: 'Error al enviar la notificación',
+              icon: 'error',
+              timer: 3000,
+              showConfirmButton: false,
+            });
           }
         } catch (error) {
           console.error("Error en la solicitud de notificación:", error);
-          Swal.fire("Error", "Error en la notificación", "error");
+          Swal.close();
+          Swal.fire({
+            title: 'Error',
+            text: 'Error en la notificación',
+            icon: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+          });
         }
       } else {
-        Swal.fire("Error", "Error al crear la papeleta", "error");
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al crear la papeleta',
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false,
+        });
       }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
-      Swal.fire("Error", "Error al enviar el formulario", "error");
+      Swal.close();
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al enviar el formulario',
+        icon: 'error',
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
   };
 
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
+
+    Swal.fire({
+      title: "Cargando...",
+      text: "Estamos procesando tu solicitud",
+      showConfirmButton: false,
+      allowOutsideClick: false, // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      },
+    });
+  
     if (!session) {
       console.log("No se ha iniciado sesión");
       return;
     }
   
     try {
-      // Subir el archivo al FTP
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
   
-        reader.onload = async (e) => {
-          const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
+        // Crear FormData y agregar archivo
+        const formDataFTP = new FormData();
+        formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
   
-          try {
-            const ftpResponse = await fetch("/api/Gente&CulturaPermission/subirPDFPapeletas", {
+        try {
+          const ftpResponse = await fetch(
+            "/api/Gente&CulturaPermission/subirPDFPapeletas",
+            {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                fileName: file.name,
-                fileContent: base64File, // Enviar el archivo en Base64
-              }),
-            });
-  
-            const ftpResult = await ftpResponse.json();
-            if (ftpResponse.ok) {
-              console.log("Archivo subido al FTP exitosamente", ftpResult);
-  
-              // Asignar el nombre del archivo subido a formData.comprobante
-              formData.comprobante = ftpResult.fileName;
-            } else {
-              console.error("Error al subir el archivo al FTP", ftpResult);
-              Swal.fire("Error", "Error al subir el archivo", "error");
-              return;
+              body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
             }
-          } catch (ftpError) {
-            console.error("Error en la solicitud de FTP", ftpError);
-            Swal.fire("Error", "Error en la subida del archivo", "error");
+          );
+  
+          const ftpResult = await ftpResponse.json();
+
+          Swal.close();
+
+          if (ftpResponse.ok) {
+            console.log("Archivo subido al FTP exitosamente", ftpResult);
+  
+            // Asignar el nombre del archivo subido a formData.comprobante
+            formData.comprobante = ftpResult.fileName;
+          } else {
+            console.error("Error al subir el archivo al FTP", ftpResult);
+            Swal.fire({
+              title: 'Error',
+              text: 'Error al subir el archivo',
+              icon: 'error',
+              timer: 3000,
+              showConfirmButton: false,
+            });
             return;
           }
-  
-          // Después de subir el archivo, enviar el formulario
-          await actualizarFormulario();
-        };
-  
-        reader.readAsDataURL(file); // Leer el archivo como base64
-      } else {
-        // Si no hay archivo, solo enviar el formulario
-        await actualizarFormulario();
+        } catch (ftpError) {
+          console.error("Error en la solicitud de FTP", ftpError);
+          Swal.fire({
+            title: 'Error',
+            text: 'Error en la subida del archivo',
+            icon: 'error',
+            timer: 3000,
+            showConfirmButton: false,
+          });
+          return;
+        }
       }
+  
+      // Luego de subir el archivo (o si no hay), enviar el resto del formulario
+      await actualizarFormulario();
     } catch (error) {
       console.error("Error en el formulario:", error);
-      Swal.fire("Error", "Error al actualizar el formulario", "error");
+      Swal.close();
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al actualizar el formulario',
+        icon: 'error',
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -866,11 +934,24 @@ export function TablaPermisosFaltaUsuario() {
         });
       } else {
         console.error("Error al actualizar el formulario");
-        Swal.fire("Error", "Error al actualizar el formulario", "error");
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al actualizar el formulario',
+          icon: 'error',
+          timer: 3000,
+          showConfirmButton: false,
+        });
       }
     } catch (error) {
       console.error("Error en la solicitud de actualización de formulario:", error);
-      Swal.fire("Error", "Error en la actualización del formulario", "error");
+      Swal.close();
+      Swal.fire({
+        title: 'Error',
+        text: 'Error en la actualización del formulario',
+        icon: 'error',
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -911,11 +992,11 @@ export function TablaPermisosFaltaUsuario() {
               )}
               disabled={readOnly}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               {date ? (
-                format(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
-                <span>Selecciona una fecha</span>
+                <span className="truncate">Selecciona una fecha</span>
               )}
             </Button2>
           </PopoverTrigger>
@@ -964,9 +1045,8 @@ export function TablaPermisosFaltaUsuario() {
       </div>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Button
-          disabled={isDisabled}
           style={{
-            background: isDisabled ? "gray" : "rgb(31 41 55)",
+            background: "rgb(31 41 55)",
             padding: "10px 15px",
             whiteSpace: "nowrap",
             display: "flex",
@@ -974,9 +1054,9 @@ export function TablaPermisosFaltaUsuario() {
             gap: "12px",
             color: "white",
             border: "none",
-            cursor: isDisabled ? "not-allowed" : "pointer",
+            cursor: "pointer",
           }}
-          onClick={!isDisabled ? openModalFormsType : undefined}
+          onClick={openModalFormsType}
         >
           <PermisosIcon className="h-4 w-4" /> AGREGAR PAPELETA
         </Button>
@@ -985,10 +1065,10 @@ export function TablaPermisosFaltaUsuario() {
       {tipoFormularioAbierto && (
         <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
           <DialogContent
-            className="border-none p-0"
+            className="border-none p-0 overflow-y-auto w-full max-w-[65vh] max-h-[30vh] shadow-lg ml-[12vh] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
-            <Card className="w-full max-w-lg">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   Nueva papeleta
@@ -1007,6 +1087,7 @@ export function TablaPermisosFaltaUsuario() {
                       if (checked) openModalType(); // Abrir el modal después de actualizar el estado
                     }}
                     style={{ marginLeft: "30px" }}
+                    disabled={isDisabled}
                   />
                   <Label htmlFor="Normal">Normal</Label>
                 </div>
@@ -1037,10 +1118,10 @@ export function TablaPermisosFaltaUsuario() {
           onOpenChange={closeModalForms}
         >
           <DialogContent
-            className="border-none p-0"
+            className="border-none p-0 overflow-y-auto w-full max-w-[65vh] max-h-[40vh] shadow-lg ml-[12vh] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
-            <Card className="w-full max-w-lg">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   Nueva papeleta
@@ -1126,10 +1207,10 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0"
+                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Llegada tarde / Salida antes
@@ -1219,17 +1300,16 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0"
+                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Tiempo por tiempo
                     </CardTitle>
                     <DialogDescription className="text-center">
-                      TIempo que puedes reponer llegando temprano o saliendo
-                      tarde
+                      Tiempo que puedes reponer llegando temprano o saliendo tarde
                     </DialogDescription>
                   </CardHeader>
                   <form onSubmit={handleSubmit}>
@@ -1272,6 +1352,17 @@ export function TablaPermisosFaltaUsuario() {
                           onChange={handleChange}
                           required
                           placeholder="Horas..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minutos">Minutos</Label>
+                        <Input
+                          id="minutos"
+                          name="minutos"
+                          type="number"
+                          onChange={handleChange}
+                          required
+                          placeholder="Minutos..."
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1336,6 +1427,7 @@ export function TablaPermisosFaltaUsuario() {
                         disabled={
                           !formData.dias ||
                           !formData.horas ||
+                          !formData.minutos ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
                           !formData.motivo
@@ -1352,10 +1444,10 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0"
+                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Permiso
@@ -1520,17 +1612,9 @@ export function TablaPermisosFaltaUsuario() {
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
                 onInteractOutside={(event) => event.preventDefault()}
-                className="border-none p-0 overflow-y-auto no-scrollbar"
-                style={{
-                  width: "100%", // Ajusta el ancho
-                  maxWidth: "1600px", // Límite del ancho
-                  height: "65vh", // Ajusta la altura
-                  maxHeight: "65vh", // Límite de la altura
-                  padding: "30px", // Margen interno
-                  marginLeft: "120px",
-                }}
+                className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
               >
-                <Card className="w-full xl">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Home Office
@@ -1586,17 +1670,12 @@ export function TablaPermisosFaltaUsuario() {
                           </Tooltip>
                         </div>
                       </div>
-                      <div className="grid grid-cols-7 gap-1">
-                        <div>
-                          {renderDatePicker(
-                            "Fecha",
-                            formData.fechaFormulario,
-                            handleChange,
-                            "fechaFormulario"
-                          )}
+                      <div className="grid grid-cols-6 gap-1">
+                        <div className="flex flex-col justify-end min-w-0">
+                          {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario")}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="actividad">Actividad</Label>
+                        <div className="flex flex-col justify-end min-w-0 space-y-3">
+                          <Label htmlFor="actividad" className="truncate block">Actividad</Label>
                           <Input
                             id="actividad"
                             name="actividad"
@@ -1606,8 +1685,8 @@ export function TablaPermisosFaltaUsuario() {
                             required
                           />
                         </div>
-                        <div className="space-y-2 col-span-2">
-                          <Label htmlFor="descripcion">Descripción</Label>
+                        <div className="flex flex-col justify-end min-w-0 space-y-3">
+                          <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
                           <Input
                             id="descripcion"
                             name="descripcion"
@@ -1617,8 +1696,8 @@ export function TablaPermisosFaltaUsuario() {
                             required
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="persona">Persona respuesta</Label>
+                        <div className="flex flex-col justify-end min-w-0 space-y-3">
+                          <Label htmlFor="persona" className="truncate block">Persona respuesta</Label>
                           <Input
                             id="persona"
                             name="persona"
@@ -1628,10 +1707,8 @@ export function TablaPermisosFaltaUsuario() {
                             required
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tiempoRespuesta">
-                            Tiempo de respuesta
-                          </Label>
+                        <div className="flex flex-col justify-end min-w-0 space-y-3">
+                          <Label htmlFor="tiempoRespuesta" className="truncate block">Tiempo de respuesta</Label>
                           <Input
                             id="tiempoRespuesta"
                             name="tiempoRespuesta"
@@ -1641,8 +1718,8 @@ export function TablaPermisosFaltaUsuario() {
                             required
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="comentarios">Comentarios</Label>
+                        <div className="flex flex-col justify-end min-w-0 space-y-3">
+                          <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
                           <Input
                             id="comentarios"
                             name="comentarios"
@@ -1655,7 +1732,7 @@ export function TablaPermisosFaltaUsuario() {
                       </div>
                       <div className="space-y-2">
                         {formData.planTrabajo.otros.map((otro, index) => (
-                          <div key={index} className="grid grid-cols-7 gap-1">
+                          <div key={index} className="grid grid-cols-6 gap-1">
                             <div>
                               {renderDatePicker(
                                 "",
@@ -1684,7 +1761,7 @@ export function TablaPermisosFaltaUsuario() {
                                 required
                               />
                             </div>
-                            <div className="col-span-2">
+                            <div>
                               <Input
                                 id={`descripcion-${index}`}
                                 name={`descripcion-${index}`}
@@ -1734,21 +1811,22 @@ export function TablaPermisosFaltaUsuario() {
                                   name={`comentarios-${index}`}
                                   value={otro.comentarios}
                                   type="text"
-                                  style={{ width: "170px" }}
+                                  className="w-full"
                                   onChange={(e) =>
                                     handleTrabajoChange(e, index, "comentarios")
                                   }
                                   placeholder="Comentarios..."
                                   required
                                 />
-                                <Button
+                                <Button2
                                   type="button"
                                   variant="ghost"
                                   size="icon"
+                                  className="w-6"
                                   onClick={() => eliminarTrabajo(index)}
                                 >
                                   <X className="h-4 w-4" />
-                                </Button>
+                                </Button2>
                               </div>
                             </div>
                           </div>
@@ -1801,8 +1879,11 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-            <Card className="w-full max-w-lg">
+            <DialogContent 
+              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+              onInteractOutside={(event) => event.preventDefault()}
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
           </CardHeader>
@@ -1897,7 +1978,7 @@ export function TablaPermisosFaltaUsuario() {
 {formularioPrincipalAbiertoEdit && (
   <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalFormsEdit}>
     <DialogContent className="border-none p-0">
-      <Card className="w-full max-w-lg">
+      <Card className="w-full max-w-lg" hidden>
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             {tipoFormulario2}
@@ -1909,8 +1990,11 @@ export function TablaPermisosFaltaUsuario() {
         <div className="grid gap-4 py-4">
         {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-            <Card className="w-full max-w-lg">
+            <DialogContent 
+              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+              onInteractOutside={(event) => event.preventDefault()}
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
             <DialogDescription className="text-center">Autorización para llegar tarde o salir temprano</DialogDescription>
@@ -1950,11 +2034,14 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-            <Card className="w-full max-w-lg">
+            <DialogContent 
+              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+              onInteractOutside={(event) => event.preventDefault()}
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
-            <DialogDescription className="text-center">TIempo que puedes reponer llegando temprano o saliendo tarde</DialogDescription>
+            <DialogDescription className="text-center">Tiempo que puedes reponer llegando temprano o saliendo tarde</DialogDescription>
           </CardHeader>
           <form onSubmit={handleSubmitEdit}>
             <CardContent className="space-y-6">
@@ -1986,6 +2073,17 @@ export function TablaPermisosFaltaUsuario() {
                   onChange={handleChange}
                   readOnly={ver ? true : false}
                   placeholder="Horas..." />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="minutos">Minutos</Label>
+                <Input
+                  id="minutos"
+                  name="minutos"
+                  type="number"
+                  value={formData.minutos}
+                  onChange={handleChange}
+                  readOnly={ver ? true : false}
+                  placeholder="Minutos..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {renderDatePicker("Fecha de inicio", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
@@ -2053,8 +2151,11 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-            <Card className="w-full max-w-lg">
+            <DialogContent 
+              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto" 
+              onInteractOutside={(event) => event.preventDefault()}
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
             <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo</DialogDescription>
@@ -2088,11 +2189,11 @@ export function TablaPermisosFaltaUsuario() {
                   className="flex space-x-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Con sueldo</Label>
+                    <Label htmlFor="justificada-si">Con goce de sueldo</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">Sin sueldo</Label>
+                    <Label htmlFor="justificada-no">Sin goce de sueldo</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -2182,15 +2283,11 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Home Office" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1600px", // Límite del ancho
-              height: "65vh", // Ajusta la altura
-              maxHeight: "65vh", // Límite de la altura
-              padding: "30px", // Margen interno
-              marginLeft: "120px"
-            }}>
-            <Card className="w-full xl">
+            <DialogContent 
+              onInteractOutside={(event) => event.preventDefault()}
+              className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Home Office</CardTitle>
             <DialogDescription className="text-center">Solicitar permiso para realizar home office</DialogDescription>
@@ -2226,61 +2323,66 @@ export function TablaPermisosFaltaUsuario() {
                   </Tooltip>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-1">
-                <div>
+              <div className="grid grid-cols-6 gap-1">
+                <div className="flex flex-col justify-end min-w-0">
                   {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario", ver ? true : false)}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="actividad">Actividad</Label>
+                <div className="flex flex-col justify-end min-w-0 space-y-3">
+                  <Label htmlFor="actividad" className="truncate block">Actividad</Label>
                   <Input
                     id="actividad"
                     name="actividad"
                     type="text"
                     value={formData.actividad}
+                    placeholder="Actividad..."
                     onChange={handleChange}
                     readOnly={ver ? true : false}
                   />
                 </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="descripcion">Descripción</Label>
+                <div className="flex flex-col justify-end min-w-0 space-y-3">
+                  <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
                   <Input
                     id="descripcion"
                     name="descripcion"
                     type="text"
                     value={formData.descripcion}
+                    placeholder="Descripción de la actividad elaborada..."
                     onChange={handleChange}
                     readOnly={ver ? true : false}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="persona">Persona respuesta</Label>
+                <div className="flex flex-col justify-end min-w-0 space-y-3">
+                  <Label htmlFor="persona" className="truncate block">Persona respuesta</Label>
                   <Input
                     id="persona"
                     name="persona"
                     type="text"
                     value={formData.persona}
+                    placeholder="Persona..."
                     onChange={handleChange}
                     readOnly={ver ? true : false}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tiempoRespuesta">Tiempo de respuesta</Label>
+                <div className="flex flex-col justify-end min-w-0 space-y-3">
+                  <Label htmlFor="tiempoRespuesta" className="truncate block">Tiempo de respuesta</Label>
                   <Input
                     id="tiempoRespuesta"
                     name="tiempoRespuesta"
                     type="text"
                     value={formData.tiempoRespuesta}
+                    placeholder="Tiempo de respuesta..."
                     onChange={handleChange}
                     readOnly={ver ? true : false}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="comentarios">Comentarios</Label>
+                <div className="flex flex-col justify-end min-w-0 space-y-3">
+                  <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
                   <Input
                     id="comentarios"
                     name="comentarios"
                     type="text"
                     value={formData.comentarios}
+                    placeholder="Comentarios..."
                     onChange={handleChange}
                     readOnly={ver ? true : false}
                   />
@@ -2288,7 +2390,7 @@ export function TablaPermisosFaltaUsuario() {
               </div>
               <div className="space-y-2">
               {formData.planTrabajo.otros.map((otro, index) => (
-               <div key={index} className="grid grid-cols-7 gap-1">
+               <div key={index} className="grid grid-cols-6 gap-1">
                <div>
                 {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", ver ? true : false, true)}
               </div>
@@ -2298,16 +2400,18 @@ export function TablaPermisosFaltaUsuario() {
                    name={`actividad-${index}`}
                    type="text"
                    value={otro.actividad}
+                   placeholder="Actividad..."
                    onChange={(e) => handleTrabajoChange(e, index, "actividad")}
                    readOnly={ver ? true : false}
                  />
                </div>
-               <div className="col-span-2">
+               <div>
                  <Input
                    id={`descripcion-${index}`}
                    name={`descripcion-${index}`}
                    type="text"
                    value={otro.descripcion}
+                   placeholder="Descripción de la actividad elaborada..."
                    onChange={(e) => handleTrabajoChange(e, index, "descripcion")}
                    readOnly={ver ? true : false}
                  />
@@ -2318,6 +2422,7 @@ export function TablaPermisosFaltaUsuario() {
                    name={`persona-${index}`}
                    type="text"
                    value={otro.persona}
+                   placeholder="Persona..."
                    onChange={(e) => handleTrabajoChange(e, index, "persona")}
                    readOnly={ver ? true : false}
                  />
@@ -2328,6 +2433,7 @@ export function TablaPermisosFaltaUsuario() {
                    name={`tiempoRespuesta-${index}`}
                    type="text"
                    value={otro.tiempoRespuesta}
+                   placeholder="Tiempo de respuesta..."
                    onChange={(e) => handleTrabajoChange(e, index, "tiempoRespuesta")}
                    readOnly={ver ? true : false}
                  />
@@ -2338,18 +2444,15 @@ export function TablaPermisosFaltaUsuario() {
                     id={`comentarios-${index}`}
                     name={`comentarios-${index}`}
                     type="text"
-                    style={{width: "170px"}}
+                    className="w-full"
                     value={otro.comentarios}
+                    placeholder="Comentarios..."
                     onChange={(e) => handleTrabajoChange(e, index, "comentarios")}
                     readOnly={ver ? true : false}
                   />
-                  <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminarTrabajo(index)}>
-                      <X className="h-4 w-4" />
-                    </Button>
+                  {ver ? (<div hidden></div>) : (<Button2 type="button" variant="ghost" size="icon" className="w-6" onClick={() => eliminarTrabajo(index)}>
+                    <X className="h-4 w-4" />
+                  </Button2>)}
                   </div>
                </div>
              </div>
@@ -2368,8 +2471,11 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent className="border-none p-0" onInteractOutside={(event) => event.preventDefault()}>
-            <Card className="w-full max-w-lg">
+            <DialogContent 
+              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+              onInteractOutside={(event) => event.preventDefault()}
+            >
+            <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
           </CardHeader>
