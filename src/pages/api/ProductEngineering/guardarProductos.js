@@ -51,6 +51,7 @@ export default async function handler(req, res) {
         costo: fields.costo,
         cMinima: fields.compraMinima,
         descripcion: fields.descripcion,
+        creado_por: fields.idUser,
       });
 
       // Conectar al servidor FTP
@@ -97,7 +98,8 @@ export default async function handler(req, res) {
       // Guardar las rutas de las imágenes en la base de datos utilizando Sequelize
       const imgProductos = uploadedImages.map(img => ({
         ruta: img.ruta,
-        producto_id: img.producto_id
+        producto_id: img.producto_id,
+        tipo: 1
       }));
 
       // Inserta las imágenes asociadas al producto

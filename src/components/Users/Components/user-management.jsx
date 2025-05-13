@@ -124,6 +124,7 @@ export function UserManagementTable() {
   const [isChangeOptionsDialogOpen, setIsChangeOptionsDialogOpen] = useState(false)
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState("todos")
+  const [departmentFilter, setDepartmentFilter] = useState("todos")
   const [error, setError] = useState('');
   const [role, setSelectedRole] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -133,6 +134,7 @@ export function UserManagementTable() {
   const [nuevaContraseña, setNuevaContraseña] = useState('');
   const [confirmarContraseña, setConfirmarContraseña] = useState('');
   const [searchTermPass, setSearchTermPass] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const inputRef = useRef(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState({});
@@ -140,11 +142,22 @@ export function UserManagementTable() {
 
   const filteredUsers = users
     .filter(user => 
-      (statusFilter === "todos" || user.rol === statusFilter) &&
+      (statusFilter === "todos" || user.rol === statusFilter) && (departmentFilter === "todos" || user.id_dpto === departmentFilter) &&
       Object.values(user)
         .filter(value => value !== null && value !== undefined)  // Filtra valores nulos o indefinidos
         .some(value => value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
     );
+  
+  // Este useEffect se encarga del debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTermPass);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler); // limpia el timeout si se escribe antes de los 3s
+    };
+  }, [searchTermPass]);
 
   const handleDelete = async (index) => {
     try {
@@ -666,7 +679,7 @@ export function UserManagementTable() {
 
   const handleCleanFormPass = () => {
     setSelectedUsers([]);
-    setSearchTerm("");
+    setSearchTermPass("");
   }
 
   return (
@@ -693,7 +706,7 @@ export function UserManagementTable() {
             />
           </div>
           <Select onValueChange={setStatusFilter} defaultValue={statusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Filtrar por rol" />
             </SelectTrigger>
             <SelectContent>
@@ -704,11 +717,28 @@ export function UserManagementTable() {
               <SelectItem value="Dado de baja">Dado de baja</SelectItem>
             </SelectContent>
           </Select>
+          <Select onValueChange={setDepartmentFilter} defaultValue={departmentFilter}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Filtrar por departamento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los departamentos</SelectItem>
+              {departamentos.length > 0 ? (
+                departamentos.map((dep) => (
+                  <SelectItem key={dep.id} value={dep.id}>
+                    {dep.nombre}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled>No hay departamentos disponibles</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
         </div>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button onClick={handleCleanFormPass} style={{ marginLeft: "600px" }}>
+            <Button onClick={handleCleanFormPass} style={{ marginLeft: "400px" }}>
               <KeyRound className="mr-2 h-4 w-4" />Reestablecer contraseñas
             </Button>
           </DialogTrigger>
@@ -761,20 +791,21 @@ export function UserManagementTable() {
                       placeholder="Buscar usuario..."
                       value={searchTermPass}
                       onChange={(e) => setSearchTermPass(e.target.value)}
+                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
                     />
                   </div>
                   
                   {/* Filtrado sin selección automática */}
                   {users.filter(user => 
-                    user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                    user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                    user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                    user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                   ).length === 0 ? (
                     <div className="p-2 text-center text-gray-500">No se encontraron usuarios</div>
                   ) : (
                     users
                       .filter(user => 
-                        user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                        user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                        user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                        user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                       )
                       .map(user => (
                         <SelectItem key={user.id} value={user.id}>
@@ -865,6 +896,7 @@ export function UserManagementTable() {
                       if (selectedDepartamento) {
                         setSelectedDepartamento(selectedDepartamento.id);
                         setDirectBoss("");
+                        setSearchTermPass("");
                       }
                     }}
                     disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
@@ -889,7 +921,7 @@ export function UserManagementTable() {
                   <Label htmlFor="directBoss">
                     Jefe Directo
                   </Label>
-                  <Select onValueChange={(value) => setDirectBoss(value)} value={directBoss}>
+                  <Select onValueChange={(value) => { setDirectBoss(value); setSearchTermPass(""); }} value={directBoss}>
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Seleccione el jefe directo" />
                     </SelectTrigger>
@@ -901,20 +933,21 @@ export function UserManagementTable() {
                           placeholder="Buscar usuario..."
                           value={searchTermPass}
                           onChange={(e) => setSearchTermPass(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
                         />
                       </div>
                       
                       {/* Filtrado sin selección automática */}
                       {users.filter(user => 
-                        user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                        user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                        user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                        user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                       ).length === 0 ? (
                         <div className="p-2 text-center text-gray-500">No se encontraron usuarios</div>
                       ) : (
                         users
                           .filter(user => 
-                            user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                            user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                            user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                            user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                           )
                           .map(user => (
                             <SelectItem key={user.id.toString()} value={user.id.toString()}>
@@ -1138,6 +1171,7 @@ export function UserManagementTable() {
                       departamento_id: value, // Actualizar el departamento del usuario seleccionado
                       jefe_directo: "", // Reiniciar el jefe directo
                     }));
+                    setSearchTermPass("");
                   }}
                   disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
                 >
@@ -1161,12 +1195,16 @@ export function UserManagementTable() {
                 <Label htmlFor="directBoss">
                   Jefe Directo
                 </Label>
-                <Select onValueChange={(value) =>
+                <Select 
+                  value={selectedUser?.jefe_directo?.toString() || ''}
+                  onValueChange={(value) => {
                     setSelectedUser((prevUser) => ({
                       ...prevUser,
                       jefe_directo: value, // Actualizar el jefe directo del usuario seleccionado
-                    }))
-                  } value={selectedUser?.jefe_directo?.toString() || ''}>
+                    }));
+                    setSearchTermPass("");
+                  }}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Seleccione el jefe directo" />
                   </SelectTrigger>
@@ -1178,20 +1216,21 @@ export function UserManagementTable() {
                         placeholder="Buscar usuario..."
                         value={searchTermPass}
                         onChange={(e) => setSearchTermPass(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
                       />
                     </div>
                     
                     {/* Filtrado sin selección automática */}
                     {users.filter(user => 
-                      user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                      user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                      user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                      user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                     ).length === 0 ? (
                       <div className="p-2 text-center text-gray-500">No se encontraron usuarios</div>
                     ) : (
                       users
                         .filter(user => 
-                          user.nombre.toLowerCase().includes(searchTermPass.toLowerCase()) ||
-                          user.apellidos.toLowerCase().includes(searchTermPass.toLowerCase())
+                          user.nombre.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                          user.apellidos.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
                         )
                         .map(user => (
                           <SelectItem key={user.id.toString()} value={user.id.toString()}>

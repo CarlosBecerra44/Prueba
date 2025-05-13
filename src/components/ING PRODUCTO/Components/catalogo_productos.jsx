@@ -491,6 +491,7 @@ export function CatalogoProductos() {
       setNuevoProducto5(null);
     
       setNivelActivo("Tipo");
+      fetchComplementos();
     };    
 
     useEffect(() => {
@@ -499,11 +500,9 @@ export function CatalogoProductos() {
         nuevoProducto4 || selected.Producto
       ) {
         const siguienteTipo = determinarSiguienteNivelConSeleccion();
-        console.log('siguienteTipoUseEffect: ', siguienteTipo);
     
         if (siguienteTipo) {
           const nuevoNivel = obtenerNombreNivel(siguienteTipo.nivel);
-          console.log('nuevoNivel:', nuevoNivel);
     
           if (nuevoNivel) {
             setNivelActivo(nuevoNivel);
@@ -581,12 +580,10 @@ export function CatalogoProductos() {
         siguienteTipoId = selected.Categoria.seguimiento;
       } else {
         // ✅ Si aún no hay producto, no avanzamos al siguiente nivel
-        console.log('⚠ No hay producto seleccionado, manteniendo nivel actual.');
         return null;
       }
     
       const siguienteTipo = tipos.find(t => t.id === siguienteTipoId);
-      console.log('siguienteTipo', siguienteTipo);
       return siguienteTipo;
     };     
     
@@ -628,7 +625,6 @@ export function CatalogoProductos() {
       }
 
       if (nivel === "Aditamentos" && selected["Sellos"]?.nombre?.startsWith("Sin")) {
-        console.log("⏩ Saltando Sellos → Mostrando categorías de Aditamentos");
     
         if (!nuevaCategoria3) {
           return categorias.filter(c => c.Tipo_id === 10);
@@ -654,7 +650,6 @@ export function CatalogoProductos() {
       }
 
       if (nivel === "Formatos" && selected["Aditamentos"]?.nombre?.startsWith("Sin")) {
-        console.log("⏩ Saltando Aditamentos → Mostrando categorías de Formatos");
     
         if (!nuevaCategoria4) {
           return categorias.filter(c => c.Tipo_id === 11);
@@ -802,7 +797,6 @@ export function CatalogoProductos() {
     
       // Avanzar al siguiente nivel correspondiente
       const siguienteNivel = determinarSiguienteNivelConSeleccion();
-      console.log("siguienteNivel:", siguienteNivel);
 
       if (siguienteNivel) {
         setNivelActivo(obtenerNombreNivel(siguienteNivel.nivel));
@@ -950,8 +944,6 @@ export function CatalogoProductos() {
                       // 🔹 Obtener el nivel de seguimiento para los complementos
                       const nivelSeguimiento = selected.Subcategoria?.seguimiento_sub || selected.Categoria?.seguimiento;
                       const nivelActual = obtenerNivelDesdeNombre(nivel);
-                      console.log("nivelSeguimiento: " + nivelSeguimiento)
-                      console.log("nivelActual: " + nivelActual)
 
                       // 🔹 Manejo especial para Fórmulas (nivel 6)
                       if (nivelActual === 6) {

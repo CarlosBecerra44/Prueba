@@ -8,6 +8,7 @@ const ImagenProducto = sequelize.define(
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     ruta: { type: DataTypes.STRING, allowNull: true },
     producto_id: { type: DataTypes.INTEGER, allowNull: true },
+    tipo: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     tableName: "imgproductos",

@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     const productos = await Producto.findAll({
-      where: { eliminado: 0 },
+      where: { eliminado: 0, catalogo: 1 },
       include: [
         { model: Proveedor, as: "proveedor", attributes: ["nombre"] },
         { model: TipoMateriaPrima, as: "categoria", attributes: ["nombre"] },
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
         {
           model: ImagenProducto,
           as: "imagenes",
-          attributes: ["ruta"],
+          attributes: ["ruta", "tipo"],
           separate: true, // Para que no afecte el `GROUP BY`
         },
       ],
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       nombre_categoria: product.categoria?.nombre || null,
       nombre_subcategoria: product.subcategoria?.nombre || null,
       nombre_especificacion: product.especificacion?.nombre || null,
-      imagenes: product.imagenes.map((img) => img.ruta), // Transformar imágenes a array
+      imagenes: product.imagenes.filter((img) => img.tipo === 1 || img.tipo === 3).map(img => img.ruta), // Transformar imágenes a array
     }));
 
     return res.status(200).json({ success: true, products: result });
