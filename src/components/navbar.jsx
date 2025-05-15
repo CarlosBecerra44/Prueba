@@ -12,7 +12,7 @@ import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons";
 import "../../public/CSS/navbar.css";
 import { useUser } from "@/pages/api/hooks";
 import { ShoppingBag } from "lucide-react";
-import { Users } from 'lucide-react';
+import { Users, ClipboardList } from 'lucide-react';
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
@@ -284,7 +284,34 @@ export function Navbarv1() {
       ],
     },
     //{ id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    //{ id: 13, name: "Ventas", href: "#", icon: <VentasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
+    { 
+      id: 13, 
+      name: "Ventas", 
+      href: "#", 
+      icon: <VentasIcon className="h-6 w-6 text-gray-400" />, 
+      roles: ["master", "hasAccessVentas"],
+      subMenu: [
+        {
+          id: 1,
+          name: "Prospectos",
+          href: "/ventas/prospectos",
+          icon: (
+            <ProspectosIcon
+              style={{ width: "32px", height: "32px" }}
+              className="h-6 w-6 text-gray-400"
+            />
+          ),
+          roles: ["master", "hasAccessVentas"],
+        },
+        {
+          id: 2,
+          name: "Levantamiento",
+          href: "/ventas/levantamiento_requerimientos",
+          icon: <ClipboardList className="h-6 w-6 text-gray-400" />,
+          roles: ["master", "hasAccessVentas"],
+        },
+      ]
+    },
     //{ id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     //{ id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
     //{ id: 16, name: "Capacitaciones", href: "#", icon: <CapacitacionesIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
@@ -736,16 +763,38 @@ function VentasIcon(props) {
       height="24"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="white"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     >
-      <path d="M3 17h4v4H3z"></path>
-      <path d="M9 13h4v8H9z"></path>
-      <path d="M15 9h4v12h-4z"></path>
-      <path d="M21 5h2v16h-2z"></path>
-      <path d="M6 17l4-4l4 4l4-4"></path>
+      <rect x="3" y="14" width="3" height="7" />
+      <rect x="9" y="10" width="3" height="11" />
+      <rect x="15" y="6" width="3" height="15" />
+      <path d="M3 14l6-6 6 6 6-6" />
+    </svg>
+  );
+}
+
+function ProspectosIcon(props) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="3" x2="12" y2="5" />
+      <line x1="12" y1="19" x2="12" y2="21" />
+      <line x1="3" y1="12" x2="5" y2="12" />
+      <line x1="19" y1="12" x2="21" y2="12" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   );
 }
