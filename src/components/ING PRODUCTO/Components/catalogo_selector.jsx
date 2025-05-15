@@ -10,9 +10,12 @@ export default function CatalogoSelector(props) {
     nombre,
     nivel,
     skip,
+    currentStepIndex,
+    lastStep,
     sendProductoToCatalogo,
     handlePrevStep,
     handleNextStep,
+    goToDetail,
   } = props;
   const [tipo, setTipo] = React.useState([]);
   const [categoria, setCategoria] = React.useState({});
@@ -21,6 +24,9 @@ export default function CatalogoSelector(props) {
   const [producto, setProducto] = React.useState({});
 
   const handleTipo = (data) => {
+    if (data.nivel === 1) {
+      localStorage.setItem("envase", "");
+    }
     setTipo(data);
   };
 
@@ -34,7 +40,9 @@ export default function CatalogoSelector(props) {
   };
 
   const handleProducto = (data) => {
-    console.log({ data });
+    if (tipo.nivel === 1) {
+      localStorage.setItem("envase", data.codigo);
+    }
 
     // setProducto({ [tipo.nombre]: data });
     sendProductoToCatalogo({ [tipo.nombre]: data });
@@ -60,14 +68,12 @@ export default function CatalogoSelector(props) {
     handleNextStep();
   };
 
+  const handleDetail = (data) => {
+    goToDetail(data);
+  };
+
   return (
     <>
-      {/* <div>Selector de catalogo</div>
-      <div>id: {id}</div>
-      <div>nombre: {nombre}</div>
-      <div>nivel: {nivel}</div>
-      <div>skip:{skip}</div> */}
-
       {tipo.id ? (
         <div>Tipo Seleccionado: {tipo.nombre}</div>
       ) : (
@@ -101,8 +107,11 @@ export default function CatalogoSelector(props) {
                 categoriaId={categoria.id}
                 tieneSubcategorias={tieneSubcategorias}
                 subcategoriaId={subcategoria.id ?? null}
+                currentStepIndex={currentStepIndex}
+                lastStep={lastStep}
                 sendProductoToSelector={handleProducto}
                 goBack={subcategoria.id ? clearSubcategoria : clearCategoria}
+                goToDetail={handleDetail}
               />
             </>
           ) : (
@@ -120,33 +129,16 @@ export default function CatalogoSelector(props) {
                 categoriaId={categoria.id}
                 tieneSubcategorias={tieneSubcategorias}
                 subcategoriaId={subcategoria.id ?? null}
+                currentStepIndex={currentStepIndex}
+                lastStep={lastStep}
                 sendProductoToSelector={handleProducto}
                 goBack={subcategoria.id ? clearSubcategoria : clearCategoria}
+                goToDetail={handleDetail}
               />
             </>
           )}
         </>
       )}
-
-      {/* {subcategoria.id && categoria.id && tieneSubcategorias ? (
-        <div>Subcategoria Seleccionada: {subcategoria.nombre}</div>
-      ) : (
-        <ListaSubCategoria
-          tipoId={tipo.id}
-          categoriaId={categoria.id}
-          sendSubcategoriaToSelector={handleSubcategoria}
-          goBack={clearCategoria}
-        />
-      )}
-
-      <ListaProducto
-        tipoId={tipo.id}
-        categoriaId={categoria.id}
-        tieneSubcategorias={tieneSubcategorias}
-        subcategoriaId={subcategoria.id ?? null}
-        sendProductoToSelector={handleProducto}
-        goBack={subcategoria.id ? clearSubcategoria : clearCategoria}
-      /> */}
     </>
   );
 }

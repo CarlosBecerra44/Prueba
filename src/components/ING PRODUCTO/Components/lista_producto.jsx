@@ -8,18 +8,22 @@ import { Undo2, Redo2 } from "lucide-react";
 
 export default function ListaProducto(props) {
   const {
+    nivel,
     tipoId,
     categoriaId,
     subcategoriaId,
     tieneSubcategorias,
-    productCode,
-    sendProductoToSelector,
+    lastStep,
+    currentStepIndex,
     goBack,
+    sendProductoToSelector,
+    goToDetail,
   } = props;
   const [productos, setProductos] = React.useState([]);
 
   useEffect(() => {
     const debeEsperarSubcategoria = tieneSubcategorias && !subcategoriaId;
+    const codigoProducto = localStorage.getItem("envase");
 
     if (
       !tipoId ||
@@ -29,27 +33,42 @@ export default function ListaProducto(props) {
       setProductos([]);
       return;
     }
-    const fetchProductos = async () => {
-      console.log({ tipoId, categoriaId, subcategoriaId, tieneSubcategorias });
-
-      axios
-        .get("/api/ProductEngineering/getProductosImagenes", {
-          params: {
-            tipoId: tipoId,
-            categoriaId: categoriaId,
-            subcategoriaId: subcategoriaId ?? null,
-          },
-        })
-        .then((response) => {
-          console.log("response productos:", response.data.products);
-          setProductos(response.data.products);
-        })
-        .catch((error) => {
-          console.error("Error al hacer fetch de los productos:", error);
-        });
+    const fetchProductos = async (code) => {
+      if (code) {
+        await axios
+          .get("/api/ProductEngineering/getProductosCompatibles", {
+            params: {
+              codigo: code,
+              tipo: tipoId,
+              categoria: categoriaId,
+              subcategoria: subcategoriaId ?? null,
+            },
+          })
+          .then((response) => {
+            setProductos(response.data.products);
+          })
+          .catch((error) => {
+            console.error("Error al hacer fetch de los productos:", error);
+          });
+      } else {
+        await axios
+          .get("/api/ProductEngineering/getProductosImagenes", {
+            params: {
+              tipoId: tipoId,
+              categoriaId: categoriaId,
+              subcategoriaId: subcategoriaId ?? null,
+            },
+          })
+          .then((response) => {
+            setProductos(response.data.products);
+          })
+          .catch((error) => {
+            console.error("Error al hacer fetch de los productos:", error);
+          });
+      }
     };
 
-    fetchProductos();
+    fetchProductos(codigoProducto);
   }, [tipoId, categoriaId, subcategoriaId, tieneSubcategorias]);
 
   const handleBack = () => {
@@ -58,6 +77,9 @@ export default function ListaProducto(props) {
 
   const handleClick = (producto) => {
     sendProductoToSelector(producto);
+    if (currentStepIndex === lastStep) {
+      goToDetail(true);
+    }
   };
 
   return (

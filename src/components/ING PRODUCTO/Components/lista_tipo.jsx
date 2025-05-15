@@ -20,10 +20,9 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
-import Button from "@mui/material/Button";
 
 export default function ListaTipo(props) {
-  const { id, nivel, skip, sendTipoToSelector, goBack, skipStep } = props;
+  const { nivel, skip, sendTipoToSelector, goBack, skipStep } = props;
   const [tipos, setTipos] = React.useState([]);
 
   const iconosPorTipo = {
@@ -53,7 +52,6 @@ export default function ListaTipo(props) {
           },
         })
         .then((response) => {
-          console.log("Tipos:", response.data.categorias);
           setTipos(response.data.categorias);
         });
     };
@@ -61,7 +59,6 @@ export default function ListaTipo(props) {
   }, []);
 
   const handleClick = (data) => {
-    console.log(data);
     sendTipoToSelector(data);
   };
 
@@ -113,6 +110,7 @@ export default function ListaTipo(props) {
             </CardContent>
           </Card>
         )}
+
         {tipos.map((tipo) => {
           const Icono = iconosPorTipo[tipo.nombre] || Package;
 

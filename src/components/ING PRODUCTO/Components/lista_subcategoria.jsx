@@ -38,8 +38,6 @@ export default function ListaSubCategoria(props) {
   };
 
   useEffect(() => {
-    console.log({ tieneSubcategorias });
-
     if (!categoriaId) {
       setSubcategorias([]);
       return;
