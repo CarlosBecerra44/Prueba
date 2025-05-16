@@ -1,10 +1,11 @@
 import { Button } from "@mui/material";
+import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 export default function DetalleOrden(props) {
-  const { productoData } = props;
-  const [showDetails, setShowDetails] = useState(false);
+  const { productoData, closeDetalle } = props;
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -21,18 +22,58 @@ export default function DetalleOrden(props) {
       prepareFormData();
     }
   }, [productoData]);
-  // Datos de muestra para la orden
+
   const orderData = {
     orderId: "Resumen del prototipo",
   };
 
   const handleSave = async () => {
-    console.log({ formData });
+    try {
+      const result = await Swal.fire({
+        title: "¿Deseas guardar el prototipo?",
+        text: "No podrás revertir esta acción",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#292929",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Guardar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        await axios
+          .post("/api/ProductEngineering/guardarPrototipo", formData)
+          .then(
+            Swal.fire({
+              title: "Guardado",
+              text: "El prototipo ha sido guardado correctamente",
+              icon: "success",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then(() => {
+              window.location.reload();
+            })
+          )
+          .catch((error) => {
+            console.error("Error al guardar el prototipo:", error);
+            Swal.fire({
+              title: "Error",
+              text: "No se pudo guardar el prototipo contacte al administrador",
+              icon: "error",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          });
+      }
+    } catch (error) {}
+  };
+
+  const handleClose = () => {
+    closeDetalle(false);
   };
 
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-      {/* Encabezado de la orden */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-800">
@@ -44,7 +85,6 @@ export default function DetalleOrden(props) {
         </div>
       </div>
 
-      {/* Resumen de la orden */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-evenly">
           <div>
@@ -131,9 +171,14 @@ export default function DetalleOrden(props) {
           />
         </div>
       </div>
-      <Button className="m-2 w-full" onClick={handleSave}>
-        pa' guardar
-      </Button>
+      <div className="flex justify-end">
+        <Button className="m-2 w-1/2" onClick={handleClose}>
+          Cancelar
+        </Button>
+        <Button className="m-2 w-1/2" onClick={handleSave}>
+          Guardar
+        </Button>
+      </div>
     </div>
   );
 }

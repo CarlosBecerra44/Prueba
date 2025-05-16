@@ -118,7 +118,7 @@ export default function ListaCategoria(props) {
                   variant="h5"
                   component="div"
                 >
-                  Pa'tra
+                  Anterior
                 </Typography>
               </CardContent>
             </Card>

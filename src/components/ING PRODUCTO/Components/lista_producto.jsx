@@ -100,7 +100,7 @@ export default function ListaProducto(props) {
                   variant="h5"
                   component="div"
                 >
-                  Pa'tra
+                  Anterior
                 </Typography>
               </CardContent>
             </Card>
@@ -109,15 +109,17 @@ export default function ListaProducto(props) {
           {productos.map((producto) => (
             <Card key={producto.id} onClick={() => handleClick(producto)}>
               {/* <Package /> */}
-              <CardContent>
-                <Image
-                  src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-                    producto.imagenes?.[0] || ""
-                  )}`}
-                  width={500}
-                  height={500}
-                  alt={producto.nombre}
-                />
+              <CardContent className="flex flex-col text-center">
+                <div className="mx-auto">
+                  <Image
+                    src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                      producto.imagenes?.[0] || ""
+                    )}`}
+                    width={200}
+                    height={150}
+                    alt={producto.nombre}
+                  />
+                </div>
                 <Typography
                   className="text-center"
                   gutterBottom

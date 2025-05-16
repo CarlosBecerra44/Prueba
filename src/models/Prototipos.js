@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize";
+import Producto from "./Productos";
 
 const Prototipo = sequelize.define(
   "Prototipo",

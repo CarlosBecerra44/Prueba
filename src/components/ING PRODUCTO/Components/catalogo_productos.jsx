@@ -1,16 +1,18 @@
 "use client";
 
 import axios from "axios";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Button,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CatalogoSelector from "./catalogo_selector";
 import DetalleOrden from "./detalle_orden";
+import TablaPrototipos from "./tabla_prototipos";
 
 export function CatalogoProductos() {
   const [steps, setSteps] = useState([]);
@@ -18,7 +20,7 @@ export function CatalogoProductos() {
   const [formData, setFormData] = useState({});
   const [productoData, setProductoData] = useState({});
   const [viewDetail, setViewDetail] = useState(false);
-
+  const [verPedidos, setVerPedidos] = useState(false);
   useEffect(() => {
     const fetchSteps = async () => {
       await axios
@@ -36,10 +38,6 @@ export function CatalogoProductos() {
     };
     fetchSteps();
   }, []);
-
-  const handleChange = (name) => (event) => {
-    setFormData({ ...formData, [name]: event.target.value });
-  };
 
   const nextStep = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -63,14 +61,42 @@ export function CatalogoProductos() {
     nextStep();
   };
   const handleDetail = (data) => {
-    setViewDetail(true);
+    setViewDetail(data);
+  };
+
+  const handleCancel = (data) => {
+    setViewDetail(data);
+    // window.location.reload();
   };
 
   return (
     <>
-      {viewDetail ? (
-        <DetalleOrden productoData={productoData} />
-      ) : (
+      <div>
+        <Button
+          onClick={() => {
+            setVerPedidos(!verPedidos);
+          }}
+          style={{
+            background: "#1f2937",
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          {!verPedidos ? <span>Ver Pedidos</span> : <span>Hacer Pedido</span>}
+        </Button>
+      </div>
+      {verPedidos && <TablaPrototipos />}
+      {viewDetail && !verPedidos && (
+        <DetalleOrden productoData={productoData} closeDetalle={handleCancel} />
+      )}
+
+      {!viewDetail && !verPedidos && (
         <div className="w-full mx-auto p-4">
           {steps.map((step, index) => (
             <Accordion key={step.id} expanded={index === currentStepIndex}>

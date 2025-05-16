@@ -86,7 +86,7 @@ export default function ListaTipo(props) {
                 variant="h5"
                 component="div"
               >
-                Pa'tra
+                Anterior
               </Typography>
             </CardContent>
           </Card>
@@ -105,7 +105,7 @@ export default function ListaTipo(props) {
                 variant="h5"
                 component="div"
               >
-                Pa'lante
+                Siguiente
               </Typography>
             </CardContent>
           </Card>
