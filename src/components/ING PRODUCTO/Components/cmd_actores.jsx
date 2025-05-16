@@ -371,15 +371,7 @@ export function CMDActores() {
 
           <DialogContent
             onInteractOutside={(event) => event.preventDefault()}
-            className="border-none p-0 overflow-y-auto no-scrollbar"
-            style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "800px", // Límite del ancho
-              height: "25vh", // Ajusta la altura
-              maxHeight: "30vh", // Límite de la altura
-              padding: "20px", // Margen interno
-              marginLeft: "120px",
-            }}
+            className="border-none p-5 overflow-y-auto w-full max-w-[80vh] max-h-[40vh] ml-[15vh] shadow-lg"
           >
             <DialogHeader>
               <DialogTitle className="flex justify-center items-center text-center">
@@ -493,15 +485,7 @@ export function CMDActores() {
                       </DialogTrigger>
                       <DialogContent
                         onInteractOutside={(event) => event.preventDefault()}
-                        className="border-none p-0 overflow-y-auto no-scrollbar"
-                        style={{
-                            width: "100%", // Ajusta el ancho
-                            maxWidth: "800px", // Límite del ancho
-                            height: "25vh", // Ajusta la altura
-                            maxHeight: "30vh", // Límite de la altura
-                            padding: "20px", // Margen interno
-                            marginLeft: "120px",
-                          }}
+                        className="border-none p-5 overflow-y-auto w-full max-w-[80vh] max-h-[40vh] ml-[15vh] shadow-md"
                       >
                         <DialogHeader>
                           <DialogTitle className="flex justify-center items-center text-center">Editar actor</DialogTitle>

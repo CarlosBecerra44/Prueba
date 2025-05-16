@@ -1,48 +1,74 @@
+import fs from "fs";
 import { Client } from "basic-ftp";
+import formidable from "formidable";
+import path from "path";
+
+// Desactiva el body parser de Next.js para usar formidable
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
-    try {
-      const { fileName, fileContent } = req.body; // `fileContent` debe ser una cadena Base64
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Método no permitido" });
+  }
 
+  const form = new formidable.IncomingForm({
+    multiples: false, // Solo un archivo
+    uploadDir: "/tmp",
+    keepExtensions: true,
+  });
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error("Error al procesar el formulario:", err);
+      return res.status(500).json({ message: "Error al procesar el formulario" });
+    }
+
+    const file = files.comprobante;
+
+    if (!file) {
+      return res.status(400).json({ message: "No se recibió ningún archivo" });
+    }
+
+    try {
+      // Crear nuevo nombre de archivo con la fecha
+      const now = new Date();
+      const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
+      const newFileName = `${formattedDate}_${file.name}`;
+
+      // Conectar al servidor FTP
       const client = new Client();
       client.ftp.verbose = true;
 
-      // Configurar acceso FTP
       await client.access({
-        host: "50.6.199.166",  // Dirección del servidor FTP
-        user: "aionnet",         // Usuario FTP
-        password: "Rrio1003", // Contraseña FTP
+        host: "50.6.199.166",
+        user: "aionnet",
+        password: "Rrio1003",
         secure: false,
       });
 
-      // Obtener la fecha actual en formato YYYYMMDD_HHMMSS
-      const now = new Date();
-      const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
-      
-      // Agregar la fecha al nombre del archivo
-      const newFileName = `${formattedDate}_${fileName}`;
+      const remotePath = `/uploads/papeletas/${newFileName}`;
 
-      // Convertir el contenido Base64 a un Buffer
-      const buffer = Buffer.from(fileContent, "base64");
+      // Subir el archivo directamente
+      await client.uploadFrom(file.path, remotePath);
 
-      // Crear un stream desde el buffer
-      const { Readable } = require("stream");
-      const bufferStream = new Readable();
-      bufferStream.push(buffer);
-      bufferStream.push(null); // Indicar fin del stream
-
-      // Subir el archivo al FTP directamente desde el stream con el nuevo nombre
-      await client.uploadFrom(bufferStream, `/uploads/papeletas/${newFileName}`);
-
+      // Cerrar la conexión FTP
       client.close();
+
+      // Borrar el archivo temporal
+      try {
+        fs.unlinkSync(file.path);
+      } catch (unlinkErr) {
+        console.error("Error al eliminar archivo temporal:", unlinkErr);
+      }
+
       res.status(200).json({ message: "Archivo subido correctamente al FTP", fileName: newFileName });
     } catch (error) {
       console.error("Error al subir al FTP:", error);
       res.status(500).json({ error: "No se pudo subir el archivo al FTP" });
     }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+  });
 }
