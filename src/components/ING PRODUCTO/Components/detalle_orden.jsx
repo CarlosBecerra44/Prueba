@@ -90,85 +90,96 @@ export default function DetalleOrden(props) {
           <div>
             <p className="text-sm font-medium text-gray-800">Envase</p>
             <p className="text-sm text-gray-600">
-              {productoData.Envases?.nombre || null}
+              {productoData.Envases?.nombre || "No hay articulo seleccionado"}
             </p>
           </div>
-          <Image
-            src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-              productoData.Envases?.imagenes[0] || ""
-            )}`}
-            width={50}
-            height={50}
-            alt={productoData.Envases?.nombre}
-          />
+          {productoData.Envases?.imagenes[0] && (
+            <Image
+              src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                productoData.Envases?.imagenes[0] || ""
+              )}`}
+              width={50}
+              height={50}
+              alt={productoData.Envases?.nombre}
+            />
+          )}
         </div>
 
         <div className="flex items-start mt-4 justify-evenly">
           <div>
             <p className="text-sm font-medium text-gray-800">Tapa</p>
             <p className="text-sm text-gray-600">
-              {productoData.Tapas?.nombre || "null"}
+              {productoData.Tapas?.nombre || "No hay articulo seleccionado"}
             </p>
           </div>
-          <Image
-            src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-              productoData.Tapas?.imagenes[0] || ""
-            )}`}
-            width={50}
-            height={50}
-            alt={productoData.Tapas?.nombre}
-          />
+          {productoData.Tapas?.imagenes[0] && (
+            <Image
+              src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                productoData.Tapas?.imagenes[0] || ""
+              )}`}
+              width={50}
+              height={50}
+              alt={productoData.Tapas?.nombre}
+            />
+          )}
         </div>
 
         <div className="flex items-start mt-4 justify-evenly">
           <div>
             <p className="text-sm font-medium text-gray-800">Sello</p>
             <p className="text-sm text-gray-600">
-              {productoData.Sellos?.nombre || "null"}
+              {productoData.Sellos?.nombre || "No hay articulo seleccionado"}
             </p>
           </div>
-          <Image
-            src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-              productoData.Sellos?.imagenes[0] || ""
-            )}`}
-            width={50}
-            height={50}
-            alt={productoData.Sellos?.nombre}
-          />
+          {productoData.Sellos?.imagenes[0] && (
+            <Image
+              src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                productoData.Sellos?.imagenes[0] || ""
+              )}`}
+              width={50}
+              height={50}
+              alt={productoData.Sellos?.nombre}
+            />
+          )}
         </div>
 
         <div className="flex items-start mt-4 justify-evenly">
           <div>
             <p className="text-sm font-medium text-gray-800">Aditamento</p>
             <p className="text-sm text-gray-600">
-              {productoData.Aditamentos?.nombre || "null"}
+              {productoData.Aditamentos?.nombre ||
+                "No hay articulo seleccionado"}
             </p>
           </div>
-          <Image
-            src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-              productoData.Aditamentos?.imagenes[0] || ""
-            )}`}
-            width={50}
-            height={50}
-            alt={productoData.Aditamentos?.nombre}
-          />
+          {productoData.Aditamentos?.imagenes[0] && (
+            <Image
+              src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                productoData.Aditamentos?.imagenes[0] || ""
+              )}`}
+              width={50}
+              height={50}
+              alt={productoData.Aditamentos?.nombre}
+            />
+          )}
         </div>
 
         <div className="flex items-start mt-4 justify-evenly">
           <div>
             <p className="text-sm font-medium text-gray-800">formato</p>
             <p className="text-sm text-gray-600">
-              {productoData.Formatos?.nombre || "null"}
+              {productoData.Formatos?.nombre || "No hay articulo seleccionado"}
             </p>
           </div>
-          <Image
-            src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
-              productoData.Formatos?.imagenes[0] || ""
-            )}`}
-            width={50}
-            height={50}
-            alt={productoData.Formatos?.nombre}
-          />
+          {productoData.Formatos?.imagenes[0] && (
+            <Image
+              src={`/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                productoData.Formatos?.imagenes[0] || ""
+              )}`}
+              width={50}
+              height={50}
+              alt={productoData.Formatos?.nombre}
+            />
+          )}
         </div>
       </div>
       <div className="flex justify-end">
