@@ -223,7 +223,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
         if (unidad === "MM.") metodo = "Método interno 1", medicion = "mm";
         else if (unidad === "G.") metodo = "Método interno 2", medicion = "g";
         else if (unidad === "ML.") metodo = "Método interno 3", medicion = "ml";
-        else metodo = "Método interno 4", medicion = "No aplica", maximo = "No aplica", minimo = "No aplica";
+        else metodo = "Método interno 4", medicion = valorRaw, maximo = "No aplica", minimo = "No aplica";
     
         return [i.nombre, medicion, maximo, minimo, metodo];
         }),
@@ -332,7 +332,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
 
                         {/* Celda combinada: Unidad + Máximo + Mínimo */}
                         <View style={[styles.tableCell, { flex: 3.5 }]}>
-                          <Text>No aplica</Text>
+                          <Text>{row[1]}</Text>
                         </View>
 
                         {/* Método */}
