@@ -1,9 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
 import { CatalogoProductos } from "@/components/ING PRODUCTO/Components/catalogo_productos";
+import DetalleProspecto from "@/components/Ventas/Components/detalle_prospecto";
+import { Button } from "@mui/material";
+import { Undo2 } from "lucide-react";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -27,8 +30,15 @@ export default function Page() {
     fetchLevantamiento();
   }, []);
 
+  const toggleIsProspectoActive = () => {
+    setIsProspectoActive(!isProspectoActive);
+  };
   const handleUpdateProspecto = () => {
-    setIsProspectoActive(false);
+    toggleIsProspectoActive();
+  };
+
+  const handleEditProspecto = () => {
+    toggleIsProspectoActive();
   };
 
   return (
@@ -39,24 +49,59 @@ export default function Page() {
             <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
           </div>
           <div className="py-4">
-            <div
-              style={{ border: "3px solid rgb(31 41 55)" }}
-              className="rounded-lg p-2"
-            >
-              <div
-                className="text-center"
-                onClick={() => setIsProspectoActive(!isProspectoActive)}
-              >
-                <label style={{ fontSize: "20px", color: "black" }}>
-                  Datos del cliente
-                </label>
-              </div>
-            </div>
-            {isProspectoActive && (
-              <EditarProspecto
+            {levantamiento.id_prospecto && !isProspectoActive && (
+              <DetalleProspecto
                 id={levantamiento.id_prospecto}
-                EmitUpdate={handleUpdateProspecto}
+                emitEdit={handleEditProspecto}
               />
+            )}
+            {isProspectoActive && (
+              <>
+                <div>
+                  <Button
+                    style={{ width: "25px", height: "25px", color: "black" }}
+                    onClick={toggleIsProspectoActive}
+                  >
+                    <Undo2 />
+                  </Button>
+                </div>
+                <div>
+                  <EditarProspecto
+                    id={levantamiento.id_prospecto}
+                    EmitUpdate={handleUpdateProspecto}
+                  />
+                </div>
+              </>
+            )}
+
+            {levantamiento.id && (
+              <fieldset className="border border-gray-300 p-4 rounded-lg">
+                <legend className="text-lg font-semibold mx-2 flex gap-2">
+                  Identidad del producto
+                </legend>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label> Marca: </label>
+                    <p>{levantamiento.marca}</p>
+                  </div>
+                  <div>
+                    <label> Redes Sociales: </label>
+                    <p>{levantamiento.redes_sociales}</p>
+                  </div>
+                  <div>
+                    <label> Público objetivo: </label>
+                    <p>{levantamiento.publico_objetivo}</p>
+                  </div>
+                  <div>
+                    <label> Canales de distribución: </label>
+                    <p>{levantamiento.canales_distribucion}</p>
+                  </div>
+                  <div>
+                    <label> Monto de inversión:</label>
+                    <p>${levantamiento.monto_inversion} MXN</p>
+                  </div>
+                </div>
+              </fieldset>
             )}
           </div>
 
