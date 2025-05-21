@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
+import { CatalogoProductos } from "@/components/ING PRODUCTO/Components/catalogo_productos";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -94,9 +95,7 @@ export default function Page() {
                 </label>
               </div>
             </div>
-            {isProductoActive && (
-              <div style={{ fontSize: "20px", color: `${red}` }}>Producto</div>
-            )}
+            {isProductoActive && <CatalogoProductos />}
           </div>
         </div>
       </div>
