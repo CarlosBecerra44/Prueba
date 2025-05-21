@@ -1,12 +1,35 @@
 "use client";
-import React, { useState } from "react";
-import { Label } from "@/components/ui/label";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
+import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const [isProspectoActive, setIsProspectoActive] = useState(false);
   const [isReferenciaActive, setIsReferenciaActive] = useState(false);
   const [isProductoActive, setIsProductoActive] = useState(false);
-  const black = "white";
+  const [levantamiento, setLevantamiento] = useState({});
+  const red = "#0565ed";
+  useEffect(() => {
+    const fetchLevantamiento = async () => {
+      await axios
+        .get(`/api/Sales/getLevantamiento?id=${id}`)
+        .then((res) => {
+          setLevantamiento(res.data.levantamiento);
+        })
+        .catch((error) => {
+          console.error("Error al obtener el levantamiento:", error);
+        });
+    };
+    fetchLevantamiento();
+  }, []);
+
+  const handleUpdateProspecto = () => {
+    setIsProspectoActive(false);
+  };
+
   return (
     <>
       <div className="mb-4 h-full">
@@ -23,12 +46,17 @@ export default function Page() {
                 className="text-center"
                 onClick={() => setIsProspectoActive(!isProspectoActive)}
               >
-                <Label style={{ fontSize: "20px", color: "black" }}>
+                <label style={{ fontSize: "20px", color: "black" }}>
                   Datos del cliente
-                </Label>
+                </label>
               </div>
             </div>
-            {isProspectoActive && <div>Prospecto</div>}
+            {isProspectoActive && (
+              <EditarProspecto
+                id={levantamiento.id_prospecto}
+                EmitUpdate={handleUpdateProspecto}
+              />
+            )}
           </div>
 
           <div className="py-4">
@@ -40,9 +68,9 @@ export default function Page() {
                 className="text-center"
                 onClick={() => setIsReferenciaActive(!isReferenciaActive)}
               >
-                <Label style={{ fontSize: "20px", color: "black" }}>
+                <label style={{ fontSize: "20px", color: "black" }}>
                   Referencia
-                </Label>
+                </label>
               </div>
             </div>
             {isReferenciaActive && <div>Referencia</div>}
@@ -50,21 +78,25 @@ export default function Page() {
 
           <div className="py-4">
             <div
-              style={{ border: "3px solid rgb(31 41 55)" }}
-              className="rounded-lg p-2"
+              style={{
+                border: `3px solid ${red}`,
+                fontSize: "20px",
+                color: `${red}`,
+              }}
+              className="rounded-lg p-2 text-center"
             >
-              <div
-                className="text-center"
-                onClick={() => setIsProductoActive(!isProductoActive)}
-              >
-                <Label
-                  className={`font-bold hover:cursor-pointer color-${black} text-2xl`}
+              <div onClick={() => setIsProductoActive(!isProductoActive)}>
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
                 >
-                  Producto
-                </Label>
+                  producto
+                </label>
               </div>
             </div>
-            {isProductoActive && <div>Producto</div>}
+            {isProductoActive && (
+              <div style={{ fontSize: "20px", color: `${red}` }}>Producto</div>
+            )}
           </div>
         </div>
       </div>

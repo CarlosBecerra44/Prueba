@@ -17,7 +17,13 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import Link from "next/link";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 export function LevantamientoRequerimientos() {
@@ -28,86 +34,78 @@ export function LevantamientoRequerimientos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
-    useEffect(() => {
-        const fetchLevantamientos = async () => {
-          try {
-            const response = await axios.get(
-              "/api/Sales/getLevantamientos"
-            );
-            if (response.data.success) {
-              setLevantamientos(response.data.levantamientos);
-            } else {
-              console.error(
-                "Error al obtener los levantamientos:",
-                response.data.message
-              );
-            }
-          } catch (error) {
-            console.error("Error al hacer fetch de los levantamientos:", error);
-          }
-        };
-    
-        fetchLevantamientos();
-      }, []);
-    
-      const getLevantamientos = async () => {
-        try {
-          const response = await axios.get(
-            "/api/Sales/getLevantamientos"
-          );
-          if (response.data.success) {
-            setLevantamientos(response.data.levantamientos);
-          } else {
-            console.error(
-              "Error al obtener los levantamientos:",
-              response.data.message
-            );
-          }
-        } catch (error) {
-          console.error("Error al hacer fetch de los levantamientos:", error);
-        }
-      };
 
-      useEffect(() => {
-        const fetchProspectos = async () => {
-          try {
-            const response = await axios.get(
-              "/api/Sales/getProspectos"
-            );
-            if (response.data.success) {
-              setProspectos(response.data.prospectos);
-            } else {
-              console.error(
-                "Error al obtener los prospectos:",
-                response.data.message
-              );
-            }
-          } catch (error) {
-            console.error("Error al hacer fetch de los prospectos:", error);
-          }
-        };
-    
-        fetchProspectos();
-      }, []);
-
-      const getProspectos = async () => {
-        try {
-          const response = await axios.get(
-            "/api/Sales/getProspectos"
+  useEffect(() => {
+    const fetchLevantamientos = async () => {
+      try {
+        const response = await axios.get("/api/Sales/getLevantamientos");
+        if (response.data.success) {
+          setLevantamientos(response.data.levantamientos);
+        } else {
+          console.error(
+            "Error al obtener los levantamientos:",
+            response.data.message
           );
-          if (response.data.success) {
-            setProspectos(response.data.prospectos);
-          } else {
-            console.error(
-              "Error al obtener los prospectos:",
-              response.data.message
-            );
-          }
-        } catch (error) {
-          console.error("Error al hacer fetch de los prospectos:", error);
         }
-      };
+      } catch (error) {
+        console.error("Error al hacer fetch de los levantamientos:", error);
+      }
+    };
+
+    fetchLevantamientos();
+  }, []);
+
+  const getLevantamientos = async () => {
+    try {
+      const response = await axios.get("/api/Sales/getLevantamientos");
+      if (response.data.success) {
+        setLevantamientos(response.data.levantamientos);
+      } else {
+        console.error(
+          "Error al obtener los levantamientos:",
+          response.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Error al hacer fetch de los levantamientos:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProspectos = async () => {
+      try {
+        const response = await axios.get("/api/Sales/getProspectos");
+        if (response.data.success) {
+          setProspectos(response.data.prospectos);
+        } else {
+          console.error(
+            "Error al obtener los prospectos:",
+            response.data.message
+          );
+        }
+      } catch (error) {
+        console.error("Error al hacer fetch de los prospectos:", error);
+      }
+    };
+
+    fetchProspectos();
+  }, []);
+
+  const getProspectos = async () => {
+    try {
+      const response = await axios.get("/api/Sales/getProspectos");
+      if (response.data.success) {
+        setProspectos(response.data.prospectos);
+      } else {
+        console.error(
+          "Error al obtener los prospectos:",
+          response.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Error al hacer fetch de los prospectos:", error);
+    }
+  };
 
   const handleDelete = async (index) => {
     try {
@@ -171,16 +169,19 @@ export function LevantamientoRequerimientos() {
   };
 
   const filteredLevantamientos = levantamientos
-  .map((levantamiento) => extractData(levantamiento))
-  .filter((levantamiento) =>
-    (prospectosFilter === "todos" || levantamiento.id_prospecto === prospectosFilter) && 
-    (usuariosFilter === "todos" || levantamiento.creado_por === usuariosFilter) &&
-    Object.values(levantamiento)
-      .filter((value) => value !== null && value !== undefined)
-      .some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+    .map((levantamiento) => extractData(levantamiento))
+    .filter(
+      (levantamiento) =>
+        (prospectosFilter === "todos" ||
+          levantamiento.id_prospecto === prospectosFilter) &&
+        (usuariosFilter === "todos" ||
+          levantamiento.creado_por === usuariosFilter) &&
+        Object.values(levantamiento)
+          .filter((value) => value !== null && value !== undefined)
+          .some((value) =>
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          )
+    );
 
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -216,9 +217,7 @@ export function LevantamientoRequerimientos() {
   }
 
   const usuariosUnicos = Array.from(
-    new Map(
-      levantamientos.map(l => [l.creado_por, l.usuario])
-    ).values()
+    new Map(levantamientos.map((l) => [l.creado_por, l.usuario])).values()
   );
 
   return (
@@ -236,73 +235,97 @@ export function LevantamientoRequerimientos() {
         </a>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">Administrador de levantamiento de requerimientos</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Administrador de levantamiento de requerimientos
+      </h1>
 
       <div className="flex justify-between mb-4">
         <div className="flex gap-4 flex-wrap">
           <div className="flex flex-col">
-            <Label htmlFor="levantamiento_search" className="mb-2">Buscar levantamiento</Label>
+            <Label htmlFor="levantamiento_search" className="mb-2">
+              Buscar levantamiento
+            </Label>
             <div className="relative">
-                <SearchIcon className="absolute h-5 w-5 text-gray-400" style={{ top: "50%", left: "15px", transform: "translateY(-50%)" }} />
-                <Input
-                    placeholder="Buscar levantamiento..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
-                />
+              <SearchIcon
+                className="absolute h-5 w-5 text-gray-400"
+                style={{
+                  top: "50%",
+                  left: "15px",
+                  transform: "translateY(-50%)",
+                }}
+              />
+              <Input
+                placeholder="Buscar levantamiento..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-2 bg-gray-700 rounded-md text-white"
+              />
             </div>
           </div>
 
           <div className="flex flex-col">
-            <Label htmlFor="usuario_filter" className="mb-2">Filtrar por usuario</Label>
-            <Select onValueChange={setUsuariosFilter} defaultValue={usuariosFilter}>
-                <SelectTrigger className="w-[280px]">
+            <Label htmlFor="usuario_filter" className="mb-2">
+              Filtrar por usuario
+            </Label>
+            <Select
+              onValueChange={setUsuariosFilter}
+              defaultValue={usuariosFilter}
+            >
+              <SelectTrigger className="w-[280px]">
                 <SelectValue placeholder="Filtrar por usuario" />
-                </SelectTrigger>
-                <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                 <SelectItem value="todos">Todos los usuarios</SelectItem>
                 {usuariosUnicos.length > 0 ? (
-                    usuariosUnicos.map((usuario) => (
+                  usuariosUnicos.map((usuario) => (
                     <SelectItem key={usuario.id} value={usuario.id}>
-                        {usuario.nombre} {usuario.apellidos}
+                      {usuario.nombre} {usuario.apellidos}
                     </SelectItem>
-                    ))
+                  ))
                 ) : (
-                    <SelectItem disabled>No hay usuarios disponibles</SelectItem>
+                  <SelectItem disabled>No hay usuarios disponibles</SelectItem>
                 )}
-                </SelectContent>
+              </SelectContent>
             </Select>
           </div>
 
           <div className="flex flex-col">
-            <Label htmlFor="prospecto_filter" className="mb-2">Filtrar por prospecto</Label>
-            <Select onValueChange={setProspectosFilter} defaultValue={prospectosFilter}>
-                <SelectTrigger className="w-[280px]">
+            <Label htmlFor="prospecto_filter" className="mb-2">
+              Filtrar por prospecto
+            </Label>
+            <Select
+              onValueChange={setProspectosFilter}
+              defaultValue={prospectosFilter}
+            >
+              <SelectTrigger className="w-[280px]">
                 <SelectValue placeholder="Filtrar por prospecto" />
-                </SelectTrigger>
-                <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                 <SelectItem value="todos">Todos los prospectos</SelectItem>
                 {prospectos.length > 0 ? (
-                    prospectos.map((prospecto) => (
+                  prospectos.map((prospecto) => (
                     <SelectItem key={prospecto.id} value={prospecto.id}>
-                        {prospecto.nombre}
+                      {prospecto.nombre}
                     </SelectItem>
-                    ))
+                  ))
                 ) : (
-                    <SelectItem disabled>No hay prospectos disponibles</SelectItem>
+                  <SelectItem disabled>
+                    No hay prospectos disponibles
+                  </SelectItem>
                 )}
-                </SelectContent>
+              </SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="flex items-end ml-auto">
-            <Link href="/ventas/levantamiento_requerimientos/nuevo_levantamiento">
-                <Button>
-                    <ClipboardList className="h-4 w-4" />Añadir nuevo levantamiento
-                </Button>
-            </Link>
-          </div>
+          <Link href="/ventas/levantamiento_requerimientos/nuevo_levantamiento">
+            <Button>
+              <ClipboardList className="h-4 w-4" />
+              Añadir nuevo levantamiento
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Table className="w-full">
@@ -322,55 +345,77 @@ export function LevantamientoRequerimientos() {
           {currentLevantamientos.length > 0 ? (
             currentLevantamientos.map((levantamiento, index) => (
               <TableRow key={index}>
-                <TableCell>{levantamiento.nombre_creado_por + " " + levantamiento.apellidos_creado_por || "Sin datos"}</TableCell>
+                <TableCell>
+                  {levantamiento.nombre_creado_por +
+                    " " +
+                    levantamiento.apellidos_creado_por || "Sin datos"}
+                </TableCell>
                 <TableCell>{levantamiento.nombre || "Sin datos"}</TableCell>
                 <TableCell>{levantamiento.correo || "Sin datos"}</TableCell>
                 <TableCell>{levantamiento.marca || "Sin datos"}</TableCell>
-                <TableCell>{levantamiento.monto_inversion || "Sin datos"}</TableCell>
                 <TableCell>
-                {levantamiento.fecha_envio
+                  {levantamiento.monto_inversion || "Sin datos"}
+                </TableCell>
+                <TableCell>
+                  {levantamiento.fecha_envio
                     ? `${new Date(levantamiento.fecha_envio).toLocaleDateString(
                         "es-ES",
                         {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
                         }
-                    )} ${new Date(levantamiento.fecha_envio).toLocaleTimeString(
-                        "es-ES",
-                        {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false, // Cambiar a true si prefieres formato de 12 horas
-                        }
-                    )}`
+                      )} ${new Date(
+                        levantamiento.fecha_envio
+                      ).toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false, // Cambiar a true si prefieres formato de 12 horas
+                      })}`
                     : "Sin datos"}
                 </TableCell>
                 <TableCell>
-                {levantamiento.fecha_actualizacion
-                    ? `${new Date(levantamiento.fecha_actualizacion).toLocaleDateString(
-                        "es-ES",
-                        {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                        }
-                    )} ${new Date(levantamiento.fecha_actualizacion).toLocaleTimeString(
-                        "es-ES",
-                        {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false, // Cambiar a true si prefieres formato de 12 horas
-                        }
-                    )}`
+                  {levantamiento.fecha_actualizacion
+                    ? `${new Date(
+                        levantamiento.fecha_actualizacion
+                      ).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })} ${new Date(
+                        levantamiento.fecha_actualizacion
+                      ).toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false, // Cambiar a true si prefieres formato de 12 horas
+                      })}`
                     : "Sin datos"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}><Button variant="outline" size="sm">Editar</Button></Link>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(levantamiento.id)}>Eliminar</Button>
+                    <Link
+                      href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}
+                    >
+                      <Button variant="outline" size="sm">
+                        Editar
+                      </Button>
+                    </Link>
+                    <Link
+                      href={`/ventas/levantamiento_requerimientos/detalle_levantamiento?id=${levantamiento.id}`}
+                    >
+                      <Button variant="outline" size="sm">
+                        Detalle
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(levantamiento.id)}
+                    >
+                      Eliminar
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -444,21 +489,21 @@ function Spinner() {
 }
 
 function SearchIcon(props) {
-    return (
-        <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-        </svg>
-    );
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
 }
