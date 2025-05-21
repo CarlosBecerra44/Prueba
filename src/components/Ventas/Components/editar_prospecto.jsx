@@ -23,7 +23,6 @@ export function EditarProspecto(props) {
   const [redes_sociales, setRedesSociales] = useState(null);
   const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] =
     useState(null);
-  console.log({ id });
 
   const fetchArchivo = async (prospecto) => {
     const archivo = prospecto?.constancia;
@@ -41,8 +40,6 @@ export function EditarProspecto(props) {
       try {
         const response = await axios.get(`/api/Sales/getProspecto?id=${id}`);
         if (response.data.success) {
-          console.log("call");
-
           setProspecto(response.data.prospecto);
           fetchArchivo(response.data.prospecto);
         } else {
@@ -194,9 +191,6 @@ export function EditarProspecto(props) {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-center items-center text-center mb-8">
-        <CardTitle className="text-3xl font-bold">Editar prospecto</CardTitle>
-      </div>
       <div className="flex justify-center mb-4">
         <form
           onSubmit={handleSubmit}

@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { CardTitle } from "@/components/ui/card";
 import { EditarProspecto as E } from "@/components/Ventas/Components/editar_prospecto";
 import { CornerDownLeft } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +22,9 @@ function EditarProspecto() {
         </Button>
       </Link>
       <div>
+        <div className="flex justify-center items-center text-center mb-8">
+          <CardTitle className="text-3xl font-bold">Editar prospecto</CardTitle>
+        </div>
         <E id={id} EmitUpdate={handleUpdate} />
       </div>
     </Suspense>
