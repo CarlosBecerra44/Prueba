@@ -1,0 +1,94 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { SquarePen } from "lucide-react";
+import { Button } from "@mui/material";
+import axios from "axios";
+
+export default function DetalleProspecto(props) {
+  const { id, emitEdit } = props;
+  const [prospecto, setProspecto] = useState(null);
+  const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] =
+    useState(null);
+
+  const fetchArchivo = async (prospecto) => {
+    const archivo = prospecto?.constancia;
+
+    if (archivo) {
+      const url = `/api/Sales/obtenerConstancia?rutaDocumento=${encodeURIComponent(
+        archivo
+      )}`;
+      setImagenSeleccionadaPreview(url);
+    }
+  };
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchProspecto = async () => {
+      try {
+        const response = await axios.get(`/api/Sales/getProspecto?id=${id}`);
+        if (response.data.success) {
+          console.log({ prospecto: response.data.prospecto });
+          setProspecto(response.data.prospecto);
+          //   fetchArchivo(response.data.prospecto);
+        } else {
+          console.error(
+            "Error al obtener el prospecto:",
+            response.data.message
+          );
+        }
+      } catch (error) {
+        console.error("Error al hacer fetch del prospecto:", error);
+      }
+    };
+
+    fetchProspecto();
+  }, []);
+
+  const handleEdit = () => {
+    emitEdit(true);
+  };
+  return (
+    <fieldset className="border border-gray-300 p-4 rounded-lg">
+      <legend className="text-lg font-semibold mx-2 flex gap-2">
+        <span>Cliente</span>{" "}
+        <Button style={{ width: "25px", height: "25px" }} onClick={handleEdit}>
+          <SquarePen />
+        </Button>
+      </legend>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Nombre Completo
+          </label>
+          <p className="mt-1 text-sm text-gray-600">{prospecto?.nombre}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Número de Teléfono
+          </label>
+          <p className="mt-1 text-sm text-gray-600">{prospecto?.telefono}</p>
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Correo Electrónico
+          </label>
+          <p className="mt-1 text-sm text-gray-600">{prospecto?.correo}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Marca
+          </label>
+          <p className="mt-1 text-sm text-gray-600">{prospecto?.marca}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Redes Sociales
+          </label>
+          <p className="mt-1 text-sm text-gray-600">
+            {prospecto?.redes_sociales}
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  );
+}
