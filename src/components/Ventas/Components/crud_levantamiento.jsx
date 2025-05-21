@@ -409,6 +409,13 @@ export function LevantamientoRequerimientos() {
                         Detalle
                       </Button>
                     </Link>
+                    <Link
+                      href={`/ventas/levantamiento_requerimientos/referencias?id=${levantamiento.id}`}
+                    >
+                      <Button variant="outline" size="sm">
+                        Referencias
+                      </Button>
+                    </Link>
                     <Button
                       variant="destructive"
                       size="sm"
