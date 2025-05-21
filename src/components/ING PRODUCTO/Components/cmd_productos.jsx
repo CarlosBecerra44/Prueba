@@ -1758,11 +1758,11 @@ export function CMDProductos() {
                   (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Evaluar</Button></Link>) : 
                   (<div hidden></div>)}
 
-                  {/* Botones de ficha tecnica */}
-                  {user.categoria.toString() !== "6" && user.tolerancias === null && user.veredicto === 1 && permiso?.tipo === 1 ? 
+                  {/* Botones de ficha tecnica   && user.tolerancias === null*/} 
+                  {user.categoria.toString() !== "6" && user.veredicto === 1 && permiso?.tipo === 1 ? 
                   (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
-                  user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
-                  (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
+                  // user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
+                  // (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
                   user.categoria.toString() === "6" && user.validado !== null && user.veredicto === 1 && permiso?.tipo === 5 ?
                   (<Button variant="outline" size="sm" onClick={() => formulaAPDF(user.id)}>Descargar ficha técnica</Button>) : 
                   (<div hidden></div>)}
