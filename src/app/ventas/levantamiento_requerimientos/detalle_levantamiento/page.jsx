@@ -7,15 +7,18 @@ import { CatalogoProductos } from "@/components/ING PRODUCTO/Components/catalogo
 import DetalleProspecto from "@/components/Ventas/Components/detalle_prospecto";
 import { Button } from "@mui/material";
 import { Undo2 } from "lucide-react";
+import ContenedorReferencias from "@/components/Ventas/Components/contenedor_referencias";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const red = "#0565ed";
   const [isProspectoActive, setIsProspectoActive] = useState(false);
   const [isReferenciaActive, setIsReferenciaActive] = useState(false);
   const [isProductoActive, setIsProductoActive] = useState(false);
+  const [isEtiquetaActive, setIsEtiquetaActive] = useState(false);
+  const [isDistribucionActive, setIsDistribucionActive] = useState(false);
   const [levantamiento, setLevantamiento] = useState({});
-  const red = "#0565ed";
   useEffect(() => {
     const fetchLevantamiento = async () => {
       await axios
@@ -106,7 +109,7 @@ export default function Page() {
           </div>
 
           <div className="py-4">
-            <div
+            {/* <div
               style={{ border: "3px solid rgb(31 41 55)" }}
               className="rounded-lg p-2"
             >
@@ -118,7 +121,12 @@ export default function Page() {
                   Referencia
                 </label>
               </div>
-            </div>
+            </div> */}
+            <>
+              {levantamiento.id && (
+                <ContenedorReferencias id={levantamiento.id} />
+              )}
+            </>
             {isReferenciaActive && <div>Referencia</div>}
           </div>
 
@@ -141,6 +149,50 @@ export default function Page() {
               </div>
             </div>
             {isProductoActive && <CatalogoProductos />}
+          </div>
+
+          <div className="py-4">
+            <div
+              style={{
+                border: `3px solid black`,
+                fontSize: "20px",
+                color: "black",
+              }}
+              className="rounded-lg p-2 text-center"
+            >
+              <div onClick={() => setIsEtiquetaActive(!isEtiquetaActive)}>
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Etiquetas o algo asi
+                </label>
+              </div>
+            </div>
+            {isEtiquetaActive && <span>Etiquetas o algo asi</span>}
+          </div>
+
+          <div className="py-4">
+            <div
+              style={{
+                border: `3px solid black`,
+                fontSize: "20px",
+                color: "black",
+              }}
+              className="rounded-lg p-2 text-center"
+            >
+              <div
+                onClick={() => setIsDistribucionActive(!isDistribucionActive)}
+              >
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Distribución
+                </label>
+              </div>
+            </div>
+            {isDistribucionActive && <span>Distribución o algo asi</span>}
           </div>
         </div>
       </div>
