@@ -272,10 +272,7 @@ export function LevantamientoReferencias() {
 
   const formularioCompleto = () => {
     return referencias.every(ref =>
-        ref.nombre.trim() !== '' &&
-        ref.link.trim() !== '' &&
-        ref.notas.trim() !== '' &&
-        ref.imagenes.length > 0
+        ref.nombre.trim() !== ''
     );
   };  
 
