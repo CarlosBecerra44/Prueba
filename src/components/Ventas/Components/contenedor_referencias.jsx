@@ -9,11 +9,13 @@ export default function ContenedorReferencias(props) {
   useEffect(() => {
     const fetchReferencias = async () => {
       await axios.get(`/api/Sales/getReferencias?id=${id}`).then((res) => {
+        console.log({ ref: res.data.referencias });
         setReferencias(res.data.referencias);
       });
     };
-    fetchReferencias();
-  });
+
+    if (id) fetchReferencias();
+  }, [id]);
   return (
     <fieldset className="border border-gray-300 p-4 rounded-lg">
       <legend className="text-lg font-semibold mx-2 flex gap-2">
