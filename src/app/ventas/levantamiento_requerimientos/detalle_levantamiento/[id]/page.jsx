@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import axios from "axios";
 import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
 import { CatalogoProductos } from "@/components/ING PRODUCTO/Components/catalogo_productos";
@@ -10,16 +10,32 @@ import { Undo2 } from "lucide-react";
 import ContenedorReferencias from "@/components/Ventas/Components/contenedor_referencias";
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const { id } = useParams();
   const red = "#0565ed";
-  const [isProspectoActive, setIsProspectoActive] = useState(false);
-  const [isReferenciaActive, setIsReferenciaActive] = useState(false);
-  const [isProductoActive, setIsProductoActive] = useState(false);
-  const [isEtiquetaActive, setIsEtiquetaActive] = useState(false);
-  const [isDistribucionActive, setIsDistribucionActive] = useState(false);
+  console.log({ id });
+
+  const [isVisible, setIsVisible] = useState({
+    isProspectoActive: false,
+    isIdentidadActive: false,
+    isReferenciaActive: false,
+    isProductoActive: false,
+    isEtiquetaActive: false,
+    isDistribucionActive: false,
+  });
+  const [isEditarActive, setIsEditarActive] = useState({
+    isEditarProspectoActive: false,
+    isEditarIdentidadActive: false,
+    isEditarReferenciaActive: false,
+    isEditarProductoActive: false,
+    isEditarEtiquetaActive: false,
+    isEditarDistribucionActive: false,
+  });
+
+  console.log({ isVisible, prospecto: isVisible.isProspectoActive });
+
   const [levantamiento, setLevantamiento] = useState({});
   useEffect(() => {
+    if (!id) return;
     const fetchLevantamiento = async () => {
       await axios
         .get(`/api/Sales/getLevantamiento?id=${id}`)
@@ -52,13 +68,27 @@ export default function Page() {
             <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
           </div>
           <div className="py-4">
-            {levantamiento.id_prospecto && !isProspectoActive && (
-              <DetalleProspecto
-                id={levantamiento.id_prospecto}
-                emitEdit={handleEditProspecto}
-              />
+            {!isVisible.isProspectoActive && (
+              <div
+                className="border border-gray-300 p-4 rounded-lg"
+                onClick={() => {
+                  setIsVisible({
+                    ...isVisible,
+                    isProspectoActive: !isVisible.isProspectoActive,
+                  });
+                }}
+              >
+                <label>Cliente</label>
+              </div>
             )}
-            {isProspectoActive && (
+            {levantamiento.id_prospecto &&
+              !isEditarActive.isEditarProspectoActive && (
+                <DetalleProspecto
+                  id={levantamiento.id_prospecto}
+                  emitEdit={handleEditProspecto}
+                />
+              )}
+            {isEditarActive.isEditarProspectoActive && (
               <>
                 <div>
                   <Button
@@ -76,7 +106,7 @@ export default function Page() {
                 </div>
               </>
             )}
-
+            {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
             {levantamiento.id && (
               <fieldset className="border border-gray-300 p-4 rounded-lg">
                 <legend className="text-lg font-semibold mx-2 flex gap-2">
@@ -107,6 +137,7 @@ export default function Page() {
               </fieldset>
             )}
           </div>
+          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
           <div className="py-4">
             {/* <div
@@ -127,8 +158,9 @@ export default function Page() {
                 <ContenedorReferencias id={levantamiento.id} />
               )}
             </>
-            {isReferenciaActive && <div>Referencia</div>}
+            {isVisible.isReferenciaActive && <div>Referencia</div>}
           </div>
+          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
           <div className="py-4">
             <div
@@ -139,7 +171,14 @@ export default function Page() {
               }}
               className="rounded-lg p-2 text-center"
             >
-              <div onClick={() => setIsProductoActive(!isProductoActive)}>
+              <div
+                onClick={() =>
+                  setIsVisible({
+                    ...isVisible,
+                    isProductoActive: !isVisible.isProductoActive,
+                  })
+                }
+              >
                 <label
                   htmlFor="producto"
                   className={"font-bold hover:cursor-pointer"}
@@ -148,29 +187,9 @@ export default function Page() {
                 </label>
               </div>
             </div>
-            {isProductoActive && <CatalogoProductos />}
+            {isVisible.isProductoActive && <CatalogoProductos />}
           </div>
-
-          <div className="py-4">
-            <div
-              style={{
-                border: `3px solid black`,
-                fontSize: "20px",
-                color: "black",
-              }}
-              className="rounded-lg p-2 text-center"
-            >
-              <div onClick={() => setIsEtiquetaActive(!isEtiquetaActive)}>
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Etiquetas o algo asi
-                </label>
-              </div>
-            </div>
-            {isEtiquetaActive && <span>Etiquetas o algo asi</span>}
-          </div>
+          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
           <div className="py-4">
             <div
@@ -182,7 +201,41 @@ export default function Page() {
               className="rounded-lg p-2 text-center"
             >
               <div
-                onClick={() => setIsDistribucionActive(!isDistribucionActive)}
+                onClick={() =>
+                  setIsVisible({
+                    ...isVisible,
+                    isEtiquetaActive: !isVisible.isEtiquetaActive,
+                  })
+                }
+              >
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Etiquetas o algo asi
+                </label>
+              </div>
+            </div>
+            {isVisible.isEtiquetaActive && <span>Etiquetas o algo asi</span>}
+          </div>
+          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
+
+          <div className="py-4">
+            <div
+              style={{
+                border: `3px solid black`,
+                fontSize: "20px",
+                color: "black",
+              }}
+              className="rounded-lg p-2 text-center"
+            >
+              <div
+                onClick={() =>
+                  setIsVisible({
+                    ...isVisible,
+                    isDistribucionActive: !isVisible.isDistribucionActive,
+                  })
+                }
               >
                 <label
                   htmlFor="producto"
@@ -192,7 +245,9 @@ export default function Page() {
                 </label>
               </div>
             </div>
-            {isDistribucionActive && <span>Distribución o algo asi</span>}
+            {isVisible.isDistribucionActive && (
+              <span>Distribución o algo asi</span>
+            )}
           </div>
         </div>
       </div>

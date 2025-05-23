@@ -4,17 +4,17 @@ import { CardTitle } from "@/components/ui/card";
 import { EditarProspecto as E } from "@/components/Ventas/Components/editar_prospecto";
 import { CornerDownLeft } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-function EditarProspecto() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+import { useParams } from "next/navigation";
 
+export default function EditarProspecto() {
+  // TODO: Cambiar la ruta a la forma dinamica con la estructura de carpetas
+  const { id } = useParams();
   const handleUpdate = () => {
     window.location.href = "/ventas/prospectos";
   };
+
   return (
-    <Suspense>
+    <>
       <Link href="/ventas/prospectos">
         <Button>
           <CornerDownLeft className="h-4 w-4" />
@@ -27,8 +27,6 @@ function EditarProspecto() {
         </div>
         <E id={id} EmitUpdate={handleUpdate} />
       </div>
-    </Suspense>
+    </>
   );
 }
-
-export default EditarProspecto;

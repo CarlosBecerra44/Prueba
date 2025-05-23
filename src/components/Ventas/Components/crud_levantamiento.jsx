@@ -403,13 +403,14 @@ export function LevantamientoRequerimientos() {
                       </Button>
                     </Link>
                     <Link
-                      href={`/ventas/levantamiento_requerimientos/detalle_levantamiento?id=${levantamiento.id}`}
+                      href={`/ventas/levantamiento_requerimientos/detalle_levantamiento/${levantamiento.id}`}
                     >
                       <Button variant="outline" size="sm">
                         Detalle
                       </Button>
                     </Link>
                     <Link
+                      // TODO: Cambiar la rura a la forma dinamica con la estructura de carpetas
                       href={`/ventas/levantamiento_requerimientos/referencias?id=${levantamiento.id}`}
                     >
                       <Button variant="outline" size="sm">
