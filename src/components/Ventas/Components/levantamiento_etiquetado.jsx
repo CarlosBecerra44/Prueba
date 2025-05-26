@@ -114,7 +114,7 @@ export function LevantamientoEtiquetado() {
         if (response.data.success) {
             Swal.fire({
                 title: "Éxito",
-                text: "Se ha guardado el etiquetado correctamente",
+                text: "El etiquetado ha sido guardado correctamente",
                 icon: "success",
                 timer: 3000,
                 showConfirmButton: false,
@@ -395,7 +395,7 @@ export function LevantamientoEtiquetado() {
                     </div>
                 ) : null}
                 <Button type="submit" className="w-full mt-4">
-                    Guardar
+                    Guardar etiquetado
                 </Button>
             </form>
         </div>
