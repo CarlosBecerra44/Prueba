@@ -5,7 +5,7 @@ import { Button } from "@mui/material";
 import axios from "axios";
 
 export default function DetalleProspecto(props) {
-  const { id, emitEdit } = props;
+  const { id, emitEdit, emitVisible } = props;
   const [prospecto, setProspecto] = useState(null);
   const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] =
     useState(null);
@@ -50,7 +50,7 @@ export default function DetalleProspecto(props) {
   return (
     <fieldset className="border border-gray-300 p-4 rounded-lg">
       <legend className="text-lg font-semibold mx-2 flex gap-2">
-        <span>Cliente</span>{" "}
+        <Button style={{ width: "25px", height: "25px", color: "black" }} onClick={() => emitVisible(false)}> <span>Cliente</span>{" "} </Button>
         <Button style={{ width: "25px", height: "25px" }} onClick={handleEdit}>
           <SquarePen />
         </Button>

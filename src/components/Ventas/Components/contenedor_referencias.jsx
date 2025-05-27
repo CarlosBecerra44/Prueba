@@ -34,43 +34,81 @@ export default function ContenedorReferencias(props) {
     if (id) fetchReferencias();
   }, [id]);
   return (
-    // TODO: Agregar estilos al contenedor
-    <fieldset className="border border-gray-300 p-4 rounded-lg">
-      <legend className="text-lg font-semibold mx-2 flex gap-2">
+    <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+      <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm">
         Referencias
       </legend>
-      {referencias.map((referencia) => (
-        <div
-          key={referencia.id}
-          className="border border-gray-300 p-4 rounded-lg mb-4"
-        >
-          <h3 className="text-sm font-semibold mb-2">{referencia.nombre}</h3>
-          <p className="text-sm">{referencia.link}</p>
-          <p className="text-sm">{referencia.notas}</p>
-          <p className="text-sm">{referencia.tipo}</p>
-          <div className="flex gap-2">
-            {referencia.imagenes.map((imagen) => (
-              <Image
-                key={imagen.id}
-                src={`/api/Sales/obtenerImagenesReferencias?rutaImagen=${encodeURIComponent(
-                  imagen.file
-                )}`}
-                width={150}
-                height={150}
-                alt={referencia.nombre}
-              />
-            ))}
+
+      <div className="space-y-6 mt-4">
+        {referencias.map((referencia) => (
+          <div
+            key={referencia.id}
+            className="group bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                {referencia.nombre}
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {referencia.link && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-500">
+                    Enlace:
+                  </span>
+                  <a
+                    href={referencia.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                  >
+                    {referencia.link}
+                  </a>
+                </div>
+              )}
+
+              {referencia.notas && (
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium text-gray-500 mt-0.5">
+                    Notas:
+                  </span>
+                  <p className="text-sm text-gray-700 flex-1">
+                    {referencia.notas}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {referencia.imagenes && referencia.imagenes.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-3">
+                  Imágenes:
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {referencia.imagenes.map((imagen) => (
+                    <div
+                      key={imagen.id}
+                      className="relative group/image overflow-hidden rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                    >
+                      <Image
+                        src={`/api/Sales/obtenerImagenesReferencias?rutaImagen=${encodeURIComponent(
+                          imagen.file
+                        )}`}
+                        width={150}
+                        height={150}
+                        alt={referencia.nombre}
+                        className="w-full h-32 object-cover group-hover/image:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover/image:bg-opacity-10 transition-all duration-300" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          {/* <Image
-            src={`/api/Sales/obtenerImagenesReferencias?rutaImagen=${encodeURIComponent(
-              referencia.img1
-            )}`}
-            width={100}
-            height={100}
-            alt={referencia.nombre}
-          /> */}
-        </div>
-      ))}
+        ))}
+      </div>
     </fieldset>
   );
 }

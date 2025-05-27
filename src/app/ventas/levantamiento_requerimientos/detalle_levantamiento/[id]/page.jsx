@@ -8,6 +8,7 @@ import DetalleProspecto from "@/components/Ventas/Components/detalle_prospecto";
 import { Button } from "@mui/material";
 import { Undo2 } from "lucide-react";
 import ContenedorReferencias from "@/components/Ventas/Components/contenedor_referencias";
+import LevantamientoIdentidadForm from "@/components/Ventas/Components/levantamineto_identidad_form";
 
 export default function Page() {
   const { id } = useParams();
@@ -49,15 +50,22 @@ export default function Page() {
     fetchLevantamiento();
   }, []);
 
-  const toggleIsProspectoActive = () => {
-    setIsProspectoActive(!isProspectoActive);
+  const handleDetalleProspecto = () => {
+    setIsVisible({
+      ...isVisible,
+      isProspectoActive: !isVisible.isProspectoActive,
+    });
   };
   const handleUpdateProspecto = () => {
     toggleIsProspectoActive();
   };
 
   const handleEditProspecto = () => {
-    toggleIsProspectoActive();
+    setIsEditarActive({
+                        ...isEditarActive,
+                        isEditarProspectoActive:
+                          !isEditarActive.isEditarProspectoActive,
+                      });
   };
 
   return (
@@ -71,29 +79,30 @@ export default function Page() {
             {!isVisible.isProspectoActive && (
               <div
                 className="border border-gray-300 p-4 rounded-lg"
-                onClick={() => {
-                  setIsVisible({
-                    ...isVisible,
-                    isProspectoActive: !isVisible.isProspectoActive,
-                  });
-                }}
+                onClick={handleDetalleProspecto}
               >
                 <label>Cliente</label>
               </div>
             )}
-            {levantamiento.id_prospecto &&
-              !isEditarActive.isEditarProspectoActive && (
-                <DetalleProspecto
-                  id={levantamiento.id_prospecto}
-                  emitEdit={handleEditProspecto}
-                />
-              )}
+            {(levantamiento.id_prospecto && isVisible.isProspectoActive) && !isEditarActive.isEditarProspectoActive && (
+              <DetalleProspecto
+                id={levantamiento.id_prospecto}
+                emitEdit={handleEditProspecto}
+                emitVisible={handleDetalleProspecto}
+              />
+            )}
             {isEditarActive.isEditarProspectoActive && (
               <>
                 <div>
                   <Button
                     style={{ width: "25px", height: "25px", color: "black" }}
-                    onClick={toggleIsProspectoActive}
+                    onClick={() => {
+                      setIsEditarActive({
+                        ...isEditarActive,
+                        isEditarProspectoActive:
+                          !isEditarActive.isEditarProspectoActive,
+                      });
+                    }}
                   >
                     <Undo2 />
                   </Button>
@@ -107,6 +116,12 @@ export default function Page() {
               </>
             )}
             {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
+            <div
+                className="border border-gray-300 p-4 rounded-lg"
+                onClick={handleDetalleProspecto}
+              >
+                <label>Identidad</label>
+              </div>
             {levantamiento.id && (
               <fieldset className="border border-gray-300 p-4 rounded-lg">
                 <legend className="text-lg font-semibold mx-2 flex gap-2">
@@ -136,6 +151,7 @@ export default function Page() {
                 </div>
               </fieldset>
             )}
+            <LevantamientoIdentidadForm/>
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
