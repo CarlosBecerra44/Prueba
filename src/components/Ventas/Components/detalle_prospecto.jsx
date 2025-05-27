@@ -45,12 +45,18 @@ export default function DetalleProspecto(props) {
   }, []);
 
   const handleEdit = () => {
-    emitEdit(true);
+    emitEdit();
   };
   return (
-    <fieldset className="border border-gray-300 p-4 rounded-lg">
-      <legend className="text-lg font-semibold mx-2 flex gap-2">
-        <Button style={{ width: "25px", height: "25px", color: "black" }} onClick={() => emitVisible(false)}> <span>Cliente</span>{" "} </Button>
+    <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+      <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm gap-2">
+        <Button
+          style={{ width: "25px", height: "25px", color: "black" }}
+          onClick={() => emitVisible()}
+        >
+          {" "}
+          <span>Cliente</span>{" "}
+        </Button>
         <Button style={{ width: "25px", height: "25px" }} onClick={handleEdit}>
           <SquarePen />
         </Button>

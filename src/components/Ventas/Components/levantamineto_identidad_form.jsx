@@ -87,7 +87,7 @@ export default function LevantamientoIdentidadForm({
   `;
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
+    <div className="mx-auto bg-white border border-gray-200 rounded-lg">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-xl">
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
