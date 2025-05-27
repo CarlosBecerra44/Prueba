@@ -302,13 +302,7 @@ export function LevantamientoReferencias(props) {
   };
 
   const formularioCompleto = () => {
-    return referencias.every(
-      (ref) =>
-        ref.nombre.trim() !== "" &&
-        ref.link.trim() !== "" &&
-        ref.notas.trim() !== "" &&
-        ref.imagenes.length > 0
-    );
+    return referencias.every((ref) => ref.nombre.trim() !== "");
   };
 
   return (

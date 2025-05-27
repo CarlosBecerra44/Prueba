@@ -83,7 +83,7 @@ export function NuevoProspecto() {
         if (response.data.success) {
             Swal.fire({
                 title: "Éxito",
-                text: "El prospecto ha sido agregado correctamente",
+                text: "El prospecto ha sido guardado correctamente",
                 icon: "success",
                 timer: 3000,
                 showConfirmButton: false,
@@ -93,7 +93,7 @@ export function NuevoProspecto() {
         } else {
             Swal.fire({
                 title: "Error",
-                text: "Error al agregar al prospecto",
+                text: "Error al guardar al prospecto",
                 icon: "error",
                 timer: 3000,
                 showConfirmButton: false,
