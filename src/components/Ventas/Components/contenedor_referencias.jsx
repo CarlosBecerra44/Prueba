@@ -1,10 +1,12 @@
 "use client";
+import { Button } from "@mui/material";
 import axios from "axios";
+import { SquarePen } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 export default function ContenedorReferencias(props) {
-  const { id } = props;
+  const { id, emitVisible, emitEdit } = props;
   const [referencias, setReferencias] = useState([]);
 
   useEffect(() => {
@@ -36,7 +38,12 @@ export default function ContenedorReferencias(props) {
   return (
     <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
       <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm">
-        Referencias
+        <Button onClick={emitVisible} style={{ color: "black" }}>
+          Referencias
+        </Button>
+        <Button style={{ width: "25px", height: "25px" }} onClick={emitEdit}>
+          <SquarePen />
+        </Button>
       </legend>
 
       <div className="space-y-6 mt-4">
