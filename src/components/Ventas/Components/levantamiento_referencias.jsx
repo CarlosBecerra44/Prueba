@@ -240,7 +240,7 @@ export function LevantamientoReferencias() {
         if (res.ok) {
             Swal.fire({
                 title: "Éxito",
-                text: "Se han creado correctamente",
+                text: "Las referencias se han guardado correctamente",
                 icon: "success",
                 timer: 3000,
                 showConfirmButton: false,
@@ -250,19 +250,18 @@ export function LevantamientoReferencias() {
         } else {
             Swal.fire({
                 title: "Error",
-                text: "Error al crear el producto",
+                text: "Error al guardar las referencias",
                 icon: "error",
                 timer: 3000,
                 showConfirmButton: false,
             });
         }
     } catch (err) {
-        console.error("Error en el registro:", err);
-        setError("Hubo un problema con el registro. Por favor, intenta nuevamente.");
+        console.error("Error en el guardado de las referencias:", err);
         Swal.close();
         Swal.fire({
             title: "Error",
-            text: "Hubo un problema con el registro",
+            text: "Hubo un problema con el guardado de las referencias",
             icon: "error",
             timer: 3000,
             showConfirmButton: false,

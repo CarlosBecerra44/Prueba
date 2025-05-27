@@ -96,7 +96,7 @@ export function LevantamientoFormulaciones() {
         if (response.data.success) {
             Swal.fire({
                 title: "Éxito",
-                text: "Se han guardado las formulaciones correctamente",
+                text: "Las formulaciones se han guardado correctamente",
                 icon: "success",
                 timer: 3000,
                 showConfirmButton: false,
@@ -263,7 +263,7 @@ export function LevantamientoFormulaciones() {
                     </div>
                 )}
                 <Button type="submit" className="w-full mt-4">
-                    Guardar
+                    Guardar formulaciones
                 </Button>
             </form>
         </div>
