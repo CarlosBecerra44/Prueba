@@ -1,4 +1,8 @@
+"use client";
+import { Button } from "@/components/ui/button";
 import { LevantamientoReferencias as L } from "@/components/Ventas/Components/levantamiento_referencias";
+import { CornerDownLeft } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 function Referencias() {
   const handleUpdate = () => {
@@ -14,7 +18,7 @@ function Referencias() {
             Regresar
           </Button>
         </Link>
-        <L EmitUpdate={handleUpdate} />
+        <L emitUpdate={handleUpdate} />
       </div>
     </Suspense>
   );

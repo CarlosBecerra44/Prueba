@@ -30,7 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 
 export function LevantamientoReferencias(props) {
-  const { id } = props;
+  const { id, emitUpdate } = props;
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const idLevantamiento = searchParams.get("id") || id;
@@ -274,7 +274,7 @@ export function LevantamientoReferencias(props) {
           timer: 3000,
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/ventas/levantamiento_requerimientos";
+          emitUpdate();
         });
       } else {
         Swal.fire({
