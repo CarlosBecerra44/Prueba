@@ -13,6 +13,7 @@ import LevantamientoIdentidadForm from "@/components/Ventas/Components/levantami
 import { LevantamientoReferencias } from "@/components/Ventas/Components/levantamiento_referencias";
 import { LevantamientoFormulaciones } from "@/components/Ventas/Components/levantamiento_formulaciones";
 import { LevantamientoEtiquetado } from "@/components/Ventas/Components/levantamiento_etiquetado";
+import { LevantamientoDistribuidores } from "@/components/Ventas/Components/levantamiento_distribuidores";
 
 export default function Page() {
   const { id } = useParams();
@@ -261,7 +262,10 @@ export default function Page() {
                       </Button>
                     </legend>
 
-                    <LevantamientoFormulaciones id={levantamiento.id} />
+                    <LevantamientoFormulaciones
+                      id={levantamiento.id}
+                      emitUpdate={() => handleToggleVisbility("formulacion")}
+                    />
                   </fieldset>
                 )}
               </>
@@ -321,7 +325,10 @@ export default function Page() {
                         Etiquetado
                       </Button>
                     </legend>
-                    <LevantamientoEtiquetado id={levantamiento.id} />
+                    <LevantamientoEtiquetado
+                      id={levantamiento.id}
+                      emitUpdate={() => handleToggleVisbility("etiqueta")}
+                    />
                   </fieldset>
                 )}
               </>
@@ -347,7 +354,26 @@ export default function Page() {
                 </label>
               </div>
             )}
-            {isVisible.distribucion && <>distribucion</>}
+            {isVisible.distribucion && (
+              <>
+                {levantamiento.id && (
+                  <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+                    <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm gap-2">
+                      <Button
+                        onClick={() => handleToggleVisbility("distribucion")}
+                        style={{ color: "black" }}
+                      >
+                        Distribución
+                      </Button>
+                    </legend>
+                    <LevantamientoDistribuidores
+                      id={levantamiento.id}
+                      emitUpdate={() => handleToggleVisbility("distribucion")}
+                    />
+                  </fieldset>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
