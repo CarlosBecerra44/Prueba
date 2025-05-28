@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 export default function EditarProspecto() {
-  // TODO: Cambiar la ruta a la forma dinamica con la estructura de carpetas
   const { id } = useParams();
   const handleUpdate = () => {
     window.location.href = "/ventas/prospectos";
