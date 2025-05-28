@@ -2,15 +2,16 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import { Button } from "@mui/material";
+import { Undo2 } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
 import { CatalogoProductos } from "@/components/ING PRODUCTO/Components/catalogo_productos";
 import DetalleProspecto from "@/components/Ventas/Components/detalle_prospecto";
-import { Button } from "@mui/material";
-import { Undo2 } from "lucide-react";
 import ContenedorReferencias from "@/components/Ventas/Components/contenedor_referencias";
 import LevantamientoIdentidadForm from "@/components/Ventas/Components/levantamineto_identidad_form";
-import { SquarePen } from "lucide-react";
 import { LevantamientoReferencias } from "@/components/Ventas/Components/levantamiento_referencias";
+import { LevantamientoFormulaciones } from "@/components/Ventas/Components/levantamiento_formulaciones";
 
 export default function Page() {
   const { id } = useParams();
@@ -20,6 +21,7 @@ export default function Page() {
     prospecto: true,
     identidad: false,
     referencia: false,
+    formulacion: false,
     producto: false,
     etiqueta: false,
     distribucion: false,
@@ -28,6 +30,7 @@ export default function Page() {
     prospecto: false,
     identidad: false,
     referencia: false,
+    formulacion: false,
     producto: false,
     etiqueta: false,
     distribucion: false,
@@ -73,7 +76,7 @@ export default function Page() {
           <div className="flex justify-center items-center text-center mb-8">
             <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
           </div>
-          <div className="py-4">
+          <div className="py-2">
             {!isVisible.prospecto && (
               <div
                 className="border border-gray-300 p-4 rounded-lg  my-2"
@@ -113,7 +116,8 @@ export default function Page() {
                 </div>
               </>
             )}
-
+          </div>
+          <div className="py-2">
             {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
             {!isVisible.identidad && (
               <div
@@ -175,7 +179,7 @@ export default function Page() {
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-4">
+          <div className="py-2">
             {!isVisible.referencia && (
               <div
                 className="border border-gray-300 p-4 rounded-lg my-2"
@@ -213,7 +217,10 @@ export default function Page() {
                         <Undo2 />
                       </Button>
                     </div>
-                    <LevantamientoReferencias id={levantamiento.id} />
+                    <LevantamientoReferencias
+                      id={levantamiento.id}
+                      emitUpdate={() => handleEditarActivity("referencia")}
+                    />
                   </>
                 )}
               </>
@@ -221,8 +228,52 @@ export default function Page() {
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-4">
+          <div className="py-2">
+            {!isVisible.formulacion && (
+              <div
+                onClick={() => handleToggleVisbility("formulacion")}
+                style={{
+                  border: `3px solid black`,
+                  fontSize: "20px",
+                  color: "black",
+                }}
+                className="border border-gray-300 p-4 rounded-lg my-2"
+              >
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Formulaciones
+                </label>
+              </div>
+            )}
+            {isVisible.formulacion && (
+              <>
+                {levantamiento.id && (
+                  <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+                    <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm gap-2">
+                      <Button
+                        onClick={() => handleToggleVisbility("formulacion")}
+                        style={{ color: "black" }}
+                      >
+                        Formulaciones
+                      </Button>
+                    </legend>
+
+                    <LevantamientoFormulaciones
+                      id={levantamiento.id}
+                      EmitUpdate={() => handleEditarActivity("formulacion")}
+                    />
+                  </fieldset>
+                )}
+              </>
+            )}
+          </div>
+          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
+
+          <div className="py-2">
             <div
+              onClick={() => handleToggleVisbility("producto")}
               style={{
                 border: `3px solid black`,
                 fontSize: "20px",
@@ -230,21 +281,20 @@ export default function Page() {
               }}
               className="border border-gray-300 p-4 rounded-lg my-2"
             >
-              <div onClick={() => handleToggleVisbility("referencia")}>
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  producto
-                </label>
-              </div>
+              <label
+                htmlFor="producto"
+                className={"font-bold hover:cursor-pointer"}
+              >
+                producto
+              </label>
             </div>
             {isVisible.producto && <CatalogoProductos />}
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-4">
+          <div className="py-2">
             <div
+              onClick={() => handleToggleVisbility("etiqueta")}
               style={{
                 border: `3px solid black`,
                 fontSize: "20px",
@@ -252,35 +302,32 @@ export default function Page() {
               }}
               className="border border-gray-300 p-4 rounded-lg my-2"
             >
-              <div onClick={() => handleToggleVisbility("etiqueta")}>
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Etiquetas o algo asi
-                </label>
-              </div>
+              <label
+                htmlFor="producto"
+                className={"font-bold hover:cursor-pointer"}
+              >
+                Etiquetado
+              </label>
             </div>
-            {isVisible.etiqueta && <span>Etiquetas o algo asi</span>}
+            {isVisible.etiqueta && <span>Etiquetado</span>}
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-4">
+          <div className="py-2">
             <div
+              onClick={() => handleToggleVisbility("distribucion")}
               style={{
                 border: `3px solid black`,
                 color: "black",
               }}
               className="border border-gray-300 p-4 rounded-lg my-2"
             >
-              <div onClick={() => handleToggleVisbility("distribucion")}>
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Distribución
-                </label>
-              </div>
+              <label
+                htmlFor="producto"
+                className={"font-bold hover:cursor-pointer"}
+              >
+                Distribución
+              </label>
             </div>
             {isVisible.distribucion && <span>Distribución o algo asi</span>}
           </div>

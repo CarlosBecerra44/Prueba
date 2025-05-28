@@ -1,12 +1,33 @@
-import { LevantamientoFormulaciones as L } from '@/components/Ventas/Components/levantamiento_formulaciones';
-import { Suspense } from 'react'
+"use client";
+import { Button } from "@/components/ui/button";
+import { CardTitle } from "@/components/ui/card";
+import { LevantamientoFormulaciones as L } from "@/components/Ventas/Components/levantamiento_formulaciones";
+import { CornerDownLeft } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
 function Formulaciones() {
+  const handleUpdate = () => {
+    window.location.href = "/ventas/levantamiento_requerimientos";
+  };
   return (
-    <Suspense>
-    <div>
-      <L />
-    </div>
-    </Suspense>
+    <>
+      <div>
+        <Link href="/ventas/levantamiento_requerimientos">
+          <Button>
+            <CornerDownLeft className="h-4 w-4" />
+            Regresar
+          </Button>
+        </Link>
+      </div>
+      <div className="flex justify-center items-center text-center mb-8">
+        <CardTitle className="text-3xl font-bold">Formulaciones</CardTitle>
+      </div>
+      <Suspense>
+        <div>
+          <L EmitUpdate={handleUpdate} />
+        </div>
+      </Suspense>
+    </>
   );
 }
 
