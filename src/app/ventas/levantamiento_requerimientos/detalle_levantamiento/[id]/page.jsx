@@ -12,6 +12,7 @@ import ContenedorReferencias from "@/components/Ventas/Components/contenedor_ref
 import LevantamientoIdentidadForm from "@/components/Ventas/Components/levantamineto_identidad_form";
 import { LevantamientoReferencias } from "@/components/Ventas/Components/levantamiento_referencias";
 import { LevantamientoFormulaciones } from "@/components/Ventas/Components/levantamiento_formulaciones";
+import { LevantamientoEtiquetado } from "@/components/Ventas/Components/levantamiento_etiquetado";
 
 export default function Page() {
   const { id } = useParams();
@@ -260,10 +261,7 @@ export default function Page() {
                       </Button>
                     </legend>
 
-                    <LevantamientoFormulaciones
-                      id={levantamiento.id}
-                      EmitUpdate={() => handleEditarActivity("formulacion")}
-                    />
+                    <LevantamientoFormulaciones id={levantamiento.id} />
                   </fieldset>
                 )}
               </>
@@ -293,43 +291,63 @@ export default function Page() {
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
           <div className="py-2">
-            <div
-              onClick={() => handleToggleVisbility("etiqueta")}
-              style={{
-                border: `3px solid black`,
-                fontSize: "20px",
-                color: "black",
-              }}
-              className="border border-gray-300 p-4 rounded-lg my-2"
-            >
-              <label
-                htmlFor="producto"
-                className={"font-bold hover:cursor-pointer"}
+            {!isVisible.etiqueta && (
+              <div
+                onClick={() => handleToggleVisbility("etiqueta")}
+                style={{
+                  border: `3px solid black`,
+                  fontSize: "20px",
+                  color: "black",
+                }}
+                className="border border-gray-300 p-4 rounded-lg my-2"
               >
-                Etiquetado
-              </label>
-            </div>
-            {isVisible.etiqueta && <span>Etiquetado</span>}
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Etiquetado
+                </label>
+              </div>
+            )}
+            {isVisible.etiqueta && (
+              <>
+                {levantamiento.id && (
+                  <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+                    <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm gap-2">
+                      <Button
+                        onClick={() => handleToggleVisbility("etiqueta")}
+                        style={{ color: "black" }}
+                      >
+                        Etiquetado
+                      </Button>
+                    </legend>
+                    <LevantamientoEtiquetado id={levantamiento.id} />
+                  </fieldset>
+                )}
+              </>
+            )}
           </div>
           {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
           <div className="py-2">
-            <div
-              onClick={() => handleToggleVisbility("distribucion")}
-              style={{
-                border: `3px solid black`,
-                color: "black",
-              }}
-              className="border border-gray-300 p-4 rounded-lg my-2"
-            >
-              <label
-                htmlFor="producto"
-                className={"font-bold hover:cursor-pointer"}
+            {!isVisible.distribucion && (
+              <div
+                onClick={() => handleToggleVisbility("distribucion")}
+                style={{
+                  border: `3px solid black`,
+                  color: "black",
+                }}
+                className="border border-gray-300 p-4 rounded-lg my-2"
               >
-                Distribución
-              </label>
-            </div>
-            {isVisible.distribucion && <span>Distribución o algo asi</span>}
+                <label
+                  htmlFor="producto"
+                  className={"font-bold hover:cursor-pointer"}
+                >
+                  Distribución
+                </label>
+              </div>
+            )}
+            {isVisible.distribucion && <>distribucion</>}
           </div>
         </div>
       </div>
