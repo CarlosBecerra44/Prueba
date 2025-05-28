@@ -37,6 +37,7 @@ export default function Page() {
     etiqueta: false,
     distribucion: false,
   });
+  const [isLevantamientochange, setIsLevantamientochange] = useState(false);
 
   const [levantamiento, setLevantamiento] = useState({});
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function Page() {
         });
     };
     fetchLevantamiento();
-  }, []);
+  }, [isLevantamientochange]);
 
   const handleToggleVisbility = (key) => {
     setIsVisible(() => ({
@@ -63,13 +64,15 @@ export default function Page() {
 
   const handleEditarActivity = (key) => {
     console.log({ key });
+    if (key === "identidad") {
+      setIsLevantamientochange(!isLevantamientochange);
+    }
 
     setIsEditarActive(() => ({
       ...isEditarActive,
       [key]: !isEditarActive[key],
     }));
   };
-  console.log({ edit: isEditarActive.prospecto });
 
   return (
     <>
@@ -78,7 +81,9 @@ export default function Page() {
           <div className="flex justify-center items-center text-center mb-8">
             <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
           </div>
-          <div className="py-2">
+
+          {/* Prospecto */}
+          <div className="py-1">
             {!isVisible.prospecto && (
               <div
                 className="border border-gray-300 p-4 rounded-lg  my-2"
@@ -119,14 +124,15 @@ export default function Page() {
               </>
             )}
           </div>
-          <div className="py-2">
-            {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
+
+          {/* Identidad */}
+          <div className="py-1">
             {!isVisible.identidad && (
               <div
                 className="border border-gray-300 p-4 rounded-lg my-2"
                 onClick={() => handleToggleVisbility("identidad")}
               >
-                <label>Identidad</label>
+                <label>Identidad del producto</label>
               </div>
             )}
             {isVisible.identidad && !isEditarActive.identidad && (
@@ -149,14 +155,6 @@ export default function Page() {
                     </legend>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label> Marca: </label>
-                        <p>{levantamiento.marca}</p>
-                      </div>
-                      <div>
-                        <label> Redes Sociales: </label>
-                        <p>{levantamiento.redes_sociales}</p>
-                      </div>
-                      <div>
                         <label> Público objetivo: </label>
                         <p>{levantamiento.publico_objetivo}</p>
                       </div>
@@ -174,14 +172,35 @@ export default function Page() {
               </>
             )}
             {isEditarActive.identidad && (
-              <LevantamientoIdentidadForm
-                emitUpdate={() => handleEditarActivity("identidad")}
-              />
+              <>
+                {levantamiento.id && (
+                  <>
+                    <div>
+                      <Button
+                        style={{
+                          width: "25px",
+                          height: "25px",
+                          color: "black",
+                        }}
+                        onClick={() => {
+                          handleEditarActivity("identidad");
+                        }}
+                      >
+                        <Undo2 />
+                      </Button>
+                    </div>
+                    <LevantamientoIdentidadForm
+                      id={levantamiento.id}
+                      emitUpdate={() => handleEditarActivity("identidad")}
+                    />
+                  </>
+                )}
+              </>
             )}
           </div>
-          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-2">
+          {/* Referencia */}
+          <div className="pb-1">
             {!isVisible.referencia && (
               <div
                 className="border border-gray-300 p-4 rounded-lg my-2"
@@ -228,25 +247,20 @@ export default function Page() {
               </>
             )}
           </div>
-          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-2">
+          {/* Formulaciones */}
+          <div className="py-1">
             {!isVisible.formulacion && (
               <div
                 onClick={() => handleToggleVisbility("formulacion")}
-                style={{
-                  border: `3px solid black`,
-                  fontSize: "20px",
-                  color: "black",
-                }}
+                // style={{
+                //   border: `3px solid black`,
+                //   fontSize: "20px",
+                //   color: "black",
+                // }}
                 className="border border-gray-300 p-4 rounded-lg my-2"
               >
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Formulaciones
-                </label>
+                <label>Formulaciones</label>
               </div>
             )}
             {isVisible.formulacion && (
@@ -271,46 +285,28 @@ export default function Page() {
               </>
             )}
           </div>
-          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
+          {/* Productos */}
 
-          <div className="py-2">
+          <div className="py-1">
             <div
               onClick={() => handleToggleVisbility("producto")}
-              style={{
-                border: `3px solid black`,
-                fontSize: "20px",
-                color: `black`,
-              }}
+              style={{}}
               className="border border-gray-300 p-4 rounded-lg my-2"
             >
-              <label
-                htmlFor="producto"
-                className={"font-bold hover:cursor-pointer"}
-              >
-                producto
-              </label>
+              <label>producto</label>
             </div>
             {isVisible.producto && <CatalogoProductos />}
           </div>
-          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-2">
+          {/* Etiquetas */}
+          <div className="py-1">
             {!isVisible.etiqueta && (
               <div
                 onClick={() => handleToggleVisbility("etiqueta")}
-                style={{
-                  border: `3px solid black`,
-                  fontSize: "20px",
-                  color: "black",
-                }}
+                style={{}}
                 className="border border-gray-300 p-4 rounded-lg my-2"
               >
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Etiquetado
-                </label>
+                <label>Etiquetado</label>
               </div>
             )}
             {isVisible.etiqueta && (
@@ -334,24 +330,16 @@ export default function Page() {
               </>
             )}
           </div>
-          {/* /////////////////////////////////////////////////////////////////////////////////////////// */}
 
-          <div className="py-2">
+          {/* Distribuciones */}
+          <div className="py-1">
             {!isVisible.distribucion && (
               <div
                 onClick={() => handleToggleVisbility("distribucion")}
-                style={{
-                  border: `3px solid black`,
-                  color: "black",
-                }}
+                style={{}}
                 className="border border-gray-300 p-4 rounded-lg my-2"
               >
-                <label
-                  htmlFor="producto"
-                  className={"font-bold hover:cursor-pointer"}
-                >
-                  Distribución
-                </label>
+                <label>Distribución</label>
               </div>
             )}
             {isVisible.distribucion && (

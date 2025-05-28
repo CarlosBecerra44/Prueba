@@ -321,7 +321,7 @@ export function LevantamientoDistribuidores(props) {
       <div className="flex justify-center mb-4">
         <form
           onSubmit={handleSubmit}
-          className="w-[1400px] border border-gray-300 rounded-lg shadow-md p-6 bg-white"
+          className="w-full border border-gray-300 rounded-lg shadow-md p-6 bg-white"
         >
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="space-y-2 col-span-2">
