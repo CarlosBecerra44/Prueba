@@ -374,6 +374,7 @@ export function LevantamientoRequerimientos() {
                     <Link href={`/ventas/levantamiento_requerimientos/formulaciones?id=${levantamiento.id}`}><Button variant="outline" size="sm">Formulaciones</Button></Link>
                     <Link href={`/ventas/levantamiento_requerimientos/etiquetado?id=${levantamiento.id}`}><Button variant="outline" size="sm">Etiquetado</Button></Link>
                     <Link href={`/ventas/levantamiento_requerimientos/distribuidores?id=${levantamiento.id}`}><Button variant="outline" size="sm">Distribuidores</Button></Link>
+                    <Link href={`/ventas/levantamiento_requerimientos/nombre_producto?id=${levantamiento.id}`}><Button variant="outline" size="sm">Nombre del producto</Button></Link>
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(levantamiento.id)}>Eliminar</Button>
                   </div>
                 </TableCell>
