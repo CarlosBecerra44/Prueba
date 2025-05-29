@@ -47,6 +47,13 @@ export default function ContenedorReferencias(props) {
       </legend>
 
       <div className="space-y-6 mt-4">
+        {referencias.length === 0 && (
+          <div className="text-center p-4 bg-gray-100 rounded-lg shadow-sm border border-gray-100">
+            <p className="text-lx text-gray-500">
+              No se han agregado referencias.
+            </p>
+          </div>
+        )}
         {referencias.map((referencia) => (
           <div
             key={referencia.id}
