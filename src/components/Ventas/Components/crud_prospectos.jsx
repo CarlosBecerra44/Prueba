@@ -23,46 +23,42 @@ export function Prospectos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
-    useEffect(() => {
-        const fetchProspectos = async () => {
-          try {
-            const response = await axios.get(
-              "/api/Sales/getProspectos"
-            );
-            if (response.data.success) {
-              setProspectos(response.data.prospectos);
-            } else {
-              console.error(
-                "Error al obtener los prospectos:",
-                response.data.message
-              );
-            }
-          } catch (error) {
-            console.error("Error al hacer fetch de los prospectos:", error);
-          }
-        };
-    
-        fetchProspectos();
-      }, []);
-    
-      const getProspectos = async () => {
-        try {
-          const response = await axios.get(
-            "/api/Sales/getProspectos"
+
+  useEffect(() => {
+    const fetchProspectos = async () => {
+      try {
+        const response = await axios.get("/api/Sales/getProspectos");
+        if (response.data.success) {
+          setProspectos(response.data.prospectos);
+        } else {
+          console.error(
+            "Error al obtener los prospectos:",
+            response.data.message
           );
-          if (response.data.success) {
-            setProspectos(response.data.prospectos);
-          } else {
-            console.error(
-              "Error al obtener los prospectos:",
-              response.data.message
-            );
-          }
-        } catch (error) {
-          console.error("Error al hacer fetch de los prospectos:", error);
         }
-      };
+      } catch (error) {
+        console.error("Error al hacer fetch de los prospectos:", error);
+      }
+    };
+
+    fetchProspectos();
+  }, []);
+
+  const getProspectos = async () => {
+    try {
+      const response = await axios.get("/api/Sales/getProspectos");
+      if (response.data.success) {
+        setProspectos(response.data.prospectos);
+      } else {
+        console.error(
+          "Error al obtener los prospectos:",
+          response.data.message
+        );
+      }
+    } catch (error) {
+      console.error("Error al hacer fetch de los prospectos:", error);
+    }
+  };
 
   const handleDelete = async (index) => {
     try {
@@ -114,19 +110,19 @@ export function Prospectos() {
       marca: prospecto.marca,
       redes_sociales: prospecto.redes_sociales,
       constancia: prospecto.constancia,
-      odoo_id: prospecto.odoo_id
+      odoo_id: prospecto.odoo_id,
     };
   };
 
   const filteredProspectos = prospectos
-  .map((prospecto) => extractData(prospecto))
-  .filter((prospecto) =>
-    Object.values(prospecto)
-      .filter((value) => value !== null && value !== undefined)
-      .some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+    .map((prospecto) => extractData(prospecto))
+    .filter((prospecto) =>
+      Object.values(prospecto)
+        .filter((value) => value !== null && value !== undefined)
+        .some((value) =>
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
 
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -193,7 +189,8 @@ export function Prospectos() {
         <div>
           <Link href="/ventas/prospectos/nuevo_prospecto">
             <Button>
-              <ProspectosIcon className="h-4 w-4" />Añadir prospecto
+              <ProspectosIcon className="h-4 w-4" />
+              Añadir prospecto
             </Button>
           </Link>
         </div>
@@ -222,11 +219,27 @@ export function Prospectos() {
                 <TableCell>{prospecto.correo || "Sin datos"}</TableCell>
                 <TableCell>{prospecto.marca || "Sin datos"}</TableCell>
                 <TableCell>{prospecto.redes_sociales || "Sin datos"}</TableCell>
-                <TableCell>{prospecto.constancia !== null ? "Constancia agregada" : "Sin constancia agregada"}</TableCell>
+                <TableCell>
+                  {prospecto.constancia !== null
+                    ? "Constancia agregada"
+                    : "Sin constancia agregada"}
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link href={`/ventas/prospectos/editar_prospecto?id=${prospecto.id}`}><Button variant="outline" size="sm">Editar</Button></Link>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(prospecto.id)}>Eliminar</Button>
+                    <Link
+                      href={`/ventas/prospectos/editar_prospecto/${prospecto.id}`}
+                    >
+                      <Button variant="outline" size="sm">
+                        Editar
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(prospecto.id)}
+                    >
+                      Eliminar
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -308,9 +321,9 @@ function ProspectosIcon(props) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <circle cx="12" cy="12" r="9" />
       <line x1="12" y1="3" x2="12" y2="5" />
