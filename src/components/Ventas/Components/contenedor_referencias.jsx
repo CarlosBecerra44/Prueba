@@ -112,7 +112,7 @@ export default function ContenedorReferencias(props) {
                         width={150}
                         height={150}
                         alt={referencia.nombre}
-                        className="w-full h-32 object-cover group-hover/image:scale-105 transition-transform duration-300"
+                        className="w-full h-32 group-hover/image:scale-105 transition-transform duration-300 object-contain"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover/image:bg-opacity-10 transition-all duration-300" />
                     </div>
