@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { Button } from "@mui/material";
+import { Button as ButtonRadix } from "@/components/ui/button";
 import { Undo2 } from "lucide-react";
 import { SquarePen } from "lucide-react";
 import { EditarProspecto } from "@/components/Ventas/Components/editar_prospecto";
@@ -14,6 +15,9 @@ import { LevantamientoReferencias } from "@/components/Ventas/Components/levanta
 import { LevantamientoFormulaciones } from "@/components/Ventas/Components/levantamiento_formulaciones";
 import { LevantamientoEtiquetado } from "@/components/Ventas/Components/levantamiento_etiquetado";
 import { LevantamientoDistribuidores } from "@/components/Ventas/Components/levantamiento_distribuidores";
+import { LevantamientoProducto } from "@/components/Ventas/Components/levantamiento_nombre_producto";
+import Link from "next/link";
+import { CornerDownLeft } from "lucide-react";
 
 export default function Page() {
   const { id } = useParams();
@@ -27,6 +31,7 @@ export default function Page() {
     producto: false,
     etiqueta: false,
     distribucion: false,
+    nombre: false,
   });
   const [isEditarActive, setIsEditarActive] = useState({
     prospecto: false,
@@ -36,6 +41,7 @@ export default function Page() {
     producto: false,
     etiqueta: false,
     distribucion: false,
+    nombre: false,
   });
   const [isLevantamientochange, setIsLevantamientochange] = useState(false);
 
@@ -73,10 +79,22 @@ export default function Page() {
     }));
   };
 
+  const goBack = () => {
+    window.history.back();
+  };
+
   return (
     <>
       <div className="mb-4 h-full">
         <div className="w-border border-gray-300 rounded-lg shadow-md p-6 bg-white">
+          <div className="flex justify-between items-center">
+            <Link href="/ventas/levantamiento_requerimientos">
+              <ButtonRadix>
+                <CornerDownLeft className="h-4 w-4" />
+                Regresar
+              </ButtonRadix>
+            </Link>
+          </div>
           <div className="flex justify-center items-center text-center mb-8">
             <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
           </div>
@@ -356,6 +374,39 @@ export default function Page() {
                     <LevantamientoDistribuidores
                       id={levantamiento.id}
                       emitUpdate={() => handleToggleVisbility("distribucion")}
+                    />
+                  </fieldset>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Nombre */}
+          <div className="py-1">
+            {!isVisible.nombre && (
+              <div
+                onClick={() => handleToggleVisbility("nombre")}
+                style={{}}
+                className="border border-gray-300 p-4 rounded-lg my-2"
+              >
+                <label>Nombre de Producto</label>
+              </div>
+            )}
+            {isVisible.nombre && (
+              <>
+                {levantamiento.id && (
+                  <fieldset className="relative border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+                    <legend className="px-3 py-1 text-lg font-bold text-gray-800 bg-white border border-gray-200 rounded-lg shadow-sm gap-2">
+                      <Button
+                        onClick={() => handleToggleVisbility("nombre")}
+                        style={{ color: "black" }}
+                      >
+                        Nombre de Producto
+                      </Button>
+                    </legend>
+                    <LevantamientoProducto
+                      id={levantamiento.id}
+                      emitUpdate={() => handleToggleVisbility("nombre")}
                     />
                   </fieldset>
                 )}
