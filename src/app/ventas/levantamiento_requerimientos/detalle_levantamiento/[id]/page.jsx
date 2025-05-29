@@ -63,7 +63,6 @@ export default function Page() {
   };
 
   const handleEditarActivity = (key) => {
-    console.log({ key });
     if (key === "identidad") {
       setIsLevantamientochange(!isLevantamientochange);
     }
