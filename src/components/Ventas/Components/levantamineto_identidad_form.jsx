@@ -1,6 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import styles from "../../../../public/CSS/spinner.css";
+import styles from '../../../../public/CSS/spinner.css';
 import { useSession } from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -208,4 +209,8 @@ export default function LevantamientoIdentidadForm(props) {
       </div>
     </div>
   );
+}
+
+function Spinner() {
+  return <div className="spinner" />;
 }
