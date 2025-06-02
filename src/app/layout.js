@@ -1,61 +1,52 @@
 "use client";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
-import { usePathname } from "next/navigation"; // Importa usePathname
+import { usePathname } from "next/navigation";
 const inter = Inter({ subsets: ["latin"] });
-import { Button } from "@mui/material";
+
 import { Navbarv1 as Inicio } from "@/components/navbar";
 import "./globals.css";
 
 import NotificationBell from "@/components/Reminder/Components/notificationBell";
-import { Label } from "recharts";
 import { Suspense, useEffect, useState } from "react";
 import { Menu } from "lucide-react";
-/*export const metadata = {
-  title: "AIONET",
-};*/
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname(); // Obtiene la ruta actual
+  const pathname = usePathname();
   const showNavbar = pathname !== "/login";
-  const showNavbar3 = pathname !== "/"; // Determina si debe mostrarse la Navbar
-  const showNavbar2 = pathname !== "/login/registro"; // Determina si debe mostrarse la Navbar
+  const showNavbar3 = pathname !== "/";
+  const showNavbar2 = pathname !== "/login/registro";
+
   const [isOpen, setIsOpen] = useState(true);
+  const [navPosition, setNavPosition] = useState("relative");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const screenWidth = window.innerWidth;
     setIsOpen(screenWidth >= 768);
+    setNavPosition(screenWidth >= 768 ? "relative" : "absolute");
     setMounted(true);
   }, []);
 
-  // if (!mounted) return null;
+  if (!mounted) return null;
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      {/* <head>
-      <title>AIONET</title>
-      <meta name="description" content="Bienvenido a AIONET, la plataforma ..." />
-      <link rel="icon" type="image/png" sizes="16x16" href="/logo1.png" />
-    </head> */}
       <body suppressHydrationWarning={true} className={inter.className}>
         <SessionProvider>
           <div style={{ display: "flex" }}>
-            {/* Navbar */}
             {showNavbar && showNavbar3 && showNavbar2 && (
               <div className="flex">
                 <div
                   style={{
-                    position: `${
-                      window.innerWidth >= 768 ? "relative" : "absolute"
-                    }`,
+                    position: navPosition,
                     top: "0",
                     left: "0",
                     height: "100vh",
                     backgroundColor: "#000000d6",
-                    zIndex: 1, // Para que se superponga al contenido en pantallas pequeñas
+                    zIndex: 1,
                   }}
-                  className={isOpen ? "md:block h-screen" : "hidden "}
+                  className={isOpen ? "md:block h-screen" : "hidden"}
                 >
                   <Suspense>
                     <Inicio />
@@ -64,7 +55,6 @@ export default function RootLayout({ children }) {
               </div>
             )}
 
-            {/* Contenido Principal */}
             <div
               style={{
                 padding: "1rem",
