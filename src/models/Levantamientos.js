@@ -2,6 +2,9 @@ import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize";
 import Prospecto from "@/models/Prospectos";
 import Usuario from "@/models/Usuarios";
+import NombreProducto from "@/models/NombreProducto";
+import Referencia from "@/models/Referencias";
+import Distribuidor from "@/models/Distribuidores";
 
 const Levantamiento = sequelize.define(
   "Levantamiento",
@@ -36,5 +39,8 @@ const Levantamiento = sequelize.define(
 
 Levantamiento.belongsTo(Prospecto, { foreignKey: "prospecto_id", as: "prospecto" });
 Levantamiento.belongsTo(Usuario, { foreignKey: "creado_por", as: "usuario" });
+Levantamiento.hasMany(NombreProducto, { foreignKey: "levantamiento_id", as: "productos" });
+Levantamiento.hasMany(Referencia, { foreignKey: "levantamiento_id", as: "referencias" });
+Levantamiento.hasOne(Distribuidor, { foreignKey: "levantamiento_id", as: "distribuidor" });
 
 export default Levantamiento;

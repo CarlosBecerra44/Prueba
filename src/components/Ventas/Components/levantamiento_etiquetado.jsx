@@ -178,22 +178,18 @@ export function LevantamientoEtiquetado(props) {
     if (!file) return;
 
     // Validar tipo archivo
-    if (
-      file.type !== "application/pdf" &&
-      file.type !== "image/svg+xml" &&
-      !file.name.endsWith(".svg")
-    ) {
-      Swal.fire({
-        title: "Error",
-        text: `El archivo "${file.name}" no tiene un formato permitido. Solo se permiten archivos PDF y SVG.`,
-        icon: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      if (archivoSVGRef.current) {
-        archivoSVGRef.current.value = null;
-      }
-      return;
+    if (file.type !== "image/svg+xml" && !file.name.endsWith(".svg")) {
+        Swal.fire({
+            title: "Error",
+            text: `El archivo "${file.name}" no tiene un formato permitido. Solo se permiten archivos SVG.`,
+            icon: "error",
+            timer: 3000,
+            showConfirmButton: false,
+        });
+        if (archivoSVGRef.current) {
+            archivoSVGRef.current.value = null;
+        }
+        return;
     }
 
     // Validar tamaño máximo (4MB)
@@ -400,89 +396,78 @@ export function LevantamientoEtiquetado(props) {
                       <SelectValue placeholder="Seleccione un valor" />
                     </SelectTrigger>
 
-                    <SelectContent>
-                      <SelectItem value="2">Sí</SelectItem>
-                      <SelectItem value="1">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              {levantamiento?.ecommerce?.toString() === "2" && (
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2 col-span-2">
-                    <div
-                      style={{
-                        position: "relative",
-                        display: "inline-flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Label htmlFor="codigoBarras">Código de barras</Label>
-                      <div style={{ marginLeft: "10px" }}>
-                        <Tooltip
-                          title="La venta por e-commerce exige un código de barras que el cliente puede tramitar
-                                                 con una licencia de GS1. Subir archivo en formato SVG o PDF."
-                          arrow
-                        >
-                          <HelpIcon
-                            style={{ cursor: "pointer", fontSize: 18 }}
-                          />
-                        </Tooltip>
-                      </div>
+                                    <SelectContent>
+                                        <SelectItem value="2">Sí</SelectItem>
+                                        <SelectItem value="1">No</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {levantamiento?.ecommerce?.toString() === "2" && (
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-2 col-span-2">
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Label htmlFor="codigoBarras">Código de barras</Label>
+                                        <div style={{ marginLeft: "10px" }}>
+                                            <Tooltip
+                                                title="La venta por e-commerce exige un código de barras que el cliente puede tramitar
+                                                 con una licencia de GS1. Subir archivo en formato SVG."
+                                                arrow
+                                            >
+                                                <HelpIcon
+                                                    style={{ cursor: "pointer", fontSize: 18 }}
+                                                />
+                                            </Tooltip>
+                                        </div>
+                                    </div>
+                                    <Input
+                                        id="archivoSVG"
+                                        name="archivoSVG"
+                                        type="file"
+                                        accept=".svg,image/svg+xml"
+                                        onChange={(e) => handleImagenSeleccionada(e)}
+                                        ref={archivoSVGRef}
+                                        className="mx-auto"
+                                    />
+                                    {imagenSeleccionadaPreview && (
+                                        <div>
+                                            <div className="flex justify-center mt-2">
+                                                {getIconByExtension(extension)}
+                                            </div>
+                                            <div className="flex justify-center mt-2">
+                                                <span className="text-sm font-medium truncate max-w-[30vh]">{nombreArchivo}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <Input
-                      id="archivoSVG"
-                      name="archivoSVG"
-                      type="file"
-                      accept=".svg,image/svg+xml,application/pdf"
-                      onChange={(e) => handleImagenSeleccionada(e)}
-                      ref={archivoSVGRef}
-                      className="mx-auto"
-                    />
-                    {imagenSeleccionadaPreview && (
-                      <div>
-                        <div className="flex justify-center mt-2">
-                          {getIconByExtension(extension)}
+                ) : levantamiento?.etiqueta?.toString() === "3" && levantamiento?.cofepris ? (
+                    <div>
+                        <div style={{backgroundColor: "rgb(31 41 55)"}} className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="space-y-2 col-span-2 text-center">
+                                <Label style={{fontSize: "20px", color: "white"}}>Guía de requerimientos de diseños consignados</Label>
+                            </div>
                         </div>
-                        <div className="flex justify-center mt-2">
-                          <span className="text-sm font-medium truncate max-w-[30vh]">
-                            {nombreArchivo}
-                          </span>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-2 col-span-2 text-center">
+                                <Button type="button"><FileDown className="h-4 w-4" />Descargar guía</Button>
+                            </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : levantamiento?.etiqueta?.toString() === "3" &&
-            levantamiento?.cofepris ? (
-            <div>
-              <div
-                style={{ backgroundColor: "rgb(31 41 55)" }}
-                className="grid grid-cols-2 gap-4 mb-6"
-              >
-                <div className="space-y-2 col-span-2 text-center">
-                  <Label style={{ fontSize: "20px", color: "white" }}>
-                    Guía de requerimientos de diseños consignados
-                  </Label>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2 col-span-2 text-center">
-                  <Button type="button">
-                    <FileDown className="h-4 w-4" />
-                    Descargar guía
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : null}
-          <Button type="submit" className="w-full mt-4">
-            Guardar etiquetado
-          </Button>
-        </form>
-      </div>
+                    </div>
+                ) : null}
+                <Button type="submit" className="w-full mt-4">
+                    Guardar etiquetado
+                </Button>
+            </form>
+        </div>
     </div>
   );
 }

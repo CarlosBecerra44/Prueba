@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize";
-import Levantamiento from "@/models/Levantamientos";
 
 const Referencia = sequelize.define(
   "Referencia",
@@ -21,7 +20,5 @@ const Referencia = sequelize.define(
     timestamps: false, // Si tu tabla no usa `createdAt` y `updatedAt`
   }
 );
-
-Referencia.belongsTo(Levantamiento, { foreignKey: "levantamiento_id", as: "levantamiento" });
 
 export default Referencia;

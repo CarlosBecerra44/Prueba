@@ -179,10 +179,7 @@ export function EditarLevantamiento() {
     return (
       levantamiento?.nombre_prospecto &&
       levantamiento?.correo_prospecto &&
-      levantamiento?.marca_prospecto && 
-      levantamiento?.publico_objetivo &&
-      levantamiento?.canales_distribucion &&
-      levantamiento?.monto_inversion
+      levantamiento?.marca_prospecto
     );
   };
 
