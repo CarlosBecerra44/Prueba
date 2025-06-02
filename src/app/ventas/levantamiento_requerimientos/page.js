@@ -1,3 +1,5 @@
+'use client'
+
 import { LevantamientoRequerimientos as L } from '@/components/Ventas/Components/crud_levantamiento';
 import { Suspense } from 'react'
 function Levantamientos() {

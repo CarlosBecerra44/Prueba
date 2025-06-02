@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize";
-import Levantamiento from "@/models/Levantamientos";
 
 const Distribuidor = sequelize.define(
   "Distribuidor",
@@ -21,7 +20,5 @@ const Distribuidor = sequelize.define(
     timestamps: false,
   }
 );
-
-Distribuidor.belongsTo(Levantamiento, { foreignKey: "levantamiento_id", as: "levantamiento" });
 
 export default Distribuidor;

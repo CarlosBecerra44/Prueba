@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import sequelize from "@/lib/sequelize";
-import Levantamiento from "@/models/Levantamientos";
 
 const NombreProducto = sequelize.define(
   "NombreProducto",
@@ -19,7 +18,5 @@ const NombreProducto = sequelize.define(
     timestamps: false, // Si tu tabla no usa `createdAt` y `updatedAt`
   }
 );
-
-NombreProducto.belongsTo(Levantamiento, { foreignKey: "levantamiento_id", as: "levantamiento" });
 
 export default NombreProducto;

@@ -25,51 +25,75 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { pdf } from "@react-pdf/renderer";
 
 export function LevantamientoRequerimientos() {
   const [levantamientos, setLevantamientos] = useState([]);
+  const [levantamiento, setLevantamiento] = useState(null);
   const [prospectos, setProspectos] = useState([]);
   const [usuariosFilter, setUsuariosFilter] = useState("todos");
   const [prospectosFilter, setProspectosFilter] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+    useEffect(() => {
+        const fetchLevantamientos = async () => {
+          try {
+            const response = await axios.get(
+              "/api/Sales/getLevantamientos"
+            );
+            if (response.data.success) {
+              setLevantamientos(response.data.levantamientos);
+            } else {
+              console.error(
+                "Error al obtener los levantamientos:",
+                response.data.message
+              );
+            }
+          } catch (error) {
+            console.error("Error al hacer fetch de los levantamientos:", error);
+          }
+        };
+    
+        fetchLevantamientos();
+      }, []);
 
-  useEffect(() => {
-    const fetchLevantamientos = async () => {
-      try {
-        const response = await axios.get("/api/Sales/getLevantamientos");
-        if (response.data.success) {
-          setLevantamientos(response.data.levantamientos);
-        } else {
-          console.error(
-            "Error al obtener los levantamientos:",
-            response.data.message
+      const fetchLevantamiento = async (id) => {
+        if (!id) return null;
+      
+        try {
+          const response = await axios.get(
+            `/api/Sales/getLevantamientoCompleto?id=${id}`
           );
+          if (response.data.success) {
+            setLevantamiento(response.data.levantamiento);
+            return response.data.levantamiento;
+          } else {
+            console.error("Error al obtener el levantamiento:", response.data.message);
+          }
+        } catch (error) {
+          console.error("Error al hacer fetch del levantamiento:", error);
         }
-      } catch (error) {
-        console.error("Error al hacer fetch de los levantamientos:", error);
-      }
-    };
-
-    fetchLevantamientos();
-  }, []);
-
-  const getLevantamientos = async () => {
-    try {
-      const response = await axios.get("/api/Sales/getLevantamientos");
-      if (response.data.success) {
-        setLevantamientos(response.data.levantamientos);
-      } else {
-        console.error(
-          "Error al obtener los levantamientos:",
-          response.data.message
-        );
-      }
-    } catch (error) {
-      console.error("Error al hacer fetch de los levantamientos:", error);
-    }
-  };
+      };
+    
+      const getLevantamientos = async () => {
+        try {
+          const response = await axios.get(
+            "/api/Sales/getLevantamientos"
+          );
+          if (response.data.success) {
+            setLevantamientos(response.data.levantamientos);
+          } else {
+            console.error(
+              "Error al obtener los levantamientos:",
+              response.data.message
+            );
+          }
+        } catch (error) {
+          console.error("Error al hacer fetch de los levantamientos:", error);
+        }
+      };
 
   useEffect(() => {
     const fetchProspectos = async () => {
@@ -147,6 +171,59 @@ export function LevantamientoRequerimientos() {
       );
     }
   };
+
+  const levantamientoAPDF = async (id) => {
+    Swal.fire({
+      title: 'Generando...',
+      text: 'Estamos procesando el archivo, por favor espere...',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const levantamientoExistente = await fetchLevantamiento(id);
+
+    if (!levantamientoExistente) return;
+
+    let codigoBase64 = "";
+    let qrBase64 = "";
+
+    if (levantamientoExistente?.codigo_barras) {
+      const res = await fetch(`/api/Sales/obtenerCodigoBarrasPDF?rutaImagen=${encodeURIComponent(levantamientoExistente.codigo_barras)}`);
+      const data = await res.json();
+      codigoBase64 = data?.base64 || "";
+    }
+
+    if (levantamientoExistente?.distribuidor?.qr) {
+      const res2 = await fetch(`/api/Sales/obtenerCodigoQRPDF?rutaImagen=${encodeURIComponent(levantamientoExistente.distribuidor.qr)}`);
+      const data2 = await res2.json();
+      qrBase64 = data2?.base64 || "";
+    }
+
+    handleAbrirPDF(levantamientoExistente, codigoBase64, qrBase64);
+  };
+
+  const handleAbrirPDF = async (levantamiento, codigoBarras, codigoQR) => {
+    try {
+      const { default: LevantamientoAPDF } = await import('./pdf_levantamiento');
+      const blob = await pdf(<LevantamientoAPDF levantamiento={levantamiento} codigoBarras={codigoBarras} codigoQR={codigoQR} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+  
+      Swal.close(); // solo cerrar cuando termine
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+      Swal.fire({
+        title: "Error...",
+        text: "Hubo un error al generar el PDF.",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  };  
 
   // Función para extraer los datos relevantes
   const extractData = (levantamiento) => {
@@ -395,51 +472,14 @@ export function LevantamientoRequerimientos() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link
-                      href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Editar
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/ventas/levantamiento_requerimientos/detalle_levantamiento/${levantamiento.id}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Detalle
-                      </Button>
-                    </Link>
-                    <Link
-                      // TODO: Cambiar la rura a la forma dinamica con la estructura de carpetas
-                      href={`/ventas/levantamiento_requerimientos/referencias?id=${levantamiento.id}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Referencias
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/ventas/levantamiento_requerimientos/etiquetado?id=${levantamiento.id}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Etiquetado
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/ventas/levantamiento_requerimientos/distribuidores?id=${levantamiento.id}`}
-                    >
-                      <Button variant="outline" size="sm">
-                        Distribuidores
-                      </Button>
-                    </Link>
-                    <Link href={`/ventas/levantamiento_requerimientos/nombre_producto?id=${levantamiento.id}`}><Button variant="outline" size="sm">Nombre del producto</Button></Link>
-
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(levantamiento.id)}
-                    >
-                      Eliminar
-                    </Button>
+                    <Link href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}><Button variant="outline" size="sm">Editar</Button></Link>
+                    {/*<Link href={`/ventas/levantamiento_requerimientos/referencias?id=${levantamiento.id}`}><Button variant="outline" size="sm">Referencias</Button></Link>
+                    <Link href={`/ventas/levantamiento_requerimientos/formulaciones?id=${levantamiento.id}`}><Button variant="outline" size="sm">Formulaciones</Button></Link>
+                    <Link href={`/ventas/levantamiento_requerimientos/etiquetado?id=${levantamiento.id}`}><Button variant="outline" size="sm">Etiquetado</Button></Link>
+                    <Link href={`/ventas/levantamiento_requerimientos/distribuidores?id=${levantamiento.id}`}><Button variant="outline" size="sm">Distribuidores</Button></Link>
+                    <Link href={`/ventas/levantamiento_requerimientos/nombre_producto?id=${levantamiento.id}`}><Button variant="outline" size="sm">Nombre del producto</Button></Link>*/}
+                    <Button variant="outline" size="sm" onClick={() => levantamientoAPDF(levantamiento.id)}>Generar PDF</Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(levantamiento.id)}>Eliminar</Button>
                   </div>
                 </TableCell>
               </TableRow>

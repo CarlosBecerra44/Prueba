@@ -248,10 +248,7 @@ export function NuevoLevantamiento() {
     return (
       prospecto?.nombre &&
       prospecto?.correo &&
-      prospecto?.marca && 
-      publico_objetivo &&
-      canales_distribucion &&
-      monto_inversion
+      prospecto?.marca
     );
   };
 

@@ -107,10 +107,9 @@ export function LevantamientoDistribuidores(props) {
 
     // Validar tipo archivo
     const tiposPermitidos = [
-      "application/pdf",
-      "image/svg+xml",
-      "image/png",
-      "image/jpeg",
+        "image/svg+xml",
+        "image/png",
+        "image/jpeg",
     ];
     const extensionesPermitidas = [".svg", ".png", ".jpg", ".jpeg"];
 
@@ -118,21 +117,18 @@ export function LevantamientoDistribuidores(props) {
       .toLowerCase()
       .substring(file.name.lastIndexOf("."));
 
-    if (
-      !tiposPermitidos.includes(file.type) &&
-      !extensionesPermitidas.includes(extension)
-    ) {
-      Swal.fire({
-        title: "Error",
-        text: `El archivo "${file.name}" no tiene un formato permitido. Solo se permiten archivos PDF, SVG, JPG y PNG.`,
-        icon: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      if (qr.current) {
-        qr.current.value = null;
-      }
-      return;
+    if (!tiposPermitidos.includes(file.type) && !extensionesPermitidas.includes(extension)) {
+        Swal.fire({
+            title: "Error",
+            text: `El archivo "${file.name}" no tiene un formato permitido. Solo se permiten archivos SVG, JPG y PNG.`,
+            icon: "error",
+            timer: 3000,
+            showConfirmButton: false,
+        });
+        if (qr.current) {
+            qr.current.value = null;
+        }
+        return;
     }
 
     // Validar tamaño máximo (4MB)
@@ -318,143 +314,86 @@ export function LevantamientoDistribuidores(props) {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-center mb-4">
-        <form
-          onSubmit={handleSubmit}
-          className="w-full border border-gray-300 rounded-lg shadow-md p-6 bg-white"
-        >
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2 col-span-2">
-              <Label htmlFor="nombrePersona">
-                Nombre de la persona/empresa
-              </Label>
-              <Input
-                id="nombrePersona"
-                name="nombrePersona"
-                value={distribuidor?.nombre || ""}
-                onChange={(e) =>
-                  setDistribuidor({ ...distribuidor, nombre: e.target.value })
-                }
-                placeholder="..."
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <Label htmlFor="direccion">Dirección</Label>
-              <Input
-                id="direccion"
-                name="direccion"
-                value={distribuidor?.direccion || ""}
-                onChange={(e) =>
-                  setDistribuidor({
-                    ...distribuidor,
-                    direccion: e.target.value,
-                  })
-                }
-                placeholder="..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="telefono">Número telefónico</Label>
-              <Input
-                id="telefono"
-                name="telefono"
-                type="number"
-                value={distribuidor?.telefono || ""}
-                onChange={(e) =>
-                  setDistribuidor({ ...distribuidor, telefono: e.target.value })
-                }
-                placeholder="3333333333"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <Label htmlFor="paginasEcommerce">Páginas de e-commerce</Label>
-              <Textarea
-                id="paginasEcommerce"
-                name="paginasEcommerce"
-                value={distribuidor?.ecommerce || ""}
-                onChange={(e) =>
-                  setDistribuidor({
-                    ...distribuidor,
-                    ecommerce: e.target.value,
-                  })
-                }
-                placeholder="..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="correos">Correos de contacto</Label>
-              <Textarea
-                id="correos"
-                name="correos"
-                value={distribuidor?.correo || ""}
-                onChange={(e) =>
-                  setDistribuidor({ ...distribuidor, correo: e.target.value })
-                }
-                placeholder="..."
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2 col-span-2">
-              <Label htmlFor="redesSociales">Redes sociales</Label>
-              <Textarea
-                id="redesSociales"
-                name="redesSociales"
-                value={distribuidor?.redes || ""}
-                onChange={(e) =>
-                  setDistribuidor({ ...distribuidor, redes: e.target.value })
-                }
-                placeholder="..."
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2 col-span-2">
-              <div
-                style={{
-                  position: "relative",
-                  display: "inline-flex",
-                  alignItems: "center",
-                }}
-              >
-                <Label htmlFor="qr">QR</Label>
-              </div>
-              <Input
-                id="qr"
-                name="qr"
-                type="file"
-                accept=".pdf,.svg,.jpg,.jpeg,.png"
-                onChange={(e) => handleImagenSeleccionada(e)}
-                ref={qr}
-                className="mx-auto"
-              />
-              {imagenSeleccionadaPreview && (
-                <div>
-                  <div className="flex justify-center mt-2">
-                    {getIconByExtension(extension)}
-                  </div>
-                  <div className="flex justify-center mt-2">
-                    <span className="text-sm font-medium truncate max-w-[30vh]">
-                      {nombreArchivo}
-                    </span>
-                  </div>
+        <div>
+            <Link href="/ventas/levantamiento_requerimientos"><Button><CornerDownLeft className="h-4 w-4" />Regresar</Button></Link>
+        </div>
+        <div className="flex justify-center items-center text-center mb-8">
+            <CardTitle className="text-3xl font-bold">Distribuidores</CardTitle>
+        </div>
+        <div className="flex justify-center mb-4">
+            <form  
+                onSubmit={handleSubmit}
+                className="w-[1400px] border border-gray-300 rounded-lg shadow-md p-6 bg-white"
+            >
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2 col-span-2">
+                    <Label htmlFor="nombrePersona">Nombre de la persona/empresa</Label>
+                    <Input id="nombrePersona" name="nombrePersona" value={distribuidor?.nombre || ''} onChange={(e) => setDistribuidor({...distribuidor, nombre: e.target.value})} placeholder="..." />
                 </div>
-              )}
-            </div>
-          </div>
-          <Button
-            type="submit"
-            className="w-full mt-4"
-            disabled={!formularioCompleto()}
-          >
-            Guardar distribuidores
-          </Button>
-        </form>
-      </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                    <Label htmlFor="direccion">Dirección</Label>
+                    <Input id="direccion" name="direccion" value={distribuidor?.direccion || ''} onChange={(e) => setDistribuidor({...distribuidor, direccion: e.target.value})} placeholder="..." />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="telefono">Número telefónico</Label>
+                    <Input id="telefono" name="telefono" type="number" value={distribuidor?.telefono || ''} onChange={(e) => setDistribuidor({...distribuidor, telefono: e.target.value})} placeholder="3333333333" />
+                </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                    <Label htmlFor="paginasEcommerce">Páginas de e-commerce</Label>
+                    <Textarea id="paginasEcommerce" name="paginasEcommerce" value={distribuidor?.ecommerce || ''} onChange={(e) => setDistribuidor({...distribuidor, ecommerce: e.target.value})} placeholder="..." />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="correos">Correos de contacto</Label>
+                    <Textarea id="correos" name="correos" value={distribuidor?.correo || ''} onChange={(e) => setDistribuidor({...distribuidor, correo: e.target.value})} placeholder="..." />
+                </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2 col-span-2">
+                    <Label htmlFor="redesSociales">Redes sociales</Label>
+                    <Textarea id="redesSociales" name="redesSociales" value={distribuidor?.redes || ''} onChange={(e) => setDistribuidor({...distribuidor, redes: e.target.value})} placeholder="..." />
+                </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2 col-span-2">
+                    <div
+                        style={{
+                            position: "relative",
+                            display: "inline-flex",
+                            alignItems: "center",
+                        }}
+                    >
+                    <Label htmlFor="qr">QR</Label>
+                    </div>
+                    <Input
+                        id="qr"
+                        name="qr"
+                        type="file"
+                        accept=".svg,.jpg,.jpeg,.png"
+                        onChange={(e) => handleImagenSeleccionada(e)}
+                        ref={qr}
+                        className="mx-auto"
+                    />
+                    {imagenSeleccionadaPreview && (
+                        <div>
+                            <div className="flex justify-center mt-2">
+                                {getIconByExtension(extension)}
+                            </div>
+                            <div className="flex justify-center mt-2">
+                                <span className="text-sm font-medium truncate max-w-[30vh]">{nombreArchivo}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                </div>
+                <Button type="submit" className="w-full mt-4" disabled={!formularioCompleto()}>
+                    Guardar distribuidores
+                </Button>
+            </form>
+        </div>
     </div>
   );
 }
