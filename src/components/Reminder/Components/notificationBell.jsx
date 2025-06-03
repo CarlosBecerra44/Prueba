@@ -17,13 +17,10 @@ export function NotificationBell() {
     const fetchUserData = async () => {
       const session = await getSession();
       if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            correo: session.user.email,
-            numero_empleado: session.user.numero_empleado,
-          }),
+        const response = await fetch('/api/Users/getUser', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
         });
         const userData = await response.json();
         if (userData.success) {
@@ -101,6 +98,9 @@ export function NotificationBell() {
       <button
         onClick={() => setIsModalOpen((prev) => !prev)}
         style={{
+          position: "fixed",
+          top: "15px",
+          right: "15px",
           background: "transparent",
           border: "none",
           cursor: "pointer",
@@ -113,7 +113,7 @@ export function NotificationBell() {
         {hasNotifications && (
           <div
             style={{
-              position: "relative",
+              position: "absolute",
               top: "-3px",
               right: "-3px",
               background: "red",
@@ -137,6 +137,8 @@ export function NotificationBell() {
         <div
           style={{
             position: "fixed",
+            top: "60px",
+            right: "60px",
             width: "320px",
             maxHeight: "450px",
             background: "white",

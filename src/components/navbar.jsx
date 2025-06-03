@@ -12,7 +12,7 @@ import { SpaceBetweenHorizontallyIcon } from "@radix-ui/react-icons";
 import "../../public/CSS/navbar.css";
 import { useUser } from "@/pages/api/hooks";
 import { ShoppingBag } from "lucide-react";
-import { Users, ClipboardList } from "lucide-react";
+import { Users, ClipboardList } from 'lucide-react';
 
 export function Navbarv1() {
   const [openSection, setOpenSection] = useState(null);
@@ -284,11 +284,11 @@ export function Navbarv1() {
       ],
     },
     //{ id: 12, name: "Auditorias", href: "#", icon: <AuditoriasIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
-    {
-      id: 13,
-      name: "Ventas",
-      href: "#",
-      icon: <VentasIcon className="h-6 w-6 text-gray-400" />,
+    { 
+      id: 13, 
+      name: "Ventas", 
+      href: "#", 
+      icon: <VentasIcon className="h-6 w-6 text-gray-400" />, 
       roles: ["master", "hasAccessVentas"],
       subMenu: [
         {
@@ -310,7 +310,7 @@ export function Navbarv1() {
           icon: <ClipboardList className="h-6 w-6 text-gray-400" />,
           roles: ["master", "hasAccessVentas"],
         },
-      ],
+      ]
     },
     //{ id: 14, name: "Contabilidad", href: "#", icon: <ContabilidadIcon className="h-6 w-6 text-gray-400" />, roles: ["master"] },
     //{ id: "cursos", name: "Cursos", href: "#", roles: ["master"]},
