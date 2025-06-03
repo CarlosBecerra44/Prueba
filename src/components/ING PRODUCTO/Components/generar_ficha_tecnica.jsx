@@ -73,7 +73,7 @@ export function FichaTecnica() {
                     const existente = producto.identificadoresProductos.find(
                       (p) => p.identificador_id === identificador.id
                     );
-              
+                                  
                     return {
                       identificador_id: identificador.id,
                       registroN: existente?.registroN ?? '',

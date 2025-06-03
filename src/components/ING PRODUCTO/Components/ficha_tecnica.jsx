@@ -167,8 +167,8 @@ const Encabezado = ({ producto, imagenAdicional }) => (
             <View style={{ ...styles.tableCell, flex: 1 }}>
               <Text style={{...styles.tableCellHeader, fontFamily: 'Helvetica-Bold'}}>Código</Text>
               <View style={styles.divider} />
-              {/*<Text>{imagenAdicional ? `IP-FT-${producto.producto.id}` : ""}</Text>*/}
-              <Text>IP-FT-001</Text>
+              <Text>{ `${producto.producto.codigoIso}`}</Text>
+              {/* <Text>IP-FT-001</Text> */}
             </View>
           </View>
 
@@ -220,7 +220,7 @@ const FichaTecnicaPDF = ({ producto, imagenAdicional, nombreCreado, nombreValida
         let metodo = "";
         let medicion = "";
         const unidad = i.medicion;
-        if (unidad === "MM.") metodo = "Método interno 1", medicion = "mm";
+        if (unidad === "MM.") metodo = producto.producto.tipo, medicion = "mm";
         else if (unidad === "G.") metodo = "Método interno 2", medicion = "g";
         else if (unidad === "ML.") metodo = "Método interno 3", medicion = "ml";
         else metodo = "Método interno 4", medicion = valorRaw, maximo = "No aplica", minimo = "No aplica";
