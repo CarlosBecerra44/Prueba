@@ -186,7 +186,7 @@ export function DocumentSigningForm() {
               'm.uribe@aionsuplementos.com', 'v.rivera@aionsuplementos.com', 'e.moya@aionsuplementos.com', 
               'f.macias@aionsuplementos.com', 'y.juarez@aionsuplementos.com', 'j.rodriguez@aionsuplementos.com'],
           subject: formulario.tipo === 'Maquilas' ? 'Nueva etiqueta de maquilas' : 'Nueva etiqueta interna',
-          message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas/tabla_general`,
+          message: `Se ha guardado un nuevo formulario de etiqueta de tipo ${formulario.tipo}. Favor de revisarlo aquí: https://aionnet.vercel.app/marketing/etiquetas`,
         }),
       });
   
@@ -224,7 +224,7 @@ export function DocumentSigningForm() {
           timer: 3000,
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/marketing/etiquetas/tabla_general";
+          window.location.href = "/marketing/etiquetas";
         });
       } else {
         Swal.fire('Error', 'Error al crear la etiqueta', 'error');

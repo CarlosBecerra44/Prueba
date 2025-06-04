@@ -325,7 +325,7 @@ export function EditarEtiqueta() {
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/marketing/etiquetas/tabla_general";
+          window.location.href = "/marketing/etiquetas";
         });
       } else {
         Swal.fire('Error', 'Error al actualizar la etiqueta', 'error');

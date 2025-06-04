@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios from "axios";
 
+function matchRoute(pattern, path) {
+  // Quita el query string
+  const cleanPath = path.split("?")[0].replace(/\/$/, "");
+  const cleanPattern = pattern.replace(/\/$/, "");
+
+  // Convierte :param en expresión regular
+  const regex = new RegExp("^" + cleanPattern.replace(/:[^/]+/g, "[^/]+") + "$");
+  return regex.test(cleanPath);
+}
+
 export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
@@ -40,7 +50,7 @@ export async function middleware(req) {
   const roles = {
     isMaster: rol === "Máster",
     isDadoDeBaja: rol === "Dado de baja",
-    isAdminMkt: rol === "Administrador" && idPermiso !== null && departamento === 2,
+    isAdminMkt: rol === "Administrador" && !!idPermiso && departamento === 2,
     isAdminGC: rol === "Administrador" && departamento === 5,
     isITMember: rol !== "Máster" && departamento === 1,
     isStandardMkt: rol !== "Máster" && tienePermiso("Marketing", "Firmas"),
@@ -50,7 +60,10 @@ export async function middleware(req) {
     hasAccessSolicitudes: rol !== "Máster" && tienePermiso("Papeletas", "Solicitudes"),
     hasAllAccessVacantes: rol === "Administrador" && departamento === 5 && tienePermiso("Gente y Cultura", "Vacantes"),
     hasAccessVacantes: rol !== "Máster" && tienePermiso("Gente y Cultura", "Vacantes sin sueldo"),
-    hasAccessCMDProductos: rol !== "Máster" && tienePermiso("Ing. Productos", "CMD Productos")
+    hasAccessCMDProductos: rol !== "Máster" && tienePermiso("Ing. Productos", "CMD Productos"),
+    hasAccessLevantamiento: rol !== "Máster" && tienePermiso("Ventas", "Levantamiento requerimientos"),
+    hasAccessFormulas: rol !== "Máster" && tienePermiso("Ventas", "Formulas"),
+    hasAccessCostos: rol !== "Máster" && tienePermiso("Ventas", "Costos")
   };
 
   // Rutas permitidas por rol
@@ -66,9 +79,11 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/marketing/estrategias",
-      "/marketing/etiquetas/tabla_general",
-      "/marketing/Editar",
+      "/marketing/estrategias/formulario",
+      "/marketing/estrategias/editar_formulario",
       "/marketing/etiquetas",
+      "/marketing/etiquetas/formulario",
+      "/marketing/etiquetas/Editar"
     ],
     isAdminGC: [
       "/inicio",
@@ -82,9 +97,9 @@ export async function middleware(req) {
       "/inicio",
       "/perfil",
       "/papeletas_usuario",
-      "/marketing/etiquetas/tabla_general",
-      "/marketing/Editar",
       "/marketing/etiquetas",
+      "/marketing/etiquetas/formulario",
+      "/marketing/etiquetas/Editar"
     ],
     isStandard: ["/inicio", "/perfil", "/papeletas_usuario"],
     hasAccessPapeletas: [
@@ -124,7 +139,23 @@ export async function middleware(req) {
       "/ingenieria_nuevo_producto/catalogo_productos",
       "/ingenieria_nuevo_producto",
       "/configuraciones/cmd/Productos",
+      "/configuraciones/cmd/Productos/generar_ficha_tecnica",
+      "/configuraciones/cmd/Productos/validar_producto",
+      "/configuraciones/cmd/Productos/validar_producto_formula",
       "/configuraciones/cmd/proveedores",
+      "/configuraciones/cmd/actores",
+    ],
+    hasAccessLevantamiento: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/ventas/prospectos",
+      "/ventas/prospectos/nuevo_prospecto",
+      "/ventas/prospectos/editar_prospecto/:id",
+      "/ventas/levantamiento_requerimientos",
+      "/ventas/levantamiento_requerimientos/nuevo_levantamiento",
+      "/ventas/levantamiento_requerimientos/editar_levantamiento",
+      "/ventas/levantamiento_requerimientos/detalle_levantamiento/:id"
     ],
   };
 
@@ -133,15 +164,15 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
-  // Obtener rutas permitidas para el usuario
   const allowedRoutes = Object.entries(roleRoutes)
     .filter(([key]) => roles[key])
-    .flatMap(([, routes]) => routes);
+    .flatMap(([, routes]) =>
+      Array.isArray(routes) ? routes.map((r) => r.replace(/\/$/, "")) : []
+    );
 
-  // Verificar si la ruta está permitida
   const isAuthorized =
     allowedRoutes.includes("*") ||
-    allowedRoutes.some((route) => currentPath.startsWith(route));
+    allowedRoutes.some((route) => matchRoute(route, currentPath));
 
   if (!isAuthorized) {
     return NextResponse.redirect(new URL("/paginas_error", req.url));
@@ -153,6 +184,7 @@ export async function middleware(req) {
 export const config = {
   matcher: [
     "/capacitacion/:path*",
+    "/configuraciones/:path*",
     "/contabilidad/:path*",
     "/cursos/:path*",
     "/explorador_archivos/:path*",
