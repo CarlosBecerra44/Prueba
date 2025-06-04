@@ -3,7 +3,6 @@ import { getSession } from 'next-auth/react';
 import { useState } from "react";
 import { useEffect } from "react"
 import axios from 'axios';
-import { id } from "date-fns/locale";
 
 export function useUser() {
   const [nombre, setNombre] = useState('');
@@ -79,7 +78,7 @@ export function useUser() {
     rol,
     isMaster: (rol === "Máster"),
     isDadoDeBaja: (rol === "Dado de baja"),
-    isAdminMkt: (rol === "Administrador" && idPermiso !== null && departamento === "Marketing"),
+    isAdminMkt: (rol === "Administrador" && !!idPermiso && departamento === "Marketing"),
     isAdminGC: (rol === "Administrador" && departamento === "Gente y Cultura"),
     isITMember: (rol !== "Máster" && departamento === "IT"),
     isStandardMkt: (rol !== "Máster" && (tienePermiso("Marketing", "Firmas"))),
@@ -89,6 +88,9 @@ export function useUser() {
     hasAccessSolicitudes: (rol !== "Máster" && (tienePermiso("Papeletas", "Solicitudes"))),
     hasAllAccessVacantes: (rol === "Administrador" && departamento === "Gente y Cultura" && (tienePermiso("Gente y Cultura", "Vacantes"))),
     hasAccessVacantes: (rol !== "Máster" && (tienePermiso("Gente y Cultura", "Vacantes sin sueldo"))),
-    hasAccessCMDProductos: (rol !== "Máster" && (tienePermiso("Ing. Productos", "CMD Productos")))
+    hasAccessCMDProductos: (rol !== "Máster" && (tienePermiso("Ing. Productos", "CMD Productos"))),
+    hasAccessLevantamiento: (rol !== "Máster" && (tienePermiso("Ventas", "Levantamiento requerimientos"))),
+    hasAccessFormulas: (rol !== "Máster" && (tienePermiso("Ventas", "Formulas"))),
+    hasAccessCostos: (rol !== "Máster" && (tienePermiso("Ventas", "Costos")))
   };
 }

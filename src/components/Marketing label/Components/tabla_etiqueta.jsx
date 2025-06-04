@@ -131,7 +131,7 @@ export function TablaEventosMejorada() {
             "La etiqueta ha sido eliminada correctamente",
             "success"
           );
-          window.location.href = "/marketing/etiquetas/tabla_general";
+          window.location.href = "/marketing/etiquetas";
         } else {
           Swal.fire("Error", "Error al eliminar la etiqueta", "error");
         }
@@ -277,7 +277,7 @@ export function TablaEventosMejorada() {
         <div></div>
       )}
 
-      <Link href={`../Editar?id=${index}`}>
+      <Link href={`/marketing/etiquetas/Editar?id=${index}`}>
         <Button style={{ width: "1px", height: "40px" }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -361,7 +361,7 @@ export function TablaEventosMejorada() {
     <div className="container mx-auto">
       {(session && session.user.email === "o.rivera@aionsuplementos.com") ||
       session.user.email === "a.garcilita@aionsuplementos.com" ? (
-        <a href="/marketing/etiquetas">
+        <a href="/marketing/etiquetas/formulario">
           <Button
             variant="contained"
             color="secondary"

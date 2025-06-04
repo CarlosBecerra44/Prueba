@@ -1,10 +1,10 @@
-import { DocumentSigningForm as Eti } from "@/components/Marketing label/Components/formulario_etiqueta";
+import { TablaEventosMejorada as Etiquetas } from "@/components/Marketing label/Components/tabla_etiqueta";
 function page() {
     
       return (
         <div>
           
-          <Eti />
+          <Etiquetas />
         </div>
       );
 }

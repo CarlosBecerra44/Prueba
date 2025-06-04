@@ -40,6 +40,7 @@ export function Navbarv1() {
     hasAccessVacantes,
     isDadoDeBaja,
     hasAccessCMDProductos,
+    hasAccessLevantamiento,
   } = useUser();
   // Función para abrir/cerrar secciones principales y submenús
   const toggleSection = (sectionId) => {
@@ -221,7 +222,7 @@ export function Navbarv1() {
         {
           id: 2,
           name: "Firmas",
-          href: "/marketing/etiquetas/tabla_general",
+          href: "/marketing/etiquetas",
           icon: <FirmasIcon className="h-6 w-6 text-gray-400" />,
           roles: ["master", "adminMkt", "standardMkt"],
         },
@@ -289,7 +290,7 @@ export function Navbarv1() {
       name: "Ventas", 
       href: "#", 
       icon: <VentasIcon className="h-6 w-6 text-gray-400" />, 
-      roles: ["master", "hasAccessVentas"],
+      roles: ["master", "hasAccessLevantamiento"],
       subMenu: [
         {
           id: 1,
@@ -301,14 +302,14 @@ export function Navbarv1() {
               className="h-6 w-6 text-gray-400"
             />
           ),
-          roles: ["master", "hasAccessVentas"],
+          roles: ["master", "hasAccessLevantamiento"],
         },
         {
           id: 2,
           name: "Levantamiento",
           href: "/ventas/levantamiento_requerimientos",
           icon: <ClipboardList className="h-6 w-6 text-gray-400" />,
-          roles: ["master", "hasAccessVentas"],
+          roles: ["master", "hasAccessLevantamiento"],
         },
       ]
     },
@@ -380,6 +381,8 @@ export function Navbarv1() {
     if (hasAccessVacantes && category.includes("hasAccessVacantes"))
       return true;
     if (hasAccessCMDProductos && category.includes("hasAccessCMDProductos"))
+      return true;
+    if (hasAccessLevantamiento && category.includes("hasAccessLevantamiento"))
       return true;
 
     return false;

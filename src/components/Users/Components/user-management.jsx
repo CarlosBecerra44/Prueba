@@ -91,6 +91,11 @@ const formSections = [
     name: 'Ing. Productos',
     changeOptions: ['CMD Productos']
   },
+  { 
+    id: 'Ventas', 
+    name: 'Ventas',
+    changeOptions: ['Levantamiento requerimientos', 'Formulas', 'Costos']
+  },
 ]
 
 const plataformas = {
@@ -1363,13 +1368,13 @@ export function UserManagementTable() {
                       <div className="grid gap-4 py-4">
                         <div className="flex items-center space-x-2">
                           <Checkbox id="Editar" onCheckedChange={() => handlePermissionChange("Editar")}  />
-                          <Label htmlFor="Editar">Editar</Label>
+                          <Label htmlFor="Editar">Asignar permisos</Label>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        {/*<div className="flex items-center space-x-2">
                           <Checkbox id="Visualizar"  onCheckedChange={() => handlePermissionChange("Visualizar")}  />
                           <Label htmlFor="Visualizar">Visualizar 
                           </Label>
-                        </div>
+                        </div>*/}
                         
                       </div>
                       <DialogFooter>
