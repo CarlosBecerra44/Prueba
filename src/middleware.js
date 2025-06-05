@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { useSession, signOut } from "next-auth/react";
-import axios from "axios";
 
 function matchRoute(pattern, path) {
   // Quita el query string
@@ -24,7 +22,6 @@ export async function middleware(req) {
   }
 
   if (expiresAt < Date.now()) {
-    signOut({ callbackUrl: "https://aionnet.vercel.app/" });
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -39,10 +36,12 @@ export async function middleware(req) {
   // Obtener permisos del usuario desde la API
   let permisos = {};
   try {
-    const response = await axios.get(
+    const res = await fetch(
       `https://aionnet.vercel.app/api/MarketingLabel/permiso?userId=${idUser}`
     );
-    permisos = response.data;
+    if (res.ok) {
+      permisos = await res.json();
+    }
   } catch (error) {
     console.error("Error al obtener permisos:", error);
   }
