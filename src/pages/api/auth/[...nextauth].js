@@ -66,10 +66,12 @@ export default NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 7 * 60 * 60,
+    maxAge: 7200,
+    updateAge: 0,
   },
   jwt: {
-    maxAge: 7 * 60 * 60,
+    maxAge: 7200,
+    updateAge: 0,
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -81,7 +83,7 @@ export default NextAuth({
         token.rol = user.rol;
         token.departamento = user.departamento;
         token.idPermiso = user.idPermiso;
-        token.exp = Math.floor(Date.now() / 1000) + 7 * 60 * 60;
+        token.exp = Math.floor(Date.now() / 1000) + 7200;
       }
       return token;
     },

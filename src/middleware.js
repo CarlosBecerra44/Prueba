@@ -15,13 +15,8 @@ function matchRoute(pattern, path) {
 
 export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  const expiresAt = token.exp * 1000; // Convertir a timestamp
 
   if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  if (expiresAt < Date.now()) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
