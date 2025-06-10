@@ -198,19 +198,23 @@ const handleAddTag = () => {
   
   return (
     (<div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Inventario de Equipo de Cómputo - TI</h1>
+      <h1 className="text-2xl font-bold mb-4">Inventario de equipo de cómputo - TI</h1>
      
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4">Agregar Nuevo Equipo</Button>
+          <Button className="mb-4">Agregar nuevo equipo</Button>
           
         </DialogTrigger>
         <div className="mb-4 flex flex-wrap gap-2">
+          <SearchIcon
+            style={{ marginTop: "10px", marginLeft: "15px" }}
+            className="absolute h-5 w-5 text-gray-400"
+          />
         <Input
           placeholder="Buscar equipos..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm" />
+          className="max-w-sm pl-12" />
         <select
           value={tipoFilter}
           onChange={(e) => setTipoFilter(e.target.value)}
@@ -245,7 +249,7 @@ const handleAddTag = () => {
         onClick={handleUpload}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
-        Subir Inventario
+        Subir inventario
       </button>
     </div>  
       </div>
@@ -439,7 +443,7 @@ const handleAddTag = () => {
       </Dialog>
       <Card>
         <CardHeader>
-          <CardTitle>Inventario Actual</CardTitle>
+          <CardTitle>Inventario actual</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -449,8 +453,8 @@ const handleAddTag = () => {
                 <TableHead>Tipo</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead>Modelo</TableHead>
-                <TableHead>Número de Serie</TableHead>
-                <TableHead>Caracteristicas</TableHead>
+                <TableHead>Número de serie</TableHead>
+                <TableHead>Características</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Observaciones</TableHead>
                 <TableHead>Ubicación</TableHead>
@@ -501,5 +505,25 @@ const handleAddTag = () => {
         </button>
       </div>
           </div>)
+  );
+}
+
+function SearchIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   );
 }

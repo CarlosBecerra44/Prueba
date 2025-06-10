@@ -123,7 +123,7 @@ export function Principal() {
     </div>
           </section>
         
-          <section>
+          <section hidden>
             <Card>
               <CardHeader>
                 <CardTitle>Cursos</CardTitle>
@@ -142,7 +142,7 @@ export function Principal() {
                       <p className="text-muted-foreground">
                        Mejora continua con cursos adecuados
                       </p>
-                      <Link href="https://productivity.center/" className="text-primary" prefetch={false}>
+                      <Link href="#" className="text-primary" prefetch={false}>
                         Ver más
                       </Link>
                     </div>
@@ -159,7 +159,7 @@ export function Principal() {
                       <p className="text-muted-foreground">
                         Conoce más de nuestros próximos eventos de mejora continua
                       </p>
-                      <Link href="" className="text-primary" prefetch={false}>
+                      <Link href="#" className="text-primary" prefetch={false}>
                         Ingresa
                       </Link>
                     </div>
@@ -185,72 +185,71 @@ export function Principal() {
               </CardContent>
             </Card>
           </section>
-          <section>
+          <section className="mt-2">
             <Card>
               <CardHeader>
-                <CardTitle>Otros departamentos</CardTitle>
+                <CardTitle>Nuestros departamentos</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  <div className="grid gap-2">
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                      <a href="/ingenieria_nuevo_producto"><h3 className="text-lg font-medium">Ingeniería de nuevo producto</h3></a>
-                        <ActivityIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                      Implementación de nuevo producto
-                      </p>
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium">Gente y Cultura</h3>
+                      <UsersIcon className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                      <a href="/marketing"><h3 className="text-lg font-medium">Marketing</h3></a>
-                        <MegaphoneIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                        La imagen de la empresa
-                      </p>
-                    </div>
+                    <p className="text-muted-foreground">
+                      Equipo de RRHH que brinda apoyo a cada uno de nuestros empleados.
+                    </p>
                   </div>
-                  <div className="grid gap-2">
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                      <a href="/ventas"><h3 className="text-lg font-medium">Ventas</h3></a>
-                        <BriefcaseIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                       Prospectar con clientes para venta
-                      </p>
+
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Ingeniería de nuevo producto</h3>
+                      <ActivityIcon className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                      <a href="/contabilidad"><h3 className="text-lg font-medium">Operaciones</h3></a>
-                        <DollarSignIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                        Llevamos las finanzas de cada razón social
-                      </p>
-                    </div>
+                    <p className="text-muted-foreground">
+                    Implementación de nuevo producto.
+                    </p>
                   </div>
-                  <div className="grid gap-2">
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <a href="/gente_y_cultura"><h3 className="text-lg font-medium">Gente y Cultura</h3></a>
-                        <UsersIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                        Equipo de RH que brinda apoyo a cada uno de nuestros empleados
-                      </p>
+                  
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Marketing</h3>
+                      <MegaphoneIcon className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                      <a href="/it"><h3 className="text-lg font-medium">IT</h3></a>
-                        <ServerIcon className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-muted-foreground">
-                        Departamento centrado para soporte a usuario y brindar asistencia
-                      </p>
+                    <p className="text-muted-foreground">
+                      La imagen de la empresa.
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 rounded-lg p-4" hidden>
+                    <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Operaciones</h3>
+                      <DollarSignIcon className="w-6 h-6 text-muted-foreground" />
                     </div>
+                    <p className="text-muted-foreground">
+                      Llevamos las finanzas de cada razón social.
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">TI</h3>
+                      <ServerIcon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground">
+                      Departamento centrado para soporte a usuario y brindar asistencia.
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Ventas</h3>
+                      <BriefcaseIcon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground">
+                      Prospectar con clientes para venta.
+                    </p>
                   </div>
                 </div>
               </CardContent>

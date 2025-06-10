@@ -205,7 +205,7 @@ export function EmpresasTabla() {
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        cancelButtonColor: "rgb(31 41 55)",
         confirmButtonText: "Eliminar",
         cancelButtonText: "Cancelar",
       });
@@ -625,9 +625,16 @@ export function EmpresasTabla() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent>
+          <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
+            width: "100%", // Ajusta el ancho
+            maxWidth: "1000px", // Límite del ancho
+            height: "70vh", // Ajusta la altura
+            maxHeight: "80vh", // Límite de la altura
+            padding: "20px", // Margen interno
+            marginLeft: "120px"
+          }}>
             <DialogHeader>
-              <DialogTitle>Nueva Empresa</DialogTitle>
+              <DialogTitle>Nueva empresa</DialogTitle>
               <DialogDescription>
                 Ingresa los detalles de la empresa.
               </DialogDescription>
@@ -638,7 +645,7 @@ export function EmpresasTabla() {
                   <>
                     <DialogHeader>
                       <DialogTitle>
-                        Datos de Identificación del Contribuyente
+                        Datos de identificación del contribuyente
                       </DialogTitle>
                     </DialogHeader>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -1567,100 +1574,6 @@ export function EmpresasTabla() {
           )}
         </TableBody>
       </Table>
-      <Dialog
-        open={isFormSectionsDialogOpen}
-        onOpenChange={setIsFormSectionsDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedPermission}</DialogTitle>
-            <DialogDescription>
-              Elige la sección del formulario para editar.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="flex flex-wrap gap-2 mb-4">
-              {selectedSections.map((sectionId) => {
-                const section = formSections.find((s) => s.id === sectionId);
-                return (
-                  <span
-                    key={sectionId}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground"
-                  >
-                    {section?.name}
-                    <button
-                      type="button"
-                      onClick={() => removeSection(sectionId)}
-                      className="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-primary-foreground hover:bg-primary-foreground hover:text-primary focus:outline-none focus:bg-primary-foreground focus:text-primary"
-                    >
-                      <span className="sr-only">
-                        quitar {section?.name} opción
-                      </span>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-            {formSections.map((section) => (
-              <div key={section.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={section.id}
-                  checked={selectedSections.includes(section.id)}
-                  onCheckedChange={() => handleSectionSelection(section.id)}
-                />
-                <Label htmlFor={section.id}>{section.name}</Label>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button onClick={openChangeOptionsDialog}>Siguiente</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={isChangeOptionsDialogOpen}
-        onOpenChange={setIsChangeOptionsDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Selecciona las opciones</DialogTitle>
-            <DialogDescription>
-              Estas opciones estarán disponibles para editar.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-6 py-4">
-            {selectedSections.map((sectionId) => {
-              const section = formSections.find((s) => s.id === sectionId);
-              return (
-                <div key={sectionId}>
-                  <h3 className="font-semibold mb-2">{section?.name}</h3>
-                  <div className="grid gap-2">
-                    {section?.changeOptions.map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${sectionId}-${option}`}
-                          checked={selectedChanges[sectionId]?.includes(option)}
-                          onCheckedChange={() =>
-                            handleChangeOptionSelection(sectionId, option)
-                          }
-                        />
-                        <Label htmlFor={`${sectionId}-${option}`}>
-                          {option}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <DialogFooter>
-            <Button onClick={saveSelections}>Guardar valores</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       {/* Paginación */}
       <div className="flex justify-center mt-4 mb-4">
         <button

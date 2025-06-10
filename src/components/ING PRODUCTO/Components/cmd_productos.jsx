@@ -302,7 +302,7 @@ export function CMDProductos() {
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        cancelButtonColor: "rgb(31 41 55)",
         confirmButtonText: "Eliminar",
         cancelButtonText: "Cancelar",
       });
@@ -1432,7 +1432,31 @@ export function CMDProductos() {
               <TableCell>{user.descripcion || "Sin datos"}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+                  {/* Botones de validacion */}
+                  {user.categoria.toString() === "6" && permiso?.tipo === 5 ? 
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
+                  user.categoria.toString() !== "6" && permiso?.tipo === 1 ?
+                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Evaluar</Button></Link>) : 
+                  (<div hidden></div>)}
+
+                  {/* Botones de ficha tecnica */}
+                  {user.categoria.toString() !== "6" && user.tolerancias === null && user.veredicto === 1 && permiso?.tipo === 1 ? 
+                  (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
+                  user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
+                  (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
+                  user.categoria.toString() === "6" && user.validado !== null && user.veredicto === 1 && permiso?.tipo === 5 ?
+                  (<Button variant="outline" size="sm" onClick={() => formulaAPDF(user.id)}>Descargar ficha técnica</Button>) : 
+                  (<div hidden></div>)}
+                  
+                  {/* Botones de catalogo */}
+                  {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
+                  (<Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button>) : 
+                  user.catalogoProductos === 0 && user.veredicto === 1 && permiso?.tipo === 1 ?
+                  (<Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>) :
+                  (<div hidden></div>)}
+
+                  {/* Boton de editar */}
+                  <Dialog open={openEdit} onOpenChange={setOpenEdit}>
                     <DialogTrigger asChild>
                       <Button onClick={() => handleEditProduct(user.id)} variant="outline" size="sm">Editar</Button>
                     </DialogTrigger>
@@ -1748,28 +1772,6 @@ export function CMDProductos() {
             </form>
           </DialogContent>
                   </Dialog>
-                  {/* Botones de validacion */}
-                  {user.categoria.toString() === "6" && permiso?.tipo === 5 ? 
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
-                  user.categoria.toString() !== "6" && permiso?.tipo === 1 ?
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Evaluar</Button></Link>) : 
-                  (<div hidden></div>)}
-
-                  {/* Botones de ficha tecnica */}
-                  {user.categoria.toString() !== "6" && user.tolerancias === null && user.veredicto === 1 && permiso?.tipo === 1 ? 
-                  (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
-                  user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
-                  (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
-                  user.categoria.toString() === "6" && user.validado !== null && user.veredicto === 1 && permiso?.tipo === 5 ?
-                  (<Button variant="outline" size="sm" onClick={() => formulaAPDF(user.id)}>Descargar ficha técnica</Button>) : 
-                  (<div hidden></div>)}
-                  
-                  {/* Botones de catalogo */}
-                  {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
-                  (<Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button>) : 
-                  user.catalogoProductos === 0 && user.veredicto === 1 && permiso?.tipo === 1 ?
-                  (<Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>) :
-                  (<div hidden></div>)}
 
                   {/* Boton de eliminar */}
                   {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
