@@ -133,7 +133,7 @@ export function Navbarv1() {
     },
     {
       id: 7,
-      name: "Gente & Cultura",
+      name: "Gente y Cultura",
       href: "#",
       icon: <GenteCulturaIcon className="h-6 w-6 text-gray-400" />,
       roles: [
@@ -148,7 +148,7 @@ export function Navbarv1() {
       subMenu: [
         {
           id: 1,
-          name: "Papeletas RH",
+          name: "Papeletas RRHH",
           href: "/gente_y_cultura/todas_papeletas",
           icon: <RHIcon className="h-6 w-6 text-gray-400" />,
           roles: ["master", "hasAccessPapeletas"],
@@ -202,7 +202,7 @@ export function Navbarv1() {
     },
     {
       id: 8,
-      name: "Mercadotecnia",
+      name: "Marketing",
       href: "#",
       icon: <MarketingIcon className="h-6 w-6 text-gray-400" />,
       roles: ["master", "adminMkt", "standardMkt"],
@@ -237,7 +237,7 @@ export function Navbarv1() {
     },*/
     {
       id: 10,
-      name: "IT",
+      name: "TI",
       href: "#",
       icon: <ITIcon className="h-6 w-6 text-gray-400" />,
       roles: ["master", "itMember"],

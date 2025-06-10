@@ -369,15 +369,15 @@ export function EditarEstrategia() {
   }
 
   return (
-    (<Card style={{maxWidth: "100rem", marginBottom: "2rem"}} className="w-full mx-auto">
+    (<Card style={{maxWidth: "100rem"}} className="w-full mx-auto">
       <CardHeader>
-        <CardTitle>Planificación de Evento</CardTitle>
-        <CardDescription>Complete los detalles del evento, costos, especificaciones, productos para venta, datos de proveedores y piezas digitales.</CardDescription>
+        <CardTitle>Editar planificación de evento</CardTitle>
+        <CardDescription>Actualice los detalles del evento, costos, especificaciones, productos para venta, datos de proveedores y piezas digitales.</CardDescription>
       </CardHeader>
+      <form onSubmit={handleSubmit} className="space-y-6">
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Detalles del Evento</h3>
+          <div className="space-y-4 mb-6">
+            <h3 className="text-lg font-semibold">Detalles del evento</h3>
             <div className="space-y-2">
               <Label htmlFor="evento">Evento</Label>
               <Input
@@ -385,6 +385,7 @@ export function EditarEstrategia() {
                 name="evento"
                 value={formData.evento}
                 onChange={handleChange}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -394,6 +395,7 @@ export function EditarEstrategia() {
                 name="marca"
                 value={formData.marca}
                 onChange={handleChange}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -403,6 +405,7 @@ export function EditarEstrategia() {
                 name="lugar"
                 value={formData.lugar}
                 onChange={handleChange}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -442,6 +445,7 @@ export function EditarEstrategia() {
                 name="estrategia"
                 value={formData.estrategia}
                 onChange={handleChange}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -451,11 +455,12 @@ export function EditarEstrategia() {
                 name="objetivo"
                 value={formData.objetivo}
                 onChange={handleChange}
+                placeholder="..."
                  />
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <h3 className="text-lg font-semibold">Costos</h3>
             <div className="grid grid-cols-3 gap-4 font-semibold">
               <div>Descripción</div>
@@ -472,11 +477,13 @@ export function EditarEstrategia() {
                     type="number"
                     value={costo.presupuestado}
                     onChange={(e) => handleCostoChange(key, 'presupuestado', e.target.value)}
+                    placeholder="$"
                      />
                   <Input
                     type="number"
                     value={costo.real}
                     onChange={(e) => handleCostoChange(key, 'real', e.target.value)}
+                    placeholder="$"
                      />
                 </div>)
               );
@@ -512,7 +519,7 @@ export function EditarEstrategia() {
                 </div>
               ))}
               <Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={addOtroCosto} className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
+                <PlusCircle className="h-4 w-4" />
                 Agregar otro gasto
               </Button>
             </div>
@@ -532,6 +539,7 @@ export function EditarEstrategia() {
                 type="number"
                 value={formData.resultadoVenta}
                 onChange={handleChange}
+                placeholder="$"
                  />
             </div>
 
@@ -555,7 +563,7 @@ export function EditarEstrategia() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <h3 className="text-lg font-semibold">Especificaciones</h3>
             <div className="space-y-2">
               <Label htmlFor="fechaListo">Fecha para tener todo listo para envío</Label>
@@ -572,6 +580,7 @@ export function EditarEstrategia() {
                 id="envioMaterial"
                 value={formData.especificaciones.envioMaterial}
                 onChange={(e) => handleEspecificacionesChange('envioMaterial', e.target.value)}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -580,6 +589,7 @@ export function EditarEstrategia() {
                 id="personalEvento"
                 value={formData.especificaciones.personalEvento}
                 onChange={(e) => handleEspecificacionesChange('personalEvento', e.target.value)}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -588,6 +598,7 @@ export function EditarEstrategia() {
                 id="materialMontaje"
                 value={formData.especificaciones.materialMontaje}
                 onChange={(e) => handleEspecificacionesChange('materialMontaje', e.target.value)}
+                placeholder="..."
                  />
             </div>
             <div className="space-y-2">
@@ -618,13 +629,13 @@ export function EditarEstrategia() {
                 style={{background:"rgb(31 41 55)", color:"white"}}
                 onClick={addDescripcionItem}
                 className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
+                <PlusCircle className="h-4 w-4" />
                 Agregar item
               </Button>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <h3 className="text-lg font-semibold">Producto para venta</h3>
             {formData.productosVenta.map((producto, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -652,12 +663,12 @@ export function EditarEstrategia() {
               style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addProductoVenta}
               className="mt-2">
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4" />
               Agregar producto
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <h3 className="text-lg font-semibold">Datos de proveedores y seguimiento al pago</h3>
             {formData.facturasProveedores.map((factura, index) => (
               <div key={index} className="grid grid-cols-3 gap-4 items-center">
@@ -674,7 +685,7 @@ export function EditarEstrategia() {
                   <Select
                     value={factura.estatus}
                     onValueChange={(value) => handleFacturaProveedorChange(index, 'estatus', value)}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Seleccionar estatus" />
                     </SelectTrigger>
                     <SelectContent>
@@ -698,17 +709,17 @@ export function EditarEstrategia() {
               style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addFacturaProveedor}
               className="mt-2">
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4" />
               Agregar factura de proveedor
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <h3 className="text-lg font-semibold">Piezas digitales</h3>
             {formData.piezasDigitales.map((pieza, index) => (
               <div key={index} className="grid grid-cols-4 gap-4 items-center">
                 <Input
-                  placeholder="Descripción de las piezas"
+                  placeholder="Descripción de la pieza"
                   value={pieza.descripcion}
                   onChange={(e) => handlePiezaDigitalChange(index, 'descripcion', e.target.value)} />
                 <Input
@@ -741,20 +752,20 @@ export function EditarEstrategia() {
               style={{background:"rgb(31 41 55)", color:"white"}}
               onClick={addPiezaDigital}
               className="mt-2">
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4" />
               Agregar pieza digital
             </Button>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Estatus</h3>
+            <h3 className="text-lg font-semibold">Estatus de la planificación</h3>
             <div className="space-y-2">
               <Select
                 id="dropdown"
                 value={formData.dropdownValue}
                 onValueChange={handleDropdownChange}
               >
-                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                <SelectTrigger id="dropdown" className="w-full">
                   <SelectValue placeholder="Seleccionar estatus" />
                 </SelectTrigger>
                 <SelectContent>
@@ -765,11 +776,11 @@ export function EditarEstrategia() {
               </Select>
             </div>
           </div>
-          <CardFooter>
-        <Button type="submit" className="w-full">Enviar Planificación</Button>
-      </CardFooter>
-        </form>
       </CardContent>
+      <CardFooter>
+        <Button type="submit" className="w-full">Actualizar planificación</Button>
+      </CardFooter>
+      </form>
     </Card>)
   );
 }

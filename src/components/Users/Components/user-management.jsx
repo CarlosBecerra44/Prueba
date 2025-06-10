@@ -235,9 +235,9 @@ export function UserManagementTable() {
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Eliminar",
-        cancelButtonText: "Cancelar",
+        cancelButtonColor: "rgb(31 41 55)",
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar',
       });
 
       // Si el usuario confirma la eliminación

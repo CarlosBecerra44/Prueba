@@ -69,7 +69,7 @@ export function Prospectos() {
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        cancelButtonColor: "rgb(31 41 55)",
         confirmButtonText: "Eliminar",
         cancelButtonText: "Cancelar",
       });

@@ -140,7 +140,7 @@ export function LevantamientoRequerimientos() {
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        cancelButtonColor: "rgb(31 41 55)",
         confirmButtonText: "Eliminar",
         cancelButtonText: "Cancelar",
       });
@@ -472,7 +472,6 @@ export function LevantamientoRequerimientos() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}><Button variant="outline" size="sm">Editar</Button></Link>
                     <Link href={`/ventas/levantamiento_requerimientos/detalle_levantamiento/${levantamiento.id}`}><Button variant="outline" size="sm">Detalle</Button></Link>
                     {/*<Link href={`/ventas/levantamiento_requerimientos/referencias?id=${levantamiento.id}`}><Button variant="outline" size="sm">Referencias</Button></Link>
                     <Link href={`/ventas/levantamiento_requerimientos/formulaciones?id=${levantamiento.id}`}><Button variant="outline" size="sm">Formulaciones</Button></Link>
@@ -480,6 +479,7 @@ export function LevantamientoRequerimientos() {
                     <Link href={`/ventas/levantamiento_requerimientos/distribuidores?id=${levantamiento.id}`}><Button variant="outline" size="sm">Distribuidores</Button></Link>
                     <Link href={`/ventas/levantamiento_requerimientos/nombre_producto?id=${levantamiento.id}`}><Button variant="outline" size="sm">Nombre del producto</Button></Link>*/}
                     <Button variant="outline" size="sm" onClick={() => levantamientoAPDF(levantamiento.id)}>Generar PDF</Button>
+                    <Link href={`/ventas/levantamiento_requerimientos/editar_levantamiento?id=${levantamiento.id}`}><Button variant="outline" size="sm">Editar</Button></Link>
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(levantamiento.id)}>Eliminar</Button>
                   </div>
                 </TableCell>

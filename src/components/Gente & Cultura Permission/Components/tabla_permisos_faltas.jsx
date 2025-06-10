@@ -866,8 +866,6 @@ export function TablaPermisosFalta() {
         }}
       >
         <Button
-          variant="contained"
-          color="secondary"
           style={{
             background: "rgb(31 41 55)",
             padding: "10px 15px",
@@ -875,6 +873,9 @@ export function TablaPermisosFalta() {
             display: "flex",
             alignItems: "center",
             gap: "12px",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
           }}
           onClick={exportToExcel}
         >

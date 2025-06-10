@@ -11,6 +11,9 @@ import { useSession} from "next-auth/react";
 import styles from '../../../../public/CSS/spinner.css';
 import { getSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
+import Link from "next/link";
+import { CornerDownLeft } from 'lucide-react';
+import { CardTitle } from "@/components/ui/card";
 
 export function Perfil() {
   const [nombre, setNombre] = useState('');
@@ -99,10 +102,16 @@ export function Perfil() {
 
 
   return (
-    (<div style={{ paddingTop: "10rem", paddingBottom: "10rem" }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    (<div className="container mx-auto p-6">
+      <div>
+            <Link href="/inicio"><Button><CornerDownLeft className="h-4 w-4" />Regresar</Button></Link>
+        </div>
+        <div className="flex justify-center items-center text-center mb-12">
+                    <CardTitle className="text-3xl font-bold">Perfil</CardTitle>
+                </div>
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <form onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-background rounded-lg shadow-md p-6">
+        <div className="bg-background rounded-lg shadow-md p-6 space-y-6">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
               <AvatarImage src="/placeholder-user.jpg" />
@@ -113,22 +122,6 @@ export function Perfil() {
               <p className="text-muted-foreground">{correo}</p>
             </div>
           </div>
-          <Separator className="my-6" />
-          <div className="grid gap-4">
-            <div>
-              <Label htmlFor="bio">Biografia</Label>
-              <Textarea
-                id="bio"
-                className="w-full mt-1"
-                rows={3}
-                defaultValue="......" />
-            </div>
-            <div className="flex justify-end">
-              <Button size="sm">Actualizar perfil</Button>
-            </div>
-          </div>
-        </div>
-        <div className="bg-background rounded-lg shadow-md p-6 space-y-6">
           <div>
             <Label htmlFor="email">Correo</Label>
             <Input
@@ -162,11 +155,11 @@ export function Perfil() {
             <Input
               id="password"
               type="password"
+              placeholder="Cambia tu contraseña"
               className="w-full mt-1"
               defaultValue="********"
               value={password}
               onChange={(e) => setPassword(e.target.value)} />
-            <p className="text-sm text-muted-foreground">Cambia tu contraseña.</p>
           </div>
           <div hidden>
             <Label htmlFor="notification">Configurar notificaciones</Label>
@@ -185,9 +178,8 @@ export function Perfil() {
             <Button type="submit" size="sm">Guardar cambios</Button>
           </div>
         </div>
-      </div>
       </form>
-      
+    </div>
     </div>
     )
   );
