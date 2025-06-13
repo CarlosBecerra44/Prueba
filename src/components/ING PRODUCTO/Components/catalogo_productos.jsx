@@ -13,6 +13,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CatalogoSelector from "./catalogo_selector";
 import DetalleOrden from "./detalle_orden";
 import TablaPrototipos from "./tabla_prototipos";
+import { CardTitle } from "@/components/ui/card";
 
 export function CatalogoProductos() {
   const [steps, setSteps] = useState([]);
@@ -71,6 +72,9 @@ export function CatalogoProductos() {
 
   return (
     <>
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">CMD</CardTitle>
+      </div>
       <div>
         <Button
           onClick={() => {

@@ -202,7 +202,7 @@ export default function TablaPrototipos() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
-      cancelButtonColor: "#292929",
+      cancelButtonColor: "rgb(31 41 55)",
       confirmButtonText: "Eliminar",
       cancelButtonText: "Cancelar",
     });

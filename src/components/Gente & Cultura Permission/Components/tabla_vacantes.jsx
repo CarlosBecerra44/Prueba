@@ -15,33 +15,16 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@mui/material"
 import axios from "axios"
-import Link from "next/link"
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 import * as XLSX from "xlsx";
 import styles from '../../../../public/CSS/spinner.css';
-import { useSession,  signOut } from "next-auth/react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { useSession } from "next-auth/react";
+import { CardTitle } from "@/components/ui/card"
 import { Button as Button2 } from "@/components/ui/button"
-import { es } from 'date-fns/locale'
-import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getSession } from 'next-auth/react';
-import { Checkbox } from "@/components/ui/checkbox"
-import { CalendarIcon, Upload } from 'lucide-react'
-import { format } from 'date-fns'
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronRight, Search, UserPlus, X } from "lucide-react"
+import { UserPlus } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { PlusIcon } from "lucide-react"; // Icono para agregar
-
-const MySwal = withReactContent(Swal);
 
 export function TablaVacantes() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -313,8 +296,8 @@ export function TablaVacantes() {
         text: 'No podrás revertir esta acción',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "rgb(31 41 55)",
         confirmButtonText: 'Eliminar',
         cancelButtonText: 'Cancelar',
       });
@@ -502,17 +485,24 @@ export function TablaVacantes() {
 
   return (
     <div className="container mx-auto">
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">Vacantes</CardTitle>
+      </div>
       <div className="flex justify-between mb-4">
-        
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="contained"
-              color="secondary"
-              style={{
-                background: "rgb(31 41 55)",
-                padding: "10px 15px",
-                whiteSpace: "nowrap",
-              }}><UserPlus className="mr-2 h-4 w-4" /> Añadir vacante</Button>
+            <Button
+              style={{ 
+              background: "rgb(31 41 55)", 
+              padding: "10px 15px", 
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+            }}><UserPlus className="h-4 w-4" /> Añadir vacante</Button>
           </DialogTrigger>
           
           <DialogContent>

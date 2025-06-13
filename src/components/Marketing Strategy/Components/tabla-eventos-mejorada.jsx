@@ -17,15 +17,13 @@ import { Button } from "@mui/material"
 import axios from "axios"
 import Link from "next/link"
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 import * as XLSX from "xlsx";
 import styles from '../../../../public/CSS/spinner.css';
 import { useSession,  signOut } from "next-auth/react";
-import PDFDocument from './pdf'; // Importa el componente que creamos
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import PDFDocument from './pdf';
 import { pdf } from '@react-pdf/renderer';
-
-const MySwal = withReactContent(Swal);
+import { CardTitle } from "@/components/ui/card";
+import { FiTarget } from "react-icons/fi";
 
 export function TablaEventosMejorada() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -125,8 +123,8 @@ export function TablaEventosMejorada() {
           text: 'No podrás revertir esta acción',
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "rgb(31 41 55)",
           confirmButtonText: 'Eliminar',
           cancelButtonText: 'Cancelar',
         });
@@ -160,19 +158,6 @@ export function TablaEventosMejorada() {
       roi: roiValue.toFixed(2)+"%",
       accion: (index) => (
         <div style={{ display: 'flex', gap: '1px' }}>
-          <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px"}}>
-            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Button>
-          <Link href={`/marketing/estrategias/editar_formulario?id=${index}`}>
-            <Button style={{ width: "1px", height: "40px"}} >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="rgb(31 41 55)" fill="rgb(31 41 55)" width="20px" height="20px">
-                <path d="M21,11.5V15H18a3,3,0,0,0-3,3v3H4.5A1.5,1.5,0,0,1,3,19.5V4.5A1.5,1.5,0,0,1,4.5,3h9A1.5,1.5,0,0,0,15,1.5h0A1.5,1.5,0,0,0,13.5,0h-9A4.5,4.5,0,0,0,0,4.5v15A4.5,4.5,0,0,0,4.5,24H16.484a4.5,4.5,0,0,0,3.181-1.317l3.017-3.017A4.5,4.5,0,0,0,24,16.485V11.5A1.5,1.5,0,0,0,22.5,10h0A1.5,1.5,0,0,0,21,11.5Z" />
-                <path d="M17.793,1.793l-12.5,12.5A1,1,0,0,0,5,15v3a1,1,0,0,0,1,1H9a1,1,0,0,0,.707-.293L22.038,6.376a3.379,3.379,0,0,0,.952-3.17A3.118,3.118,0,0,0,17.793,1.793Z" />
-              </svg>
-            </Button>
-          </Link>
           <Button
             style={{ width: "1px", height: "40px" }}
             onClick={() => handleDownload(evento)}
@@ -194,6 +179,19 @@ export function TablaEventosMejorada() {
               <line x1="16" y1="13" x2="8" y2="13"></line>
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </Button>
+          <Link href={`/marketing/estrategias/editar_formulario?id=${index}`}>
+            <Button style={{ width: "1px", height: "40px"}} >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="rgb(31 41 55)" fill="rgb(31 41 55)" width="20px" height="20px">
+                <path d="M21,11.5V15H18a3,3,0,0,0-3,3v3H4.5A1.5,1.5,0,0,1,3,19.5V4.5A1.5,1.5,0,0,1,4.5,3h9A1.5,1.5,0,0,0,15,1.5h0A1.5,1.5,0,0,0,13.5,0h-9A4.5,4.5,0,0,0,0,4.5v15A4.5,4.5,0,0,0,4.5,24H16.484a4.5,4.5,0,0,0,3.181-1.317l3.017-3.017A4.5,4.5,0,0,0,24,16.485V11.5A1.5,1.5,0,0,0,22.5,10h0A1.5,1.5,0,0,0,21,11.5Z" />
+                <path d="M17.793,1.793l-12.5,12.5A1,1,0,0,0,5,15v3a1,1,0,0,0,1,1H9a1,1,0,0,0,.707-.293L22.038,6.376a3.379,3.379,0,0,0,.952-3.17A3.118,3.118,0,0,0,17.793,1.793Z" />
+              </svg>
+            </Button>
+          </Link>
+          <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px"}}>
+            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Button>
         </div>
@@ -314,15 +312,43 @@ export function TablaEventosMejorada() {
 
   return (
     <div className="container mx-auto">
+      <div className="flex justify-center items-center text-center mb-4">
+        <CardTitle className="text-3xl font-bold">Estrategias</CardTitle>
+      </div>
       <div style={{ display:"flex" }}>
-        <a href="/marketing/estrategias/formulario"><Button variant="contained" color="secondary" style={{ background: "rgb(31 41 55)", padding: "5px" }}>+</Button></a>
+        <a href="/marketing/estrategias/formulario">
+          <Button 
+            style={{ 
+              background: "rgb(31 41 55)", 
+              padding: "10px 15px", 
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+            }}>
+            <FiTarget className="h-4 w-4" /> Agregar estrategia
+          </Button>
+        </a>
         <Button
-          variant="contained"
-          color="primary"
-          style={{ background: "rgb(31 41 55)", marginLeft:"3rem", marginBottom: "10px" }}
+          style={{ 
+            background: "rgb(31 41 55)", 
+            marginLeft:"3rem", 
+            marginBottom: "10px", 
+            padding: "10px 15px",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+          }}
           onClick={exportToExcel}
         >
-          Exportar a Excel
+          <ExportIcon className="h-4 w-4" /> Exportar a Excel
         </Button>
       </div>
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -501,5 +527,25 @@ function SearchIcon(props) {
 function Spinner() {
   return (
     <div className="spinner" />
+  );
+}
+
+function ExportIcon(props) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      width="20"
+      height="20"
+    >
+      <path d="M3 12v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <polyline points="8 6 12 2 16 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
   );
 }

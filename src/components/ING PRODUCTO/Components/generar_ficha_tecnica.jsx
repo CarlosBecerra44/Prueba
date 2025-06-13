@@ -335,7 +335,7 @@ export function FichaTecnica() {
             <Link href="/configuraciones/cmd/Productos"><Button><CornerDownLeft className="h-4 w-4" />Regresar</Button></Link>
         </div>
         <div className="flex justify-center items-center text-center mb-8">
-            <CardTitle className="text-3xl font-bold">Generar Ficha Técnica</CardTitle>
+            <CardTitle className="text-3xl font-bold">Generar ficha técnica</CardTitle>
         </div>
         <div className="flex justify-center mb-4">
             <form 

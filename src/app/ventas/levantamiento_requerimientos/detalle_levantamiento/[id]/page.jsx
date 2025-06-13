@@ -96,7 +96,7 @@ export default function Page() {
             </Link>
           </div>
           <div className="flex justify-center items-center text-center mb-8">
-            <h1 className="text-3xl font-bold">Detalles del Levantamiento</h1>
+            <h1 className="text-3xl font-bold">Detalles del levantamiento</h1>
           </div>
 
           {/* Prospecto */}

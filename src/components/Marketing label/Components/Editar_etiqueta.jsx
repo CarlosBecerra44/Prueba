@@ -14,12 +14,6 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
-const mails = [
-  'carlosgabrielbecerragallardo@gmail.com',
-  'carlosgabrielbecerragallardo1@gmail.com',
-  'carlosgabrielbecerragallardo2@gmail.com',
-  'carlosgabrielbecerragallardo3@gmail.com',
-];
 export function EditarEtiqueta() {
   const {data: session,status}=useSession ();
   const searchParams = useSearchParams();
@@ -32,6 +26,7 @@ export function EditarEtiqueta() {
   const [loading, setLoading] = useState(true);
   const [contadorFirmas, setContadorFirmas] = useState(0);
   const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [idUser, setID] = useState('');
   const [correoUser, setCorreo] = useState('');
   const [departamento, setDepartamento] = useState('');
@@ -50,6 +45,7 @@ export function EditarEtiqueta() {
         const userData = await response.json();
         if (userData.success) {
           setNombre(userData.user.nombre);
+          setApellidos(userData.user.apellidos);
           setID(userData.user.id);
           setCorreo(userData.user.correo);
           setDepartamento(userData.user.departamento_id);
@@ -72,27 +68,6 @@ export function EditarEtiqueta() {
     'Gerente o coordinador de auditorías',
     'Químico o formulador',
     'Planeación',
-  ];
-
-  const verifiersMaquilas = [
-    'Directora de marketing',
-    'Gerente de maquilas y desarrollo de nuevo productos',
-    'Investigación y desarrollo de nuevos productos',
-    'Ingeniería de productos',
-    'Gerente de marketing',
-    'Diseñador gráfico',
-    'Gerente o supervisor de calidad',
-    'Gerente o coordinador de auditorías',
-    'Químico o formulador',
-    'Planeación',
-    'Maquilas',
-  ];
-  
-  const modifications = [
-    'Información', 'Dimensiones', 'Sustrato', 'Tamaño de letra',
-    'Impresión interior/exterior', 'Ortografía', 'Logotipo', 'Acabado',
-    'Tipografía', 'Colores', 'Código QR', 'Código de barras', 'Rollo',
-    'Cambio estético', 'Cambio crítico', 'Auditable', 'Fórmula',
   ];
 
   const modificacionesDiseñador = [
@@ -126,8 +101,6 @@ export function EditarEtiqueta() {
   const modificacionesGerenteMkt = [
     'Teléfono', 'Mail/email',
   ];
-
-  
 
   useEffect(() => {
     async function fetchData() {
@@ -175,6 +148,7 @@ export function EditarEtiqueta() {
   }, [id]); 
 
   useEffect(() => {
+    if (!idUser) return // Asegurar que haya un ID antes de la petición
     const fetchPermissions = async () => {
       try {
         const response = await axios.get(`/api/MarketingLabel/permiso?userId=${idUser}`) // Asegúrate de que esta ruta esté configurada en tu backend
@@ -285,14 +259,6 @@ export function EditarEtiqueta() {
     });
   };
 
-  const handleDropdownChange = (value) => {
-    setFormulario(prevState => ({
-      ...prevState,
-      tipo: value,
-      firmas: 0
-    }));
-  };
-
   const handleDropdownChange2 = (value) => {
     setFormulario(prevState => ({
       ...prevState,
@@ -343,7 +309,10 @@ export function EditarEtiqueta() {
         body: JSON.stringify({
           formData2: {
             tipo: 'Alerta de edición de etiqueta',
-            descripcion: `<strong>${nombre}</strong> ha editado la etiqueta con el siguiente id: <strong>${id}</strong>`,
+            descripcion: `<strong>${
+              nombre + " " + apellidos
+            }</strong> ha editado la etiqueta con el siguiente id: <strong>${id}</strong>.<br>
+              Puedes revisarla haciendo clic en este enlace: <a href="/marketing/etiquetas/Editar?id=${id}" style="color: blue; text-decoration: underline;">Revisar etiqueta</a>`,
             id: idUser,
             dpto: departamento
           },
@@ -444,7 +413,7 @@ export function EditarEtiqueta() {
             body: JSON.stringify({
               recipientEmail: nextRecipient,
               subject: 'Etiqueta editada',
-              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
+              message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/etiquetas/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
             }),
           });
   
@@ -464,9 +433,9 @@ export function EditarEtiqueta() {
  
   return (
     <div className="container mx-auto py-8 space-y-12">
-   <h1 className="text-3xl font-bold text-center mb-8">Editar Etiqueta</h1>
+   <h1 className="text-3xl font-bold text-center mb-8">Editar etiqueta</h1>
       <form onSubmit={handleSubmit}>
-      <Card>
+      <Card className="mb-6">
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1">
               <div>
@@ -474,7 +443,7 @@ export function EditarEtiqueta() {
                 
                 <div className='mt-2'>
                 {formulario.pdf ? (
-          <iframe src={`/api/MarketingLabel/obtenerPdf?pdf=${encodeURIComponent(formulario.pdf)}`} width="1485" height="600" title="PDF" />
+          <iframe src={`/api/MarketingLabel/obtenerPdf?pdf=${encodeURIComponent(formulario?.pdf)}`} width="100%" height="700px" title="PDF" />
         ) : (
           <p>No se ha cargado ningún PDF</p>
         )}
@@ -485,28 +454,28 @@ export function EditarEtiqueta() {
           
         </Card>
 
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
           <CardTitle>Tipo</CardTitle> 
           <CardContent>
-            <br />    <Label>{formulario.tipo}</Label>
+            <br />    <u><Label style={{ fontSize: '18px' }}>{formulario?.tipo}</Label></u>
             </CardContent>     
           </CardHeader>
         </Card>
 
-{session && session.user.email==="o.rivera@aionsuplementos.com"||session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
-        <Card>
+{session && session.user.email==="o.rivera@aionsuplementos.com" || session.user.email==="p.gomez@aionsuplementos.com" || session.user.email === "a.garcilita@aionsuplementos.com" ?(
+        <Card className="mb-6">
       <CardHeader>
         <CardTitle>Estatus</CardTitle>
       </CardHeader>
       <CardContent>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Select
                 id="dropdown"
-                value={formulario.estatus}
+                value={formulario?.estatus}
                 onValueChange={handleDropdownChange2}
               >
-                <SelectTrigger id="dropdown" style={{ maxWidth: "15rem" }}>
+                <SelectTrigger id="dropdown">
                   <SelectValue placeholder="Seleccionar estatus de la etiqueta" />
                 </SelectTrigger>
                 <SelectContent>
@@ -519,20 +488,19 @@ export function EditarEtiqueta() {
         </div>
       </CardContent>
     </Card>
-       ):(<div><Card>
+       ):(<div className="mb-6"><Card>
         <CardHeader>
           <CardTitle>
           Estatus
           </CardTitle>
           <CardContent>
-        <br />    <Label>{formulario.estatus}</Label>
+        <br />    <u><Label style={{ fontSize: '18px' }}>{formulario?.estatus}</Label></u>
         </CardContent> 
         </CardHeader>
       </Card></div>)}
      
         {/* Detalles del Producto */}
-        
-        <Card>
+        <Card className="mb-6">
         <CardHeader>
           <CardTitle>Diseñador gráfico</CardTitle>
           <CardDescription>Orlando Rivera o Alejandro Garcilita</CardDescription>
@@ -550,26 +518,27 @@ export function EditarEtiqueta() {
             { id: "dimensiones", label: "Dimensiones" },
             { id: "escala", label: "Escala" },
             ].map((field) => (
-              <div key={field.id}>
+              <div key={field.id} className="space-y-2">
                 <Label htmlFor={field.id}>{field.label}</Label>
                 <Input
                   id={field.id}
                   name={field.id}
                   type={field.type || "text"}
+                  placeholder="..."
                   value={formulario[field.id] || ""}
                   onChange={handleInputChange}
                   readOnly={!tienePermiso("Diseño", field.id)} // Establece readOnly según los permisos
                 />
               </div>
           ))}
-          <div className="col-span-full">
+          <div className="col-span-full space-y-2">
             <Label htmlFor="description">Descripción de las modificaciones</Label>
-            <Input id="description" name="description"   onChange= {handleInputChange}  value={formulario.description}
+            <Input id="description" name="description" placeholder="..." onChange= {handleInputChange} value={formulario?.description}
             readOnly={!tienePermiso("Diseño", 'description')}
               />
           </div>
           {modificacionesDiseñador.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -592,18 +561,16 @@ export function EditarEtiqueta() {
         </div>
         </CardContent>
       </Card>
-  
 
-
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Investigación y Desarrollo de Nuevos Productos</CardTitle>
+          <CardTitle>Investigación y desarrollo de nuevos productos</CardTitle>
           <CardDescription>Pedro Marin</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modificacionesIYDNP.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -626,7 +593,7 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Calidad</CardTitle>
           <CardDescription>Blanca Solano o Carmen Álvarez</CardDescription>
@@ -634,7 +601,7 @@ export function EditarEtiqueta() {
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modificacionesCalidad.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -657,7 +624,7 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Auditorías</CardTitle>
           <CardDescription>Rosa Contreras o Janette Alvarado</CardDescription>
@@ -665,7 +632,7 @@ export function EditarEtiqueta() {
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modificacionesAuditorias.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -688,7 +655,7 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Químico o Formulador</CardTitle>
           <CardDescription>Carlos Corona o Fernanda Cruz</CardDescription>
@@ -696,7 +663,7 @@ export function EditarEtiqueta() {
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modificacionesQuimico.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -719,17 +686,17 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Ingeniería de Productos</CardTitle>
-          <CardDescription>Jania Leyva, Roger Castellanos o Emanuel Moya</CardDescription>
+          <CardTitle>Ingeniería de productos</CardTitle>
+          <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
         {modificacionesIngenieíaNProducto.map((item, index) => (
               <div key={item}>
                 {item === "Impresión" ? (
-                  <div>
+                  <div className="space-y-2">
                     <Label>{item}</Label>
                     <Select 
                       name={`miSelectIngenieria${index + 1}`} 
@@ -747,7 +714,7 @@ export function EditarEtiqueta() {
                     </Select>
                   </div>
                 ) : (
-                  <div>
+                  <div className="space-y-2">
                     <Label>{item}</Label>
                     <Select 
                       name={`miSelectIngenieria${index + 1}`} 
@@ -775,7 +742,7 @@ export function EditarEtiqueta() {
                 type="checkbox"
                 id={`image-${index}`}
                 name={`image-${index}`}
-                checked={formulario.selectedImages[index] || false} // Controlar si está seleccionado
+                checked={formulario?.selectedImages[index] || false} // Controlar si está seleccionado
                 onChange={handleImageChange} // Manejar el cambio
                 disabled={!tienePermiso('Ingeniería de Productos', 'Seleccionar imágenes')}
               />
@@ -796,15 +763,15 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Gerente de Marketing</CardTitle>
-          <CardDescription>Tania Álvarez o Lizbeth Uribe</CardDescription>
+          <CardTitle>Gerente de marketing</CardTitle>
+          <CardDescription>Tania Álvarez</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
           {modificacionesGerenteMkt.map((item, index) => (
-              <div key={item}>
+              <div key={item} className="space-y-2">
                 <Label>{item}</Label>
                 {/* Usamos la clave dinámica `miSelectX` para cada select */}
                 <Select 
@@ -827,17 +794,17 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Compras</CardTitle>
-          <CardDescription>Karla Bayardo o Emanuel Moya</CardDescription>
+          <CardDescription>Karla Bayardo</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div style={{display:"flex", gap:"2rem"}}>
-          <div>
+        <div>
+          <div className="space-y-2">
             <Label htmlFor="value">Valor ($)</Label>
-            <Input id="value" name="value" type="number"  onChange={handleInputChange} value={formulario.value}
+            <Input id="value" name="value" type="number" placeholder="$" onChange={handleInputChange} value={formulario?.value}
             readOnly={!tienePermiso('Compras', 'Valor')}
             />
           </div>
@@ -846,17 +813,17 @@ export function EditarEtiqueta() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Planeación</CardTitle>
           <CardDescription>Jaret Pérez o Verónica Rivera</CardDescription>
         </CardHeader>
         <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div style={{display:"flex", gap:"2rem"}}>
-          <div>
+        <div>
+          <div className="space-y-2">
             <Label htmlFor="inventory">Inventario (pzs)</Label>
-            <Input id="inventory" name="inventory" type="number"  onChange={ handleInputChange} value={formulario.inventory}
+            <Input id="inventory" name="inventory" type="number" placeholder="Pzs" onChange={ handleInputChange} value={formulario?.inventory}
             readOnly={!tienePermiso('Planeación', 'Inventario')}
             />
           </div>
@@ -866,7 +833,7 @@ export function EditarEtiqueta() {
       </Card>
 
         {/* Verificación */}
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Verificación</CardTitle>
           </CardHeader>
@@ -937,7 +904,7 @@ export function EditarEtiqueta() {
                   <Input type="date" name={`fecha_autorizacion-${index}`}  onChange={handleInputChange} value={formulario[`fecha_autorizacion-${index}`] || ''} disabled // Campo de fecha no editable // name y value desde el evento
                    />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor={`comments-${index}`}>Comentarios</Label>
                   <Textarea
                     id={`comments-${index}`}
@@ -947,14 +914,14 @@ export function EditarEtiqueta() {
                     onChange={handleInputChange}
                     readOnly={!tienePermiso('Verificación', verifier) || formulario[`readOnlyComments-${index}`] || false}
                     value={formulario[`comments-${index}`] || ''}  // name y value desde el evento
-                    required={formulario.commentsRequired?.[`comments-${index}`]}
+                    required={formulario?.commentsRequired?.[`comments-${index}`]}
                   />
                 </div>
               </div>
             ))}
             {formulario.tipo=="Maquilas" ? (
                 <div className="space-y-4">
-                <Label htmlFor={'verifier-10'}>Maquilas</Label>
+                <Label style={{fontSize: 16}} htmlFor={'verifier-10'}>Maquilas</Label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input id={'verifier-10'} name={'verifier-10'} placeholder="Nombre" onChange={(e) => {
                       handleInputChange(e); // Llama a tu manejador de cambios
@@ -1014,7 +981,7 @@ export function EditarEtiqueta() {
                   <Input type="date" name={`fecha_autorizacion-10`}  onChange={handleInputChange} value={formulario[`fecha_autorizacion-10`] || ''} disabled // Campo de fecha no editable // name y value desde el evento
                    />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor={'comments-10'}>Comentarios</Label>
                   <Textarea
                     id={`comments-10`}
@@ -1024,7 +991,7 @@ export function EditarEtiqueta() {
                     onChange={handleInputChange}
                     readOnly={!tienePermiso('Verificación', 'Maquilas') || formulario[`readOnlyComments-10`] || false}
                     value={formulario[`comments-10`] || ''}  // name y value desde el evento
-                    required={formulario.commentsRequired?.[`comments-10`]}
+                    required={formulario?.commentsRequired?.[`comments-10`]}
                   />
                 </div>
               </div>
@@ -1032,7 +999,7 @@ export function EditarEtiqueta() {
       
           </CardContent>
         </Card>
-        <Button type="submit" className="w-full" onClick={handleSave} style={{marginTop: "2rem"}}>Guardar Cambios</Button>
+        <Button type="submit" className="w-full" onClick={handleSave}>Guardar cambios</Button>
       </form>
     </div>
   );
