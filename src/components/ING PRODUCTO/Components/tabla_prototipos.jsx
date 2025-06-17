@@ -55,7 +55,7 @@ const headCells = [
   },
   {
     id: "formula",
-    label: "Formula",
+    label: "Fórmula",
   },
   {
     id: "formato",

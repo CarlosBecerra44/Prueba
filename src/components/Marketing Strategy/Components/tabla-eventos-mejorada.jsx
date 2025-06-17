@@ -39,9 +39,9 @@ export function TablaEventosMejorada() {
     Lugar: "lugar",
     Fecha: "fecha",
     Estatus: "estatus",
-    "Gasto/Presupuesto Total": "gastoPresupuesto",
-    "Gasto Real Total": "gastoReal",
-    "Venta Total": "ventaTotal",
+    "Gasto/Presupuesto total": "gastoPresupuesto",
+    "Gasto real total": "gastoReal",
+    "Venta total": "ventaTotal",
     ROI: "roi"
   }
     

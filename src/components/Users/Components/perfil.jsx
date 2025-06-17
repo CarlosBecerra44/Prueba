@@ -119,7 +119,7 @@ export function Perfil() {
             </Avatar>
             <div>
               <h2 className="text-xl font-semibold">{nombre + ' ' + apellidos}</h2>
-              <p className="text-muted-foreground">{correo}</p>
+              <p className="text-muted-foreground">{correo ? correo : "Usuario sin correo"}</p>
             </div>
           </div>
           <div>
@@ -128,7 +128,7 @@ export function Perfil() {
               id="email"
               type="email"
               className="w-full mt-1"
-              value={correo}
+              value={correo || "Usuario sin correo"}
               onChange={(e) => setCorreo(e.target.value)}
               readOnly={true} />
           </div>

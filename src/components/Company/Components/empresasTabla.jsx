@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -26,165 +26,36 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import styles from "../../../../public/CSS/spinner.css";
-import { ChevronRight, Search, UserPlus, X } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import axios from "axios";
-import Swal from "sweetalert2";
-
-const formSections = [
-  {
-    id: "Investigación y Desarrollo de Nuevos Productos",
-    name: "Investigación y Desarrollo de Nuevos Productos",
-    changeOptions: [
-      "Código QR",
-      "Código de barras",
-      "Cambio estético",
-      "Cambio crítico",
-      "Distribuido y elaborado por",
-      "Tabla nutrimental",
-      "Lista de ingredientes",
-    ],
-  },
-  {
-    id: "Diseño",
-    name: "Diseño",
-    changeOptions: [
-      "nombre_producto",
-      "proveedor",
-      "terminado",
-      "articulo",
-      "fecha_elaboracion",
-      "edicion",
-      "sustrato",
-      "dimensiones",
-      "escala",
-      "description",
-      "Tamaño de letra",
-      "Logotipo",
-      "Tipografía",
-      "Colores",
-    ],
-  },
-  {
-    id: "Calidad",
-    name: "Calidad",
-    changeOptions: ["Información", "Ortografía"],
-  },
-  {
-    id: "Auditorías",
-    name: "Auditorías",
-    changeOptions: ["Auditable"],
-  },
-  {
-    id: "Laboratorio",
-    name: "Laboratorio",
-    changeOptions: ["Fórmula"],
-  },
-  {
-    id: "Ingeniería de Productos",
-    name: "Ingeniería de Productos",
-    changeOptions: [
-      "Dimensiones",
-      "Sustrato",
-      "Impresión interior/exterior",
-      "Acabado",
-      "Rollo",
-      "Seleccionar imágenes",
-    ],
-  },
-  {
-    id: "Gerente de Marketing",
-    name: "Gerente de Marketing",
-    changeOptions: ["Teléfono", "Mail/email"],
-  },
-  {
-    id: "Compras",
-    name: "Compras",
-    changeOptions: ["Valor"],
-  },
-  {
-    id: "Planeación",
-    name: "Planeación",
-    changeOptions: ["Inventario"],
-  },
-  {
-    id: "Verificación",
-    name: "Verificación",
-    changeOptions: [
-      "Directora de marketing",
-      "Gerente de maquilas y desarrollo de nuevo productos",
-      "Investigación y desarrollo de nuevos productos",
-      "Ingeniería de productos",
-      "Gerente de marketing",
-      "Diseñador gráfico",
-      "Gerente o supervisor de calidad",
-      "Gerente o coordinador de auditorías",
-      "Químico o formulador",
-      "Planeación",
-      "Maquilas",
-    ],
-  },
-];
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import styles from '../../../../public/CSS/spinner.css';
+import { ChevronRight, Search } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export function EmpresasTabla() {
-  const [selectedSections, setSelectedSections] = useState([]);
-  const [selectedPermission, setSelectedPermission] = useState("");
-  const [selectedPermission1, setSelectedPermission1] = useState("");
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [selectedChanges, setSelectedChanges] = useState({});
-  const [isChangeOptionsDialogOpen, setIsChangeOptionsDialogOpen] =
-    useState(false);
-  const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] =
-    useState(false);
-  const [statusFilter, setStatusFilter] = useState("todos");
-  const [error, setError] = useState("");
-  //const [dpto, setSelectedDepartamento] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
-  const [filteredUsersDpto, setFilteredUsers] = useState([]);
-  const [showDomicilioForm, setShowDomicilioForm] = useState(false);
-  const [showIdentificacionForm, setShowIdentificacionForm] = useState(true);
-  const [rfc, setRFC] = useState("");
-  const [razon, setRazon] = useState("");
-  const [regimen, setRegimen] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [estatus, setEstatus] = useState("");
-  const [fechaCambio, setFechaCambio] = useState("");
-  const [domicilio, setDomicilio] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [tipoVialidad, setTipoVialidad] = useState("");
-  const [nombreVialidad, setNombreVialidad] = useState("");
-  const [numeroExterior, setNumeroExterior] = useState("");
-  const [numeroInterior, setNumeroInterior] = useState("");
-  const [nombreColonia, setNombreColonia] = useState("");
-  const [nombreLocalidad, setNombreLocalidad] = useState("");
-  const [nombreMunicipio, setNombreMunicipio] = useState("");
-  const [nombreEntidad, setNombreEntidad] = useState("");
-  const [entreCalle, setEntreCalle] = useState("");
-  const [yCalle, setYCalle] = useState("");
+  const [domicilio, setDomicilio] = useState('no');
   const [formulario, setFormulario] = useState({});
 
   const filteredUsers = users.filter(
     (user) =>
       // Filtra por estatus
-      (statusFilter === "todos" || user.formulario?.estatus === statusFilter) &&
+      (statusFilter === 'todos' || user.formulario?.estatus === statusFilter) &&
       // Filtra por términos de búsqueda
       Object.values(user).some((value) => {
         // Verifica si el valor no es nulo o indefinido
         if (value === null || value === undefined) return false;
 
         // Si el valor es un objeto (como formulario), lo convertimos a JSON string para buscar
-        if (typeof value === "object") {
+        if (typeof value === 'object') {
           value = JSON.stringify(value); // Convierte objetos a JSON
         }
 
@@ -200,14 +71,14 @@ export function EmpresasTabla() {
     try {
       // Mostrar alerta de confirmación
       const result = await Swal.fire({
-        title: "¿Deseas eliminar la empresa?",
-        text: "No podrás revertir esta acción",
-        icon: "warning",
+        title: '¿Deseas eliminar la empresa?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "rgb(31 41 55)",
-        confirmButtonText: "Eliminar",
-        cancelButtonText: "Cancelar",
+        confirmButtonColor: '#d33',
+        cancelButtonColor: 'rgb(31 41 55)',
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar',
       });
 
       // Si el usuario confirma la eliminación
@@ -217,150 +88,44 @@ export function EmpresasTabla() {
         );
         if (response.status === 200) {
           await Swal.fire(
-            "Eliminada",
-            "La empresa ha sido eliminada",
-            "success"
+            'Eliminada',
+            'La empresa ha sido eliminada',
+            'success'
           );
-          window.location.href = "/usuario/empresas";
+          window.location.href = '/usuario/empresas';
         } else {
-          Swal.fire("Error", "Error al eliminar la empresa", "error");
+          Swal.fire('Error', 'Error al eliminar la empresa', 'error');
         }
       }
     } catch (error) {
-      console.error("Error al eliminar al usuario:", error);
+      console.error('Error al eliminar al usuario:', error);
       Swal.fire(
-        "Error",
-        "Ocurrió un error al intentar eliminar la empresa",
-        "error"
+        'Error',
+        'Ocurrió un error al intentar eliminar la empresa',
+        'error'
       );
     }
   };
-
-  const handleChangeRoleUser = async (index, rol) => {
-    try {
-      const response = await axios.post(
-        `/api/actualizarRolUsuarios?id=${index}&rol=${rol}`
-      );
-      if (response.status === 200) {
-        await Swal.fire(
-          "Actualizado",
-          "El rol del usuario ha sido actualizado con éxito",
-          "success"
-        );
-      } else {
-        Swal.fire("Error", "Error al actualizar el rol del usuario", "error");
-      }
-    } catch (error) {
-      console.error("Error al actualizar el rol del usuario:", error);
-      Swal.fire(
-        "Error",
-        "Ocurrió un error al intentar actualizar el rol del usuario",
-        "error"
-      );
-    }
-  };
-
-  const openPermissionsDialog = (userId) => {
-    setSelectedUserId(userId); // Guardar el ID del usuario seleccionado
-    setIsChangeOptionsDialogOpen(false);
-  };
-  const handlePermissionChange = (permission) => {
-    setSelectedPermission(permission);
-    setIsFormSectionsDialogOpen(true);
-  };
-
-  const handleSectionSelection = (sectionId) => {
-    setSelectedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  };
-
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true); // Iniciar carga
       try {
-        const response = await axios.get("/api/Company/getEmpresas");
+        const response = await axios.get('/api/Company/getEmpresas');
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
           console.error(
-            "Error al obtener los usuarios:",
+            'Error al obtener los usuarios:',
             response.data.message
           );
         }
       } catch (error) {
-        console.error("Error al hacer fetch de los usuarios:", error);
-      } finally {
-        setLoading(false); // Finalizar carga
+        console.error('Error al hacer fetch de los usuarios:', error);
       }
     };
 
     fetchUsers();
-    const fetchSelections = async () => {
-      if (selectedUserId) {
-        setLoading(true); // Iniciar carga
-        try {
-          const response = await fetch(
-            `/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-
-            // Asegurarse de que data.permiso tenga la estructura esperada
-            setSelectedSections(data.permiso?.seccion || []);
-            setSelectedChanges(data.permiso?.campo || {});
-          } else {
-            console.error(
-              "Error en la respuesta del servidor:",
-              response.status
-            );
-          }
-        } catch (error) {
-          console.error("Error fetching selections", error);
-        } finally {
-          setLoading(false); // Finalizar carga
-        }
-      }
-    };
-
-    // Solo ejecutar fetchSelections si hay un userId seleccionado
-    if (selectedUserId) {
-      fetchSelections();
-    }
-  }, [selectedUserId]);
-
-  useEffect(() => {
-    if (!users || users.length === 0) {
-      return;
-    }
-
-    if (!selectedDepartamento) {
-      setFilteredUsers([]);
-      return;
-    }
-
-    const filtered = users.filter(
-      (usuario) => usuario.departamento_id === selectedDepartamento
-    );
-
-    setFilteredUsers(filtered);
-  }, [selectedDepartamento, users]);
-
-  useEffect(() => {
-    if (selectedUser?.departamento_id) {
-      setFilteredUsers(
-        users.filter(
-          (user) => user.departamento_id === selectedUser.departamento_id
-        )
-      );
-    } else {
-      setFilteredUsers([]);
-    }
-  }, [selectedUser?.departamento_id, users]);
+  }, []);
 
   const indexOfLastEvento = currentPage * itemsPerPage;
   const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
@@ -372,7 +137,7 @@ export function EmpresasTabla() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -380,12 +145,12 @@ export function EmpresasTabla() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == 'loading') {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
     return (
-      (window.location.href = "/"),
+      (window.location.href = '/'),
       (
         <div className="flex items-center justify-center min-h-screen">
           <Spinner className={styles.spinner} />
@@ -399,6 +164,7 @@ export function EmpresasTabla() {
     const userToEdit = users.find((user) => user.id === userId); // Buscar el usuario en el estado
     setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
     setFormulario(userToEdit.formulario);
+    setDomicilio('no');
   };
 
   const handleInputChange = (value, name) => {
@@ -408,29 +174,14 @@ export function EmpresasTabla() {
     }));
   };
 
-  const handleInputChange2 = (value, field) => {
-    setSelectedUser((prev) => ({
-      ...prev,
-      formulario: {
-        ...prev.formulario,
-        [field]: value,
-      },
-    }));
-  };
-
-  const formatDate = (isoDate) => {
-    if (!isoDate) return "";
-    return isoDate.split("T")[0]; // Extraer "YYYY-MM-DD"
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/Company/registrarEmpresa", {
-        method: "POST",
+      const res = await fetch('/api/Company/registrarEmpresa', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ formulario }),
       });
@@ -444,21 +195,21 @@ export function EmpresasTabla() {
 
       if (res.ok) {
         Swal.fire({
-          title: "Creada",
-          text: "La empresa ha sido creada correctamente",
-          icon: "success",
+          title: 'Creada',
+          text: 'La empresa ha sido creada correctamente',
+          icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/usuario/empresas";
+          window.location.href = '/usuario/empresas';
         });
       } else {
-        Swal.fire("Error", "Error al crear la empresa", "error");
+        Swal.fire('Error', 'Error al crear la empresa', 'error');
       }
     } catch (err) {
-      console.error("Error en el registro:", err);
+      console.error('Error en el registro:', err);
       setError(
-        "Hubo un problema con el registro. Por favor, intenta nuevamente."
+        'Hubo un problema con el registro. Por favor, intenta nuevamente.'
       );
     }
   };
@@ -467,10 +218,10 @@ export function EmpresasTabla() {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/Company/actualizarEmpresa", {
-        method: "POST",
+      const res = await fetch('/api/Company/actualizarEmpresa', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           id: selectedUser.id,
@@ -481,97 +232,40 @@ export function EmpresasTabla() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Hubo un problema al actualizar el usuario");
+        setError(data.message || 'Hubo un problema al actualizar el usuario');
         return;
       }
 
       if (res.ok) {
         Swal.fire({
-          title: "Actualizada",
-          text: "Los datos de la empresa se han actualizado correctamente",
-          icon: "success",
+          title: 'Actualizada',
+          text: 'Los datos de la empresa se han actualizado correctamente',
+          icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/usuario/empresas";
+          window.location.href = '/usuario/empresas';
         });
       } else {
         Swal.fire(
-          "Error",
-          "Error al actualizar los datos de la empresa",
-          "error"
+          'Error',
+          'Error al actualizar los datos de la empresa',
+          'error'
         );
       }
     } catch (err) {
-      console.error("Error en la actualización:", err);
+      console.error('Error en la actualización:', err);
       setError(
-        "Hubo un problema con la actualización. Por favor, intenta nuevamente."
+        'Hubo un problema con la actualización. Por favor, intenta nuevamente.'
       );
     }
   };
 
-  const saveSelections = async () => {
-    if (!selectedUserId) return; // Validación para asegurarnos que tenemos el ID
-    const selectedData = [];
-
-    selectedSections.forEach((sectionId) => {
-      const section = formSections.find((s) => s.id === sectionId);
-      if (section && selectedChanges[sectionId]) {
-        selectedChanges[sectionId].forEach((option) => {
-          selectedData.push({
-            seccion: section.name,
-            campo: option,
-          });
-        });
-      }
-    });
-
-    const response = await fetch(
-      `/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ selections: selectedData }),
-      }
-    );
-
-    if (response.ok) {
-      Swal.fire({
-        title: "Creado",
-        text: "Se ha creado correctamente el permiso",
-        icon: "success",
-        timer: 3000, // La alerta desaparecerá después de 1.5 segundos
-        showConfirmButton: false,
-      }).then(() => {
-        window.location.href = "/usuario";
-      });
-    } else {
-      Swal.fire("Error", "Error al cargar permiso ", "error");
-    }
+  const handleCleanForm = () => {
+    setFormulario({});
+    setDomicilio('no');
   };
 
-  const removeSection = (sectionId) => {
-    setSelectedSections((prev) => prev.filter((id) => id !== sectionId));
-    setSelectedChanges((prev) => {
-      const { [sectionId]: _, ...rest } = prev;
-      return rest;
-    });
-  };
-
-  const handleChangeOptionSelection = (sectionId, option) => {
-    setSelectedChanges((prev) => ({
-      ...prev,
-      [sectionId]: prev[sectionId]?.includes(option)
-        ? prev[sectionId].filter((opt) => opt !== option) // Deselecciona
-        : [...(prev[sectionId] || []), option], // Selecciona
-    }));
-  };
-  const openChangeOptionsDialog = () => {
-    setIsChangeOptionsDialogOpen(true);
-    setIsFormSectionsDialogOpen(false);
-  };
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center mb-4 text-sm text-muted-foreground">
@@ -620,19 +314,23 @@ export function EmpresasTabla() {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={handleCleanForm}>
               <EmpresasIcon className="mr-2 h-4 w-4" /> Añadir empresa
             </Button>
           </DialogTrigger>
 
-          <DialogContent onInteractOutside={(event) => event.preventDefault()} className="border-none p-0 overflow-y-auto no-scrollbar" style={{
-            width: "100%", // Ajusta el ancho
-            maxWidth: "1000px", // Límite del ancho
-            height: "70vh", // Ajusta la altura
-            maxHeight: "80vh", // Límite de la altura
-            padding: "20px", // Margen interno
-            marginLeft: "120px"
-          }}>
+          <DialogContent
+            onInteractOutside={(event) => event.preventDefault()}
+            className="border-none p-0 overflow-y-auto"
+            style={{
+              width: '100%', // Ajusta el ancho
+              maxWidth: '1000px', // Límite del ancho
+              height: '70vh', // Ajusta la altura
+              maxHeight: '80vh', // Límite de la altura
+              padding: '20px', // Margen interno
+              marginLeft: '120px',
+            }}
+          >
             <DialogHeader>
               <DialogTitle>Nueva empresa</DialogTitle>
               <DialogDescription>
@@ -640,313 +338,304 @@ export function EmpresasTabla() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-              <div className="grid gap-4 py-4">
-                {showIdentificacionForm && (
+              <div className="space-y-3 py-4">
+                <div className="flex justify-end">
+                  <div className="space-y-2 w-1/2 max-w-xs">
+                    <Label htmlFor="domicilio">¿Agregar domicilio?</Label>
+                    <Select
+                      value={domicilio}
+                      onValueChange={(value) => {
+                        setDomicilio(value);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccione una opción" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="si">Sí</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {domicilio === 'no' && (
                   <>
                     <DialogHeader>
                       <DialogTitle>
                         Datos de identificación del contribuyente
                       </DialogTitle>
                     </DialogHeader>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="rfc" className="text-right">
-                        RFC
-                      </Label>
-                      <Input
-                        id="rfc"
-                        name="rfc"
-                        className="col-span-3"
-                        required
-                        value={formulario.rfc}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="rfc">RFC</Label>
+                        <Input
+                          id="rfc"
+                          name="rfc"
+                          value={formulario.rfc}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="razon">Razón social</Label>
+                        <Input
+                          id="razon"
+                          name="razon"
+                          value={formulario.razon}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="razon" className="text-right">
-                        Razón social
-                      </Label>
-                      <Input
-                        id="razon"
-                        name="razon"
-                        className="col-span-3"
-                        required
-                        value={formulario.razon}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="regimen">Régimen capital</Label>
+                        <Input
+                          id="regimen"
+                          name="regimen"
+                          value={formulario.regimen}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombre">Nombre comercial</Label>
+                        <Input
+                          id="nombre"
+                          name="nombre"
+                          value={formulario.nombre}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="regimen" className="text-right">
-                        Régimen capital
-                      </Label>
-                      <Input
-                        id="regimen"
-                        name="regimen"
-                        className="col-span-3"
-                        required
-                        value={formulario.regimen}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="fechaInicio">
+                          Fecha inicio de operaciones
+                        </Label>
+                        <Input
+                          id="fechaInicio"
+                          name="fechaInicio"
+                          type="date"
+                          value={formulario.fechaInicio}
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="estatus">Estatus en el padrón</Label>
+                        <Select
+                          name="estatus"
+                          value={formulario.estatus}
+                          onValueChange={(value) =>
+                            handleInputChange(value, 'estatus')
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione una opción" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ACTIVO">Activo</SelectItem>
+                            <SelectItem value="INACTIVO">Inactivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombre" className="text-right">
-                        Nombre comercial
-                      </Label>
-                      <Input
-                        id="nombre"
-                        name="nombre"
-                        className="col-span-3"
-                        required
-                        value={formulario.nombre}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="fechaInicio" className="text-right">
-                        Fecha inicio de operaciones
-                      </Label>
-                      <Input
-                        id="fechaInicio"
-                        name="fechaInicio"
-                        type="date"
-                        className="col-span-3"
-                        required
-                        value={formulario.fechaInicio}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="estatus" className="text-right">
-                        Estatus en el padrón
-                      </Label>
-                      <Select
-                        name="estatus"
-                        value={formulario.estatus}
-                        onValueChange={(value) =>
-                          handleInputChange(value, "estatus")
-                        }
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Seleccione una opción" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ACTIVO">Activo</SelectItem>
-                          <SelectItem value="INACTIVO">Inactivo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {/*<Input id="estatus" className="col-span-3" required value={estatus} onChange={(e) => setEstatus(e.target.value)} />*/}
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="fechaCambio" className="text-right">
-                        Fecha de último cambio de estado
-                      </Label>
-                      <Input
-                        id="fechaCambio"
-                        name="fechaCambio"
-                        type="date"
-                        className="col-span-3"
-                        required
-                        value={formulario.fechaCambio}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="fechaCambio">
+                          Fecha de último cambio de estado
+                        </Label>
+                        <Input
+                          id="fechaCambio"
+                          name="fechaCambio"
+                          type="date"
+                          value={formulario.fechaCambio}
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
                   </>
                 )}
-
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="domicilio" className="text-right">
-                    ¿Agregar domicilio?
-                  </Label>
-                  <Select
-                    value={domicilio}
-                    onValueChange={(value) => {
-                      setDomicilio(value);
-                      setShowDomicilioForm(value === "si"); // Reiniciar el jefe directo
-                      setShowIdentificacionForm(value === "no"); // Reiniciar el jefe directo
-                    }}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccione una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="si">Sí</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {showDomicilioForm && (
+                {domicilio === 'si' && (
                   <>
                     <DialogHeader>
                       <DialogTitle>Datos del domicilio registrado</DialogTitle>
                     </DialogHeader>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="codigo" className="text-right">
-                        Código postal
-                      </Label>
-                      <Input
-                        id="codigo"
-                        name="codigo"
-                        type="number"
-                        className="col-span-3"
-                        required
-                        value={formulario.codigo}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="codigo">Código postal</Label>
+                        <Input
+                          id="codigo"
+                          name="codigo"
+                          type="number"
+                          value={formulario.codigo}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="tipoVialidad">Tipo de vialidad</Label>
+                        <Input
+                          id="tipoVialidad"
+                          name="tipoVialidad"
+                          value={formulario.tipoVialidad}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="tipoVialidad" className="text-right">
-                        Tipo de vialidad
-                      </Label>
-                      <Input
-                        id="tipoVialidad"
-                        name="tipoVialidad"
-                        className="col-span-3"
-                        required
-                        value={formulario.tipoVialidad}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombreVialidad">
+                          Nombre de vialidad
+                        </Label>
+                        <Input
+                          id="nombreVialidad"
+                          name="nombreVialidad"
+                          value={formulario.nombreVialidad}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="numeroExterior">Número exterior</Label>
+                        <Input
+                          id="numeroExterior"
+                          name="numeroExterior"
+                          type="number"
+                          value={formulario.numeroExterior}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombreVialidad" className="text-right">
-                        Nombre de vialidad
-                      </Label>
-                      <Input
-                        id="nombreVialidad"
-                        name="nombreVialidad"
-                        className="col-span-3"
-                        value={formulario.nombreVialidad}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="numeroInterior">Número interior</Label>
+                        <Input
+                          id="numeroInterior"
+                          name="numeroInterior"
+                          value={formulario.numeroInterior}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombreColonia">
+                          Nombre de la colonia
+                        </Label>
+                        <Input
+                          id="nombreColonia"
+                          name="nombreColonia"
+                          value={formulario.nombreColonia}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="numeroExterior" className="text-right">
-                        Número exterior
-                      </Label>
-                      <Input
-                        id="numeroExterior"
-                        name="numeroExterior"
-                        className="col-span-3"
-                        value={formulario.numeroExterior}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombreLocalidad">
+                          Nombre de la localidad
+                        </Label>
+                        <Input
+                          id="nombreLocalidad"
+                          name="nombreLocalidad"
+                          value={formulario.nombreLocalidad}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombreMunicipio">
+                          Nombre del municipio
+                        </Label>
+                        <Input
+                          id="nombreMunicipio"
+                          name="nombreMunicipio"
+                          value={formulario.nombreMunicipio}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="numeroInterior" className="text-right">
-                        Número interior
-                      </Label>
-                      <Input
-                        id="numeroInterior"
-                        name="numeroInterior"
-                        className="col-span-3"
-                        value={formulario.numeroInterior}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="nombreEntidad">
+                          Nombre de la entidad federativa
+                        </Label>
+                        <Input
+                          id="nombreEntidad"
+                          name="nombreEntidad"
+                          value={formulario.nombreEntidad}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-1">
+                        <Label htmlFor="entreCalle">Entre calle</Label>
+                        <Input
+                          id="entreCalle"
+                          name="entreCalle"
+                          value={formulario.entreCalle}
+                          placeholder="..."
+                          onChange={(e) =>
+                            handleInputChange(e.target.value, e.target.name)
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombreColonia" className="text-right">
-                        Nombre de la colonia
-                      </Label>
-                      <Input
-                        id="nombreColonia"
-                        name="nombreColonia"
-                        className="col-span-3"
-                        value={formulario.nombreColonia}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombreLocalidad" className="text-right">
-                        Nombre de la localidad
-                      </Label>
-                      <Input
-                        id="nombreLocalidad"
-                        name="nombreLocalidad"
-                        className="col-span-3"
-                        value={formulario.nombreLocalidad}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombreMunicipio" className="text-right">
-                        Nombre del municipio
-                      </Label>
-                      <Input
-                        id="nombreMunicipio"
-                        name="nombreMunicipio"
-                        className="col-span-3"
-                        value={formulario.nombreMunicipio}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="nombreEntidad" className="text-right">
-                        Nombre de la entidad federativa
-                      </Label>
-                      <Input
-                        id="nombreEntidad"
-                        name="nombreEntidad"
-                        className="col-span-3"
-                        value={formulario.nombreEntidad}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="entreCalle" className="text-right">
-                        Entre calle
-                      </Label>
-                      <Input
-                        id="entreCalle"
-                        name="entreCalle"
-                        className="col-span-3"
-                        value={formulario.entreCalle}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="yCalle" className="text-right">
-                        Y calle
-                      </Label>
-                      <Input
-                        id="yCalle"
-                        name="yCalle"
-                        className="col-span-3"
-                        value={formulario.yCalle}
-                        onChange={(e) =>
-                          handleInputChange(e.target.value, e.target.name)
-                        }
-                      />
+                    <div className="grid grid-cols-2 gap-1">
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="yCalle">Y calle</Label>
+                        <Input
+                          id="yCalle"
+                          name="yCalle"
+                          placeholder="..."
+                          value={selectedUser?.formulario?.yCalle || ''}
+                          onChange={(e) =>
+                            setSelectedUser({
+                              ...selectedUser,
+                              formulario: {
+                                ...selectedUser.formulario,
+                                yCalle: e.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                   </>
                 )}
@@ -981,43 +670,43 @@ export function EmpresasTabla() {
             currentUsers.map((user, index) => (
               <TableRow key={index}>
                 <TableCell>{user.id}</TableCell>
-                <TableCell>{user.formulario.rfc || "Sin datos"}</TableCell>
-                <TableCell>{user.formulario.razon || "Sin datos"}</TableCell>
-                <TableCell>{user.formulario.nombre || "Sin datos"}</TableCell>
+                <TableCell>{user.formulario.rfc || 'Sin datos'}</TableCell>
+                <TableCell>{user.formulario.razon || 'Sin datos'}</TableCell>
+                <TableCell>{user.formulario.nombre || 'Sin datos'}</TableCell>
                 <TableCell>
                   {user.formulario.fechaInicio
                     ? new Date(
                         new Date(user.formulario.fechaInicio).getTime() +
                           new Date().getTimezoneOffset() * 60000
-                      ).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
+                      ).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
                       })
-                    : "Sin datos"}
+                    : 'Sin datos'}
                 </TableCell>
-                <TableCell>{user.formulario.estatus || "Sin datos"}</TableCell>
+                <TableCell>{user.formulario.estatus || 'Sin datos'}</TableCell>
                 <TableCell>
                   {user.formulario.fechaCambio
                     ? new Date(
                         new Date(user.formulario.fechaCambio).getTime() +
                           new Date().getTimezoneOffset() * 60000
-                      ).toLocaleDateString("es-ES", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
+                      ).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
                       })
-                    : "Sin datos"}
+                    : 'Sin datos'}
                 </TableCell>
-                <TableCell>{user.formulario.codigo || "Sin datos"}</TableCell>
+                <TableCell>{user.formulario.codigo || 'Sin datos'}</TableCell>
                 <TableCell>
-                  {user.formulario.nombreVialidad || "Sin datos"}
-                </TableCell>
-                <TableCell>
-                  {user.formulario.numeroExterior || "Sin datos"}
+                  {user.formulario.nombreVialidad || 'Sin datos'}
                 </TableCell>
                 <TableCell>
-                  {user.formulario.numeroInterior || "Sin datos"}
+                  {user.formulario.numeroExterior || 'Sin datos'}
+                </TableCell>
+                <TableCell>
+                  {user.formulario.numeroInterior || 'Sin datos'}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -1031,7 +720,19 @@ export function EmpresasTabla() {
                           Editar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+
+                      <DialogContent
+                        onInteractOutside={(event) => event.preventDefault()}
+                        className="border-none p-0 overflow-y-auto"
+                        style={{
+                          width: '100%', // Ajusta el ancho
+                          maxWidth: '1000px', // Límite del ancho
+                          height: '70vh', // Ajusta la altura
+                          maxHeight: '80vh', // Límite de la altura
+                          padding: '20px', // Margen interno
+                          marginLeft: '120px',
+                        }}
+                      >
                         <DialogHeader>
                           <DialogTitle>Editar empresa</DialogTitle>
                           <DialogDescription>
@@ -1039,511 +740,477 @@ export function EmpresasTabla() {
                           </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSubmitUpdate}>
-                          <div className="grid gap-4 py-4">
-                            {showIdentificacionForm && (
+                          <div className="space-y-3 py-4">
+                            <div className="flex justify-end">
+                              <div className="space-y-2 w-1/2 max-w-xs">
+                                <Label htmlFor="domicilio">
+                                  ¿Agregar domicilio?
+                                </Label>
+                                <Select
+                                  value={domicilio}
+                                  onValueChange={(value) => {
+                                    setDomicilio(value);
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccione una opción" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="si">Sí</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            {domicilio === 'no' && (
                               <>
                                 <DialogHeader>
                                   <DialogTitle>
-                                    Datos de Identificación del Contribuyente
+                                    Datos de identificación del contribuyente
                                   </DialogTitle>
                                 </DialogHeader>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="rfc" className="text-right">
-                                    RFC
-                                  </Label>
-                                  <Input
-                                    id="rfc"
-                                    name="rfc"
-                                    className="col-span-3"
-                                    value={selectedUser?.formulario?.rfc || ""}
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          rfc: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="rfc">RFC</Label>
+                                    <Input
+                                      id="rfc"
+                                      name="rfc"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.rfc || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            rfc: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="razon">Razón social</Label>
+                                    <Input
+                                      id="razon"
+                                      name="razon"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.razon || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            razon: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label htmlFor="razon" className="text-right">
-                                    Razón social
-                                  </Label>
-                                  <Input
-                                    id="razon"
-                                    name="razon"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.razon || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          razon: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="regimen">
+                                      Régimen capital
+                                    </Label>
+                                    <Input
+                                      id="regimen"
+                                      name="regimen"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.regimen || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            regimen: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombre">
+                                      Nombre comercial
+                                    </Label>
+                                    <Input
+                                      id="nombre"
+                                      name="nombre"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.nombre || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombre: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="regimen"
-                                    className="text-right"
-                                  >
-                                    Régimen capital
-                                  </Label>
-                                  <Input
-                                    id="regimen"
-                                    name="regimen"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.regimen || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          regimen: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="fechaInicio">
+                                      Fecha inicio de operaciones
+                                    </Label>
+                                    <Input
+                                      id="fechaInicio"
+                                      name="fechaInicio"
+                                      type="date"
+                                      value={
+                                        selectedUser?.formulario?.fechaInicio ||
+                                        ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            fechaInicio: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="estatus">
+                                      Estatus en el padrón
+                                    </Label>
+                                    <Select
+                                      name="estatus"
+                                      value={
+                                        selectedUser?.formulario?.estatus || ''
+                                      }
+                                      onValueChange={(value) => {
+                                        setSelectedUser((prev) => ({
+                                          ...prev,
+                                          formulario: {
+                                            ...prev.formulario,
+                                            estatus: value,
+                                          },
+                                        }));
+                                      }}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Seleccione una opción" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="ACTIVO">
+                                          Activo
+                                        </SelectItem>
+                                        <SelectItem value="INACTIVO">
+                                          Inactivo
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombre"
-                                    className="text-right"
-                                  >
-                                    Nombre comercial
-                                  </Label>
-                                  <Input
-                                    id="nombre"
-                                    name="nombre"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.nombre || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombre: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="fechaInicio"
-                                    className="text-right"
-                                  >
-                                    Fecha inicio de operaciones
-                                  </Label>
-                                  <Input
-                                    id="fechaInicio"
-                                    name="fechaInicio"
-                                    type="date"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.fechaInicio ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          fechaInicio: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="estatus"
-                                    className="text-right"
-                                  >
-                                    Estatus en el padrón
-                                  </Label>
-                                  <Select
-                                    name="estatus"
-                                    value={
-                                      selectedUser?.formulario?.estatus || ""
-                                    }
-                                    onValueChange={(value) => {
-                                      setSelectedUser((prev) => ({
-                                        ...prev,
-                                        formulario: {
-                                          ...prev.formulario,
-                                          estatus: value,
-                                        },
-                                      }));
-                                    }}
-                                  >
-                                    <SelectTrigger className="col-span-3">
-                                      <SelectValue placeholder="Seleccione una opción" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="ACTIVO">
-                                        Activo
-                                      </SelectItem>
-                                      <SelectItem value="INACTIVO">
-                                        Inactivo
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  {/*<Input id="estatus" className="col-span-3" required value={estatus} onChange={(e) => setEstatus(e.target.value)} />*/}
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="fechaCambio"
-                                    className="text-right"
-                                  >
-                                    Fecha de último cambio de estado
-                                  </Label>
-                                  <Input
-                                    id="fechaCambio"
-                                    name="fechaCambio"
-                                    type="date"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.fechaCambio ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          fechaCambio: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-2">
+                                    <Label htmlFor="fechaCambio">
+                                      Fecha de último cambio de estado
+                                    </Label>
+                                    <Input
+                                      id="fechaCambio"
+                                      name="fechaCambio"
+                                      type="date"
+                                      value={
+                                        selectedUser?.formulario?.fechaCambio ||
+                                        ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            fechaCambio: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
                               </>
                             )}
-
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="domicilio" className="text-right">
-                                ¿Agregar domicilio?
-                              </Label>
-                              <Select
-                                value={domicilio}
-                                onValueChange={(value) => {
-                                  setDomicilio(value);
-                                  setShowDomicilioForm(value === "si"); // Reiniciar el jefe directo
-                                  setShowIdentificacionForm(value === "no"); // Reiniciar el jefe directo
-                                }}
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Seleccione una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">Sí</SelectItem>
-                                  <SelectItem value="no">No</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            {showDomicilioForm && (
+                            {domicilio === 'si' && (
                               <>
                                 <DialogHeader>
                                   <DialogTitle>
                                     Datos del domicilio registrado
                                   </DialogTitle>
                                 </DialogHeader>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="codigo"
-                                    className="text-right"
-                                  >
-                                    Código postal
-                                  </Label>
-                                  <Input
-                                    id="codigo"
-                                    name="codigo"
-                                    type="number"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.codigo || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          codigo: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="codigo">
+                                      Código postal
+                                    </Label>
+                                    <Input
+                                      id="codigo"
+                                      name="codigo"
+                                      type="number"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.codigo || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            codigo: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="tipoVialidad">
+                                      Tipo de vialidad
+                                    </Label>
+                                    <Input
+                                      id="tipoVialidad"
+                                      name="tipoVialidad"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.tipoVialidad || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            tipoVialidad: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="tipoVialidad"
-                                    className="text-right"
-                                  >
-                                    Tipo de vialidad
-                                  </Label>
-                                  <Input
-                                    id="tipoVialidad"
-                                    name="tipoVialidad"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.tipoVialidad ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          tipoVialidad: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombreVialidad">
+                                      Nombre de vialidad
+                                    </Label>
+                                    <Input
+                                      id="nombreVialidad"
+                                      name="nombreVialidad"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.nombreVialidad || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombreVialidad: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="numeroExterior">
+                                      Número exterior
+                                    </Label>
+                                    <Input
+                                      id="numeroExterior"
+                                      name="numeroExterior"
+                                      type="number"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.numeroExterior || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            numeroExterior: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombreVialidad"
-                                    className="text-right"
-                                  >
-                                    Nombre de vialidad
-                                  </Label>
-                                  <Input
-                                    id="nombreVialidad"
-                                    name="nombreVialidad"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario
-                                        ?.nombreVialidad || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombreVialidad: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="numeroInterior">
+                                      Número interior
+                                    </Label>
+                                    <Input
+                                      id="numeroInterior"
+                                      name="numeroInterior"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.numeroInterior || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            numeroInterior: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombreColonia">
+                                      Nombre de la colonia
+                                    </Label>
+                                    <Input
+                                      id="nombreColonia"
+                                      name="nombreColonia"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.nombreColonia || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombreColonia: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="numeroExterior"
-                                    className="text-right"
-                                  >
-                                    Número exterior
-                                  </Label>
-                                  <Input
-                                    id="numeroExterior"
-                                    name="numeroExterior"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario
-                                        ?.numeroExterior || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          numeroExterior: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombreLocalidad">
+                                      Nombre de la localidad
+                                    </Label>
+                                    <Input
+                                      id="nombreLocalidad"
+                                      name="nombreLocalidad"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.nombreLocalidad || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombreLocalidad: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombreMunicipio">
+                                      Nombre del municipio
+                                    </Label>
+                                    <Input
+                                      id="nombreMunicipio"
+                                      name="nombreMunicipio"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.nombreMunicipio || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombreMunicipio: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="numeroInterior"
-                                    className="text-right"
-                                  >
-                                    Número interior
-                                  </Label>
-                                  <Input
-                                    id="numeroInterior"
-                                    name="numeroInterior"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario
-                                        ?.numeroInterior || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          numeroInterior: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="nombreEntidad">
+                                      Nombre de la entidad federativa
+                                    </Label>
+                                    <Input
+                                      id="nombreEntidad"
+                                      name="nombreEntidad"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario
+                                          ?.nombreEntidad || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            nombreEntidad: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2 col-span-1">
+                                    <Label htmlFor="entreCalle">
+                                      Entre calle
+                                    </Label>
+                                    <Input
+                                      id="entreCalle"
+                                      name="entreCalle"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.entreCalle ||
+                                        ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            entreCalle: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombreColonia"
-                                    className="text-right"
-                                  >
-                                    Nombre de la colonia
-                                  </Label>
-                                  <Input
-                                    id="nombreColonia"
-                                    name="nombreColonia"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.nombreColonia ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombreColonia: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombreLocalidad"
-                                    className="text-right"
-                                  >
-                                    Nombre de la localidad
-                                  </Label>
-                                  <Input
-                                    id="nombreLocalidad"
-                                    name="nombreLocalidad"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario
-                                        ?.nombreLocalidad || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombreLocalidad: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombreMunicipio"
-                                    className="text-right"
-                                  >
-                                    Nombre del municipio
-                                  </Label>
-                                  <Input
-                                    id="nombreMunicipio"
-                                    name="nombreMunicipio"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario
-                                        ?.nombreMunicipio || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombreMunicipio: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="nombreEntidad"
-                                    className="text-right"
-                                  >
-                                    Nombre de la entidad federativa
-                                  </Label>
-                                  <Input
-                                    id="nombreEntidad"
-                                    name="nombreEntidad"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.nombreEntidad ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          nombreEntidad: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="entreCalle"
-                                    className="text-right"
-                                  >
-                                    Entre calle
-                                  </Label>
-                                  <Input
-                                    id="entreCalle"
-                                    name="entreCalle"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.entreCalle || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          entreCalle: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                  <Label
-                                    htmlFor="yCalle"
-                                    className="text-right"
-                                  >
-                                    Y calle
-                                  </Label>
-                                  <Input
-                                    id="yCalle"
-                                    name="yCalle"
-                                    className="col-span-3"
-                                    value={
-                                      selectedUser?.formulario?.yCalle || ""
-                                    }
-                                    onChange={(e) =>
-                                      setSelectedUser({
-                                        ...selectedUser,
-                                        formulario: {
-                                          ...selectedUser.formulario,
-                                          yCalle: e.target.value,
-                                        },
-                                      })
-                                    }
-                                  />
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div className="space-y-2 col-span-2">
+                                    <Label htmlFor="yCalle">Y calle</Label>
+                                    <Input
+                                      id="yCalle"
+                                      name="yCalle"
+                                      placeholder="..."
+                                      value={
+                                        selectedUser?.formulario?.yCalle || ''
+                                      }
+                                      onChange={(e) =>
+                                        setSelectedUser({
+                                          ...selectedUser,
+                                          formulario: {
+                                            ...selectedUser.formulario,
+                                            yCalle: e.target.value,
+                                          },
+                                        })
+                                      }
+                                    />
+                                  </div>
                                 </div>
                               </>
                             )}
@@ -1582,13 +1249,13 @@ export function EmpresasTabla() {
         >
           Anterior
         </button>
-        <span style={{ marginRight: "2rem" }}></span>
+        <span style={{ marginRight: '2rem' }}></span>
 
         {/* Páginas */}
         {currentPage > 3 && (
           <>
             <button onClick={() => paginate(1)}>1</button>
-            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
+            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
           </>
         )}
 
@@ -1603,8 +1270,8 @@ export function EmpresasTabla() {
             <button
               key={page}
               onClick={() => paginate(page)}
-              className={currentPage === page ? "font-bold" : ""}
-              style={{ marginLeft: "1rem", marginRight: "1rem" }}
+              className={currentPage === page ? 'font-bold' : ''}
+              style={{ marginLeft: '1rem', marginRight: '1rem' }}
             >
               {page}
             </button>
@@ -1612,12 +1279,12 @@ export function EmpresasTabla() {
 
         {currentPage < totalPages - 2 && (
           <>
-            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
+            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
             <button onClick={() => paginate(totalPages)}>{totalPages}</button>
           </>
         )}
 
-        <span style={{ marginLeft: "2rem" }}></span>
+        <span style={{ marginLeft: '2rem' }}></span>
         <button
           onClick={() => paginate(currentPage + 1)}
           disabled={currentPage === totalPages}
