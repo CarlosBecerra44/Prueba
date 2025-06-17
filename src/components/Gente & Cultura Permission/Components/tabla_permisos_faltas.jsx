@@ -704,8 +704,8 @@ export function TablaPermisosFalta() {
           Comentarios: evento.comentarios || "Sin datos",
           Estatus:
             evento.estatus === "Autorizada por tu jefe directo"
-              ? "Pendiente"
-              : evento.estatus || "Sin datos",
+              ? "Autorizada por el departamento"
+              : evento.estatus === "Pendiente" ? "Autorizada por el departamento" : evento.estatus || "Sin datos",
         };
       })
     );
@@ -1103,10 +1103,10 @@ export function TablaPermisosFalta() {
                 <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
                 {verPeticiones === "Todas las papeletas" ? (
                   <SelectItem value="Autorizada por tu jefe directo">
-                    Pendiente
+                    Autorizada por el departamento
                   </SelectItem>
                 ) : (
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
+                  <SelectItem value="Pendiente">Autorizada por el departamento</SelectItem>
                 )}
                 <SelectItem value="No autorizada por RH">
                   No autorizada
@@ -1373,7 +1373,7 @@ export function TablaPermisosFalta() {
                                     Autorizada
                                   </SelectItem>
                                   <SelectItem value="Pendiente">
-                                    Pendiente
+                                    Autorizada por el departamento
                                   </SelectItem>
                                   <SelectItem value="No autorizada por RH">
                                     No autorizada
@@ -1501,7 +1501,7 @@ export function TablaPermisosFalta() {
                                     Autorizada
                                   </SelectItem>
                                   <SelectItem value="Autorizada por tu jefe directo">
-                                    Pendiente
+                                    Autorizada por el departamento
                                   </SelectItem>
                                   <SelectItem value="No autorizada por RH">
                                     No autorizada
@@ -1705,7 +1705,7 @@ export function TablaPermisosFalta() {
                                     Autorizada
                                   </SelectItem>
                                   <SelectItem value="Autorizada por tu jefe directo">
-                                    Pendiente
+                                    Autorizada por el departamento
                                   </SelectItem>
                                   <SelectItem value="No autorizada por RH">
                                     No autorizada
@@ -1941,7 +1941,7 @@ export function TablaPermisosFalta() {
                                     Autorizada
                                   </SelectItem>
                                   <SelectItem value="Autorizada por tu jefe directo">
-                                    Pendiente
+                                    Autorizada por el departamento
                                   </SelectItem>
                                   <SelectItem value="No autorizada por RH">
                                     No autorizada
@@ -2246,7 +2246,7 @@ export function TablaPermisosFalta() {
                                     Autorizada
                                   </SelectItem>
                                   <SelectItem value="Autorizada por tu jefe directo">
-                                    Pendiente
+                                    Autorizada por el departamento
                                   </SelectItem>
                                   <SelectItem value="No autorizada por RH">
                                     No autorizada
@@ -2360,7 +2360,7 @@ export function TablaPermisosFalta() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Pendiente">Autorizada por el departamento</SelectItem>
                     <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -2477,7 +2477,7 @@ export function TablaPermisosFalta() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                    <SelectItem value="Autorizada por tu jefe directo">Pendiente</SelectItem>
+                    <SelectItem value="Autorizada por tu jefe directo">Autorizada por el departamento</SelectItem>
                     <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -2766,7 +2766,7 @@ export function TablaPermisosFalta() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Pendiente">Autorizada por el departamento</SelectItem>
                     <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -3098,7 +3098,7 @@ export function TablaPermisosFalta() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Pendiente">Autorizada por el departamento</SelectItem>
                     <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -3256,7 +3256,7 @@ export function TablaPermisosFalta() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Autorizada por RH">Autorizada</SelectItem>
-                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Pendiente">Autorizada por el departamento</SelectItem>
                     <SelectItem value="No autorizada por RH">No autorizada</SelectItem>
                   </SelectContent>
                 </Select>
@@ -3415,7 +3415,7 @@ export function TablaPermisosFalta() {
                       }}
                     >
                       <Select
-                        className="w-full min-w-[200px] max-w-[300px]"
+                        className="w-full min-w-[270px]"
                         value={evento.estatus}
                         onValueChange={(value) => {
                           if (
@@ -3437,17 +3437,17 @@ export function TablaPermisosFalta() {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full min-w-[200px] max-w-[300px]">
+                        <SelectTrigger className="w-full min-w-[270px]">
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
-                        <SelectContent className="w-full min-w-[200px] max-w-[300px]">
+                        <SelectContent className="w-full min-w-[270px]">
                           {verPeticiones === "Todas las solicitudes" ? (
                             <>
                               <SelectItem value="Autorizada por RH">
                                 Autorizada
                               </SelectItem>
                               <SelectItem value="Pendiente">
-                                Pendiente
+                                Autorizada por el departamento
                               </SelectItem>
                               <SelectItem value="No autorizada por RH">
                                 No autorizada
@@ -3459,7 +3459,7 @@ export function TablaPermisosFalta() {
                                 Autorizada
                               </SelectItem>
                               <SelectItem value="Autorizada por tu jefe directo">
-                                Pendiente
+                                Autorizada por el departamento
                               </SelectItem>
                               <SelectItem value="No autorizada por RH">
                                 No autorizada
@@ -3473,11 +3473,11 @@ export function TablaPermisosFalta() {
                               {evento.estatus ===
                               "Autorizada por tu jefe directo" ? (
                                 <SelectItem value="Autorizada por tu jefe directo">
-                                  Pendiente
+                                  Autorizada por el departamento
                                 </SelectItem>
                               ) : (
                                 <SelectItem value="Pendiente">
-                                  Pendiente
+                                  Autorizada por el departamento
                                 </SelectItem>
                               )}
                               <SelectItem value="No autorizada por RH">

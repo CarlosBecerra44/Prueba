@@ -198,7 +198,7 @@ export function Principal() {
                       <UsersIcon className="w-6 h-6 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground">
-                      Equipo de RRHH que brinda apoyo a cada uno de nuestros empleados.
+                      Equipo de RH que brinda apoyo a cada uno de nuestros empleados.
                     </p>
                   </div>
 
