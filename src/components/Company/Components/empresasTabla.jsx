@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -26,36 +26,36 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import styles from '../../../../public/CSS/spinner.css';
-import { ChevronRight, Search } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import styles from "../../../../public/CSS/spinner.css";
+import { ChevronRight, Search } from "lucide-react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export function EmpresasTabla() {
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [error, setError] = useState('');
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
-  const [domicilio, setDomicilio] = useState('no');
+  const [domicilio, setDomicilio] = useState("no");
   const [formulario, setFormulario] = useState({});
 
   const filteredUsers = users.filter(
     (user) =>
       // Filtra por estatus
-      (statusFilter === 'todos' || user.formulario?.estatus === statusFilter) &&
+      (statusFilter === "todos" || user.formulario?.estatus === statusFilter) &&
       // Filtra por términos de búsqueda
       Object.values(user).some((value) => {
         // Verifica si el valor no es nulo o indefinido
         if (value === null || value === undefined) return false;
 
         // Si el valor es un objeto (como formulario), lo convertimos a JSON string para buscar
-        if (typeof value === 'object') {
+        if (typeof value === "object") {
           value = JSON.stringify(value); // Convierte objetos a JSON
         }
 
@@ -71,14 +71,14 @@ export function EmpresasTabla() {
     try {
       // Mostrar alerta de confirmación
       const result = await Swal.fire({
-        title: '¿Deseas eliminar la empresa?',
-        text: 'No podrás revertir esta acción',
-        icon: 'warning',
+        title: "¿Deseas eliminar la empresa?",
+        text: "No podrás revertir esta acción",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: 'rgb(31 41 55)',
-        confirmButtonText: 'Eliminar',
-        cancelButtonText: 'Cancelar',
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "rgb(31 41 55)",
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar",
       });
 
       // Si el usuario confirma la eliminación
@@ -88,21 +88,21 @@ export function EmpresasTabla() {
         );
         if (response.status === 200) {
           await Swal.fire(
-            'Eliminada',
-            'La empresa ha sido eliminada',
-            'success'
+            "Eliminada",
+            "La empresa ha sido eliminada",
+            "success"
           );
-          window.location.href = '/usuario/empresas';
+          window.location.href = "/usuario/empresas";
         } else {
-          Swal.fire('Error', 'Error al eliminar la empresa', 'error');
+          Swal.fire("Error", "Error al eliminar la empresa", "error");
         }
       }
     } catch (error) {
-      console.error('Error al eliminar al usuario:', error);
+      console.error("Error al eliminar al usuario:", error);
       Swal.fire(
-        'Error',
-        'Ocurrió un error al intentar eliminar la empresa',
-        'error'
+        "Error",
+        "Ocurrió un error al intentar eliminar la empresa",
+        "error"
       );
     }
   };
@@ -110,17 +110,17 @@ export function EmpresasTabla() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('/api/Company/getEmpresas');
+        const response = await axios.get("/api/Company/getEmpresas");
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
           console.error(
-            'Error al obtener los usuarios:',
+            "Error al obtener los usuarios:",
             response.data.message
           );
         }
       } catch (error) {
-        console.error('Error al hacer fetch de los usuarios:', error);
+        console.error("Error al hacer fetch de los usuarios:", error);
       }
     };
 
@@ -137,7 +137,7 @@ export function EmpresasTabla() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { data: session, status } = useSession();
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -145,12 +145,12 @@ export function EmpresasTabla() {
       </div>
     );
   }
-  if (status == 'loading') {
+  if (status == "loading") {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
     return (
-      (window.location.href = '/'),
+      (window.location.href = "/"),
       (
         <div className="flex items-center justify-center min-h-screen">
           <Spinner className={styles.spinner} />
@@ -164,7 +164,7 @@ export function EmpresasTabla() {
     const userToEdit = users.find((user) => user.id === userId); // Buscar el usuario en el estado
     setSelectedUser(userToEdit); // Establecer el usuario seleccionado en el estado
     setFormulario(userToEdit.formulario);
-    setDomicilio('no');
+    setDomicilio("no");
   };
 
   const handleInputChange = (value, name) => {
@@ -178,10 +178,10 @@ export function EmpresasTabla() {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/Company/registrarEmpresa', {
-        method: 'POST',
+      const res = await fetch("/api/Company/registrarEmpresa", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ formulario }),
       });
@@ -195,21 +195,21 @@ export function EmpresasTabla() {
 
       if (res.ok) {
         Swal.fire({
-          title: 'Creada',
-          text: 'La empresa ha sido creada correctamente',
-          icon: 'success',
+          title: "Creada",
+          text: "La empresa ha sido creada correctamente",
+          icon: "success",
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = '/usuario/empresas';
+          window.location.href = "/usuario/empresas";
         });
       } else {
-        Swal.fire('Error', 'Error al crear la empresa', 'error');
+        Swal.fire("Error", "Error al crear la empresa", "error");
       }
     } catch (err) {
-      console.error('Error en el registro:', err);
+      console.error("Error en el registro:", err);
       setError(
-        'Hubo un problema con el registro. Por favor, intenta nuevamente.'
+        "Hubo un problema con el registro. Por favor, intenta nuevamente."
       );
     }
   };
@@ -218,10 +218,10 @@ export function EmpresasTabla() {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/Company/actualizarEmpresa', {
-        method: 'POST',
+      const res = await fetch("/api/Company/actualizarEmpresa", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: selectedUser.id,
@@ -232,38 +232,38 @@ export function EmpresasTabla() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || 'Hubo un problema al actualizar el usuario');
+        setError(data.message || "Hubo un problema al actualizar el usuario");
         return;
       }
 
       if (res.ok) {
         Swal.fire({
-          title: 'Actualizada',
-          text: 'Los datos de la empresa se han actualizado correctamente',
-          icon: 'success',
+          title: "Actualizada",
+          text: "Los datos de la empresa se han actualizado correctamente",
+          icon: "success",
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = '/usuario/empresas';
+          window.location.href = "/usuario/empresas";
         });
       } else {
         Swal.fire(
-          'Error',
-          'Error al actualizar los datos de la empresa',
-          'error'
+          "Error",
+          "Error al actualizar los datos de la empresa",
+          "error"
         );
       }
     } catch (err) {
-      console.error('Error en la actualización:', err);
+      console.error("Error en la actualización:", err);
       setError(
-        'Hubo un problema con la actualización. Por favor, intenta nuevamente.'
+        "Hubo un problema con la actualización. Por favor, intenta nuevamente."
       );
     }
   };
 
   const handleCleanForm = () => {
     setFormulario({});
-    setDomicilio('no');
+    setDomicilio("no");
   };
 
   return (
@@ -323,12 +323,12 @@ export function EmpresasTabla() {
             onInteractOutside={(event) => event.preventDefault()}
             className="border-none p-0 overflow-y-auto"
             style={{
-              width: '100%', // Ajusta el ancho
-              maxWidth: '1000px', // Límite del ancho
-              height: '70vh', // Ajusta la altura
-              maxHeight: '80vh', // Límite de la altura
-              padding: '20px', // Margen interno
-              marginLeft: '120px',
+              width: "100%", // Ajusta el ancho
+              maxWidth: "1000px", // Límite del ancho
+              height: "70vh", // Ajusta la altura
+              maxHeight: "80vh", // Límite de la altura
+              padding: "20px", // Margen interno
+              marginLeft: "120px",
             }}
           >
             <DialogHeader>
@@ -359,7 +359,7 @@ export function EmpresasTabla() {
                   </div>
                 </div>
 
-                {domicilio === 'no' && (
+                {domicilio === "no" && (
                   <>
                     <DialogHeader>
                       <DialogTitle>
@@ -439,7 +439,7 @@ export function EmpresasTabla() {
                           name="estatus"
                           value={formulario.estatus}
                           onValueChange={(value) =>
-                            handleInputChange(value, 'estatus')
+                            handleInputChange(value, "estatus")
                           }
                         >
                           <SelectTrigger>
@@ -470,7 +470,7 @@ export function EmpresasTabla() {
                     </div>
                   </>
                 )}
-                {domicilio === 'si' && (
+                {domicilio === "si" && (
                   <>
                     <DialogHeader>
                       <DialogTitle>Datos del domicilio registrado</DialogTitle>
@@ -624,15 +624,9 @@ export function EmpresasTabla() {
                           id="yCalle"
                           name="yCalle"
                           placeholder="..."
-                          value={selectedUser?.formulario?.yCalle || ''}
+                          value={formulario.yCalle}
                           onChange={(e) =>
-                            setSelectedUser({
-                              ...selectedUser,
-                              formulario: {
-                                ...selectedUser.formulario,
-                                yCalle: e.target.value,
-                              },
-                            })
+                            handleInputChange(e.target.value, e.target.name)
                           }
                         />
                       </div>
@@ -670,43 +664,43 @@ export function EmpresasTabla() {
             currentUsers.map((user, index) => (
               <TableRow key={index}>
                 <TableCell>{user.id}</TableCell>
-                <TableCell>{user.formulario.rfc || 'Sin datos'}</TableCell>
-                <TableCell>{user.formulario.razon || 'Sin datos'}</TableCell>
-                <TableCell>{user.formulario.nombre || 'Sin datos'}</TableCell>
+                <TableCell>{user.formulario.rfc || "Sin datos"}</TableCell>
+                <TableCell>{user.formulario.razon || "Sin datos"}</TableCell>
+                <TableCell>{user.formulario.nombre || "Sin datos"}</TableCell>
                 <TableCell>
                   {user.formulario.fechaInicio
                     ? new Date(
                         new Date(user.formulario.fechaInicio).getTime() +
                           new Date().getTimezoneOffset() * 60000
-                      ).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
+                      ).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
                       })
-                    : 'Sin datos'}
+                    : "Sin datos"}
                 </TableCell>
-                <TableCell>{user.formulario.estatus || 'Sin datos'}</TableCell>
+                <TableCell>{user.formulario.estatus || "Sin datos"}</TableCell>
                 <TableCell>
                   {user.formulario.fechaCambio
                     ? new Date(
                         new Date(user.formulario.fechaCambio).getTime() +
                           new Date().getTimezoneOffset() * 60000
-                      ).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
+                      ).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
                       })
-                    : 'Sin datos'}
+                    : "Sin datos"}
                 </TableCell>
-                <TableCell>{user.formulario.codigo || 'Sin datos'}</TableCell>
+                <TableCell>{user.formulario.codigo || "Sin datos"}</TableCell>
                 <TableCell>
-                  {user.formulario.nombreVialidad || 'Sin datos'}
-                </TableCell>
-                <TableCell>
-                  {user.formulario.numeroExterior || 'Sin datos'}
+                  {user.formulario.nombreVialidad || "Sin datos"}
                 </TableCell>
                 <TableCell>
-                  {user.formulario.numeroInterior || 'Sin datos'}
+                  {user.formulario.numeroExterior || "Sin datos"}
+                </TableCell>
+                <TableCell>
+                  {user.formulario.numeroInterior || "Sin datos"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -725,12 +719,12 @@ export function EmpresasTabla() {
                         onInteractOutside={(event) => event.preventDefault()}
                         className="border-none p-0 overflow-y-auto"
                         style={{
-                          width: '100%', // Ajusta el ancho
-                          maxWidth: '1000px', // Límite del ancho
-                          height: '70vh', // Ajusta la altura
-                          maxHeight: '80vh', // Límite de la altura
-                          padding: '20px', // Margen interno
-                          marginLeft: '120px',
+                          width: "100%", // Ajusta el ancho
+                          maxWidth: "1000px", // Límite del ancho
+                          height: "70vh", // Ajusta la altura
+                          maxHeight: "80vh", // Límite de la altura
+                          padding: "20px", // Margen interno
+                          marginLeft: "120px",
                         }}
                       >
                         <DialogHeader>
@@ -763,7 +757,7 @@ export function EmpresasTabla() {
                               </div>
                             </div>
 
-                            {domicilio === 'no' && (
+                            {domicilio === "no" && (
                               <>
                                 <DialogHeader>
                                   <DialogTitle>
@@ -778,7 +772,7 @@ export function EmpresasTabla() {
                                       name="rfc"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.rfc || ''
+                                        selectedUser?.formulario?.rfc || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -798,7 +792,7 @@ export function EmpresasTabla() {
                                       name="razon"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.razon || ''
+                                        selectedUser?.formulario?.razon || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -822,7 +816,7 @@ export function EmpresasTabla() {
                                       name="regimen"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.regimen || ''
+                                        selectedUser?.formulario?.regimen || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -844,7 +838,7 @@ export function EmpresasTabla() {
                                       name="nombre"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.nombre || ''
+                                        selectedUser?.formulario?.nombre || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -869,7 +863,7 @@ export function EmpresasTabla() {
                                       type="date"
                                       value={
                                         selectedUser?.formulario?.fechaInicio ||
-                                        ''
+                                        ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -889,7 +883,7 @@ export function EmpresasTabla() {
                                     <Select
                                       name="estatus"
                                       value={
-                                        selectedUser?.formulario?.estatus || ''
+                                        selectedUser?.formulario?.estatus || ""
                                       }
                                       onValueChange={(value) => {
                                         setSelectedUser((prev) => ({
@@ -926,7 +920,7 @@ export function EmpresasTabla() {
                                       type="date"
                                       value={
                                         selectedUser?.formulario?.fechaCambio ||
-                                        ''
+                                        ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -942,7 +936,7 @@ export function EmpresasTabla() {
                                 </div>
                               </>
                             )}
-                            {domicilio === 'si' && (
+                            {domicilio === "si" && (
                               <>
                                 <DialogHeader>
                                   <DialogTitle>
@@ -960,7 +954,7 @@ export function EmpresasTabla() {
                                       type="number"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.codigo || ''
+                                        selectedUser?.formulario?.codigo || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -983,7 +977,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.tipoVialidad || ''
+                                          ?.tipoVialidad || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1008,7 +1002,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.nombreVialidad || ''
+                                          ?.nombreVialidad || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1032,7 +1026,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.numeroExterior || ''
+                                          ?.numeroExterior || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1057,7 +1051,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.numeroInterior || ''
+                                          ?.numeroInterior || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1080,7 +1074,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.nombreColonia || ''
+                                          ?.nombreColonia || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1105,7 +1099,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.nombreLocalidad || ''
+                                          ?.nombreLocalidad || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1128,7 +1122,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.nombreMunicipio || ''
+                                          ?.nombreMunicipio || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1153,7 +1147,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario
-                                          ?.nombreEntidad || ''
+                                          ?.nombreEntidad || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1176,7 +1170,7 @@ export function EmpresasTabla() {
                                       placeholder="..."
                                       value={
                                         selectedUser?.formulario?.entreCalle ||
-                                        ''
+                                        ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1198,7 +1192,7 @@ export function EmpresasTabla() {
                                       name="yCalle"
                                       placeholder="..."
                                       value={
-                                        selectedUser?.formulario?.yCalle || ''
+                                        selectedUser?.formulario?.yCalle || ""
                                       }
                                       onChange={(e) =>
                                         setSelectedUser({
@@ -1249,13 +1243,13 @@ export function EmpresasTabla() {
         >
           Anterior
         </button>
-        <span style={{ marginRight: '2rem' }}></span>
+        <span style={{ marginRight: "2rem" }}></span>
 
         {/* Páginas */}
         {currentPage > 3 && (
           <>
             <button onClick={() => paginate(1)}>1</button>
-            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
+            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
           </>
         )}
 
@@ -1270,8 +1264,8 @@ export function EmpresasTabla() {
             <button
               key={page}
               onClick={() => paginate(page)}
-              className={currentPage === page ? 'font-bold' : ''}
-              style={{ marginLeft: '1rem', marginRight: '1rem' }}
+              className={currentPage === page ? "font-bold" : ""}
+              style={{ marginLeft: "1rem", marginRight: "1rem" }}
             >
               {page}
             </button>
@@ -1279,12 +1273,12 @@ export function EmpresasTabla() {
 
         {currentPage < totalPages - 2 && (
           <>
-            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
+            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
             <button onClick={() => paginate(totalPages)}>{totalPages}</button>
           </>
         )}
 
-        <span style={{ marginLeft: '2rem' }}></span>
+        <span style={{ marginLeft: "2rem" }}></span>
         <button
           onClick={() => paginate(currentPage + 1)}
           disabled={currentPage === totalPages}
