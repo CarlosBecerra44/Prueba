@@ -4,7 +4,6 @@ import path from "path";
 import formidable from "formidable";
 import Producto from "@/models/Productos";
 import ImagenProducto from "@/models/ImagenesProductos";
-import sharp from "sharp";
 
 // Configuración para evitar que Next.js maneje el bodyParser automáticamente
 export const config = {
@@ -27,19 +26,17 @@ export default async function handler(req, res) {
   form.parse(req, async (err, fields, files) => {
     if (err) {
       console.error("Error procesando el formulario:", err);
-      return res
-        .status(500)
-        .json({ message: "Error al procesar el formulario" });
+      return res.status(500).json({ message: "Error al procesar el formulario" });
     }
+
+    console.log('Archivos recibidos:', files); // Verificar los archivos
 
     if (!files.imagenes) {
       return res.status(400).json({ message: "No se recibieron imágenes" });
     }
 
     // En caso de que los archivos sean un array o un solo archivo
-    const imagenes = Array.isArray(files.imagenes)
-      ? files.imagenes
-      : [files.imagenes];
+    const imagenes = Array.isArray(files.imagenes) ? files.imagenes : [files.imagenes];
 
     try {
       // Insertar el producto en la base de datos utilizando Sequelize
@@ -71,33 +68,19 @@ export default async function handler(req, res) {
 
       // Subir cada imagen al servidor FTP
       for (const file of imagenes) {
+        // Verifica si la ruta del archivo existe
+        console.log("Subiendo archivo:", file.path); 
+
         // Ruta donde se subirá el archivo en el servidor FTP
         const filePath = `/uploads/imagenesProductos/${file.name}`;
-        const fileExt = path.extname(file.name).toLowerCase();
-        const now = new Date();
-        const formattedDate = now
-          .toISOString()
-          .replace(/[-:T]/g, "")
-          .split(".")[0];
-        const newFileName = `${formattedDate}_${file.name}`;
-        const outputPath = path.join(
-          process.cwd(),
-          "uploads",
-          `processed_${newFileName}`
-        );
-        await sharp(file.path)
-          .toFormat(fileExt.replace(".", ""))
-          .toFile(outputPath);
 
         // Subir el archivo al servidor FTP
         try {
-          await client.uploadFrom(outputPath, filePath);
+          await client.uploadFrom(file.path, filePath);
+          console.log(`Archivo subido con éxito a: ${filePath}`);
         } catch (uploadErr) {
           console.error(`Error subiendo el archivo ${file.name}:`, uploadErr);
-          return res.status(500).json({
-            message: "Error al subir el archivo al FTP",
-            error: uploadErr,
-          });
+          return res.status(500).json({ message: "Error al subir el archivo al FTP" });
         }
 
         uploadedImages.push({ ruta: filePath, producto_id: producto.id });
@@ -105,7 +88,6 @@ export default async function handler(req, res) {
         // Eliminar el archivo temporal después de subirlo
         try {
           fs.unlinkSync(file.path);
-          fs.unlinkSync(outputPath);
         } catch (unlinkErr) {
           console.error("Error al eliminar el archivo temporal:", unlinkErr);
         }
@@ -114,22 +96,19 @@ export default async function handler(req, res) {
       client.close();
 
       // Guardar las rutas de las imágenes en la base de datos utilizando Sequelize
-      const imgProductos = uploadedImages.map((img) => ({
+      const imgProductos = uploadedImages.map(img => ({
         ruta: img.ruta,
         producto_id: img.producto_id,
-        tipo: 1,
+        tipo: 1
       }));
 
       // Inserta las imágenes asociadas al producto
       await ImagenProducto.bulkCreate(imgProductos);
 
-      res.status(201).json({
-        success: true,
-        message: "Producto e imágenes guardadas correctamente",
-      });
+      res.status(201).json({ success: true, message: "Producto e imágenes guardadas correctamente" });
     } catch (error) {
       console.error("Error registrando el producto:", error);
-      res.status(500).json({ message: "Error en el servidor" + error });
+      res.status(500).json({ message: "Error en el servidor" });
     }
   });
 }
