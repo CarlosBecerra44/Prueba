@@ -80,11 +80,9 @@ export default async function handler(req, res) {
           .replace(/[-:T]/g, "")
           .split(".")[0];
         const newFileName = `${formattedDate}_${file.name}`;
-        const outputPath = path.join(
-          process.cwd(),
-          "uploads",
-          `processed_${newFileName}`
-        );
+        const outputPath = path.join("/tmp", `processed_${newFileName}`);
+        // para que esto funcione en local
+        // const outputPath = path.join(process.cwd(), "public/uploads", `processed_${newFileName}`);
         await sharp(file.path)
           .toFormat(fileExt.replace(".", ""))
           .toFile(outputPath);

@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   const form = new formidable.IncomingForm({
     multiples: false, // Solo un archivo
     uploadDir: "/tmp",
+    // uploadDir: path.join(process.cwd(), "public/uploads"),
     keepExtensions: true,
   });
 
@@ -42,11 +43,9 @@ export default async function handler(req, res) {
     const now = new Date();
     const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
     const newFileName = `${formattedDate}_${file.name}`;
-    const outputPath = path.join(
-      process.cwd(),
-      "uploads",
-      `processed_${newFileName}`
-    );
+    const outputPath = path.join("/tmp", `processed_${newFileName}`);
+    // para que esto funcione en local
+    // const outputPath = path.join(process.cwd(), "public/uploads", `processed_${newFileName}`);
 
     try {
       // Si es imagen, comprimirla; si no, copiar directamente
@@ -87,7 +86,9 @@ export default async function handler(req, res) {
       });
     } catch (error) {
       console.error("Error al subir al FTP o procesar archivo:", error);
-      res.status(500).json({ error: "No se pudo subir el archivo al FTP" });
+      res
+        .status(500)
+        .json({ error: "No se pudo subir el archivo al FTP", error });
     }
   });
 }
