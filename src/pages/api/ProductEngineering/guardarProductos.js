@@ -4,7 +4,6 @@ import path from "path";
 import formidable from "formidable";
 import Producto from "@/models/Productos";
 import ImagenProducto from "@/models/ImagenesProductos";
-import sharp from "sharp";
 
 // Configuración para evitar que Next.js maneje el bodyParser automáticamente
 export const config = {
@@ -31,6 +30,8 @@ export default async function handler(req, res) {
         .status(500)
         .json({ message: "Error al procesar el formulario" });
     }
+
+    console.log("Archivos recibidos:", files); // Verificar los archivos
 
     if (!files.imagenes) {
       return res.status(400).json({ message: "No se recibieron imágenes" });
@@ -71,6 +72,9 @@ export default async function handler(req, res) {
 
       // Subir cada imagen al servidor FTP
       for (const file of imagenes) {
+        // Verifica si la ruta del archivo existe
+        console.log("Subiendo archivo:", file.path);
+
         // Ruta donde se subirá el archivo en el servidor FTP
         const filePath = `/uploads/imagenesProductos/${file.name}`;
         const fileExt = path.extname(file.name).toLowerCase();
@@ -88,13 +92,13 @@ export default async function handler(req, res) {
           .toFile(outputPath);
         // Subir el archivo al servidor FTP
         try {
-          await client.uploadFrom(outputPath, filePath);
+          await client.uploadFrom(file.path, filePath);
+          console.log(`Archivo subido con éxito a: ${filePath}`);
         } catch (uploadErr) {
           console.error(`Error subiendo el archivo ${file.name}:`, uploadErr);
-          return res.status(500).json({
-            message: "Error al subir el archivo al FTP",
-            error: uploadErr,
-          });
+          return res
+            .status(500)
+            .json({ message: "Error al subir el archivo al FTP" });
         }
 
         uploadedImages.push({ ruta: filePath, producto_id: producto.id });
@@ -102,7 +106,6 @@ export default async function handler(req, res) {
         // Eliminar el archivo temporal después de subirlo
         try {
           fs.unlinkSync(file.path);
-          fs.unlinkSync(outputPath);
         } catch (unlinkErr) {
           console.error("Error al eliminar el archivo temporal:", unlinkErr);
         }
@@ -120,13 +123,15 @@ export default async function handler(req, res) {
       // Inserta las imágenes asociadas al producto
       await ImagenProducto.bulkCreate(imgProductos);
 
-      res.status(201).json({
-        success: true,
-        message: "Producto e imágenes guardadas correctamente",
-      });
+      res
+        .status(201)
+        .json({
+          success: true,
+          message: "Producto e imágenes guardadas correctamente",
+        });
     } catch (error) {
       console.error("Error registrando el producto:", error);
-      res.status(500).json({ message: "Error en el servidor" + error });
+      res.status(500).json({ message: "Error en el servidor" });
     }
   });
 }

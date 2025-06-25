@@ -2,7 +2,6 @@ import fs from "fs";
 import { Client } from "basic-ftp";
 import formidable from "formidable";
 import path from "path";
-import sharp from "sharp";
 
 // Desactiva el body parser de Next.js para usar formidable
 export const config = {
@@ -32,8 +31,8 @@ export default async function handler(req, res) {
 
     const file = files.comprobante;
 
-    if (!file || !file.path) {
-      return res.status(400).json({ message: "Archivo no válido" });
+    if (!file) {
+      return res.status(400).json({ message: "No se recibió ningún archivo" });
     }
 
     const fileExt = path.extname(file.name).toLowerCase();
@@ -56,7 +55,7 @@ export default async function handler(req, res) {
         fs.copyFileSync(file.path, outputPath);
       }
 
-      // Conexión FTP
+      // Conectar al servidor FTP
       const client = new Client();
       client.ftp.verbose = true;
 
@@ -68,21 +67,26 @@ export default async function handler(req, res) {
       });
 
       const remotePath = `/uploads/papeletas/${newFileName}`;
-      await client.uploadFrom(outputPath, remotePath);
+
+      // Subir el archivo directamente
+      await client.uploadFrom(file.path, remotePath);
+
+      // Cerrar la conexión FTP
       client.close();
 
       // Borrar el archivo temporal
       try {
         fs.unlinkSync(file.path);
-        fs.unlinkSync(outputPath);
       } catch (unlinkErr) {
         console.error("Error al eliminar archivo temporal:", unlinkErr);
       }
 
-      res.status(200).json({
-        message: "Archivo subido correctamente al FTP",
-        fileName: newFileName,
-      });
+      res
+        .status(200)
+        .json({
+          message: "Archivo subido correctamente al FTP",
+          fileName: newFileName,
+        });
     } catch (error) {
       console.error("Error al subir al FTP o procesar archivo:", error);
       res

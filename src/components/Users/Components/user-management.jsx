@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -26,160 +26,160 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import styles from "../../../../public/CSS/spinner.css";
-import { ChevronRight, Search, UserPlus, X, KeyRound } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
-import axios from "axios";
-import Swal from "sweetalert2";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import styles from '../../../../public/CSS/spinner.css';
+import { ChevronRight, Search, UserPlus, X, KeyRound } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const formSections = [
   {
-    id: "Investigación y Desarrollo de Nuevos Productos",
-    name: "Investigación y Desarrollo de Nuevos Productos",
+    id: 'Investigación y Desarrollo de Nuevos Productos',
+    name: 'Investigación y Desarrollo de Nuevos Productos',
     changeOptions: [
-      "Código QR",
-      "Código de barras",
-      "Cambio estético",
-      "Cambio crítico",
-      "Distribuido y elaborado por",
-      "Tabla nutrimental",
-      "Lista de ingredientes",
+      'Código QR',
+      'Código de barras',
+      'Cambio estético',
+      'Cambio crítico',
+      'Distribuido y elaborado por',
+      'Tabla nutrimental',
+      'Lista de ingredientes',
     ],
   },
   {
-    id: "Diseño",
-    name: "Diseño",
+    id: 'Diseño',
+    name: 'Diseño',
     changeOptions: [
-      "nombre_producto",
-      "proveedor",
-      "terminado",
-      "articulo",
-      "fecha_elaboracion",
-      "edicion",
-      "sustrato",
-      "dimensiones",
-      "escala",
-      "description",
-      "Tamaño de letra",
-      "Logotipo",
-      "Tipografía",
-      "Colores",
+      'nombre_producto',
+      'proveedor',
+      'terminado',
+      'articulo',
+      'fecha_elaboracion',
+      'edicion',
+      'sustrato',
+      'dimensiones',
+      'escala',
+      'description',
+      'Tamaño de letra',
+      'Logotipo',
+      'Tipografía',
+      'Colores',
     ],
   },
   {
-    id: "Calidad",
-    name: "Calidad",
-    changeOptions: ["Información", "Ortografía"],
+    id: 'Calidad',
+    name: 'Calidad',
+    changeOptions: ['Información', 'Ortografía'],
   },
   {
-    id: "Auditorías",
-    name: "Auditorías",
-    changeOptions: ["Auditable"],
+    id: 'Auditorías',
+    name: 'Auditorías',
+    changeOptions: ['Auditable'],
   },
   {
-    id: "Laboratorio",
-    name: "Laboratorio",
-    changeOptions: ["Fórmula"],
+    id: 'Laboratorio',
+    name: 'Laboratorio',
+    changeOptions: ['Fórmula'],
   },
   {
-    id: "Ingeniería de Productos",
-    name: "Ingeniería de Productos",
+    id: 'Ingeniería de Productos',
+    name: 'Ingeniería de Productos',
     changeOptions: [
-      "Dimensiones",
-      "Sustrato",
-      "Impresión",
-      "Acabado",
-      "Rollo",
-      "Seleccionar imágenes",
+      'Dimensiones',
+      'Sustrato',
+      'Impresión',
+      'Acabado',
+      'Rollo',
+      'Seleccionar imágenes',
     ],
   },
   {
-    id: "Gerente de Marketing",
-    name: "Gerente de Marketing",
-    changeOptions: ["Teléfono", "Mail/email"],
+    id: 'Gerente de Marketing',
+    name: 'Gerente de Marketing',
+    changeOptions: ['Teléfono', 'Mail/email'],
   },
   {
-    id: "Compras",
-    name: "Compras",
-    changeOptions: ["Valor"],
+    id: 'Compras',
+    name: 'Compras',
+    changeOptions: ['Valor'],
   },
   {
-    id: "Planeación",
-    name: "Planeación",
-    changeOptions: ["Inventario"],
+    id: 'Planeación',
+    name: 'Planeación',
+    changeOptions: ['Inventario'],
   },
   {
-    id: "Verificación",
-    name: "Verificación",
+    id: 'Verificación',
+    name: 'Verificación',
     changeOptions: [
-      "Directora de marketing",
-      "Gerente de maquilas y desarrollo de nuevo productos",
-      "Investigación y desarrollo de nuevos productos",
-      "Ingeniería de productos",
-      "Gerente de marketing",
-      "Diseñador gráfico",
-      "Gerente o supervisor de calidad",
-      "Gerente o coordinador de auditorías",
-      "Químico o formulador",
-      "Planeación",
-      "Maquilas",
+      'Directora de marketing',
+      'Gerente de maquilas y desarrollo de nuevo productos',
+      'Investigación y desarrollo de nuevos productos',
+      'Ingeniería de productos',
+      'Gerente de marketing',
+      'Diseñador gráfico',
+      'Gerente o supervisor de calidad',
+      'Gerente o coordinador de auditorías',
+      'Químico o formulador',
+      'Planeación',
+      'Maquilas',
     ],
   },
   {
-    id: "Papeletas",
-    name: "Papeletas",
-    changeOptions: ["Autorizar", "Modulo papeletas", "Solicitudes"],
+    id: 'Papeletas',
+    name: 'Papeletas',
+    changeOptions: ['Autorizar', 'Modulo papeletas', 'Solicitudes'],
   },
   {
-    id: "Gente y Cultura",
-    name: "Gente y Cultura",
-    changeOptions: ["Vacantes", "Vacantes sin sueldo"],
+    id: 'Gente y Cultura',
+    name: 'Gente y Cultura',
+    changeOptions: ['Vacantes', 'Vacantes sin sueldo'],
   },
   {
-    id: "Marketing",
-    name: "Marketing",
-    changeOptions: ["Firmas"],
+    id: 'Marketing',
+    name: 'Marketing',
+    changeOptions: ['Firmas'],
   },
   {
-    id: "Ing. Productos",
-    name: "Ing. Productos",
-    changeOptions: ["CMD Productos"],
+    id: 'Ing. Productos',
+    name: 'Ing. Productos',
+    changeOptions: ['CMD Productos'],
   },
   {
-    id: "Ventas",
-    name: "Ventas",
-    changeOptions: ["Levantamiento requerimientos", "Formulas", "Costos"],
+    id: 'Ventas',
+    name: 'Ventas',
+    changeOptions: ['Levantamiento requerimientos', 'Formulas', 'Costos'],
   },
 ];
 
 const plataformas = {
-  aionet: "Aionet",
-  aionbusiness: "AionBusiness",
-  correo: "Correo electrónico",
-  synology: "Synology",
+  aionet: 'Aionet',
+  aionbusiness: 'AionBusiness',
+  correo: 'Correo electrónico',
+  synology: 'Synology',
 };
 
 export function UserManagementTable() {
   const [selectedSections, setSelectedSections] = useState([]);
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [employeeNumber, setEmployeeNumber] = useState("");
-  const [position, setPosition] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [entryDate, setEntryDate] = useState("");
-  const [directBoss, setDirectBoss] = useState("");
-  const [company, setCompany] = useState("");
-  const [workPlant, setWorkPlant] = useState("");
-  const [selectedPermission, setSelectedPermission] = useState("");
-  const [password, setPassword] = useState("NutriAdmin2035");
-  const [confirmPassword, setConfirmPassword] = useState("NutriAdmin2035");
+  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [employeeNumber, setEmployeeNumber] = useState('');
+  const [position, setPosition] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [entryDate, setEntryDate] = useState('');
+  const [directBoss, setDirectBoss] = useState('');
+  const [company, setCompany] = useState('');
+  const [workPlant, setWorkPlant] = useState('');
+  const [selectedPermission, setSelectedPermission] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [users, setUsers] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedChanges, setSelectedChanges] = useState({});
@@ -187,18 +187,18 @@ export function UserManagementTable() {
     useState(false);
   const [isFormSectionsDialogOpen, setIsFormSectionsDialogOpen] =
     useState(false);
-  const [statusFilter, setStatusFilter] = useState("todos");
-  const [departmentFilter, setDepartmentFilter] = useState("todos");
-  const [error, setError] = useState("");
-  const [role, setSelectedRole] = useState("");
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [departmentFilter, setDepartmentFilter] = useState('todos');
+  const [error, setError] = useState('');
+  const [role, setSelectedRole] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedDepartamento, setSelectedDepartamento] = useState(""); // ID del departamento seleccionado
+  const [selectedDepartamento, setSelectedDepartamento] = useState(''); // ID del departamento seleccionado
   const [filteredUsersDpto, setFilteredUsers] = useState([]);
-  const [nuevaContraseña, setNuevaContraseña] = useState("");
-  const [confirmarContraseña, setConfirmarContraseña] = useState("");
-  const [searchTermPass, setSearchTermPass] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [nuevaContraseña, setNuevaContraseña] = useState('');
+  const [confirmarContraseña, setConfirmarContraseña] = useState('');
+  const [searchTermPass, setSearchTermPass] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const inputRef = useRef(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState({});
@@ -206,8 +206,8 @@ export function UserManagementTable() {
 
   const filteredUsers = users.filter(
     (user) =>
-      (statusFilter === "todos" || user.rol === statusFilter) &&
-      (departmentFilter === "todos" || user.id_dpto === departmentFilter) &&
+      (statusFilter === 'todos' || user.rol === statusFilter) &&
+      (departmentFilter === 'todos' || user.id_dpto === departmentFilter) &&
       Object.values(user)
         .filter((value) => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
         .some((value) =>
@@ -230,12 +230,12 @@ export function UserManagementTable() {
     try {
       // Mostrar alerta de confirmación
       const result = await Swal.fire({
-        title: "¿Deseas eliminar al usuario?",
-        text: "No podrás revertir esta acción",
-        icon: "warning",
+        title: '¿Deseas eliminar al usuario?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "rgb(31 41 55)",
+        confirmButtonColor: '#d33',
+        cancelButtonColor: 'rgb(31 41 55)',
         confirmButtonText: 'Eliminar',
         cancelButtonText: 'Cancelar',
       });
@@ -247,21 +247,21 @@ export function UserManagementTable() {
         );
         if (response.status === 200) {
           await Swal.fire(
-            "Eliminado",
-            "El usuario ha sido eliminado correctamente",
-            "success"
+            'Eliminado',
+            'El usuario ha sido eliminado correctamente',
+            'success'
           );
-          window.location.href = "/usuario";
+          window.location.href = '/usuario';
         } else {
-          Swal.fire("Error", "Error al eliminar al usuario", "error");
+          Swal.fire('Error', 'Error al eliminar al usuario', 'error');
         }
       }
     } catch (error) {
-      console.error("Error al eliminar al usuario:", error);
+      console.error('Error al eliminar al usuario:', error);
       Swal.fire(
-        "Error",
-        "Ocurrió un error al intentar eliminar al usuario",
-        "error"
+        'Error',
+        'Ocurrió un error al intentar eliminar al usuario',
+        'error'
       );
     }
   };
@@ -279,7 +279,7 @@ export function UserManagementTable() {
     if (!selectedUsers.some((u) => u.id === userId)) {
       setSelectedUsers([...selectedUsers, user]);
     }
-    setSearchTermPass(""); // Resetea la búsqueda después de seleccionar un usuario
+    setSearchTermPass(''); // Resetea la búsqueda después de seleccionar un usuario
   };
 
   const handleCheckboxChange = (key) => {
@@ -296,11 +296,11 @@ export function UserManagementTable() {
       // Verificar si plataformas es null o undefined
       if (!plataformas) {
         plataformas = {}; // Inicializar como un objeto vacío
-      } else if (typeof plataformas === "string") {
+      } else if (typeof plataformas === 'string') {
         try {
           plataformas = JSON.parse(plataformas);
         } catch (error) {
-          console.error("Error al parsear plataformas:", error);
+          console.error('Error al parsear plataformas:', error);
           plataformas = {}; // Si falla el parseo, inicializar como objeto vacío
         }
       }
@@ -343,17 +343,17 @@ export function UserManagementTable() {
     const fetchUsers = async () => {
       setLoading(true); // Iniciar carga
       try {
-        const response = await axios.get("/api/Users/getUsers");
+        const response = await axios.get('/api/Users/getUsers');
         if (response.data.success) {
           setUsers(response.data.users);
         } else {
           console.error(
-            "Error al obtener los usuarios:",
+            'Error al obtener los usuarios:',
             response.data.message
           );
         }
       } catch (error) {
-        console.error("Error al hacer fetch de los usuarios:", error);
+        console.error('Error al hacer fetch de los usuarios:', error);
       } finally {
         setLoading(false); // Finalizar carga
       }
@@ -375,12 +375,12 @@ export function UserManagementTable() {
             setSelectedChanges(data.permiso?.campo || {});
           } else {
             console.error(
-              "Error en la respuesta del servidor:",
+              'Error en la respuesta del servidor:',
               response.status
             );
           }
         } catch (error) {
-          console.error("Error fetching selections", error);
+          console.error('Error fetching selections', error);
         } finally {
           setLoading(false); // Finalizar carga
         }
@@ -430,35 +430,36 @@ export function UserManagementTable() {
   useEffect(() => {
     const fetchDepartamentos = async () => {
       try {
-        const response = await axios.get("/api/Users/getDepartamentos");
+        const response = await axios.get('/api/Users/getDepartamentos');
         if (response.data.success) {
           setDepartamentos(response.data.departments);
         } else {
           console.error(
-            "Error al obtener los departamentos:",
+            'Error al obtener los departamentos:',
             response.data.message
           );
         }
       } catch (error) {
-        console.error("Error al hacer fetch de los departamentos:", error);
+        console.error('Error al hacer fetch de los departamentos:', error);
       }
     };
 
     fetchDepartamentos();
   }, []);
+
   const fetchEmployeeNumber = async () => {
     try {
-      const response = await axios.get("/api/Users/obtenerNumeroEmpleado");
+      const response = await axios.get('/api/Users/obtenerNumeroEmpleado');
       if (response.data.success) {
         setEmployeeNumber(response.data.numeroEmpleado);
       } else {
         console.error(
-          "Error al obtener el numero de empleado:",
+          'Error al obtener el numero de empleado:',
           response.data.message
         );
       }
     } catch (error) {
-      console.error("Error al hacer fetch del numero de empleado:", error);
+      console.error('Error al hacer fetch del numero de empleado:', error);
     }
   };
 
@@ -472,7 +473,7 @@ export function UserManagementTable() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -480,12 +481,12 @@ export function UserManagementTable() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == 'loading') {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
     return (
-      (window.location.href = "/"),
+      (window.location.href = '/'),
       (
         <div className="flex items-center justify-center min-h-screen">
           <Spinner className={styles.spinner} />
@@ -504,16 +505,16 @@ export function UserManagementTable() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      setError('Las contraseñas no coinciden');
 
       return;
     }
 
     try {
-      const res = await fetch("/api/Users/registroMaster", {
-        method: "POST",
+      const res = await fetch('/api/Users/registroMaster', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name,
@@ -543,21 +544,21 @@ export function UserManagementTable() {
 
       if (res.ok) {
         Swal.fire({
-          title: "Creado",
-          text: "El usuario ha sido creado correctamente",
-          icon: "success",
+          title: 'Creado',
+          text: 'El usuario ha sido creado correctamente',
+          icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/usuario";
+          window.location.href = '/usuario';
         });
       } else {
-        Swal.fire("Error", "Error al crear al usuario", "error");
+        Swal.fire('Error', 'Error al crear al usuario', 'error');
       }
     } catch (err) {
-      console.error("Error en el registro:", err);
+      console.error('Error en el registro:', err);
       setError(
-        "Hubo un problema con el registro. Por favor, intenta nuevamente."
+        'Hubo un problema con el registro. Por favor, intenta nuevamente.'
       );
     }
   };
@@ -566,10 +567,10 @@ export function UserManagementTable() {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/Users/actualizarUsuario", {
-        method: "POST",
+      const res = await fetch('/api/Users/actualizarUsuario', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           id: selectedUser.id,
@@ -592,31 +593,31 @@ export function UserManagementTable() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Hubo un problema al actualizar el usuario");
+        setError(data.message || 'Hubo un problema al actualizar el usuario');
         return;
       }
 
       if (res.ok) {
         Swal.fire({
-          title: "Actualizado",
-          text: "Los datos del usuario se han actualizado correctamente",
-          icon: "success",
+          title: 'Actualizado',
+          text: 'Los datos del usuario se han actualizado correctamente',
+          icon: 'success',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "/usuario";
+          window.location.href = '/usuario';
         });
       } else {
         Swal.fire(
-          "Error",
-          "Error al actualizar los datos del usuario",
-          "error"
+          'Error',
+          'Error al actualizar los datos del usuario',
+          'error'
         );
       }
     } catch (err) {
-      console.error("Error en la actualización:", err);
+      console.error('Error en la actualización:', err);
       setError(
-        "Hubo un problema con la actualización. Por favor, intenta nuevamente."
+        'Hubo un problema con la actualización. Por favor, intenta nuevamente.'
       );
     }
   };
@@ -625,19 +626,19 @@ export function UserManagementTable() {
     e.preventDefault();
 
     if (selectedUsers.length === 0) {
-      Swal.fire("Error", "Selecciona al menos un usuario", "error");
+      Swal.fire('Error', 'Selecciona al menos un usuario', 'error');
       return;
     }
 
     try {
-      const res = await fetch("/api/Users/resetPassword", {
-        method: "POST",
+      const res = await fetch('/api/Users/resetPassword', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           selectedUsers,
-          resetPass: "NutriAdmin2035", // Enviar la contraseña directamente
+          resetPass: 'generica2025', // Enviar la contraseña directamente
         }),
       });
 
@@ -645,28 +646,28 @@ export function UserManagementTable() {
 
       if (!res.ok) {
         Swal.fire(
-          "Error",
-          data.message || "Hubo un problema al reestablecer las contraseñas",
-          "error"
+          'Error',
+          data.message || 'Hubo un problema al reestablecer las contraseñas',
+          'error'
         );
         return;
       }
 
       Swal.fire({
-        title: "Actualizadas",
-        text: "Las contraseñas se han reestablecido correctamente",
-        icon: "success",
+        title: 'Actualizadas',
+        text: 'Las contraseñas se han reestablecido correctamente',
+        icon: 'success',
         timer: 3000,
         showConfirmButton: false,
       }).then(() => {
-        window.location.href = "/usuario";
+        window.location.href = '/usuario';
       });
     } catch (err) {
-      console.error("Error en la actualización:", err);
+      console.error('Error en la actualización:', err);
       Swal.fire(
-        "Error",
-        "Hubo un problema con la actualización. Por favor, intenta nuevamente.",
-        "error"
+        'Error',
+        'Hubo un problema con la actualización. Por favor, intenta nuevamente.',
+        'error'
       );
     }
   };
@@ -690,9 +691,9 @@ export function UserManagementTable() {
     const response = await fetch(
       `/api/Gente&CulturaPermission/registroPermiso?id=${selectedUserId}`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ selections: selectedData }),
       }
@@ -700,25 +701,25 @@ export function UserManagementTable() {
 
     if (response.ok) {
       Swal.fire({
-        title: "Creado",
-        text: "Se ha creado correctamente el permiso para el usuario",
-        icon: "success",
+        title: 'Creado',
+        text: 'Se ha creado correctamente el permiso para el usuario',
+        icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
       }).then(() => {
-        window.location.href = "/usuario";
+        window.location.href = '/usuario';
       });
     } else {
-      Swal.fire("Error", "Error al crear el permiso para el usuario", "error");
+      Swal.fire('Error', 'Error al crear el permiso para el usuario', 'error');
     }
   };
 
   const handleChangePassword = async (index) => {
     if (nuevaContraseña !== confirmarContraseña) {
       Swal.fire({
-        title: "Error",
-        text: "Las contraseñas no coinciden",
-        icon: "error",
+        title: 'Error',
+        text: 'Las contraseñas no coinciden',
+        icon: 'error',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
       });
@@ -727,10 +728,10 @@ export function UserManagementTable() {
 
     try {
       // Enviar petición al servidor para cambiar la contraseña
-      const response = await fetch("/api/Users/cambiarPassword", {
-        method: "POST",
+      const response = await fetch('/api/Users/cambiarPassword', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           userId: index, // ID del usuario seleccionado
@@ -740,29 +741,29 @@ export function UserManagementTable() {
 
       if (!response.ok) {
         Swal.fire({
-          title: "Error",
-          text: "Error al cambiar la contraseña",
-          icon: "error",
+          title: 'Error',
+          text: 'Error al cambiar la contraseña',
+          icon: 'error',
           timer: 3000, // La alerta desaparecerá después de 1.5 segundos
           showConfirmButton: false,
         });
       }
 
       Swal.fire({
-        title: "Actualizada",
-        text: "La contraseña ha sido actualizada correctamente",
-        icon: "success",
+        title: 'Actualizada',
+        text: 'La contraseña ha sido actualizada correctamente',
+        icon: 'success',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
       }).then(() => {
-        window.location.href = "/usuario";
+        window.location.href = '/usuario';
       });
     } catch (error) {
       console.error(error);
       Swal.fire({
-        title: "Error",
-        text: "Ocurrió un error al intentar cambiar la contraseña",
-        icon: "error",
+        title: 'Error',
+        text: 'Ocurrió un error al intentar cambiar la contraseña',
+        icon: 'error',
         timer: 3000, // La alerta desaparecerá después de 1.5 segundos
         showConfirmButton: false,
       });
@@ -793,24 +794,24 @@ export function UserManagementTable() {
   const handleCleanForm = () => {
     fetchEmployeeNumber();
     setSelectedPlatforms({});
-    setName("");
-    setLastName("");
-    setEmail("");
-    setPosition("");
-    setPhoneNumber("");
-    setEntryDate("");
-    setSelectedDepartamento("");
-    setDirectBoss("");
-    setCompany("");
-    setWorkPlant("");
-    setPassword("NutriAdmin2035");
-    setConfirmPassword("NutriAdmin2035");
-    setSelectedRole("");
+    setName('');
+    setLastName('');
+    setEmail('');
+    setPosition('');
+    setPhoneNumber('');
+    setEntryDate('');
+    setSelectedDepartamento('');
+    setDirectBoss('');
+    setCompany('');
+    setWorkPlant('');
+    setPassword('');
+    setConfirmPassword('');
+    setSelectedRole('');
   };
 
   const handleCleanFormPass = () => {
     setSelectedUsers([]);
-    setSearchTermPass("");
+    setSearchTermPass('');
   };
 
   return (
@@ -882,7 +883,7 @@ export function UserManagementTable() {
           <DialogTrigger asChild>
             <Button
               onClick={handleCleanFormPass}
-              style={{ marginLeft: "400px" }}
+              style={{ marginLeft: '400px' }}
             >
               <KeyRound className="mr-2 h-4 w-4" />
               Reestablecer contraseñas
@@ -891,12 +892,12 @@ export function UserManagementTable() {
           <DialogContent
             className="border-none p-0 overflow-y-auto no-scrollbar"
             style={{
-              width: "100%",
-              maxWidth: "800px",
-              height: "35vh",
-              maxHeight: "65vh",
-              padding: "30px",
-              marginLeft: "120px",
+              width: '100%',
+              maxWidth: '800px',
+              height: '35vh',
+              maxHeight: '65vh',
+              padding: '30px',
+              marginLeft: '120px',
             }}
           >
             <DialogHeader>
@@ -912,7 +913,7 @@ export function UserManagementTable() {
               <div className="flex flex-wrap gap-2 border p-2 rounded-lg">
                 {selectedUsers.map((user) => (
                   <span
-                    style={{ fontSize: 12, backgroundColor: "lightgray" }}
+                    style={{ fontSize: 12, backgroundColor: 'lightgray' }}
                     key={user.id}
                     className="inline-flex items-center bg-gray-200 px-2 py-1 rounded-md"
                   >
@@ -980,7 +981,7 @@ export function UserManagementTable() {
 
             {/* Formulario de cambio de contraseña */}
             <form onSubmit={handleSubmitResetPass}>
-              <input type="hidden" id="resetPass" value="NutriAdmin2035" />
+              <input type="hidden" id="resetPass" value="generica2025" />
 
               <DialogFooter>
                 <Button type="submit" disabled={selectedUsers.length === 0}>
@@ -1001,12 +1002,12 @@ export function UserManagementTable() {
             onInteractOutside={(event) => event.preventDefault()}
             className="border-none p-0 overflow-y-auto no-scrollbar"
             style={{
-              width: "100%", // Ajusta el ancho
-              maxWidth: "1000px", // Límite del ancho
-              height: "70vh", // Ajusta la altura
-              maxHeight: "80vh", // Límite de la altura
-              padding: "20px", // Margen interno
-              marginLeft: "120px",
+              width: '100%', // Ajusta el ancho
+              maxWidth: '1000px', // Límite del ancho
+              height: '70vh', // Ajusta la altura
+              maxHeight: '80vh', // Límite de la altura
+              padding: '20px', // Margen interno
+              marginLeft: '120px',
             }}
           >
             <DialogHeader>
@@ -1017,7 +1018,7 @@ export function UserManagementTable() {
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-2 gap-1"
               >
                 <div className="space-y-2 col-span-1">
@@ -1038,7 +1039,7 @@ export function UserManagementTable() {
                 </div>
               </div>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-2 gap-1"
               >
                 <div className="space-y-2 col-span-1">
@@ -1061,7 +1062,7 @@ export function UserManagementTable() {
                 </div>
               </div>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-3 gap-1"
               >
                 <div className="space-y-2 col-span-1">
@@ -1092,28 +1093,28 @@ export function UserManagementTable() {
                 </div>
               </div>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-2 gap-1"
               >
                 <div className="space-y-2 col-span-1">
                   <Label htmlFor="departamento">Departamento*</Label>
                   <Select
-                    value={selectedDepartamento || ""}
+                    value={selectedDepartamento || ''}
                     onValueChange={(value) => {
                       const selectedDepartamento = departamentos.find(
                         (d) => d.id === value
                       );
                       if (selectedDepartamento) {
                         setSelectedDepartamento(selectedDepartamento.id);
-                        setDirectBoss("");
-                        setSearchTermPass("");
+                        setDirectBoss('');
+                        setSearchTermPass('');
                       }
                     }}
                     disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
                   >
                     <SelectTrigger>
                       {departamentos.find((d) => d.id === selectedDepartamento)
-                        ?.nombre || "Seleccione el departamento"}
+                        ?.nombre || 'Seleccione el departamento'}
                     </SelectTrigger>
                     <SelectContent>
                       {departamentos.length > 0 ? (
@@ -1135,7 +1136,7 @@ export function UserManagementTable() {
                   <Select
                     onValueChange={(value) => {
                       setDirectBoss(value);
-                      setSearchTermPass("");
+                      setSearchTermPass('');
                     }}
                     value={directBoss}
                   >
@@ -1192,7 +1193,7 @@ export function UserManagementTable() {
                 </div>
               </div>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-3 gap-1"
               >
                 <div className="space-y-2 col-span-1">
@@ -1252,7 +1253,7 @@ export function UserManagementTable() {
                 </div>
               </div>
               <div
-                style={{ marginBottom: "15px" }}
+                style={{ marginBottom: '15px' }}
                 className="grid grid-cols-3 gap-1"
               >
                 <div className="space-y-2 col-span-1">
@@ -1267,7 +1268,7 @@ export function UserManagementTable() {
                 </div>
                 <div className="space-y-2 col-span-1">
                   <Label htmlFor="confirmPassword">
-                    {" "}
+                    {' '}
                     Confirmar Contraseña*
                   </Label>
                   <Input
@@ -1286,9 +1287,9 @@ export function UserManagementTable() {
                       <Button
                         onClick={() => setOpen(true)}
                         style={{
-                          backgroundColor: "white",
-                          color: "#000000e8",
-                          border: "1px solid lightgray",
+                          backgroundColor: 'white',
+                          color: '#000000e8',
+                          border: '1px solid lightgray',
                         }}
                         className="w-full"
                       >
@@ -1299,12 +1300,12 @@ export function UserManagementTable() {
                       className=" overflow-y-auto no-scrollbar"
                       onInteractOutside={(event) => event.preventDefault()}
                       style={{
-                        width: "100%",
-                        maxWidth: "500px",
-                        height: "29vh",
-                        maxHeight: "35vh",
-                        padding: "30px",
-                        marginLeft: "120px",
+                        width: '100%',
+                        maxWidth: '500px',
+                        height: '29vh',
+                        maxHeight: '35vh',
+                        padding: '30px',
+                        marginLeft: '120px',
                       }}
                     >
                       <DialogHeader>
@@ -1378,11 +1379,11 @@ export function UserManagementTable() {
           {currentUsers.length > 0 ? (
             currentUsers.map((user, index) => (
               <TableRow key={index}>
-                <TableCell>{user.numero_empleado || "Sin datos"}</TableCell>
-                <TableCell>{user.nombre + " " + user.apellidos}</TableCell>
-                <TableCell>{user.correo || "Usuario sin correo"}</TableCell>
-                <TableCell>{user.nombre_dpto || "Sin datos"}</TableCell>
-                <TableCell>{user.puesto || "Sin datos"}</TableCell>
+                <TableCell>{user.numero_empleado || 'Sin datos'}</TableCell>
+                <TableCell>{user.nombre + ' ' + user.apellidos}</TableCell>
+                <TableCell>{user.correo || 'Usuario sin correo'}</TableCell>
+                <TableCell>{user.nombre_dpto || 'Sin datos'}</TableCell>
+                <TableCell>{user.puesto || 'Sin datos'}</TableCell>
                 <TableCell>
                   {user.jefe_directo
                     ? (() => {
@@ -1391,445 +1392,13 @@ export function UserManagementTable() {
                         );
                         return jefe
                           ? `${jefe.nombre} ${jefe.apellidos}`
-                          : "Sin datos";
+                          : 'Sin datos';
                       })()
-                    : "Sin datos"}
+                    : 'Sin datos'}
                 </TableCell>
                 <TableCell>{user.rol}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          onClick={() => handleEditUser(user.id)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Editar
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent
-                        onInteractOutside={(event) => event.preventDefault()}
-                        className="border-none p-0 overflow-y-auto no-scrollbar"
-                        style={{
-                          width: "100%", // Ajusta el ancho
-                          maxWidth: "1000px", // Límite del ancho
-                          height: "70vh", // Ajusta la altura
-                          maxHeight: "80vh", // Límite de la altura
-                          padding: "20px", // Margen interno
-                          marginLeft: "120px",
-                        }}
-                      >
-                        <DialogHeader>
-                          <DialogTitle>Editar usuario</DialogTitle>
-                          <DialogDescription>
-                            Actualiza los detalles necesarios del usuario.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmitUpdate}>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="name">Nombre(s)</Label>
-                              <Input
-                                id="name"
-                                value={selectedUser?.nombre || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    nombre: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="lastName">Apellidos</Label>
-                              <Input
-                                id="lastName"
-                                value={selectedUser?.apellidos || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    apellidos: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="email">Correo electrónico</Label>
-                              <Input
-                                id="email"
-                                type="email"
-                                value={selectedUser?.correo || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    correo: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="employeeNumber">
-                                No. empleado
-                              </Label>
-                              <Input
-                                id="employeeNumber"
-                                type="number"
-                                value={selectedUser?.numero_empleado || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    numero_empleado: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-3 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="position">Puesto</Label>
-                              <Input
-                                id="position"
-                                value={selectedUser?.puesto || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    puesto: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="phoneNumber">Teléfono</Label>
-                              <Input
-                                id="phoneNumber"
-                                type="number"
-                                value={selectedUser?.telefono || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    telefono: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="entryDate">
-                                Fecha de ingreso
-                              </Label>
-                              <Input
-                                id="entryDate"
-                                type="date"
-                                value={selectedUser?.fecha_ingreso || ""}
-                                onChange={(e) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    fecha_ingreso: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="departamento">Departamento</Label>
-                              <Select
-                                value={
-                                  selectedUser?.departamento_id?.toString() ||
-                                  ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedUser((prevUser) => ({
-                                    ...prevUser,
-                                    departamento_id: value, // Actualizar el departamento del usuario seleccionado
-                                    jefe_directo: "", // Reiniciar el jefe directo
-                                  }));
-                                  setSearchTermPass("");
-                                }}
-                                disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
-                              >
-                                <SelectTrigger>
-                                  {departamentos.find(
-                                    (d) =>
-                                      d.id === selectedUser?.departamento_id
-                                  )?.nombre || "Seleccione el departamento"}
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {departamentos.length > 0 ? (
-                                    departamentos.map((dep) => (
-                                      <SelectItem key={dep.id} value={dep.id}>
-                                        {dep.nombre}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <SelectItem disabled>
-                                      No hay departamentos disponibles
-                                    </SelectItem>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="directBoss">Jefe Directo</Label>
-                              <Select
-                                value={
-                                  selectedUser?.jefe_directo?.toString() || ""
-                                }
-                                onValueChange={(value) => {
-                                  setSelectedUser((prevUser) => ({
-                                    ...prevUser,
-                                    jefe_directo: value, // Actualizar el jefe directo del usuario seleccionado
-                                  }));
-                                  setSearchTermPass("");
-                                }}
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Seleccione el jefe directo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
-                                  <div className="p-2">
-                                    <Input
-                                      ref={inputRef}
-                                      placeholder="Buscar usuario..."
-                                      value={searchTermPass}
-                                      onChange={(e) =>
-                                        setSearchTermPass(e.target.value)
-                                      }
-                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
-                                    />
-                                  </div>
-
-                                  {/* Filtrado sin selección automática */}
-                                  {users.filter(
-                                    (user) =>
-                                      user.nombre
-                                        .toLowerCase()
-                                        .includes(
-                                          debouncedSearchTerm.toLowerCase()
-                                        ) ||
-                                      user.apellidos
-                                        .toLowerCase()
-                                        .includes(
-                                          debouncedSearchTerm.toLowerCase()
-                                        )
-                                  ).length === 0 ? (
-                                    <div className="p-2 text-center text-gray-500">
-                                      No se encontraron usuarios
-                                    </div>
-                                  ) : (
-                                    users
-                                      .filter(
-                                        (user) =>
-                                          user.nombre
-                                            .toLowerCase()
-                                            .includes(
-                                              debouncedSearchTerm.toLowerCase()
-                                            ) ||
-                                          user.apellidos
-                                            .toLowerCase()
-                                            .includes(
-                                              debouncedSearchTerm.toLowerCase()
-                                            )
-                                      )
-                                      .map((user) => (
-                                        <SelectItem
-                                          key={user.id.toString()}
-                                          value={user.id.toString()}
-                                        >
-                                          {user.nombre} {user.apellidos}
-                                        </SelectItem>
-                                      ))
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="company">Empresa</Label>
-                              <Select
-                                value={
-                                  selectedUser?.empresa_id.toString() || ""
-                                }
-                                onValueChange={(value) =>
-                                  setSelectedUser((prevUser) => ({
-                                    ...prevUser,
-                                    empresa_id: value, // Actualizar el jefe directo del usuario seleccionado
-                                  }))
-                                }
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Seleccione la empresa" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1">
-                                    Asesoría y desarrollo...
-                                  </SelectItem>
-                                  <SelectItem value="2">Eren</SelectItem>
-                                  <SelectItem value="3">Inik</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="workPlant">Planta</Label>
-                              <Select
-                                value={selectedUser?.planta.toString() || ""}
-                                onValueChange={(value) =>
-                                  setSelectedUser((prevUser) => ({
-                                    ...prevUser,
-                                    planta: value, // Actualizar el jefe directo del usuario seleccionado
-                                  }))
-                                }
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Seleccione una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="0">No</SelectItem>
-                                  <SelectItem value="1">Sí</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div
-                            style={{ marginBottom: "15px" }}
-                            className="grid grid-cols-2 gap-1"
-                          >
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="role" className="text-right">
-                                Rol
-                              </Label>
-                              <Select
-                                value={selectedUser?.rol || ""}
-                                onValueChange={(value) =>
-                                  setSelectedUser({
-                                    ...selectedUser,
-                                    rol: value,
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="col-span-3">
-                                  <SelectValue placeholder="Seleccione el rol para el usuario" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Máster">Máster</SelectItem>
-                                  <SelectItem value="Administrador">
-                                    Administrador
-                                  </SelectItem>
-                                  <SelectItem value="Estándar">
-                                    Estándar
-                                  </SelectItem>
-                                  <SelectItem value="Dado de baja">
-                                    Dado de baja
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2 col-span-1">
-                              <Label htmlFor="platforms">Plataformas</Label>
-                              <br />
-                              <Dialog open={open} onOpenChange={setOpen}>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    onClick={() => setOpen(true)}
-                                    style={{
-                                      backgroundColor: "white",
-                                      color: "#000000e8",
-                                      border: "1px solid lightgray",
-                                    }}
-                                    className="w-full"
-                                  >
-                                    Seleccionar plataformas
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent
-                                  className=" overflow-y-auto no-scrollbar"
-                                  onInteractOutside={(event) =>
-                                    event.preventDefault()
-                                  }
-                                  style={{
-                                    width: "100%",
-                                    maxWidth: "500px",
-                                    height: "29vh",
-                                    maxHeight: "35vh",
-                                    padding: "30px",
-                                    marginLeft: "120px",
-                                  }}
-                                >
-                                  <DialogHeader>
-                                    <DialogTitle>
-                                      Seleccionar plataformas
-                                    </DialogTitle>
-                                    <DialogDescription>
-                                      Selecciona las plataformas que el usuario
-                                      va a utilizar.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-2 col-span-1">
-                                    {Object.keys(plataformas).map((key) => (
-                                      <div
-                                        key={key}
-                                        className="flex items-center space-x-2"
-                                      >
-                                        <Checkbox
-                                          id={key}
-                                          checked={
-                                            !!(typeof selectedUser?.plataformas ===
-                                            "string"
-                                              ? JSON.parse(
-                                                  selectedUser.plataformas
-                                                )[key]
-                                              : selectedUser?.plataformas?.[
-                                                  key
-                                                ] || false)
-                                          }
-                                          onCheckedChange={() =>
-                                            handleCheckboxChangeEdit(key)
-                                          }
-                                          className="cursor-pointer"
-                                        />
-                                        <Label
-                                          htmlFor={key}
-                                          className="cursor-pointer"
-                                        >
-                                          {plataformas[key]}
-                                        </Label>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <DialogFooter>
-                                    <Button onClick={() => setOpen(false)}>
-                                      Aceptar
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button type="submit">Actualizar usuario</Button>
-                          </DialogFooter>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -1843,8 +1412,8 @@ export function UserManagementTable() {
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>
-                            Editar permisos para:{" "}
-                            {user.nombre + " " + user.apellidos}
+                            Editar permisos para:{' '}
+                            {user.nombre + ' ' + user.apellidos}
                           </DialogTitle>
                           <DialogDescription>
                             Ajusta los permisos aquí.
@@ -1855,7 +1424,7 @@ export function UserManagementTable() {
                             <Checkbox
                               id="Editar"
                               onCheckedChange={() =>
-                                handlePermissionChange("Editar")
+                                handlePermissionChange('Editar')
                               }
                             />
                             <Label htmlFor="Editar">Asignar permisos</Label>
@@ -1932,6 +1501,438 @@ export function UserManagementTable() {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          onClick={() => handleEditUser(user.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Editar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent
+                        onInteractOutside={(event) => event.preventDefault()}
+                        className="border-none p-0 overflow-y-auto no-scrollbar"
+                        style={{
+                          width: '100%', // Ajusta el ancho
+                          maxWidth: '1000px', // Límite del ancho
+                          height: '70vh', // Ajusta la altura
+                          maxHeight: '80vh', // Límite de la altura
+                          padding: '20px', // Margen interno
+                          marginLeft: '120px',
+                        }}
+                      >
+                        <DialogHeader>
+                          <DialogTitle>Editar usuario</DialogTitle>
+                          <DialogDescription>
+                            Actualiza los detalles necesarios del usuario.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmitUpdate}>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="name">Nombre(s)</Label>
+                              <Input
+                                id="name"
+                                value={selectedUser?.nombre || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    nombre: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="lastName">Apellidos</Label>
+                              <Input
+                                id="lastName"
+                                value={selectedUser?.apellidos || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    apellidos: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="email">Correo electrónico</Label>
+                              <Input
+                                id="email"
+                                type="email"
+                                value={selectedUser?.correo || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    correo: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="employeeNumber">
+                                No. empleado
+                              </Label>
+                              <Input
+                                id="employeeNumber"
+                                type="number"
+                                value={selectedUser?.numero_empleado || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    numero_empleado: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-3 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="position">Puesto</Label>
+                              <Input
+                                id="position"
+                                value={selectedUser?.puesto || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    puesto: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="phoneNumber">Teléfono</Label>
+                              <Input
+                                id="phoneNumber"
+                                type="number"
+                                value={selectedUser?.telefono || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    telefono: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="entryDate">
+                                Fecha de ingreso
+                              </Label>
+                              <Input
+                                id="entryDate"
+                                type="date"
+                                value={selectedUser?.fecha_ingreso || ''}
+                                onChange={(e) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    fecha_ingreso: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="departamento">Departamento</Label>
+                              <Select
+                                value={
+                                  selectedUser?.departamento_id?.toString() ||
+                                  ''
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedUser((prevUser) => ({
+                                    ...prevUser,
+                                    departamento_id: value, // Actualizar el departamento del usuario seleccionado
+                                    jefe_directo: '', // Reiniciar el jefe directo
+                                  }));
+                                  setSearchTermPass('');
+                                }}
+                                disabled={departamentos.length === 0} // Deshabilitar si no hay subcategorías
+                              >
+                                <SelectTrigger>
+                                  {departamentos.find(
+                                    (d) =>
+                                      d.id === selectedUser?.departamento_id
+                                  )?.nombre || 'Seleccione el departamento'}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {departamentos.length > 0 ? (
+                                    departamentos.map((dep) => (
+                                      <SelectItem key={dep.id} value={dep.id}>
+                                        {dep.nombre}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem disabled>
+                                      No hay departamentos disponibles
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="directBoss">Jefe Directo</Label>
+                              <Select
+                                value={
+                                  selectedUser?.jefe_directo?.toString() || ''
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedUser((prevUser) => ({
+                                    ...prevUser,
+                                    jefe_directo: value, // Actualizar el jefe directo del usuario seleccionado
+                                  }));
+                                  setSearchTermPass('');
+                                }}
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Seleccione el jefe directo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                  <div className="p-2">
+                                    <Input
+                                      ref={inputRef}
+                                      placeholder="Buscar usuario..."
+                                      value={searchTermPass}
+                                      onChange={(e) =>
+                                        setSearchTermPass(e.target.value)
+                                      }
+                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                    />
+                                  </div>
+
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
+                                  ) : (
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id.toString()}
+                                          value={user.id.toString()}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="company">Empresa</Label>
+                              <Select
+                                value={
+                                  selectedUser?.empresa_id.toString() || ''
+                                }
+                                onValueChange={(value) =>
+                                  setSelectedUser((prevUser) => ({
+                                    ...prevUser,
+                                    empresa_id: value, // Actualizar el jefe directo del usuario seleccionado
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Seleccione la empresa" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">
+                                    Asesoría y desarrollo...
+                                  </SelectItem>
+                                  <SelectItem value="2">Eren</SelectItem>
+                                  <SelectItem value="3">Inik</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="workPlant">Planta</Label>
+                              <Select
+                                value={selectedUser?.planta.toString() || ''}
+                                onValueChange={(value) =>
+                                  setSelectedUser((prevUser) => ({
+                                    ...prevUser,
+                                    planta: value, // Actualizar el jefe directo del usuario seleccionado
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Seleccione una opción" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="0">No</SelectItem>
+                                  <SelectItem value="1">Sí</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: '15px' }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="role" className="text-right">
+                                Rol
+                              </Label>
+                              <Select
+                                value={selectedUser?.rol || ''}
+                                onValueChange={(value) =>
+                                  setSelectedUser({
+                                    ...selectedUser,
+                                    rol: value,
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Seleccione el rol para el usuario" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Máster">Máster</SelectItem>
+                                  <SelectItem value="Administrador">
+                                    Administrador
+                                  </SelectItem>
+                                  <SelectItem value="Estándar">
+                                    Estándar
+                                  </SelectItem>
+                                  <SelectItem value="Dado de baja">
+                                    Dado de baja
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2 col-span-1">
+                              <Label htmlFor="platforms">Plataformas</Label>
+                              <br />
+                              <Dialog open={open} onOpenChange={setOpen}>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    onClick={() => setOpen(true)}
+                                    style={{
+                                      backgroundColor: 'white',
+                                      color: '#000000e8',
+                                      border: '1px solid lightgray',
+                                    }}
+                                    className="w-full"
+                                  >
+                                    Seleccionar plataformas
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent
+                                  className=" overflow-y-auto no-scrollbar"
+                                  onInteractOutside={(event) =>
+                                    event.preventDefault()
+                                  }
+                                  style={{
+                                    width: '100%',
+                                    maxWidth: '500px',
+                                    height: '29vh',
+                                    maxHeight: '35vh',
+                                    padding: '30px',
+                                    marginLeft: '120px',
+                                  }}
+                                >
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      Seleccionar plataformas
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                      Selecciona las plataformas que el usuario
+                                      va a utilizar.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-2 col-span-1">
+                                    {Object.keys(plataformas).map((key) => (
+                                      <div
+                                        key={key}
+                                        className="flex items-center space-x-2"
+                                      >
+                                        <Checkbox
+                                          id={key}
+                                          checked={
+                                            !!(typeof selectedUser?.plataformas ===
+                                            'string'
+                                              ? JSON.parse(
+                                                  selectedUser.plataformas
+                                                )[key]
+                                              : selectedUser?.plataformas?.[
+                                                  key
+                                                ] || false)
+                                          }
+                                          onCheckedChange={() =>
+                                            handleCheckboxChangeEdit(key)
+                                          }
+                                          className="cursor-pointer"
+                                        />
+                                        <Label
+                                          htmlFor={key}
+                                          className="cursor-pointer"
+                                        >
+                                          {plataformas[key]}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <DialogFooter>
+                                    <Button onClick={() => setOpen(false)}>
+                                      Aceptar
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit">Actualizar usuario</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       variant="destructive"
                       size="sm"
@@ -1959,9 +1960,9 @@ export function UserManagementTable() {
         <DialogContent
           className="overflow-y-auto no-scrollbar"
           style={{
-            width: "30%", // Ajusta el ancho
-            maxWidth: "900px", // Límite del ancho
-            maxHeight: "82vh", // Límite de la altura
+            width: '30%', // Ajusta el ancho
+            maxWidth: '900px', // Límite del ancho
+            maxHeight: '82vh', // Límite de la altura
           }}
         >
           <DialogHeader>
@@ -2018,9 +2019,9 @@ export function UserManagementTable() {
         <DialogContent
           className="overflow-y-auto no-scrollbar"
           style={{
-            width: "32%", // Ajusta el ancho
-            maxWidth: "900px", // Límite del ancho
-            maxHeight: "95vh", // Límite de la altura
+            width: '32%', // Ajusta el ancho
+            maxWidth: '900px', // Límite del ancho
+            maxHeight: '95vh', // Límite de la altura
           }}
         >
           <DialogHeader>
@@ -2068,13 +2069,13 @@ export function UserManagementTable() {
         >
           Anterior
         </button>
-        <span style={{ marginRight: "2rem" }}></span>
+        <span style={{ marginRight: '2rem' }}></span>
 
         {/* Páginas */}
         {currentPage > 3 && (
           <>
             <button onClick={() => paginate(1)}>1</button>
-            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
+            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
           </>
         )}
 
@@ -2089,8 +2090,8 @@ export function UserManagementTable() {
             <button
               key={page}
               onClick={() => paginate(page)}
-              className={currentPage === page ? "font-bold" : ""}
-              style={{ marginLeft: "1rem", marginRight: "1rem" }}
+              className={currentPage === page ? 'font-bold' : ''}
+              style={{ marginLeft: '1rem', marginRight: '1rem' }}
             >
               {page}
             </button>
@@ -2098,12 +2099,12 @@ export function UserManagementTable() {
 
         {currentPage < totalPages - 2 && (
           <>
-            <span style={{ marginLeft: "1rem", marginRight: "1rem" }}>...</span>
+            <span style={{ marginLeft: '1rem', marginRight: '1rem' }}>...</span>
             <button onClick={() => paginate(totalPages)}>{totalPages}</button>
           </>
         )}
 
-        <span style={{ marginLeft: "2rem" }}></span>
+        <span style={{ marginLeft: '2rem' }}></span>
         <button
           onClick={() => paginate(currentPage + 1)}
           disabled={currentPage === totalPages}
