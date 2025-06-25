@@ -84,9 +84,8 @@ export default async function handler(req, res) {
         // para que esto funcione en local
         // const outputPath = path.join(process.cwd(), "public/uploads", `processed_${newFileName}`);
         await sharp(file.path)
-          .toFormat(fileExt.replace(".", ""))
+          .toFormat(fileExt.replace(".", ""), { quality: 60 })
           .toFile(outputPath);
-
         // Subir el archivo al servidor FTP
         try {
           await client.uploadFrom(outputPath, filePath);

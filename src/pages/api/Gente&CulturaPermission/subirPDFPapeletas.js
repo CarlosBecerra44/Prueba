@@ -19,8 +19,7 @@ export default async function handler(req, res) {
   const form = new formidable.IncomingForm({
     multiples: false, // Solo un archivo
     uploadDir: "/tmp",
-    // uploadDir: path.join(process.cwd(), "public/uploads"),
-    keepExtensions: true,
+    // uploadDir: path.join(process.cwd(), "public/uploads"), keepExtensions: true,
   });
 
   form.parse(req, async (err, fields, files) => {
@@ -45,13 +44,13 @@ export default async function handler(req, res) {
     const newFileName = `${formattedDate}_${file.name}`;
     const outputPath = path.join("/tmp", `processed_${newFileName}`);
     // para que esto funcione en local
-    // const outputPath = path.join(process.cwd(), "public/uploads", `processed_${newFileName}`);
+    // const outputPath = path.join( process.cwd(), "public/uploads", `processed_${newFileName}`);
 
     try {
       // Si es imagen, comprimirla; si no, copiar directamente
       if (allowedImageExts.includes(fileExt)) {
         await sharp(file.path)
-          .toFormat(fileExt.replace(".", ""))
+          .toFormat(fileExt.replace(".", ""), { quality: 60 })
           .toFile(outputPath);
       } else {
         fs.copyFileSync(file.path, outputPath);
