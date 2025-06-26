@@ -1,26 +1,49 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import styles from '../../../../public/CSS/spinner.css';
+import styles from "../../../../public/CSS/spinner.css";
 import { ChevronRight, Plus, Search, UserPlus, X } from "lucide-react";
-import { useSession,  signOut } from "next-auth/react";
-import axios from 'axios';
-import Swal from 'sweetalert2';
+import { useSession, signOut } from "next-auth/react";
+import axios from "axios";
+import Swal from "sweetalert2";
 import { Textarea } from "@/components/ui/textarea";
-import {useUser} from "@/pages/api/hooks";
-import { Upload } from 'lucide-react';
+import { useUser } from "@/pages/api/hooks";
+import { Upload } from "lucide-react";
 import Link from "next/link";
-import { getSession } from 'next-auth/react';
+import { getSession } from "next-auth/react";
 import { pdf } from "@react-pdf/renderer";
 import FichaTecnicaPDF from "./ficha_tecnica";
+import { useUserContext } from "@/utils/userContext";
 
 export function CMDProductos() {
+  const { userData, loading } = useUserContext();
   const [nombre, setNombre] = useState("");
   const [proveedor, setProveedor] = useState("");
   const [categoriaGeneral, setCategoriaGeneral] = useState("");
@@ -47,38 +70,15 @@ export function CMDProductos() {
   const [imagenes, setImagenes] = useState([]);
   const [nombreProveedor, setNombreProveedor] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-  const [idUser, setID] = useState("");
+  const idUser = userData?.user?.id;
+  const nombreUsuario = userData?.user?.nombre;
+  const apellidosUsuario = userData?.user?.apellidos;
   const [actores, setActores] = useState([]);
   const [permiso, setPermiso] = useState(null);
-  const [nombreUsuario, setNombreUsuario] = useState("");
-  const [apellidosUsuario, setApellidosUsuario] = useState("");
   const [productoAValidar, setProductoAValidar] = useState(null);
-  const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] = useState(null);
+  const [imagenSeleccionadaPreview, setImagenSeleccionadaPreview] =
+    useState(null);
   const [allUsers, setAllUsers] = useState([]);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setID(userData.user.id);
-          setNombreUsuario(userData.user.nombre);
-          setApellidosUsuario(userData.user.apellidos);
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -103,7 +103,9 @@ export function CMDProductos() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('/api/ProductEngineering/getCMDProductos');
+        const response = await axios.get(
+          "/api/ProductEngineering/getCMDProductos"
+        );
 
         if (response.data.success) {
           setProducts(response.data.products);
@@ -146,16 +148,11 @@ export function CMDProductos() {
   useEffect(() => {
     const fetchActores = async () => {
       try {
-        const response = await axios.get(
-          "/api/ProductEngineering/getActores"
-        );
+        const response = await axios.get("/api/ProductEngineering/getActores");
         if (response.data.success) {
           setActores(response.data.actores);
         } else {
-          console.error(
-            "Error al obtener los actores:",
-            response.data.message
-          );
+          console.error("Error al obtener los actores:", response.data.message);
         }
       } catch (error) {
         console.error("Error al hacer fetch de los actores:", error);
@@ -270,7 +267,9 @@ export function CMDProductos() {
 
   const fetchProductsUpdate = async () => {
     try {
-      const response = await axios.get('/api/ProductEngineering/getCMDProductos');
+      const response = await axios.get(
+        "/api/ProductEngineering/getCMDProductos"
+      );
 
       if (response.data.success) {
         setProducts(response.data.products);
@@ -285,11 +284,11 @@ export function CMDProductos() {
   useEffect(() => {
     const obtenerPermiso = async () => {
       if (!idUser || !actores?.length) return;
-  
+
       const permisoUsuario = actores.find((actor) => actor.user_id === idUser);
       setPermiso(permisoUsuario);
     };
-  
+
     obtenerPermiso();
   }, [idUser, actores]);
 
@@ -352,8 +351,8 @@ export function CMDProductos() {
       categoria: product.Tipo_id,
       validado: product.validado_por,
       tolerancias: product.tolerancias_por,
-    }
-  }
+    };
+  };
 
   // Filtrar eventos según el término de búsqueda y estatus
   const filteredProducts = products.map(extractData).filter(
@@ -375,7 +374,7 @@ export function CMDProductos() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -383,7 +382,7 @@ export function CMDProductos() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == "loading" || loading) {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
@@ -399,83 +398,97 @@ export function CMDProductos() {
   }
 
   const getNombreCompleto = (id) => {
-    const user = allUsers.find(user => user.id === id);
+    const user = allUsers.find((user) => user.id === id);
     return user ? `${user.nombre} ${user.apellidos}` : "";
   };
 
   const fetchProductoAValidar = async (id) => {
     if (!id) return null;
-  
+
     try {
-      const response = await axios.post(`/api/ProductEngineering/getProductoValidar?id=${id}`);
+      const response = await axios.post(
+        `/api/ProductEngineering/getProductoValidar?id=${id}`
+      );
       if (response.data.success) {
         const producto = response.data.producto;
         const registros = producto.identificadores.map((identificador) => {
           const existente = producto.identificadoresProductos.find(
             (p) => p.identificador_id === identificador.id
           );
-  
+
           return {
             identificador_id: identificador.id,
-            registroN: existente?.registroN ?? '',
-            registroV: existente?.registroV ?? '',
-            tolerancia: existente?.tolerancia ?? '',
+            registroN: existente?.registroN ?? "",
+            registroV: existente?.registroV ?? "",
+            tolerancia: existente?.tolerancia ?? "",
           };
         });
-  
+
         const productoCargado = {
           producto: producto.producto,
           identificadores: producto.identificadores,
           identificadoresProductos: registros,
           imagenes: producto.imagenes,
         };
-  
+
         setProductoAValidar(productoCargado);
         return productoCargado;
       } else {
-        console.error('Error al obtener el producto:', response.data.message);
+        console.error("Error al obtener el producto:", response.data.message);
         return null;
       }
     } catch (error) {
-      console.error('Error al hacer fetch del producto:', error);
+      console.error("Error al hacer fetch del producto:", error);
       return null;
     }
-  };  
+  };
 
   const productoAPlanoMecanico = async (id) => {
     const producto = await fetchProductoAValidar(id);
-  
+
     if (!producto) return;
-  
+
     const imagenTipo2 = producto.imagenes?.find((img) => img.tipo === 2);
     const imagenURL = imagenTipo2?.ruta
-      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(imagenTipo2.ruta)}`
+      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+          imagenTipo2.ruta
+        )}`
       : null;
-  
+
     setImagenSeleccionadaPreview(imagenURL);
     handleAbrirPDF(producto, imagenURL);
-  };  
+  };
 
   const handleAbrirPDF = async (producto, imagenAdicional) => {
     // Mostrar alerta de carga
     Swal.fire({
-      title: 'Generando...',
-      text: 'Estamos procesando el archivo, por favor espere...',
+      title: "Generando...",
+      text: "Estamos procesando el archivo, por favor espere...",
       showConfirmButton: false,
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
       },
     });
-  
+
     try {
       const creadoPor = getNombreCompleto(producto.producto?.creado_por);
       const validadoPor = getNombreCompleto(producto.producto?.validado_por);
-      const toleranciasPor = getNombreCompleto(producto.producto?.tolerancias_por);
-      const blob = await pdf(<FichaTecnicaPDF producto={producto} imagenAdicional={imagenAdicional} nombreCreado={creadoPor} nombreValidacion={validadoPor} nombreTolerancias={toleranciasPor} />).toBlob();
+      const toleranciasPor = getNombreCompleto(
+        producto.producto?.tolerancias_por
+      );
+      const blob = await pdf(
+        <FichaTecnicaPDF
+          producto={producto}
+          imagenAdicional={imagenAdicional}
+          nombreCreado={creadoPor}
+          nombreValidacion={validadoPor}
+          nombreTolerancias={toleranciasPor}
+        />
+      ).toBlob();
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
-  
+
       Swal.close(); // solo cerrar cuando termine
     } catch (error) {
       console.error("Error al generar PDF:", error);
@@ -485,40 +498,51 @@ export function CMDProductos() {
         text: "Hubo un error al generar el PDF.",
       });
     }
-  };      
+  };
 
   const formulaAPDF = async (id) => {
     const producto = await fetchProductoAValidar(id);
-  
+
     if (!producto) return;
-  
-    const imagenDiseño = producto.imagenes?.find((img) => img.tipo === 3 || img.tipo === 1);
+
+    const imagenDiseño = producto.imagenes?.find(
+      (img) => img.tipo === 3 || img.tipo === 1
+    );
     const imagenURL = imagenDiseño?.ruta
-      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(imagenDiseño.ruta)}`
+      ? `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+          imagenDiseño.ruta
+        )}`
       : null;
-  
+
     setImagenSeleccionadaPreview(imagenURL);
     handleAbrirPDFFormula(producto, imagenURL);
-  };  
+  };
 
   const handleAbrirPDFFormula = async (producto, imagenAdicional) => {
     // Mostrar alerta de carga
     Swal.fire({
-      title: 'Generando...',
-      text: 'Estamos procesando el archivo, por favor espere...',
+      title: "Generando...",
+      text: "Estamos procesando el archivo, por favor espere...",
       showConfirmButton: false,
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
       },
     });
-  
+
     try {
-      const { default: FichaTecnicaPDFFormula } = await import('./ficha_tecnica_formula');
-      const blob = await pdf(<FichaTecnicaPDFFormula producto={producto} imagenAdicional={imagenAdicional}/>).toBlob();
+      const { default: FichaTecnicaPDFFormula } = await import(
+        "./ficha_tecnica_formula"
+      );
+      const blob = await pdf(
+        <FichaTecnicaPDFFormula
+          producto={producto}
+          imagenAdicional={imagenAdicional}
+        />
+      ).toBlob();
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
-  
+
       Swal.close(); // solo cerrar cuando termine
     } catch (error) {
       console.error("Error al generar PDF:", error);
@@ -528,7 +552,7 @@ export function CMDProductos() {
         text: "Hubo un error al generar el PDF.",
       });
     }
-  };      
+  };
 
   const handleEditProduct = (productId) => {
     const productToEdit = products.find((product) => product.id === productId); // Buscar el usuario en el estado
@@ -658,7 +682,9 @@ export function CMDProductos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const usuariosANotificar = actores.filter((actor) => actor.tipo === 5 && actor.eliminado === 0);
+    const usuariosANotificar = actores.filter(
+      (actor) => actor.tipo === 5 && actor.eliminado === 0
+    );
 
     Swal.fire({
       title: "Cargando...",
@@ -704,24 +730,27 @@ export function CMDProductos() {
       if (res.ok) {
         if (categoriaGeneral.toString() === "6") {
           try {
-            const enviarNotificacion = await fetch("/api/Reminder/envioEventoActores", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                formData2: {
-                  tipo: "Alerta de nuevo producto de tipo fórmula estrella",
-                  descripcion: `<strong>${nombreUsuario} ${apellidosUsuario}</strong> ha agregado un nuevo producto de tipo fórmula estrella con el nombre: 
+            const enviarNotificacion = await fetch(
+              "/api/Reminder/envioEventoActores",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  formData2: {
+                    tipo: "Alerta de nuevo producto de tipo fórmula estrella",
+                    descripcion: `<strong>${nombreUsuario} ${apellidosUsuario}</strong> ha agregado un nuevo producto de tipo fórmula estrella con el nombre: 
                   <strong>${nombre}</strong>.<br>
                     Puedes revisarlo haciendo clic en este enlace: <a href="/configuraciones/cmd/Productos" style="color: blue; text-decoration: underline;">Revisar producto</a>`,
-                  id: idUser,
-                  dpto: null,
-                  actores: usuariosANotificar,
-                },
-              }),
-            });
-        
+                    id: idUser,
+                    dpto: null,
+                    actores: usuariosANotificar,
+                  },
+                }),
+              }
+            );
+
             if (enviarNotificacion.ok) {
               setOpen(false);
               fetchProductsUpdate(); // Refrescar lista de productos
@@ -750,7 +779,7 @@ export function CMDProductos() {
             timer: 3000,
             showConfirmButton: false,
           });
-        }          
+        }
       } else {
         Swal.fire("Error", "Error al crear el producto", "error");
       }
@@ -807,13 +836,18 @@ export function CMDProductos() {
   };
 
   const handleAgregarAlCatalogo = async (index) => {
-    const usuariosANotificar = actores.filter((actor) => actor.tipo === 3 && actor.eliminado === 0);
+    const usuariosANotificar = actores.filter(
+      (actor) => actor.tipo === 3 && actor.eliminado === 0
+    );
 
     try {
-      const response = await axios.post("/api/ProductEngineering/agregarAlCatalogo", {
-        id: index,
-      });
-  
+      const response = await axios.post(
+        "/api/ProductEngineering/agregarAlCatalogo",
+        {
+          id: index,
+        }
+      );
+
       if (response.data.success) {
         try {
           const enviarNotificacion = await fetch(
@@ -874,14 +908,17 @@ export function CMDProductos() {
         showConfirmButton: false,
       });
     }
-  }
+  };
 
   const handleQuitarDelCatalogo = async (index) => {
     try {
-      const response = await axios.post("/api/ProductEngineering/quitarDelCatalogo", {
-        id: index,
-      });
-  
+      const response = await axios.post(
+        "/api/ProductEngineering/quitarDelCatalogo",
+        {
+          id: index,
+        }
+      );
+
       if (response.data.success) {
         fetchProductsUpdate();
         Swal.fire({
@@ -910,7 +947,7 @@ export function CMDProductos() {
         showConfirmButton: false,
       });
     }
-  }
+  };
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
@@ -1130,7 +1167,9 @@ export function CMDProductos() {
                       className="border-none p-5 overflow-y-auto w-full max-w-[50vh] max-h-[30vh] ml-[15vh] mt-[2vh] shadow-lg"
                     >
                       <DialogHeader>
-                        <DialogTitle className="flex justify-center items-center text-center">Agregar nuevo proveedor</DialogTitle>
+                        <DialogTitle className="flex justify-center items-center text-center">
+                          Agregar nuevo proveedor
+                        </DialogTitle>
                       </DialogHeader>
                       <Label htmlFor="nombre">Nombre</Label>
                       <Input
@@ -1419,374 +1458,588 @@ export function CMDProductos() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentUsers.length >0 ?( currentUsers.map((user,index) => (
-            <TableRow key={index}>
-              <TableCell>{user.nombre || "Sin datos"}</TableCell>
-              <TableCell>{user.categoriaGeneral || "Sin datos"}</TableCell>
-              <TableCell>{user.subcategoria || "Sin datos"}</TableCell>
-              <TableCell>{user.especificacion || "Sin datos"}</TableCell>
-              <TableCell>{user.codigo || "Sin datos"}</TableCell>
-              <TableCell>{"$" + user.costo || "Sin datos"}</TableCell>
-              <TableCell>{user.compraMinima || "Sin datos"}</TableCell>
-              <TableCell>{user.medicion || "Sin datos"}</TableCell>
-              <TableCell>{user.descripcion || "Sin datos"}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {/* Botones de validacion */}
-                  {user.categoria.toString() === "6" && permiso?.tipo === 5 ? 
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}><Button variant="outline" size="sm">Ficha informativa</Button></Link>) :
-                  user.categoria.toString() !== "6" && permiso?.tipo === 1 ?
-                  (<Link href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}><Button variant="outline" size="sm">Evaluar</Button></Link>) : 
-                  (<div hidden></div>)}
+          {currentUsers.length > 0 ? (
+            currentUsers.map((user, index) => (
+              <TableRow key={index}>
+                <TableCell>{user.nombre || "Sin datos"}</TableCell>
+                <TableCell>{user.categoriaGeneral || "Sin datos"}</TableCell>
+                <TableCell>{user.subcategoria || "Sin datos"}</TableCell>
+                <TableCell>{user.especificacion || "Sin datos"}</TableCell>
+                <TableCell>{user.codigo || "Sin datos"}</TableCell>
+                <TableCell>{"$" + user.costo || "Sin datos"}</TableCell>
+                <TableCell>{user.compraMinima || "Sin datos"}</TableCell>
+                <TableCell>{user.medicion || "Sin datos"}</TableCell>
+                <TableCell>{user.descripcion || "Sin datos"}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {/* Botones de validacion */}
+                    {user.categoria.toString() === "6" &&
+                    permiso?.tipo === 5 ? (
+                      <Link
+                        href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}
+                      >
+                        <Button variant="outline" size="sm">
+                          Ficha informativa
+                        </Button>
+                      </Link>
+                    ) : user.categoria.toString() !== "6" &&
+                      permiso?.tipo === 1 ? (
+                      <Link
+                        href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}
+                      >
+                        <Button variant="outline" size="sm">
+                          Evaluar
+                        </Button>
+                      </Link>
+                    ) : (
+                      <div hidden></div>
+                    )}
 
-                  {/* Botones de ficha tecnica */}
-                  {user.categoria.toString() !== "6" && user.tolerancias === null && user.veredicto === 1 && permiso?.tipo === 1 ? 
-                  (<Link href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}><Button variant="outline" size="sm">Generar ficha técnica</Button></Link>) : 
-                  user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
-                  (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) : 
-                  user.categoria.toString() === "6" && user.validado !== null && user.veredicto === 1 && permiso?.tipo === 5 ?
-                  (<Button variant="outline" size="sm" onClick={() => formulaAPDF(user.id)}>Descargar ficha técnica</Button>) : 
-                  (<div hidden></div>)}
-                  
-                  {/* Botones de catalogo */}
-                  {user.catalogoProductos === 1 && user.veredicto === 1 && permiso?.tipo === 1 ? 
-                  (<Button size="sm" variant="destructive" onClick={() => handleQuitarDelCatalogo(user.id)}>Quitar del catálogo</Button>) : 
-                  user.catalogoProductos === 0 && user.veredicto === 1 && permiso?.tipo === 1 ?
-                  (<Button size="sm" onClick={() => handleAgregarAlCatalogo(user.id)} style={{width: "151px", backgroundColor: "#198754"}}>Enviar al catálogo</Button>) :
-                  (<div hidden></div>)}
+                    {/* Botones de ficha tecnica */}
+                    {user.categoria.toString() !== "6" &&
+                    user.tolerancias === null &&
+                    user.veredicto === 1 &&
+                    permiso?.tipo === 1 ? (
+                      <Link
+                        href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}
+                      >
+                        <Button variant="outline" size="sm">
+                          Generar ficha técnica
+                        </Button>
+                      </Link>
+                    ) : user.categoria.toString() !== "6" &&
+                      user.tolerancias !== null &&
+                      user.veredicto === 1 &&
+                      permiso?.tipo === 1 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => productoAPlanoMecanico(user.id)}
+                      >
+                        Descargar ficha técnica
+                      </Button>
+                    ) : user.categoria.toString() === "6" &&
+                      user.validado !== null &&
+                      user.veredicto === 1 &&
+                      permiso?.tipo === 5 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => formulaAPDF(user.id)}
+                      >
+                        Descargar ficha técnica
+                      </Button>
+                    ) : (
+                      <div hidden></div>
+                    )}
 
-                  {/* Boton de editar */}
-                  <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => handleEditProduct(user.id)} variant="outline" size="sm">Editar</Button>
-                    </DialogTrigger>
-                    <DialogContent 
-                      onInteractOutside={(event) => event.preventDefault()} 
-                      className="border-none p-5 overflow-y-auto w-full max-w-[100vh] max-h-[70vh] ml-[15vh] mt-[2vh] shadow-md"
-                    >
-            <DialogHeader>
-              <DialogTitle className="flex justify-center items-center text-center">
-                Editar producto
-              </DialogTitle>
-              <DialogDescription className="flex justify-center items-center text-center">
-                Actualiza los detalles necesarios del producto.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmitUpdate}>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2 col-span-2">
-                        <Label htmlFor="nombre">Nombre</Label>
-                        <Input
-                        id="nombre"
-                        name="nombre"
-                        value={selectedProduct?.nombre || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, nombre: e.target.value})}
-                        type="text"
-                        placeholder="Nombre del producto"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2">
-                        <Label htmlFor="proveedor">Proveedor</Label>
-                        <Select
-                          id="proveedor"
-                          name="proveedor"
-                          value={selectedProduct?.proveedor_id ? selectedProduct.proveedor_id.toString() : ""}
-                          onValueChange={(value) => {
-                            setSelectedProduct((prevProduct) => ({
-                              ...prevProduct,
-                              proveedor_id: Number(value), // Convertimos el valor a número
-                            }));
-                          }}
-                          disabled={proveedores.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay categorías disponibles
-                        >
-                          <SelectTrigger className="col-span-3">
-                            {proveedores.find((prov) => prov.id === selectedProduct?.proveedor_id)?.nombre || "Seleccionar proveedor"}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {proveedores.length > 0 ? (
-                              proveedores.map((pro) => (
-                                <SelectItem key={pro.id} value={pro.id.toString()}>
-                                  {pro.nombre}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem disabled>No hay proveedores disponibles</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="categoriaGeneral">Categoría general</Label>
-                        <Select
-                          id="categoriaGeneral"
-                          name="categoriaGeneral"
-                          value={selectedProduct?.Tipo_id ? selectedProduct.Tipo_id.toString() : ""}
-                          onValueChange={(value) => {
-                            setSelectedProduct((prevProduct) => ({
-                              ...prevProduct,
-                              Categoria_id: null,
-                              Tipo_id: Number(value), // Convertimos el valor a número
-                            }));
-                          }}
-                          disabled={categorias.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay categorías disponibles
-                        >
-                          <SelectTrigger className="col-span-3">
-                            {categorias.find((cat) => cat.id === selectedProduct?.Tipo_id)?.nombre || "Seleccionar categoría"}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categorias.length > 0 ? (
-                              categorias.map((cat) => (
-                                <SelectItem key={cat.id} value={cat.id.toString()}>
-                                  {cat.nombre}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem disabled>No hay categorías disponibles</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2">
-                        <Label htmlFor="subcategoria">Subcategoría</Label>
-                        <Select
-                          id="subcategoria"
-                          name="subcategoria"
-                          value={selectedProduct?.Categoria_id ? selectedProduct.Categoria_id.toString() : ""}
-                          onValueChange={(value) => {
-                            setSelectedProduct((prevProduct) => ({
-                              ...prevProduct,
-                              Subcategoria_id: null,
-                              Categoria_id: Number(value), // Convertimos el valor a número
-                            }));
-                          }}
-                          disabled={subcategoriasFiltradasEdit.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay subcategorías
-                        >
-                          <SelectTrigger>
-                            {subcategoriasFiltradasEdit.find((s) => s.id === selectedProduct?.Categoria_id)?.nombre || "Seleccionar subcategoría"}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {subcategoriasFiltradasEdit.length > 0 ? (
-                              subcategoriasFiltradasEdit.map((sub) => (
-                                <SelectItem key={sub.id} value={sub.id.toString()}>
-                                  {sub.nombre}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem disabled>No hay subcategorías disponibles</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="especificacion">Especificación</Label>
-                        <Select
-                          id="especificacion"
-                          name="especificacion"
-                          value={selectedProduct?.Subcategoria_id ? selectedProduct.Subcategoria_id.toString() : ""}
-                          onValueChange={(value) => {
-                            setSelectedProduct((prevProduct) => ({
-                              ...prevProduct,
-                              Subcategoria_id: Number(value), // Convertimos el valor a número
-                            }));
-                          }}
-                          disabled={especificacionesFiltradasEdit.length === 0 || permiso?.tipo !== 1} // Deshabilitar si no hay opciones
-                        >
-                          <SelectTrigger>
-                            {especificacionesFiltradasEdit.find((s) => s.id === selectedProduct?.Subcategoria_id)?.nombre || "Seleccionar especificación"}
-                          </SelectTrigger>
-                          <SelectContent>
-                            {especificacionesFiltradasEdit.length > 0 ? (
-                              especificacionesFiltradasEdit.map((esp) => (
-                                <SelectItem key={esp.id} value={esp.id.toString()}>
-                                  {esp.nombre}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem disabled>No hay especificaciones disponibles</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2">
-                        <Label htmlFor="medicion">Medición</Label>
-                        <Input
-                        id="medicion"
-                        name="medicion"
-                        value={selectedProduct?.medicion || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, medicion: e.target.value})}
-                        type="text"
-                        placeholder="Piezas, kilos, millares"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="codigo">Código</Label>
-                        <Input
-                        id="codigo"
-                        name="codigo"
-                        value={selectedProduct?.codigo || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, codigo: e.target.value})}
-                        type="text"
-                        placeholder="Código Odoo"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2">
-                        <Label htmlFor="costo">Costo</Label>
-                        <Input
-                        id="costo"
-                        name="costo"
-                        value={selectedProduct?.costo || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, costo: e.target.value})}
-                        type="number"
-                        placeholder="$"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="compraMinima">Compra mínima</Label>
-                        <Input
-                        id="compraMinima"
-                        name="compraMinima"
-                        value={selectedProduct?.cMinima || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, cMinima: e.target.value})}
-                        type="number"
-                        placeholder="Compra mínima"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2">
-                        <Label htmlFor="fecha_evaluacion">Fecha de evaluación</Label>
-                        <Input
-                        id="fecha_evaluacion"
-                        name="fecha_evaluacion"
-                        value={selectedProduct?.evaluacion || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, evaluacion: e.target.value})}
-                        type="date"
-                        readOnly={true}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="veredicto">Veredicto</Label>
-                        <Select
-                          id="veredicto"
-                          name="veredicto"
-                          value={selectedProduct?.veredicto?.toString() || ''}
-                          onValueChange={(value) => {
-                            setSelectedProduct((prevProduct) => ({
-                              ...prevProduct,
-                              veredicto: value,
-                            }));
-                          }}
-                          disabled={true}
-                        >
-                          <SelectTrigger id="veredicto">
-                            <SelectValue placeholder="Aún sin veredicto" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value='1'>Aceptado</SelectItem>
-                            <SelectItem value='0'>No aceptado</SelectItem>
-                          </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div style={{marginBottom: "15px"}} className="grid grid-cols-2 gap-1">
-                    <div className="space-y-2 col-span-2">
-                        <Label htmlFor="descripcion">Descripción</Label>
-                        <Textarea
-                        id="descripcion"
-                        name="descripcion"
-                        value={selectedProduct?.descripcion || ''} 
-                        onChange={(e) => setSelectedProduct({...selectedProduct, descripcion: e.target.value})}
-                        type="text"
-                        placeholder="Descripción del producto"
-                        readOnly={permiso?.tipo !== 1}
-                        />
-                    </div>
-                </div>
-                <div style={{ marginBottom: "15px" }} className="space-y-2 col-span-2">
-                  <Label htmlFor="imagenes">Imágenes</Label>
-                  <div className="flex flex-col space-y-2">
-                    <input
-                      id="imagenes"
-                      name="imagenes"
-                      type="file"
-                      multiple
-                      accept=".jpg,.jpeg,.png"
-                      onChange={handleFileChangeEdit}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button" // Evita que se envíe el formulario
-                      variant="outline"
-                      onClick={() => document.getElementById("imagenes").click()}
-                      className="w-full"
-                      disabled={permiso?.tipo !== 4}
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
-                    </Button>
+                    {/* Botones de catalogo */}
+                    {user.catalogoProductos === 1 &&
+                    user.veredicto === 1 &&
+                    permiso?.tipo === 1 ? (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleQuitarDelCatalogo(user.id)}
+                      >
+                        Quitar del catálogo
+                      </Button>
+                    ) : user.catalogoProductos === 0 &&
+                      user.veredicto === 1 &&
+                      permiso?.tipo === 1 ? (
+                      <Button
+                        size="sm"
+                        onClick={() => handleAgregarAlCatalogo(user.id)}
+                        style={{ width: "151px", backgroundColor: "#198754" }}
+                      >
+                        Enviar al catálogo
+                      </Button>
+                    ) : (
+                      <div hidden></div>
+                    )}
 
-                    {/* Vista previa de imágenes */}
-                    {selectedProduct?.imagenes.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2">
-                        {selectedProduct.imagenes.map((img, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={
-                                img instanceof File
-                                  ? URL.createObjectURL(img)
-                                  : `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(img)}`
-                              }
-                              alt={`imagen ${index + 1}`}
-                              className="w-20 h-20 object-cover border rounded"
-                            />
-                            <button
-                              type="button" // Evita el envío del formulario
-                              onClick={() => handleRemoveImageEdit(index)}
-                              className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
-                              disabled={permiso?.tipo !== 4}
-                            >
-                              X
-                            </button>
+                    {/* Boton de editar */}
+                    <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+                      <DialogTrigger asChild>
+                        <Button
+                          onClick={() => handleEditProduct(user.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Editar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent
+                        onInteractOutside={(event) => event.preventDefault()}
+                        className="border-none p-5 overflow-y-auto w-full max-w-[100vh] max-h-[70vh] ml-[15vh] mt-[2vh] shadow-md"
+                      >
+                        <DialogHeader>
+                          <DialogTitle className="flex justify-center items-center text-center">
+                            Editar producto
+                          </DialogTitle>
+                          <DialogDescription className="flex justify-center items-center text-center">
+                            Actualiza los detalles necesarios del producto.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmitUpdate}>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="nombre">Nombre</Label>
+                              <Input
+                                id="nombre"
+                                name="nombre"
+                                value={selectedProduct?.nombre || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    nombre: e.target.value,
+                                  })
+                                }
+                                type="text"
+                                placeholder="Nombre del producto"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
                           </div>
-                        ))}
-                      </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor="proveedor">Proveedor</Label>
+                              <Select
+                                id="proveedor"
+                                name="proveedor"
+                                value={
+                                  selectedProduct?.proveedor_id
+                                    ? selectedProduct.proveedor_id.toString()
+                                    : ""
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedProduct((prevProduct) => ({
+                                    ...prevProduct,
+                                    proveedor_id: Number(value), // Convertimos el valor a número
+                                  }));
+                                }}
+                                disabled={
+                                  proveedores.length === 0 ||
+                                  permiso?.tipo !== 1
+                                } // Deshabilitar si no hay categorías disponibles
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  {proveedores.find(
+                                    (prov) =>
+                                      prov.id === selectedProduct?.proveedor_id
+                                  )?.nombre || "Seleccionar proveedor"}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {proveedores.length > 0 ? (
+                                    proveedores.map((pro) => (
+                                      <SelectItem
+                                        key={pro.id}
+                                        value={pro.id.toString()}
+                                      >
+                                        {pro.nombre}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem disabled>
+                                      No hay proveedores disponibles
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="categoriaGeneral">
+                                Categoría general
+                              </Label>
+                              <Select
+                                id="categoriaGeneral"
+                                name="categoriaGeneral"
+                                value={
+                                  selectedProduct?.Tipo_id
+                                    ? selectedProduct.Tipo_id.toString()
+                                    : ""
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedProduct((prevProduct) => ({
+                                    ...prevProduct,
+                                    Categoria_id: null,
+                                    Tipo_id: Number(value), // Convertimos el valor a número
+                                  }));
+                                }}
+                                disabled={
+                                  categorias.length === 0 || permiso?.tipo !== 1
+                                } // Deshabilitar si no hay categorías disponibles
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  {categorias.find(
+                                    (cat) => cat.id === selectedProduct?.Tipo_id
+                                  )?.nombre || "Seleccionar categoría"}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categorias.length > 0 ? (
+                                    categorias.map((cat) => (
+                                      <SelectItem
+                                        key={cat.id}
+                                        value={cat.id.toString()}
+                                      >
+                                        {cat.nombre}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem disabled>
+                                      No hay categorías disponibles
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor="subcategoria">Subcategoría</Label>
+                              <Select
+                                id="subcategoria"
+                                name="subcategoria"
+                                value={
+                                  selectedProduct?.Categoria_id
+                                    ? selectedProduct.Categoria_id.toString()
+                                    : ""
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedProduct((prevProduct) => ({
+                                    ...prevProduct,
+                                    Subcategoria_id: null,
+                                    Categoria_id: Number(value), // Convertimos el valor a número
+                                  }));
+                                }}
+                                disabled={
+                                  subcategoriasFiltradasEdit.length === 0 ||
+                                  permiso?.tipo !== 1
+                                } // Deshabilitar si no hay subcategorías
+                              >
+                                <SelectTrigger>
+                                  {subcategoriasFiltradasEdit.find(
+                                    (s) =>
+                                      s.id === selectedProduct?.Categoria_id
+                                  )?.nombre || "Seleccionar subcategoría"}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {subcategoriasFiltradasEdit.length > 0 ? (
+                                    subcategoriasFiltradasEdit.map((sub) => (
+                                      <SelectItem
+                                        key={sub.id}
+                                        value={sub.id.toString()}
+                                      >
+                                        {sub.nombre}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem disabled>
+                                      No hay subcategorías disponibles
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="especificacion">
+                                Especificación
+                              </Label>
+                              <Select
+                                id="especificacion"
+                                name="especificacion"
+                                value={
+                                  selectedProduct?.Subcategoria_id
+                                    ? selectedProduct.Subcategoria_id.toString()
+                                    : ""
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedProduct((prevProduct) => ({
+                                    ...prevProduct,
+                                    Subcategoria_id: Number(value), // Convertimos el valor a número
+                                  }));
+                                }}
+                                disabled={
+                                  especificacionesFiltradasEdit.length === 0 ||
+                                  permiso?.tipo !== 1
+                                } // Deshabilitar si no hay opciones
+                              >
+                                <SelectTrigger>
+                                  {especificacionesFiltradasEdit.find(
+                                    (s) =>
+                                      s.id === selectedProduct?.Subcategoria_id
+                                  )?.nombre || "Seleccionar especificación"}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {especificacionesFiltradasEdit.length > 0 ? (
+                                    especificacionesFiltradasEdit.map((esp) => (
+                                      <SelectItem
+                                        key={esp.id}
+                                        value={esp.id.toString()}
+                                      >
+                                        {esp.nombre}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem disabled>
+                                      No hay especificaciones disponibles
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor="medicion">Medición</Label>
+                              <Input
+                                id="medicion"
+                                name="medicion"
+                                value={selectedProduct?.medicion || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    medicion: e.target.value,
+                                  })
+                                }
+                                type="text"
+                                placeholder="Piezas, kilos, millares"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="codigo">Código</Label>
+                              <Input
+                                id="codigo"
+                                name="codigo"
+                                value={selectedProduct?.codigo || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    codigo: e.target.value,
+                                  })
+                                }
+                                type="text"
+                                placeholder="Código Odoo"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor="costo">Costo</Label>
+                              <Input
+                                id="costo"
+                                name="costo"
+                                value={selectedProduct?.costo || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    costo: e.target.value,
+                                  })
+                                }
+                                type="number"
+                                placeholder="$"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="compraMinima">
+                                Compra mínima
+                              </Label>
+                              <Input
+                                id="compraMinima"
+                                name="compraMinima"
+                                value={selectedProduct?.cMinima || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    cMinima: e.target.value,
+                                  })
+                                }
+                                type="number"
+                                placeholder="Compra mínima"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2">
+                              <Label htmlFor="fecha_evaluacion">
+                                Fecha de evaluación
+                              </Label>
+                              <Input
+                                id="fecha_evaluacion"
+                                name="fecha_evaluacion"
+                                value={selectedProduct?.evaluacion || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    evaluacion: e.target.value,
+                                  })
+                                }
+                                type="date"
+                                readOnly={true}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="veredicto">Veredicto</Label>
+                              <Select
+                                id="veredicto"
+                                name="veredicto"
+                                value={
+                                  selectedProduct?.veredicto?.toString() || ""
+                                }
+                                onValueChange={(value) => {
+                                  setSelectedProduct((prevProduct) => ({
+                                    ...prevProduct,
+                                    veredicto: value,
+                                  }));
+                                }}
+                                disabled={true}
+                              >
+                                <SelectTrigger id="veredicto">
+                                  <SelectValue placeholder="Aún sin veredicto" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">Aceptado</SelectItem>
+                                  <SelectItem value="0">No aceptado</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="grid grid-cols-2 gap-1"
+                          >
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="descripcion">Descripción</Label>
+                              <Textarea
+                                id="descripcion"
+                                name="descripcion"
+                                value={selectedProduct?.descripcion || ""}
+                                onChange={(e) =>
+                                  setSelectedProduct({
+                                    ...selectedProduct,
+                                    descripcion: e.target.value,
+                                  })
+                                }
+                                type="text"
+                                placeholder="Descripción del producto"
+                                readOnly={permiso?.tipo !== 1}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            style={{ marginBottom: "15px" }}
+                            className="space-y-2 col-span-2"
+                          >
+                            <Label htmlFor="imagenes">Imágenes</Label>
+                            <div className="flex flex-col space-y-2">
+                              <input
+                                id="imagenes"
+                                name="imagenes"
+                                type="file"
+                                multiple
+                                accept=".jpg,.jpeg,.png"
+                                onChange={handleFileChangeEdit}
+                                className="hidden"
+                              />
+                              <Button
+                                type="button" // Evita que se envíe el formulario
+                                variant="outline"
+                                onClick={() =>
+                                  document.getElementById("imagenes").click()
+                                }
+                                className="w-full"
+                                disabled={permiso?.tipo !== 4}
+                              >
+                                <Upload className="mr-2 h-4 w-4" />
+                                Subir archivo (JPG, PNG) Max: 4MB y 4 imágenes
+                              </Button>
+
+                              {/* Vista previa de imágenes */}
+                              {selectedProduct?.imagenes.length > 0 && (
+                                <div className="grid grid-cols-4 gap-2">
+                                  {selectedProduct.imagenes.map(
+                                    (img, index) => (
+                                      <div key={index} className="relative">
+                                        <img
+                                          src={
+                                            img instanceof File
+                                              ? URL.createObjectURL(img)
+                                              : `/api/ProductEngineering/obtenerImagenes?rutaImagen=${encodeURIComponent(
+                                                  img
+                                                )}`
+                                          }
+                                          alt={`imagen ${index + 1}`}
+                                          className="w-20 h-20 object-cover border rounded"
+                                        />
+                                        <button
+                                          type="button" // Evita el envío del formulario
+                                          onClick={() =>
+                                            handleRemoveImageEdit(index)
+                                          }
+                                          className="absolute top-0 right-0 bg-red-500 text-white p-1 text-xs rounded"
+                                          disabled={permiso?.tipo !== 4}
+                                        >
+                                          X
+                                        </button>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit">Actualizar producto</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Boton de eliminar */}
+                    {isMaster ? (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    ) : (
+                      <div hidden></div>
                     )}
                   </div>
-                </div>
-            <DialogFooter>
-              <Button type="submit">Actualizar producto</Button>
-            </DialogFooter>
-            </form>
-          </DialogContent>
-                  </Dialog>
-
-                  {/* Boton de eliminar */}
-                  {isMaster ? (<Button variant="destructive" size="sm" onClick={() => handleDelete(user.id)}>Eliminar</Button>) : (<div hidden></div>)}
-                </div>
-              </TableCell>
-            </TableRow>
-                    ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={12} className="text-center">
-                  No se encontraron productos
                 </TableCell>
               </TableRow>
-            )}
-          
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={12} className="text-center">
+                No se encontraron productos
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       {/* Paginación */}

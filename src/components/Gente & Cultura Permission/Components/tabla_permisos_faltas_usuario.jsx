@@ -28,9 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
 import styles from "../../../../public/CSS/spinner.css";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css"; // Asegúrate de importar los estilos
@@ -44,15 +43,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, Upload } from "lucide-react";
-import {
-  startOfDay,
-  addDays,
-  subDays,
-  getDay,
-  isAfter,
-  isBefore,
-  format,
-} from "date-fns";
+import { startOfDay, addDays, subDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -60,43 +51,37 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { getSession } from 'next-auth/react';
-import { Checkbox } from "@/components/ui/checkbox"
-import '../../../../public/CSS/spinner.css';
-import Link from "next/link"
-import { PlusCircle, X } from "lucide-react"
+} from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import "../../../../public/CSS/spinner.css";
+import { PlusCircle, X } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-const MySwal = withReactContent(Swal);
+import { useUserContext } from "@/utils/userContext";
 
 export function TablaPermisosFaltaUsuario() {
+  const { userData, loading: userLoading } = useUserContext();
+  const nombre = userData?.user?.nombre;
+  const apellidos = userData?.user?.apellidos;
+  const idUser = userData?.user?.id;
+  const departamento = userData?.departamento?.nombre;
+  const jefe_directo = userData?.user?.jefe_directo;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [eventos, setEventos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [nombre, setNombre] = useState("");
-  const [apellidos, setApellidos] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [idUser, setID] = useState("");
-  const [correoUser, setCorreo] = useState("");
-  const [numero_empleado, setNumeroEmpleado] = useState("");
-  const [jefe_directo, setJefeDirecto] = useState("");
-  const [jefeNombre, setJefeNombre] = useState("");
-  const [jefeApellidos, setJefeApellidos] = useState("");
-  const [puesto, setPuesto] = useState("");
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
-  const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] = useState(false); // Estado para abrir el formulario
+  const [formularioPrincipalAbierto, setFormularioPrincipalAbierto] =
+    useState(false); // Estado para abrir el formulario
   const [tipoFormularioAbierto, setTipoFormularioAbierto] = useState(false); // Estado para abrir el formulario
-  const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] = useState(false); // Estado para abrir el formulario
-  const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] = useState(""); // Estado para abrir el formulario
+  const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] =
+    useState(false); // Estado para abrir el formulario
+  const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] =
+    useState(""); // Estado para abrir el formulario
   const [ver, setVer] = useState(false);
   const [fechaInicioPapeleta, setFechaInicio] = useState("");
   const [fechaFinPapeleta, setFechaFin] = useState("");
@@ -201,52 +186,6 @@ export function TablaPermisosFaltaUsuario() {
   });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setNombre(userData.user.nombre);
-          setApellidos(userData.user.apellidos);
-          setDepartamento(userData.departamento.nombre);
-          setID(userData.user.id);
-          setCorreo(userData.user.correo);
-          setNumeroEmpleado(userData.user.numero_empleado);
-          setJefeDirecto(userData.user.jefe_directo);
-          setPuesto(userData.user.puesto);
-
-          if (userData.user.jefe_directo) {
-            const jefeResponse = await fetch("/api/Users/getUserById", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ id: userData.user.jefe_directo }),
-            });
-            const jefeData = await jefeResponse.json();
-            if (jefeData.success) {
-              setJefeNombre(jefeData.user.nombre);
-              setJefeApellidos(jefeData.user.apellidos);
-            } else {
-              alert("Error al obtener los datos del jefe directo");
-            }
-          }
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("/api/Users/getUsers");
@@ -265,18 +204,6 @@ export function TablaPermisosFaltaUsuario() {
 
     fetchUsers();
   }, []);
-
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleOpenEditModal = () => {
-    setEditModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
 
   const handleCheckboxChange = (value) => {
     setTipoFormulario2(value);
@@ -334,13 +261,15 @@ export function TablaPermisosFaltaUsuario() {
       setFormularioPrincipalAbiertoEdit(true);
       setVer(true);
     } catch (error) {
-      console.error('Error al obtener el formulario:', error);
+      console.error("Error al obtener el formulario:", error);
     }
-  }; 
+  };
 
   const handleEditar = async (index) => {
     try {
-      const response = await fetch(`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`);
+      const response = await fetch(
+        `/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`
+      );
       const data = await response.json();
       setIDFormulario(data.id);
       setGrupoFormulario(data.formulario_id);
@@ -352,33 +281,33 @@ export function TablaPermisosFaltaUsuario() {
       setFormularioPrincipalAbiertoEdit(true);
       setVer(false);
     } catch (error) {
-      console.error('Error al obtener el formulario:', error);
+      console.error("Error al obtener el formulario:", error);
     }
-  }; 
+  };
 
   const handleDownload = (formData, nombre, apellido, departamento) => {
     setLoading(true);
-  
+
     // Mostrar alerta de carga
     Swal.fire({
-      title: 'Descargando...',
-      text: 'Estamos procesando el archivo, por favor espere...',
+      title: "Descargando...",
+      text: "Estamos procesando el archivo, por favor espere...",
       showConfirmButton: false,
       allowOutsideClick: false,
       willOpen: () => {
         Swal.showLoading();
-      }
+      },
     });
-  
+
     setTimeout(() => {
       const doc = new jsPDF();
-  
-      doc.addImage("/logo.png", "JPEG", 50, 7, 50, 20, undefined, 'MEDIUM');
-  
+
+      doc.addImage("/logo.png", "JPEG", 50, 7, 50, 20, undefined, "MEDIUM");
+
       // Título
       doc.setFontSize(14);
       doc.text("Solicitud de Vacaciones", 130, 20, { align: "center" });
-  
+
       // Función para formatear fecha dd/mm/yyyy
       const formatDate = (date) => {
         if (!date) return "";
@@ -388,21 +317,26 @@ export function TablaPermisosFaltaUsuario() {
         const year = d.getFullYear();
         return `${day}/${month}/${year}`;
       };
-  
+
       const today = formatDate(new Date());
       const fechaInicio = formatDate(formData.fechaInicio);
       const fechaFin = formatDate(formData.fechaFin);
-  
+
       // Tabla de datos clave
       const tableData = [
         ["Fecha de solicitud", today],
         ["Nombre", `${nombre} ${apellido}`],
         ["Departamento", departamento],
         ["Puesto", formData.puestoVacaciones || "Sin puesto especificado"],
-        ["Vacaciones", `Días: ${formData.dias || ""}    Del: ${fechaInicio}    Al: ${fechaFin}`],
+        [
+          "Vacaciones",
+          `Días: ${
+            formData.dias || ""
+          }    Del: ${fechaInicio}    Al: ${fechaFin}`,
+        ],
         ["Observaciones", formData.motivo || "Ninguna"],
       ];
-  
+
       autoTable(doc, {
         startY: 45,
         body: tableData,
@@ -414,24 +348,26 @@ export function TablaPermisosFaltaUsuario() {
           1: { cellWidth: 120 },
         },
       });
-  
+
       // Firma centrada al final
       const finalY = doc.lastAutoTable.finalY + 40;
       const pageWidth = doc.internal.pageSize.getWidth();
       const lineWidth = 80;
       const lineX = (pageWidth - lineWidth) / 2;
-  
+
       doc.line(lineX, finalY, lineX + lineWidth, finalY);
       doc.setFontSize(12);
-      doc.text("Firma del empleado", pageWidth / 2, finalY + 7, { align: "center" });
-  
+      doc.text("Firma del empleado", pageWidth / 2, finalY + 7, {
+        align: "center",
+      });
+
       doc.save(`Formato vacaciones - ${nombre} ${apellido}.pdf`);
-  
+
       // Cerrar alerta y resetear loading
       Swal.close();
       setLoading(false);
     }, 100);
-  };  
+  };
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
@@ -489,16 +425,47 @@ export function TablaPermisosFaltaUsuario() {
       comentarios: evento.comentarios,
       estatus: evento.estatus,
       accion: (index) => (
-        <div style={{ display: 'flex', gap: '1px' }}>
-          <Button style={{ width: "1px", height: "40px"}} onClick={() => handleEditForm(index)}>
+        <div style={{ display: "flex", gap: "1px" }}>
+          <Button
+            style={{ width: "1px", height: "40px" }}
+            onClick={() => handleEditForm(index)}
+          >
             <VisualizeIcon />
           </Button>
-          <Button onClick={() => handleEditar(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
+          <Button
+            onClick={() => handleEditar(index)}
+            style={{
+              width: "1px",
+              height: "40px",
+              opacity: evento.estatus !== "Pendiente" ? "0.7" : "1",
+            }}
+            disabled={evento.estatus !== "Pendiente"}
+          >
             <EditIcon />
           </Button>
-          <Button onClick={() => handleDelete(index)} style={{ width: "1px", height: "40px", opacity: evento.estatus !== "Pendiente" ? "0.7" : "1"}} disabled={evento.estatus !== "Pendiente"}>
-            <svg width="25px" height="25px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17" stroke="rgb(31 41 55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <Button
+            onClick={() => handleDelete(index)}
+            style={{
+              width: "1px",
+              height: "40px",
+              opacity: evento.estatus !== "Pendiente" ? "0.7" : "1",
+            }}
+            disabled={evento.estatus !== "Pendiente"}
+          >
+            <svg
+              width="25px"
+              height="25px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17"
+                stroke="rgb(31 41 55)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </Button>
         </div>
@@ -520,7 +487,7 @@ export function TablaPermisosFaltaUsuario() {
   );
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === "loading" || userLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -528,7 +495,7 @@ export function TablaPermisosFaltaUsuario() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == "loading" || userLoading) {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
@@ -654,20 +621,20 @@ export function TablaPermisosFaltaUsuario() {
         Swal.showLoading(); // Muestra el indicador de carga (spinner)
       },
     });
-  
+
     if (!session) {
       return;
     }
-  
+
     try {
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-  
+
         // Crear FormData y agregar archivo
         const formDataFTP = new FormData();
         formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
-  
+
         try {
           const ftpResponse = await fetch(
             "/api/Gente&CulturaPermission/subirPDFPapeletas",
@@ -676,7 +643,7 @@ export function TablaPermisosFaltaUsuario() {
               body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
             }
           );
-  
+
           const ftpResult = await ftpResponse.json();
 
           Swal.close();
@@ -687,9 +654,9 @@ export function TablaPermisosFaltaUsuario() {
           } else {
             console.error("Error al subir el archivo al FTP", ftpResult);
             Swal.fire({
-              title: 'Error',
-              text: 'Error al subir el archivo',
-              icon: 'error',
+              title: "Error",
+              text: "Error al subir el archivo",
+              icon: "error",
               timer: 3000,
               showConfirmButton: false,
             });
@@ -698,30 +665,30 @@ export function TablaPermisosFaltaUsuario() {
         } catch (ftpError) {
           console.error("Error en la solicitud de FTP", ftpError);
           Swal.fire({
-            title: 'Error',
-            text: 'Error en la subida del archivo',
-            icon: 'error',
+            title: "Error",
+            text: "Error en la subida del archivo",
+            icon: "error",
             timer: 3000,
             showConfirmButton: false,
           });
           return;
         }
       }
-  
+
       // Luego de subir el archivo (o si no hay), enviar el resto del formulario
       await enviarFormulario();
     } catch (error) {
       console.error("Error en el formulario:", error);
       Swal.close();
       Swal.fire({
-        title: 'Error',
-        text: 'Error al enviar el formulario',
-        icon: 'error',
+        title: "Error",
+        text: "Error al enviar el formulario",
+        icon: "error",
         timer: 3000,
         showConfirmButton: false,
       });
     }
-  };  
+  };
 
   const enviarFormulario = async () => {
     const mensaje1 = `<strong>${
@@ -784,9 +751,9 @@ export function TablaPermisosFaltaUsuario() {
           } else {
             console.error("Error al enviar la notificación");
             Swal.fire({
-              title: 'Error',
-              text: 'Error al enviar la notificación',
-              icon: 'error',
+              title: "Error",
+              text: "Error al enviar la notificación",
+              icon: "error",
               timer: 3000,
               showConfirmButton: false,
             });
@@ -795,18 +762,18 @@ export function TablaPermisosFaltaUsuario() {
           console.error("Error en la solicitud de notificación:", error);
           Swal.close();
           Swal.fire({
-            title: 'Error',
-            text: 'Error en la notificación',
-            icon: 'error',
+            title: "Error",
+            text: "Error en la notificación",
+            icon: "error",
             timer: 3000,
             showConfirmButton: false,
           });
         }
       } else {
         Swal.fire({
-          title: 'Error',
-          text: 'Error al crear la papeleta',
-          icon: 'error',
+          title: "Error",
+          text: "Error al crear la papeleta",
+          icon: "error",
           timer: 3000,
           showConfirmButton: false,
         });
@@ -815,9 +782,9 @@ export function TablaPermisosFaltaUsuario() {
       console.error("Error al enviar el formulario:", error);
       Swal.close();
       Swal.fire({
-        title: 'Error',
-        text: 'Error al enviar el formulario',
-        icon: 'error',
+        title: "Error",
+        text: "Error al enviar el formulario",
+        icon: "error",
         timer: 3000,
         showConfirmButton: false,
       });
@@ -836,20 +803,20 @@ export function TablaPermisosFaltaUsuario() {
         Swal.showLoading(); // Muestra el indicador de carga (spinner)
       },
     });
-  
+
     if (!session) {
       return;
     }
-  
+
     try {
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-  
+
         // Crear FormData y agregar archivo
         const formDataFTP = new FormData();
         formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
-  
+
         try {
           const ftpResponse = await fetch(
             "/api/Gente&CulturaPermission/subirPDFPapeletas",
@@ -858,7 +825,7 @@ export function TablaPermisosFaltaUsuario() {
               body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
             }
           );
-  
+
           const ftpResult = await ftpResponse.json();
 
           Swal.close();
@@ -869,9 +836,9 @@ export function TablaPermisosFaltaUsuario() {
           } else {
             console.error("Error al subir el archivo al FTP", ftpResult);
             Swal.fire({
-              title: 'Error',
-              text: 'Error al subir el archivo',
-              icon: 'error',
+              title: "Error",
+              text: "Error al subir el archivo",
+              icon: "error",
               timer: 3000,
               showConfirmButton: false,
             });
@@ -880,25 +847,25 @@ export function TablaPermisosFaltaUsuario() {
         } catch (ftpError) {
           console.error("Error en la solicitud de FTP", ftpError);
           Swal.fire({
-            title: 'Error',
-            text: 'Error en la subida del archivo',
-            icon: 'error',
+            title: "Error",
+            text: "Error en la subida del archivo",
+            icon: "error",
             timer: 3000,
             showConfirmButton: false,
           });
           return;
         }
       }
-  
+
       // Luego de subir el archivo (o si no hay), enviar el resto del formulario
       await actualizarFormulario();
     } catch (error) {
       console.error("Error en el formulario:", error);
       Swal.close();
       Swal.fire({
-        title: 'Error',
-        text: 'Error al actualizar el formulario',
-        icon: 'error',
+        title: "Error",
+        text: "Error al actualizar el formulario",
+        icon: "error",
         timer: 3000,
         showConfirmButton: false,
       });
@@ -907,19 +874,27 @@ export function TablaPermisosFaltaUsuario() {
 
   const actualizarFormulario = async () => {
     try {
-      const response = await fetch(`/api/Gente&CulturaAbsence/actualizarFormularioFaltas?id=${idUser}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData, tipoFormulario2, formularioExt, grupoFormulario }),
-      });
-  
+      const response = await fetch(
+        `/api/Gente&CulturaAbsence/actualizarFormularioFaltas?id=${idUser}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            formData,
+            tipoFormulario2,
+            formularioExt,
+            grupoFormulario,
+          }),
+        }
+      );
+
       if (response.ok) {
         Swal.fire({
-          title: 'Actualizada',
-          text: 'La papeleta ha sido actualizada correctamente',
-          icon: 'success',
+          title: "Actualizada",
+          text: "La papeleta ha sido actualizada correctamente",
+          icon: "success",
           timer: 3000,
           showConfirmButton: false,
         }).then(() => {
@@ -928,20 +903,23 @@ export function TablaPermisosFaltaUsuario() {
       } else {
         console.error("Error al actualizar el formulario");
         Swal.fire({
-          title: 'Error',
-          text: 'Error al actualizar el formulario',
-          icon: 'error',
+          title: "Error",
+          text: "Error al actualizar el formulario",
+          icon: "error",
           timer: 3000,
           showConfirmButton: false,
         });
       }
     } catch (error) {
-      console.error("Error en la solicitud de actualización de formulario:", error);
+      console.error(
+        "Error en la solicitud de actualización de formulario:",
+        error
+      );
       Swal.close();
       Swal.fire({
-        title: 'Error',
-        text: 'Error en la actualización del formulario',
-        icon: 'error',
+        title: "Error",
+        text: "Error en la actualización del formulario",
+        icon: "error",
         timer: 3000,
         showConfirmButton: false,
       });
@@ -1302,7 +1280,8 @@ export function TablaPermisosFaltaUsuario() {
                       Tiempo por tiempo
                     </CardTitle>
                     <DialogDescription className="text-center">
-                      Tiempo que puedes reponer llegando temprano o saliendo tarde
+                      Tiempo que puedes reponer llegando temprano o saliendo
+                      tarde
                     </DialogDescription>
                   </CardHeader>
                   <form onSubmit={handleSubmit}>
@@ -1665,10 +1644,17 @@ export function TablaPermisosFaltaUsuario() {
                       </div>
                       <div className="grid grid-cols-6 gap-1">
                         <div className="flex flex-col justify-end min-w-0">
-                          {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario")}
+                          {renderDatePicker(
+                            "Fecha",
+                            formData.fechaFormulario,
+                            handleChange,
+                            "fechaFormulario"
+                          )}
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
-                          <Label htmlFor="actividad" className="truncate block">Actividad</Label>
+                          <Label htmlFor="actividad" className="truncate block">
+                            Actividad
+                          </Label>
                           <Input
                             id="actividad"
                             name="actividad"
@@ -1679,7 +1665,12 @@ export function TablaPermisosFaltaUsuario() {
                           />
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
-                          <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
+                          <Label
+                            htmlFor="descripcion"
+                            className="truncate block"
+                          >
+                            Descripción
+                          </Label>
                           <Input
                             id="descripcion"
                             name="descripcion"
@@ -1690,7 +1681,9 @@ export function TablaPermisosFaltaUsuario() {
                           />
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
-                          <Label htmlFor="persona" className="truncate block">Persona respuesta</Label>
+                          <Label htmlFor="persona" className="truncate block">
+                            Persona respuesta
+                          </Label>
                           <Input
                             id="persona"
                             name="persona"
@@ -1701,7 +1694,12 @@ export function TablaPermisosFaltaUsuario() {
                           />
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
-                          <Label htmlFor="tiempoRespuesta" className="truncate block">Tiempo de respuesta</Label>
+                          <Label
+                            htmlFor="tiempoRespuesta"
+                            className="truncate block"
+                          >
+                            Tiempo de respuesta
+                          </Label>
                           <Input
                             id="tiempoRespuesta"
                             name="tiempoRespuesta"
@@ -1712,7 +1710,12 @@ export function TablaPermisosFaltaUsuario() {
                           />
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
-                          <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
+                          <Label
+                            htmlFor="comentarios"
+                            className="truncate block"
+                          >
+                            Comentarios
+                          </Label>
                           <Input
                             id="comentarios"
                             name="comentarios"
@@ -1872,434 +1875,677 @@ export function TablaPermisosFaltaUsuario() {
           )}
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
-            <DialogContent 
-              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="puestoVacaciones">Puesto</Label>
-                <Input
-                  id="puestoVacaciones"
-                  name="puestoVacaciones"
-                  type="text"
-                  onChange={handleChange}
-                  placeholder="Puesto..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  onChange={handleChange}
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", formData.fechaInicio, handleChange, "fechaInicio")}
-                {renderDatePicker("Fecha de fin", formData.fechaFin, handleChange, "fechaFin")}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  onChange={handleChange}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px" }}>
-                <Label htmlFor="comprobante">Formato</Label>
+              <DialogContent
+                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                onInteractOutside={(event) => event.preventDefault()}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-center">
+                      Vacaciones
+                    </CardTitle>
+                  </CardHeader>
+                  <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="puestoVacaciones">Puesto</Label>
+                        <Input
+                          id="puestoVacaciones"
+                          name="puestoVacaciones"
+                          type="text"
+                          onChange={handleChange}
+                          placeholder="Puesto..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="motivo">Días</Label>
+                        <Input
+                          id="dias"
+                          name="dias"
+                          type="number"
+                          onChange={handleChange}
+                          placeholder="Dias..."
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderDatePicker(
+                          "Fecha de inicio",
+                          formData.fechaInicio,
+                          handleChange,
+                          "fechaInicio"
+                        )}
+                        {renderDatePicker(
+                          "Fecha de fin",
+                          formData.fechaFin,
+                          handleChange,
+                          "fechaFin"
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="motivo">Observaciones</Label>
+                        <Textarea
+                          id="motivo"
+                          name="motivo"
+                          onChange={handleChange}
+                          className="min-h-[100px]"
+                          placeholder="Coloca tus observaciones aquí..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div
+                          style={{
+                            position: "relative",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <Label htmlFor="comprobante">Formato</Label>
 
-                <Tooltip
-                  title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                          <Tooltip
+                            title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
                     "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
-                  arrow
-                >
-                  <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                </Tooltip>
+                            arrow
+                          >
+                            <HelpIcon
+                              style={{ cursor: "pointer", fontSize: 18 }}
+                            />
+                          </Tooltip>
 
-                {/* Botón personalizado para descargar el PDF */}
-                <Button2 variant="outline" onClick={() => handleDownload(formData, nombre, apellidos, departamento)} disabled={loading}>
-                  {loading ? "Descargando..." : "Descargar formato"}
-                </Button2>
-              </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    id="comprobante"
-                    name="comprobante"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    required
-                    className="hidden"
-                  />
-                  <Button2
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("comprobante").click()}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Subir archivo (PDF, JPG, PNG) Max: 4MB
-                  </Button2>
-                  {formData.comprobante && (
-                    <span className="text-sm text-muted-foreground">
-                      {formData.comprobante}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button2 type="submit" className="w-full" disabled={!formData.puestoVacaciones || !formData.dias || !formData.fechaInicio || !formData.fechaFin || !formData.motivo || !formData.comprobante}>Enviar</Button2>
-            </CardFooter>
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
+                          {/* Botón personalizado para descargar el PDF */}
+                          <Button2
+                            variant="outline"
+                            onClick={() =>
+                              handleDownload(
+                                formData,
+                                nombre,
+                                apellidos,
+                                departamento
+                              )
+                            }
+                            disabled={loading}
+                          >
+                            {loading ? "Descargando..." : "Descargar formato"}
+                          </Button2>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            id="comprobante"
+                            name="comprobante"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={handleFileChange}
+                            required
+                            className="hidden"
+                          />
+                          <Button2
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              document.getElementById("comprobante").click()
+                            }
+                            className="w-full"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Subir archivo (PDF, JPG, PNG) Max: 4MB
+                          </Button2>
+                          {formData.comprobante && (
+                            <span className="text-sm text-muted-foreground">
+                              {formData.comprobante}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button2
+                        type="submit"
+                        className="w-full"
+                        disabled={
+                          !formData.puestoVacaciones ||
+                          !formData.dias ||
+                          !formData.fechaInicio ||
+                          !formData.fechaFin ||
+                          !formData.motivo ||
+                          !formData.comprobante
+                        }
+                      >
+                        Enviar
+                      </Button2>
+                    </CardFooter>
+                  </form>
+                </Card>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       )}
 
-{formularioPrincipalAbiertoEdit && (
-  <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalFormsEdit}>
-    <DialogContent className="border-none p-0">
-      <Card className="w-full max-w-lg" hidden>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            {tipoFormulario2}
-          </CardTitle>
-          <DialogDescription className="text-center">
-            Formulario para: {tipoFormulario2}
-          </DialogDescription>
-        </CardHeader>
-        <div className="grid gap-4 py-4">
-        {tipoFormulario2 === "Llegada tarde / Salida antes" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent 
-              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Llegada tarde / Salida antes</CardTitle>
-            <DialogDescription className="text-center">Autorización para llegar tarde o salir temprano</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitEdit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="horaFormulario">Hora</Label>
-                <Input
-                  id="horaFormulario"
-                  name="horaFormulario"
-                  type="time"
-                  value={formData.horaFormulario}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}/>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                  {renderDatePicker("Fecha", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..."
-                  readOnly={ver ? true : false} />
-              </div>
-            </CardContent>
-            {ver ? (<div hidden></div>) : (<CardFooter><Button2 type="submit" className="w-full">Actualizar</Button2></CardFooter>)}
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Tiempo por tiempo" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent 
-              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Tiempo por tiempo</CardTitle>
-            <DialogDescription className="text-center">Tiempo que puedes reponer llegando temprano o saliendo tarde</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitEdit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="motivo">Días</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title="1 día de trabajo equivale a 8 horas de trabajo." arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Dias..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="horas">Horas</Label>
-                <Input
-                  id="horas"
-                  name="horas"
-                  type="number"
-                  value={formData.horas}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Horas..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="minutos">Minutos</Label>
-                <Input
-                  id="minutos"
-                  name="minutos"
-                  type="number"
-                  value={formData.minutos}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Minutos..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
-                  {renderDatePicker("Fecha de fin", ver ? fechaFinPapeleta : formData.fechaFin, handleChange, "fechaFin", ver ? true : false)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="comprobante">Comprobante</Label>
-                <div className="flex items-center space-x-2">
-                  {formData.comprobante && ver ? (
-                    <a
-                      href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
+      {formularioPrincipalAbiertoEdit && (
+        <Dialog
+          open={formularioPrincipalAbiertoEdit}
+          onOpenChange={closeModalFormsEdit}
+        >
+          <DialogContent className="border-none p-0">
+            <Card className="w-full max-w-lg" hidden>
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-center">
+                  {tipoFormulario2}
+                </CardTitle>
+                <DialogDescription className="text-center">
+                  Formulario para: {tipoFormulario2}
+                </DialogDescription>
+              </CardHeader>
+              <div className="grid gap-4 py-4">
+                {tipoFormulario2 === "Llegada tarde / Salida antes" && (
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
+                  >
+                    <DialogContent
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      onInteractOutside={(event) => event.preventDefault()}
                     >
-                      Descargar {formData.comprobante}
-                    </a>
-                  ) : (
-                    <>
-                    {ver ? (<span style={{fontSize: 14}}>Sin comprobante agregado</span>) : (
-                      <>
-                        <input
-                          id="comprobante"
-                          name="comprobante"  // Asegúrate que sea "comprobante"
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                        <Button2
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById("comprobante").click()}
-                          className="w-full"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Subir archivo (PDF, JPG, PNG) Max: 4MB
-                        </Button2>
-                        {formData.comprobante && (
-                          <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-                        )}
-                      </>
-                    )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            {ver ? (<div hidden></div>) : (<CardFooter><Button2 type="submit" className="w-full">Actualizar</Button2></CardFooter>)}
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Permiso" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent 
-              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto" 
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Permiso</CardTitle>
-            <DialogDescription className="text-center">Permiso con goce o sin goce de sueldo</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitEdit}>
-            <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label>Tipo de permiso</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip
-                      title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Llegada tarde / Salida antes
+                          </CardTitle>
+                          <DialogDescription className="text-center">
+                            Autorización para llegar tarde o salir temprano
+                          </DialogDescription>
+                        </CardHeader>
+                        <form onSubmit={handleSubmitEdit}>
+                          <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="horaFormulario">Hora</Label>
+                              <Input
+                                id="horaFormulario"
+                                name="horaFormulario"
+                                type="time"
+                                value={formData.horaFormulario}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              {renderDatePicker(
+                                "Fecha",
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
+                                handleChange,
+                                "fechaInicio",
+                                ver ? true : false
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Textarea
+                                id="motivo"
+                                name="motivo"
+                                value={formData.motivo}
+                                onChange={handleChange}
+                                className="min-h-[100px]"
+                                placeholder="Coloca tus observaciones aquí..."
+                                readOnly={ver ? true : false}
+                              />
+                            </div>
+                          </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2 type="submit" className="w-full">
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                {tipoFormulario2 === "Tiempo por tiempo" && (
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
+                  >
+                    <DialogContent
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      onInteractOutside={(event) => event.preventDefault()}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Tiempo por tiempo
+                          </CardTitle>
+                          <DialogDescription className="text-center">
+                            Tiempo que puedes reponer llegando temprano o
+                            saliendo tarde
+                          </DialogDescription>
+                        </CardHeader>
+                        <form onSubmit={handleSubmitEdit}>
+                          <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="motivo">Días</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title="1 día de trabajo equivale a 8 horas de trabajo."
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <Input
+                                id="dias"
+                                name="dias"
+                                type="number"
+                                value={formData.dias}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Dias..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="horas">Horas</Label>
+                              <Input
+                                id="horas"
+                                name="horas"
+                                type="number"
+                                value={formData.horas}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Horas..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="minutos">Minutos</Label>
+                              <Input
+                                id="minutos"
+                                name="minutos"
+                                type="number"
+                                value={formData.minutos}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Minutos..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {renderDatePicker(
+                                "Fecha de inicio",
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
+                                handleChange,
+                                "fechaInicio",
+                                ver ? true : false
+                              )}
+                              {renderDatePicker(
+                                "Fecha de fin",
+                                ver ? fechaFinPapeleta : formData.fechaFin,
+                                handleChange,
+                                "fechaFin",
+                                ver ? true : false
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Textarea
+                                id="motivo"
+                                name="motivo"
+                                value={formData.motivo}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                className="min-h-[100px]"
+                                placeholder="Coloca tus observaciones aquí..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="comprobante">Comprobante</Label>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante && ver ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    {ver ? (
+                                      <span style={{ fontSize: 14 }}>
+                                        Sin comprobante agregado
+                                      </span>
+                                    ) : (
+                                      <>
+                                        <input
+                                          id="comprobante"
+                                          name="comprobante" // Asegúrate que sea "comprobante"
+                                          type="file"
+                                          accept=".pdf,.jpg,.jpeg,.png"
+                                          onChange={handleFileChange}
+                                          className="hidden"
+                                        />
+                                        <Button2
+                                          type="button"
+                                          variant="outline"
+                                          onClick={() =>
+                                            document
+                                              .getElementById("comprobante")
+                                              .click()
+                                          }
+                                          className="w-full"
+                                        >
+                                          <Upload className="mr-2 h-4 w-4" />
+                                          Subir archivo (PDF, JPG, PNG) Max: 4MB
+                                        </Button2>
+                                        {formData.comprobante && (
+                                          <span className="text-sm text-muted-foreground">
+                                            {formData.comprobante}
+                                          </span>
+                                        )}
+                                      </>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2 type="submit" className="w-full">
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                {tipoFormulario2 === "Permiso" && (
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
+                  >
+                    <DialogContent
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      onInteractOutside={(event) => event.preventDefault()}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Permiso
+                          </CardTitle>
+                          <DialogDescription className="text-center">
+                            Permiso con goce o sin goce de sueldo
+                          </DialogDescription>
+                        </CardHeader>
+                        <form onSubmit={handleSubmitEdit}>
+                          <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label>Tipo de permiso</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
                         <ul style="margin:0;padding:5px;text-align:justify;">
                           <li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
                           <li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
                           <li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
                           <li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
-                        </ul>`
-                      }
-                      arrow
-                    >
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <RadioGroup
-                  onValueChange={(value) => handleChange2({ name: "conSueldo", value })}
-                  value={formData.conSueldo}
-                  disabled={ver ? true : false}
-                  className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="si" id="justificada-si" />
-                    <Label htmlFor="justificada-si">Con goce de sueldo</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="justificada-no" />
-                    <Label htmlFor="justificada-no">Sin goce de sueldo</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
-                  {renderDatePicker("Fecha de fin",  ver ? fechaFinPapeleta : formData.fechaFin, handleChange, "fechaFin", ver ? true : false)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Comprobante</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {formData.comprobante && ver ? (
-                    <a
-                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
+                        </ul>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <RadioGroup
+                                onValueChange={(value) =>
+                                  handleChange2({ name: "conSueldo", value })
+                                }
+                                value={formData.conSueldo}
+                                disabled={ver ? true : false}
+                                className="flex space-x-4"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem
+                                    value="si"
+                                    id="justificada-si"
+                                  />
+                                  <Label htmlFor="justificada-si">
+                                    Con goce de sueldo
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem
+                                    value="no"
+                                    id="justificada-no"
+                                  />
+                                  <Label htmlFor="justificada-no">
+                                    Sin goce de sueldo
+                                  </Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Días</Label>
+                              <Input
+                                id="dias"
+                                name="dias"
+                                type="number"
+                                value={formData.dias}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Dias..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {renderDatePicker(
+                                "Fecha de inicio",
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
+                                handleChange,
+                                "fechaInicio",
+                                ver ? true : false
+                              )}
+                              {renderDatePicker(
+                                "Fecha de fin",
+                                ver ? fechaFinPapeleta : formData.fechaFin,
+                                handleChange,
+                                "fechaFin",
+                                ver ? true : false
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Textarea
+                                id="motivo"
+                                name="motivo"
+                                value={formData.motivo}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                className="min-h-[100px]"
+                                placeholder="Coloca tus observaciones aquí..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Comprobante</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante && ver ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    {ver ? (
+                                      <span style={{ fontSize: 14 }}>
+                                        Sin comprobante agregado
+                                      </span>
+                                    ) : (
+                                      <>
+                                        <input
+                                          id="comprobante"
+                                          name="comprobante" // Asegúrate que sea "comprobante"
+                                          type="file"
+                                          accept=".pdf,.jpg,.jpeg,.png"
+                                          onChange={handleFileChange}
+                                          className="hidden"
+                                        />
+                                        <Button2
+                                          type="button"
+                                          variant="outline"
+                                          onClick={() =>
+                                            document
+                                              .getElementById("comprobante")
+                                              .click()
+                                          }
+                                          className="w-full"
+                                        >
+                                          <Upload className="mr-2 h-4 w-4" />
+                                          Subir archivo (PDF, JPG, PNG) Max: 4MB
+                                        </Button2>
+                                        {formData.comprobante && (
+                                          <span className="text-sm text-muted-foreground">
+                                            {formData.comprobante}
+                                          </span>
+                                        )}
+                                      </>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2 type="submit" className="w-full">
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                {tipoFormulario2 === "Home Office" && (
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
                   >
-                    Descargar {formData.comprobante}
-                  </a>    
-                  ) : (
-                    <>
-                    {ver ? (<span style={{fontSize: 14}}>Sin comprobante agregado</span>) : (
-                      <>
-                        <input
-                          id="comprobante"
-                          name="comprobante"  // Asegúrate que sea "comprobante"
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
-                        <Button2
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById("comprobante").click()}
-                          className="w-full"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Subir archivo (PDF, JPG, PNG) Max: 4MB
-                        </Button2>
-                        {formData.comprobante && (
-                          <span className="text-sm text-muted-foreground">{formData.comprobante}</span>
-                        )}
-                      </>
-                    )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            {ver ? (<div hidden></div>) : (<CardFooter><Button2 type="submit" className="w-full">Actualizar</Button2></CardFooter>)} 
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Home Office" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent 
-              onInteractOutside={(event) => event.preventDefault()}
-              className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Home Office</CardTitle>
-            <DialogDescription className="text-center">Solicitar permiso para realizar home office</DialogDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmitEdit}>
-            <CardContent className="space-y-6">
-              <div>
-                <Label style={{fontSize: 17}}>Periodo</Label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDatePicker("Fecha de inicio", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
-                {renderDatePicker("Fecha de fin",  ver ? fechaFinPapeleta : formData.fechaFin, handleChange, "fechaFin", ver ? true : false)}
-              </div>
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                <Label style={{fontSize: 17}}>Plan de trabajo</Label>
-                <div style={{marginLeft: "10px"}}>
-                  <Tooltip
-                    title={
-                      `<p style="margin:0;padding:5px;text-align:justify;">INSTRUCCIONES PARA EL LLENADO DEL FORMULARIO:</p>
+                    <DialogContent
+                      onInteractOutside={(event) => event.preventDefault()}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Home Office
+                          </CardTitle>
+                          <DialogDescription className="text-center">
+                            Solicitar permiso para realizar home office
+                          </DialogDescription>
+                        </CardHeader>
+                        <form onSubmit={handleSubmitEdit}>
+                          <CardContent className="space-y-6">
+                            <div>
+                              <Label style={{ fontSize: 17 }}>Periodo</Label>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {renderDatePicker(
+                                "Fecha de inicio",
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
+                                handleChange,
+                                "fechaInicio",
+                                ver ? true : false
+                              )}
+                              {renderDatePicker(
+                                "Fecha de fin",
+                                ver ? fechaFinPapeleta : formData.fechaFin,
+                                handleChange,
+                                "fechaFin",
+                                ver ? true : false
+                              )}
+                            </div>
+                            <div
+                              style={{
+                                position: "relative",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Label style={{ fontSize: 17 }}>
+                                Plan de trabajo
+                              </Label>
+                              <div style={{ marginLeft: "10px" }}>
+                                <Tooltip
+                                  title={`<p style="margin:0;padding:5px;text-align:justify;">INSTRUCCIONES PARA EL LLENADO DEL FORMULARIO:</p>
                       <ul style="margin:0;padding:5px;text-align:justify;">
                         <li style="margin-bottom:5px;"><strong>FECHA:</strong> Fecha de actividad, se debe seguir un consecutivo.</li>
                         <li style="margin-bottom:5px;"><strong>ACTIVIDAD:</strong> Corresponde al nombre corto que el proponente le designe a la actividad.</li>
@@ -2308,250 +2554,400 @@ export function TablaPermisosFaltaUsuario() {
                         <li style="margin-bottom:5px;"><strong>TIEMPO DE RESPUESTA:</strong> Indique el tiempo de respuesta que se requirió para las actividades.</li>
                         <li style="margin-bottom:5px;"><strong>COMENTARIOS (SI SE DEJA PENDIENTE, SE REQUIERE APOYO DE ALGÚN OTRA ÁREA, ETC.):</strong> Son observaciones, pendientes que pueden quedar en otra área, o en la nuestra.</li>
                         <li><strong>RECUERDE:</strong> Las actividades propuestas deben estar orientadas al cumplimiento del objeto de la convocatoria.</li>
-                      </ul>`
-                    }
-                    arrow
+                      </ul>`}
+                                  arrow
+                                >
+                                  <HelpIcon
+                                    style={{ cursor: "pointer", fontSize: 20 }}
+                                  />
+                                </Tooltip>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-6 gap-1">
+                              <div className="flex flex-col justify-end min-w-0">
+                                {renderDatePicker(
+                                  "Fecha",
+                                  formData.fechaFormulario,
+                                  handleChange,
+                                  "fechaFormulario",
+                                  ver ? true : false
+                                )}
+                              </div>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label
+                                  htmlFor="actividad"
+                                  className="truncate block"
+                                >
+                                  Actividad
+                                </Label>
+                                <Input
+                                  id="actividad"
+                                  name="actividad"
+                                  type="text"
+                                  value={formData.actividad}
+                                  placeholder="Actividad..."
+                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                />
+                              </div>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label
+                                  htmlFor="descripcion"
+                                  className="truncate block"
+                                >
+                                  Descripción
+                                </Label>
+                                <Input
+                                  id="descripcion"
+                                  name="descripcion"
+                                  type="text"
+                                  value={formData.descripcion}
+                                  placeholder="Descripción de la actividad elaborada..."
+                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                />
+                              </div>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label
+                                  htmlFor="persona"
+                                  className="truncate block"
+                                >
+                                  Persona respuesta
+                                </Label>
+                                <Input
+                                  id="persona"
+                                  name="persona"
+                                  type="text"
+                                  value={formData.persona}
+                                  placeholder="Persona..."
+                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                />
+                              </div>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label
+                                  htmlFor="tiempoRespuesta"
+                                  className="truncate block"
+                                >
+                                  Tiempo de respuesta
+                                </Label>
+                                <Input
+                                  id="tiempoRespuesta"
+                                  name="tiempoRespuesta"
+                                  type="text"
+                                  value={formData.tiempoRespuesta}
+                                  placeholder="Tiempo de respuesta..."
+                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                />
+                              </div>
+                              <div className="flex flex-col justify-end min-w-0 space-y-3">
+                                <Label
+                                  htmlFor="comentarios"
+                                  className="truncate block"
+                                >
+                                  Comentarios
+                                </Label>
+                                <Input
+                                  id="comentarios"
+                                  name="comentarios"
+                                  type="text"
+                                  value={formData.comentarios}
+                                  placeholder="Comentarios..."
+                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              {formData.planTrabajo.otros.map((otro, index) => (
+                                <div
+                                  key={index}
+                                  className="grid grid-cols-6 gap-1"
+                                >
+                                  <div>
+                                    {renderDatePicker(
+                                      "",
+                                      otro.fechaActividad,
+                                      (e) =>
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "fechaActividad"
+                                        ),
+                                      "fechaActividad",
+                                      ver ? true : false,
+                                      true
+                                    )}
+                                  </div>
+                                  <div>
+                                    <Input
+                                      id={`actividad-${index}`}
+                                      name={`actividad-${index}`}
+                                      type="text"
+                                      value={otro.actividad}
+                                      placeholder="Actividad..."
+                                      onChange={(e) =>
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "actividad"
+                                        )
+                                      }
+                                      readOnly={ver ? true : false}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Input
+                                      id={`descripcion-${index}`}
+                                      name={`descripcion-${index}`}
+                                      type="text"
+                                      value={otro.descripcion}
+                                      placeholder="Descripción de la actividad elaborada..."
+                                      onChange={(e) =>
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "descripcion"
+                                        )
+                                      }
+                                      readOnly={ver ? true : false}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Input
+                                      id={`persona-${index}`}
+                                      name={`persona-${index}`}
+                                      type="text"
+                                      value={otro.persona}
+                                      placeholder="Persona..."
+                                      onChange={(e) =>
+                                        handleTrabajoChange(e, index, "persona")
+                                      }
+                                      readOnly={ver ? true : false}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Input
+                                      id={`tiempoRespuesta-${index}`}
+                                      name={`tiempoRespuesta-${index}`}
+                                      type="text"
+                                      value={otro.tiempoRespuesta}
+                                      placeholder="Tiempo de respuesta..."
+                                      onChange={(e) =>
+                                        handleTrabajoChange(
+                                          e,
+                                          index,
+                                          "tiempoRespuesta"
+                                        )
+                                      }
+                                      readOnly={ver ? true : false}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center">
+                                      <Input
+                                        id={`comentarios-${index}`}
+                                        name={`comentarios-${index}`}
+                                        type="text"
+                                        className="w-full"
+                                        value={otro.comentarios}
+                                        placeholder="Comentarios..."
+                                        onChange={(e) =>
+                                          handleTrabajoChange(
+                                            e,
+                                            index,
+                                            "comentarios"
+                                          )
+                                        }
+                                        readOnly={ver ? true : false}
+                                      />
+                                      {ver ? (
+                                        <div hidden></div>
+                                      ) : (
+                                        <Button2
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="w-6"
+                                          onClick={() => eliminarTrabajo(index)}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button2>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {ver ? (
+                                <div hidden></div>
+                              ) : (
+                                <Button
+                                  style={{
+                                    background: "rgb(31 41 55)",
+                                    color: "white",
+                                  }}
+                                  type="button"
+                                  variant="outline"
+                                  onClick={añadirTrabajo}
+                                  className="mt-2"
+                                >
+                                  <PlusCircle className="h-4 w-4 mr-2" />
+                                  Agregar
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2 type="submit" className="w-full">
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                {tipoFormulario2 === "Vacaciones" && (
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
                   >
-                    <HelpIcon style={{ cursor: 'pointer', fontSize: 20 }} />
-                  </Tooltip>
-                </div>
+                    <DialogContent
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      onInteractOutside={(event) => event.preventDefault()}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Vacaciones
+                          </CardTitle>
+                        </CardHeader>
+                        <form onSubmit={handleSubmitEdit}>
+                          <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="puestoVacaciones">Puesto</Label>
+                              <Input
+                                id="puestoVacaciones"
+                                name="puestoVacaciones"
+                                type="text"
+                                value={formData.puestoVacaciones}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Puesto..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Días</Label>
+                              <Input
+                                id="dias"
+                                name="dias"
+                                type="number"
+                                value={formData.dias}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                placeholder="Dias..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {renderDatePicker(
+                                "Fecha de inicio",
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
+                                handleChange,
+                                "fechaInicio",
+                                ver ? true : false
+                              )}
+                              {renderDatePicker(
+                                "Fecha de fin",
+                                ver ? fechaFinPapeleta : formData.fechaFin,
+                                handleChange,
+                                "fechaFin",
+                                ver ? true : false
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Textarea
+                                id="motivo"
+                                name="motivo"
+                                value={formData.motivo}
+                                onChange={handleChange}
+                                readOnly={ver ? true : false}
+                                className="min-h-[100px]"
+                                placeholder="Coloca tus observaciones aquí..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Formato</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin formato agregado
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2 type="submit" className="w-full">
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
-              <div className="grid grid-cols-6 gap-1">
-                <div className="flex flex-col justify-end min-w-0">
-                  {renderDatePicker("Fecha", formData.fechaFormulario, handleChange, "fechaFormulario", ver ? true : false)}
-                </div>
-                <div className="flex flex-col justify-end min-w-0 space-y-3">
-                  <Label htmlFor="actividad" className="truncate block">Actividad</Label>
-                  <Input
-                    id="actividad"
-                    name="actividad"
-                    type="text"
-                    value={formData.actividad}
-                    placeholder="Actividad..."
-                    onChange={handleChange}
-                    readOnly={ver ? true : false}
-                  />
-                </div>
-                <div className="flex flex-col justify-end min-w-0 space-y-3">
-                  <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
-                  <Input
-                    id="descripcion"
-                    name="descripcion"
-                    type="text"
-                    value={formData.descripcion}
-                    placeholder="Descripción de la actividad elaborada..."
-                    onChange={handleChange}
-                    readOnly={ver ? true : false}
-                  />
-                </div>
-                <div className="flex flex-col justify-end min-w-0 space-y-3">
-                  <Label htmlFor="persona" className="truncate block">Persona respuesta</Label>
-                  <Input
-                    id="persona"
-                    name="persona"
-                    type="text"
-                    value={formData.persona}
-                    placeholder="Persona..."
-                    onChange={handleChange}
-                    readOnly={ver ? true : false}
-                  />
-                </div>
-                <div className="flex flex-col justify-end min-w-0 space-y-3">
-                  <Label htmlFor="tiempoRespuesta" className="truncate block">Tiempo de respuesta</Label>
-                  <Input
-                    id="tiempoRespuesta"
-                    name="tiempoRespuesta"
-                    type="text"
-                    value={formData.tiempoRespuesta}
-                    placeholder="Tiempo de respuesta..."
-                    onChange={handleChange}
-                    readOnly={ver ? true : false}
-                  />
-                </div>
-                <div className="flex flex-col justify-end min-w-0 space-y-3">
-                  <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
-                  <Input
-                    id="comentarios"
-                    name="comentarios"
-                    type="text"
-                    value={formData.comentarios}
-                    placeholder="Comentarios..."
-                    onChange={handleChange}
-                    readOnly={ver ? true : false}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-              {formData.planTrabajo.otros.map((otro, index) => (
-               <div key={index} className="grid grid-cols-6 gap-1">
-               <div>
-                {renderDatePicker("", otro.fechaActividad, (e) => handleTrabajoChange(e, index, "fechaActividad"), "fechaActividad", ver ? true : false, true)}
-              </div>
-               <div>
-                 <Input
-                   id={`actividad-${index}`}
-                   name={`actividad-${index}`}
-                   type="text"
-                   value={otro.actividad}
-                   placeholder="Actividad..."
-                   onChange={(e) => handleTrabajoChange(e, index, "actividad")}
-                   readOnly={ver ? true : false}
-                 />
-               </div>
-               <div>
-                 <Input
-                   id={`descripcion-${index}`}
-                   name={`descripcion-${index}`}
-                   type="text"
-                   value={otro.descripcion}
-                   placeholder="Descripción de la actividad elaborada..."
-                   onChange={(e) => handleTrabajoChange(e, index, "descripcion")}
-                   readOnly={ver ? true : false}
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`persona-${index}`}
-                   name={`persona-${index}`}
-                   type="text"
-                   value={otro.persona}
-                   placeholder="Persona..."
-                   onChange={(e) => handleTrabajoChange(e, index, "persona")}
-                   readOnly={ver ? true : false}
-                 />
-               </div>
-               <div >
-                 <Input
-                   id={`tiempoRespuesta-${index}`}
-                   name={`tiempoRespuesta-${index}`}
-                   type="text"
-                   value={otro.tiempoRespuesta}
-                   placeholder="Tiempo de respuesta..."
-                   onChange={(e) => handleTrabajoChange(e, index, "tiempoRespuesta")}
-                   readOnly={ver ? true : false}
-                 />
-               </div>
-               <div>
-               <div className="flex items-center">
-               <Input
-                    id={`comentarios-${index}`}
-                    name={`comentarios-${index}`}
-                    type="text"
-                    className="w-full"
-                    value={otro.comentarios}
-                    placeholder="Comentarios..."
-                    onChange={(e) => handleTrabajoChange(e, index, "comentarios")}
-                    readOnly={ver ? true : false}
-                  />
-                  {ver ? (<div hidden></div>) : (<Button2 type="button" variant="ghost" size="icon" className="w-6" onClick={() => eliminarTrabajo(index)}>
-                    <X className="h-4 w-4" />
-                  </Button2>)}
-                  </div>
-               </div>
-             </div>
-              ))}
-              {ver ? (<div hidden></div>) : (<Button style={{background:"rgb(31 41 55)", color:"white"}} type="button" variant="outline" onClick={añadirTrabajo} className="mt-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Agregar
-              </Button>)}
-            </div>
-            </CardContent>
-            {ver ? (<div hidden></div>) : (<CardFooter><Button2 type="submit" className="w-full">Actualizar</Button2></CardFooter>)}
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-          {tipoFormulario2 === "Vacaciones" && (
-            <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-            <DialogContent 
-              className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-            <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
-          </CardHeader>
-          <form onSubmit={handleSubmitEdit}>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="puestoVacaciones">Puesto</Label>
-                <Input
-                  id="puestoVacaciones"
-                  name="puestoVacaciones"
-                  type="text"
-                  value={formData.puestoVacaciones}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Puesto..." />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Días</Label>
-                <Input
-                  id="dias"
-                  name="dias"
-                  type="number"
-                  value={formData.dias}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  placeholder="Dias..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderDatePicker("Fecha de inicio", ver ? fechaInicioPapeleta : formData.fechaInicio, handleChange, "fechaInicio", ver ? true : false)}
-                  {renderDatePicker("Fecha de fin",  ver ? fechaFinPapeleta : formData.fechaFin, handleChange, "fechaFin", ver ? true : false)}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="motivo">Observaciones</Label>
-                <Textarea
-                  id="motivo"
-                  name="motivo"
-                  value={formData.motivo}
-                  onChange={handleChange}
-                  readOnly={ver ? true : false}
-                  className="min-h-[100px]"
-                  placeholder="Coloca tus observaciones aquí..." />
-              </div>
-              <div className="space-y-2">
-              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <Label htmlFor="comprobante">Formato</Label>
-                  <div style={{marginLeft: "10px"}}>
-                    <Tooltip title={
-                        `<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
-                    "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`
-                      } arrow>
-                      <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {formData.comprobante ? (
-                    <a
-                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Descargar {formData.comprobante}
-                  </a>    
-                  ) : (
-                    <>
-                      <span style={{fontSize: 14}}>Sin formato agregado</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            {ver ? (<div hidden></div>) : (<CardFooter><Button2 type="submit" className="w-full">Actualizar</Button2></CardFooter>)}
-          </form>
-        </Card>
-            </DialogContent>
-          </Dialog>
-          )}
-        </div>
-      </Card>
-    </DialogContent>
-  </Dialog>
-)}
+            </Card>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="w-full sm:w-1/3">
@@ -2855,16 +3251,25 @@ function VisualizeIcon(props) {
       />
 
       <circle cx="32" cy="32" r="4" fill="rgb(31 41 55)" />
-    </svg>)
+    </svg>
+  );
 }
 
 function EditIcon(props) {
   return (
-    (<svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="rgb(31 41 55)" fill="rgb(31 41 55)" width="20px" height="20px">
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      stroke="rgb(31 41 55)"
+      fill="rgb(31 41 55)"
+      width="20px"
+      height="20px"
+    >
       <path d="M21,11.5V15H18a3,3,0,0,0-3,3v3H4.5A1.5,1.5,0,0,1,3,19.5V4.5A1.5,1.5,0,0,1,4.5,3h9A1.5,1.5,0,0,0,15,1.5h0A1.5,1.5,0,0,0,13.5,0h-9A4.5,4.5,0,0,0,0,4.5v15A4.5,4.5,0,0,0,4.5,24H16.484a4.5,4.5,0,0,0,3.181-1.317l3.017-3.017A4.5,4.5,0,0,0,24,16.485V11.5A1.5,1.5,0,0,0,22.5,10h0A1.5,1.5,0,0,0,21,11.5Z" />
       <path d="M17.793,1.793l-12.5,12.5A1,1,0,0,0,5,15v3a1,1,0,0,0,1,1H9a1,1,0,0,0,.707-.293L22.038,6.376a3.379,3.379,0,0,0,.952-3.17A3.118,3.118,0,0,0,17.793,1.793Z" />
-    </svg>)
-  )
+    </svg>
+  );
 }
 
 function Spinner() {

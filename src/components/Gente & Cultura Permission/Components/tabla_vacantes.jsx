@@ -26,7 +26,6 @@ import styles from "../../../../public/CSS/spinner.css";
 import { useSession } from "next-auth/react";
 import { CardTitle } from "@/components/ui/card";
 import { Button as Button2 } from "@/components/ui/button";
-import { getSession } from "next-auth/react";
 import { Textarea } from "@/components/ui/textarea";
 import { UserPlus } from "lucide-react";
 import {
@@ -38,15 +37,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useUserContext } from "@/utils/userContext";
 
 export function TablaVacantes() {
+  const { userData, loading } = useUserContext();
+  const permisos = userData?.user?.permisos || {};
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("0");
   const [eventos, setEventos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [users, setUsers] = useState([]);
-  const [departamento, setDepartamento] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [departamentos, setDepartamentos] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -61,51 +62,7 @@ export function TablaVacantes() {
   const [fecha_ingreso, setFechaIngreso] = useState("");
   const [observaciones, setObservaciones] = useState("");
   const [selectedVacant, setSelectedVacant] = useState(null);
-  const [permisos, setPermisos] = useState(null);
-  const [idUser, setID] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("todos");
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            correo: session.user.email,
-            numero_empleado: session.user.numero_empleado,
-          }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setID(userData.user.id);
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      if (!idUser) return; // Asegurar que haya un ID antes de la petición
-
-      try {
-        const response = await axios.get(
-          `/api/MarketingLabel/permiso?userId=${idUser}`
-        );
-        setPermisos(response.data);
-      } catch (error) {
-        console.error("Error al obtener permisos:", error);
-      }
-    };
-
-    fetchPermissions();
-  }, [idUser]);
 
   useEffect(() => {
     const fetchDepartamentos = async () => {
@@ -128,10 +85,8 @@ export function TablaVacantes() {
   }, []);
 
   // Función para verificar si el usuario tiene permiso en la sección y campo específicos
-  const tienePermiso = (seccion, campo) => {
-    if (!permisos || !permisos.campo || !permisos.campo[seccion]) return false;
-    return permisos.campo[seccion].includes(campo);
-  };
+  const tienePermiso = (seccion, campo) =>
+    permisos?.campo?.[seccion]?.includes(campo) ?? false;
 
   const encabezados = [
     "Vacante",
@@ -141,7 +96,9 @@ export function TablaVacantes() {
     "Ubicación",
     permisos && tienePermiso("Gente y Cultura", "Vacantes sin sueldo")
       ? ""
-      : "Salario",
+      : permisos && tienePermiso("Gente y Cultura", "Vacantes")
+      ? "Salario"
+      : "",
     "Fecha de apertura",
     "Ingreso",
     "Observaciones",
@@ -461,7 +418,7 @@ export function TablaVacantes() {
 
   const { data: session, status } = useSession();
 
-  if (status === "loading" || permisos === null) {
+  if (status === "loading" || permisos === null || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -470,7 +427,7 @@ export function TablaVacantes() {
     );
   }
 
-  if (status == "loading") {
+  if (status == "loading" || loading) {
     return <p>cargando...</p>;
   }
 
@@ -994,10 +951,12 @@ export function TablaVacantes() {
                   </TableCell>
                   {tienePermiso("Gente y Cultura", "Vacantes sin sueldo") ? (
                     <TableCell></TableCell>
-                  ) : (
+                  ) : tienePermiso("Gente y Cultura", "Vacantes") ? (
                     <TableCell>
                       {evento.salario || "Sin salario especificado"}
                     </TableCell>
+                  ) : (
+                    <TableCell></TableCell>
                   )}
                   <TableCell>
                     {evento.fecha_apertura

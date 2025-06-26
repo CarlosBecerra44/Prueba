@@ -27,14 +27,29 @@ export default async function handler(req, res) {
   form.parse(req, async (err, fields, files) => {
     if (err) {
       console.error("Error procesando el formulario:", err);
-      return res.status(500).json({ message: "Error al procesar el formulario" });
+      return res
+        .status(500)
+        .json({ message: "Error al procesar el formulario" });
     }
 
-    console.log('Archivos recibidos:', files);
-    console.log('Campos recibidos:', fields); // Ahora veremos las imágenes existentes
+    console.log("Archivos recibidos:", files);
+    console.log("Campos recibidos:", fields); // Ahora veremos las imágenes existentes
 
-    const { id, nombre, proveedor, categoriaGeneral, subcategoria, especificacion, medicion, codigo, costo, 
-      compraMinima, descripcion, fecha_evaluacion, veredicto } = fields;
+    const {
+      id,
+      nombre,
+      proveedor,
+      categoriaGeneral,
+      subcategoria,
+      especificacion,
+      medicion,
+      codigo,
+      costo,
+      compraMinima,
+      descripcion,
+      fecha_evaluacion,
+      veredicto,
+    } = fields;
 
     const safeValues = {
       nombre: nombre || null,
@@ -46,17 +61,21 @@ export default async function handler(req, res) {
       costo: costo || null,
       cMinima: compraMinima || null,
       medicion: medicion || null,
-      descripcion: descripcion || null
+      descripcion: descripcion || null,
     };
 
     const imagenesExistentes = Object.keys(fields)
-      .filter(key => key.startsWith('imagenesExistentes'))
-      .map(key => fields[key]);
+      .filter((key) => key.startsWith("imagenesExistentes"))
+      .map((key) => fields[key]);
 
-    const imagenesNuevas = Array.isArray(files.imagenes) ? files.imagenes : files.imagenes ? [files.imagenes] : [];
+    const imagenesNuevas = Array.isArray(files.imagenes)
+      ? files.imagenes
+      : files.imagenes
+      ? [files.imagenes]
+      : [];
 
-    console.log('Imágenes existentes:', imagenesExistentes);
-    console.log('Imágenes nuevas:', imagenesNuevas);
+    console.log("Imágenes existentes:", imagenesExistentes);
+    console.log("Imágenes nuevas:", imagenesNuevas);
 
     try {
       // 🔹 **Actualizar datos del producto antes de modificar imágenes**
@@ -73,14 +92,21 @@ export default async function handler(req, res) {
             [Op.in]: [1, 3],
           },
         },
-        attributes: ['id', 'ruta'],
+        attributes: ["id", "ruta"],
       });
 
       // Combinamos las imágenes existentes con las nuevas
-      const allImagePaths = [...imagenesExistentes, ...imagenesNuevas.map(file => `/uploads/imagenesProductos/${file.name}`)];
+      const allImagePaths = [
+        ...imagenesExistentes,
+        ...imagenesNuevas.map(
+          (file) => `/uploads/imagenesProductos/${file.name}`
+        ),
+      ];
 
       // Encontrar imágenes que se deben eliminar
-      const imagesToDelete = currentImages.filter(image => !allImagePaths.includes(image.ruta));
+      const imagesToDelete = currentImages.filter(
+        (image) => !allImagePaths.includes(image.ruta)
+      );
 
       // Eliminar de la base de datos solo las imágenes que ya no están en la nueva lista
       for (const image of imagesToDelete) {
@@ -108,7 +134,9 @@ export default async function handler(req, res) {
           console.log(`Archivo subido con éxito a: ${filePath}`);
         } catch (uploadErr) {
           console.error(`Error subiendo el archivo ${file.name}:`, uploadErr);
-          return res.status(500).json({ message: "Error al subir el archivo al FTP" });
+          return res
+            .status(500)
+            .json({ message: "Error al subir el archivo al FTP" });
         }
         client.close();
 
@@ -124,7 +152,12 @@ export default async function handler(req, res) {
       // Guardar las nuevas imágenes en la base de datos
       await ImagenProducto.bulkCreate(uploadedImages);
 
-      res.status(200).json({ success: true, message: "Producto e imágenes actualizadas correctamente" });
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Producto e imágenes actualizadas correctamente",
+        });
     } catch (error) {
       console.error("Error actualizando el producto:", error);
       res.status(500).json({ message: "Error en el servidor" });

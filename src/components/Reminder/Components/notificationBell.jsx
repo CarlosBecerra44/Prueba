@@ -1,41 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "font-awesome/css/font-awesome.min.css";
-import { getSession } from "next-auth/react";
 import { Button } from "@mui/material";
+import { useUserContext } from "@/utils/userContext";
 
 export function NotificationBell() {
+  const { userData, loading } = useUserContext();
+  const idUser = userData?.user?.id;
   const [notificaciones, setNotificaciones] = useState([]);
   const [hasNotifications, setHasNotifications] = useState(false);
-  const [idUser, setID] = useState("");
-  const [departamento, setDepartamento] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch('/api/Users/getUser', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setID(userData.user.id);
-          setDepartamento(userData.user.departamento_id);
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
-    if (!idUser) return;
+    if (loading || !idUser) return;
     const fetchNotificaciones = async () => {
       try {
         const response = await fetch(
@@ -50,7 +28,7 @@ export function NotificationBell() {
     };
 
     fetchNotificaciones();
-  }, [idUser]);
+  }, [loading, idUser]);
 
   const fetchNotificacionesUpdate = async () => {
     try {

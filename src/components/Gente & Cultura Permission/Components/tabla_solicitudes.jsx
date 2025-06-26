@@ -28,9 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
 import styles from "../../../../public/CSS/spinner.css";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css"; // Asegúrate de importar los estilos
@@ -44,15 +43,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, Upload } from "lucide-react";
-import {
-  startOfDay,
-  addDays,
-  subDays,
-  getDay,
-  isAfter,
-  isBefore,
-  format,
-} from "date-fns";
+import { startOfDay, addDays, subDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -62,30 +53,21 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getSession } from "next-auth/react";
 import { Checkbox } from "@/components/ui/checkbox";
 import "../../../../public/CSS/spinner.css";
 import { PlusCircle, X } from "lucide-react";
-import Link from "next/link";
-
-const MySwal = withReactContent(Swal);
+import { useUserContext } from "@/utils/userContext";
 
 export function TablaSolicitudes() {
+  const { userData, loading } = useUserContext();
+  const nombre = userData?.user?.nombre;
+  const apellidos = userData?.user?.apellidos;
+  const idUser = userData?.user?.id;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [eventos, setEventos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [nombre, setNombre] = useState("");
-  const [apellidos, setApellidos] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [idUser, setID] = useState("");
-  const [correoUser, setCorreo] = useState("");
-  const [numero_empleado, setNumeroEmpleado] = useState("");
-  const [jefe_directo, setJefeDirecto] = useState("");
-  const [jefeNombre, setJefeNombre] = useState("");
-  const [jefeApellidos, setJefeApellidos] = useState("");
-  const [puesto, setPuesto] = useState("");
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioAbierto, setFormularioAbierto] = useState(false); // Estado para abrir el formulario
@@ -255,52 +237,6 @@ export function TablaSolicitudes() {
       otros: [],
     },
   });
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setNombre(userData.user.nombre);
-          setApellidos(userData.user.apellidos);
-          setDepartamento(userData.departamento.nombre);
-          setID(userData.user.id);
-          setCorreo(userData.user.correo);
-          setNumeroEmpleado(userData.user.numero_empleado);
-          setJefeDirecto(userData.user.jefe_directo);
-          setPuesto(userData.user.puesto);
-
-          if (userData.user.jefe_directo) {
-            const jefeResponse = await fetch("/api/Users/getUserById", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ id: userData.user.jefe_directo }),
-            });
-            const jefeData = await jefeResponse.json();
-            if (jefeData.success) {
-              setJefeNombre(jefeData.user.nombre);
-              setJefeApellidos(jefeData.user.apellidos);
-            } else {
-              alert("Error al obtener los datos del jefe directo");
-            }
-          }
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -594,7 +530,7 @@ export function TablaSolicitudes() {
   );
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -602,7 +538,7 @@ export function TablaSolicitudes() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == "loading" || loading) {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
@@ -763,29 +699,32 @@ export function TablaSolicitudes() {
     if (!session) {
       return;
     }
-  
+
     try {
       // Subir el archivo al FTP solo si hay un archivo seleccionado
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         const reader = new FileReader();
-  
+
         reader.onload = async (e) => {
           const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
-  
+
           try {
-            const ftpResponse = await fetch("/api/Gente&CulturaPermission/subirPDFPapeletas", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                fileName: file.name,
-                fileContent: base64File, // Enviar el archivo en Base64
-              }),
-            });
-  
+            const ftpResponse = await fetch(
+              "/api/Gente&CulturaPermission/subirPDFPapeletas",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  fileName: file.name,
+                  fileContent: base64File, // Enviar el archivo en Base64
+                }),
+              }
+            );
+
             const ftpResult = await ftpResponse.json();
             if (ftpResponse.ok) {
               // Asignar el nombre del archivo subido a formData.comprobante
@@ -804,7 +743,7 @@ export function TablaSolicitudes() {
           // Después de subir el archivo, enviar el formulario
           await enviarFormulario();
         };
-  
+
         reader.readAsDataURL(file); // Leer el archivo como base64
       } else {
         // Si no hay archivo, solo enviar el formulario
@@ -817,42 +756,57 @@ export function TablaSolicitudes() {
   };
 
   const enviarFormulario = async () => {
-    const mensaje1 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
+    const mensaje1 = `<strong>${
+      nombre + " " + apellidos
+    }</strong> ha subido una nueva solicitud de tipo: <strong>${tipoFormulario2}</strong>.<br>
       Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
-    const mensaje2 = `<strong>${nombre + " " + apellidos}</strong> ha subido una nueva solicitud extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
+    const mensaje2 = `<strong>${
+      nombre + " " + apellidos
+    }</strong> ha subido una nueva solicitud extemporánea de tipo: <strong>${tipoFormulario2}</strong>.<br>
       Puedes revisarla haciendo clic en este enlace: <a href="/gente_y_cultura/todas_papeletas" style="color: blue; text-decoration: underline;">Revisar solicitud</a>`;
     try {
-      const response = await fetch(`/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData, tipoFormulario2, formularioNormalOExtemporaneo }),
-      });
-  
+      const response = await fetch(
+        `/api/Gente&CulturaAbsence/guardarFormularioFaltas?id=${idUser}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            formData,
+            tipoFormulario2,
+            formularioNormalOExtemporaneo,
+          }),
+        }
+      );
+
       if (response.ok) {
-        const mensaje = formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
+        const mensaje =
+          formularioNormalOExtemporaneo === "Normal" ? mensaje1 : mensaje2;
         try {
-          const enviarNotificacion = await fetch('/api/Reminder/EnvioEventoSolicitudes', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              formData2: {
-                tipo: 'Alerta de nueva solicitud',
-                descripcion: mensaje,
-                id: idUser,
-                dpto: null,
+          const enviarNotificacion = await fetch(
+            "/api/Reminder/EnvioEventoSolicitudes",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
               },
-            }),
-          });
-  
+              body: JSON.stringify({
+                formData2: {
+                  tipo: "Alerta de nueva solicitud",
+                  descripcion: mensaje,
+                  id: idUser,
+                  dpto: null,
+                },
+              }),
+            }
+          );
+
           if (enviarNotificacion.ok) {
             Swal.fire({
-              title: 'Creado',
-              text: 'Se ha creado correctamente',
-              icon: 'success',
+              title: "Creado",
+              text: "Se ha creado correctamente",
+              icon: "success",
               timer: 3000,
               showConfirmButton: false,
             }).then(() => {
@@ -4004,9 +3958,7 @@ export function TablaSolicitudes() {
               currentEventos.map((evento, index) => (
                 <TableRow key={index}>
                   {/* Renderiza las celdas aquí */}
-                  <TableCell>
-                    {evento.id || "Sin ID especificado"}
-                  </TableCell>
+                  <TableCell>{evento.id || "Sin ID especificado"}</TableCell>
                   <TableCell>
                     {evento.tipo === "Suspension"
                       ? "Suspensión o castigo"
@@ -4220,42 +4172,6 @@ function VisualizeIcon(props) {
       />
 
       <circle cx="32" cy="32" r="4" fill="rgb(31 41 55)" />
-    </svg>
-  );
-}
-
-function VisualizeIcon2(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="23"
-      height="23"
-      viewBox="0 0 64 64"
-      aria-labelledby="title"
-      role="img"
-    >
-      <path
-        d="M32 12C16 12 4 32 4 32s12 20 28 20 28-20 28-20S48 12 32 12z"
-        fill="none"
-        stroke="rgb(255 255 255)"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <circle
-        cx="32"
-        cy="32"
-        r="10"
-        fill="none"
-        stroke="rgb(255 255 255)"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <circle cx="32" cy="32" r="4" fill="rgb(255 255 255)" />
     </svg>
   );
 }

@@ -28,9 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
 import styles from "../../../../public/CSS/spinner.css";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css"; // Asegúrate de importar los estilos
@@ -43,16 +42,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Upload } from "lucide-react";
-import {
-  startOfDay,
-  addDays,
-  subDays,
-  getDay,
-  isAfter,
-  isBefore,
-  format,
-} from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { startOfDay, addDays, subDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -62,30 +53,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getSession } from "next-auth/react";
-import { Checkbox } from "@/components/ui/checkbox";
 import "../../../../public/CSS/spinner.css";
-import { PlusCircle, X } from "lucide-react";
-import Link from "next/link";
-
-const MySwal = withReactContent(Swal);
+import { useUserContext } from "@/utils/userContext";
 
 export function AutorizarPapeletas() {
+  const { userData, loading } = useUserContext();
+  const nombre = userData?.user?.nombre;
+  const apellidos = userData?.user?.apellidos;
+  const idUser = userData?.user?.id;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [eventos, setEventos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [nombre, setNombre] = useState("");
-  const [apellidos, setApellidos] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [idUser, setID] = useState("");
-  const [correoUser, setCorreo] = useState("");
-  const [numero_empleado, setNumeroEmpleado] = useState("");
-  const [jefe_directo, setJefeDirecto] = useState("");
-  const [jefeNombre, setJefeNombre] = useState("");
-  const [jefeApellidos, setJefeApellidos] = useState("");
-  const [puesto, setPuesto] = useState("");
   const [tipoFormulario, setTipoFormulario] = useState("todos"); // Estado para el tipo de formulario seleccionado
   const [tipoFormulario2, setTipoFormulario2] = useState(""); // Estado para el tipo de formulario seleccionado
   const [formularioPrincipalAbiertoEdit, setFormularioPrincipalAbiertoEdit] =
@@ -176,52 +156,6 @@ export function AutorizarPapeletas() {
       otros: [],
     },
   });
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const session = await getSession();
-      if (session) {
-        const response = await fetch("/api/Users/getUser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ correo: session.user.email, numero_empleado: session.user.numero_empleado }),
-        });
-        const userData = await response.json();
-        if (userData.success) {
-          setNombre(userData.user.nombre);
-          setApellidos(userData.user.apellidos);
-          setDepartamento(userData.departamento.nombre);
-          setID(userData.user.id);
-          setCorreo(userData.user.correo);
-          setNumeroEmpleado(userData.user.numero_empleado);
-          setJefeDirecto(userData.user.jefe_directo);
-          setPuesto(userData.user.puesto);
-
-          if (userData.user.jefe_directo) {
-            const jefeResponse = await fetch("/api/Users/getUserById", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ id: userData.user.jefe_directo }),
-            });
-            const jefeData = await jefeResponse.json();
-            if (jefeData.success) {
-              setJefeNombre(jefeData.user.nombre);
-              setJefeApellidos(jefeData.user.apellidos);
-            } else {
-              alert("Error al obtener los datos del jefe directo");
-            }
-          }
-        } else {
-          alert("Error al obtener los datos del usuario");
-        }
-      }
-    };
-    fetchUserData();
-  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -425,7 +359,7 @@ export function AutorizarPapeletas() {
   );
 
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner className={styles.spinner} />
@@ -433,7 +367,7 @@ export function AutorizarPapeletas() {
       </div>
     );
   }
-  if (status == "loading") {
+  if (status == "loading" || loading) {
     return <p>cargando...</p>;
   }
   if (!session || !session.user) {
@@ -1425,7 +1359,12 @@ export function AutorizarPapeletas() {
                                 )}
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
-                                <Label htmlFor="actividad" className="truncate block">Actividad</Label>
+                                <Label
+                                  htmlFor="actividad"
+                                  className="truncate block"
+                                >
+                                  Actividad
+                                </Label>
                                 <Input
                                   id="actividad"
                                   name="actividad"
@@ -1436,7 +1375,12 @@ export function AutorizarPapeletas() {
                                 />
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
-                                <Label htmlFor="descripcion" className="truncate block">Descripción</Label>
+                                <Label
+                                  htmlFor="descripcion"
+                                  className="truncate block"
+                                >
+                                  Descripción
+                                </Label>
                                 <Input
                                   id="descripcion"
                                   name="descripcion"
@@ -1447,7 +1391,10 @@ export function AutorizarPapeletas() {
                                 />
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
-                                <Label htmlFor="persona" className="truncate block">
+                                <Label
+                                  htmlFor="persona"
+                                  className="truncate block"
+                                >
                                   Persona respuesta
                                 </Label>
                                 <Input
@@ -1460,7 +1407,10 @@ export function AutorizarPapeletas() {
                                 />
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
-                                <Label htmlFor="tiempoRespuesta" className="truncate block">
+                                <Label
+                                  htmlFor="tiempoRespuesta"
+                                  className="truncate block"
+                                >
                                   Tiempo de respuesta
                                 </Label>
                                 <Input
@@ -1473,7 +1423,12 @@ export function AutorizarPapeletas() {
                                 />
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
-                                <Label htmlFor="comentarios" className="truncate block">Comentarios</Label>
+                                <Label
+                                  htmlFor="comentarios"
+                                  className="truncate block"
+                                >
+                                  Comentarios
+                                </Label>
                                 <Input
                                   id="comentarios"
                                   name="comentarios"
@@ -1644,121 +1599,186 @@ export function AutorizarPapeletas() {
                   </Dialog>
                 )}
                 {tipoFormulario2 === "Vacaciones" && (
-                  <Dialog open={formularioPrincipalAbiertoEdit} onOpenChange={closeModalEdit}>
-                  <DialogContent 
-                    className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
-                    onInteractOutside={(event) => event.preventDefault()}
+                  <Dialog
+                    open={formularioPrincipalAbiertoEdit}
+                    onOpenChange={closeModalEdit}
                   >
-                  <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-center">Vacaciones</CardTitle>
-                </CardHeader>
-                <form onSubmit={handleSubmit}>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="puestoVacaciones">Puesto</Label>
-                      <Input
-                        id="puestoVacaciones"
-                        name="puestoVacaciones"
-                        type="text"
-                        value={formData.puestoVacaciones}
-                        onChange={handleChange}
-                        readOnly={true}
-                        placeholder="Puesto..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="motivo">Días</Label>
-                      <Input
-                        id="dias"
-                        name="dias"
-                        type="number"
-                        value={formData.dias}
-                        onChange={handleChange}
-                        readOnly={true}
-                        placeholder="Dias..." />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {renderDatePicker("Fecha de inicio", fechaInicioPapeleta, handleChange, "fechaInicio", true)}
-                        {renderDatePicker("Fecha de fin", fechaFinPapeleta, handleChange, "fechaFin", true)}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="motivo">Observaciones</Label>
-                      <Textarea
-                        id="motivo"
-                        name="motivo"
-                        value={formData.motivo}
-                        onChange={handleChange}
-                        readOnly={true}
-                        className="min-h-[100px]"
-                        placeholder="Coloca tus observaciones aquí..." />
-                    </div>
-                    <div className="space-y-2">
-                    <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                        <Label htmlFor="comprobante">Formato</Label>
-                        <div style={{marginLeft: "10px"}}>
-                          <Tooltip title={
-                              `<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
-                          "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`
-                            } arrow>
-                            <HelpIcon style={{ cursor: 'pointer', fontSize: 18 }} />
-                          </Tooltip>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {formData.comprobante ? (
-                          <a
-                          href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(formData.comprobante)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          Descargar {formData.comprobante}
-                        </a>    
-                        ) : (
-                          <>
-                            <span style={{fontSize: 14}}>Sin formato agregado</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2" style={{
-                      color: (() => {
-                        if (estatusFormulario.startsWith("Autorizada")) return "green";
-                        if (estatusFormulario.startsWith("No autorizada")) return "red";
-                        switch (estatusFormulario) {
-                          case 'Pendiente':
-                            return 'orange';
-                          default:
-                            return 'black'; // color por defecto
-                        }
-                      })(),
-                    }}>
-                      <Label htmlFor="estatus" style={{color: "black"}}>Estatus</Label>
-                      <Select
-                        value={estatusFormulario}
-                        onValueChange={(value) => {
-                          if (value.startsWith("Autorizada") || value.startsWith("No autorizada")) {
-                            handleOpenModalStatus(idFormulario, value, tipoFormulario2);
-                          } else {
-                            handleChangeStatus(idFormulario, value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una opción" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Autorizada por tu jefe directo">Autorizada</SelectItem>
-                          <SelectItem value="Pendiente">Pendiente</SelectItem>
-                          <SelectItem value="No autorizada por tu jefe directo">No autorizada</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </form>
-              </Card>
-                  </DialogContent>
-                </Dialog>
+                    <DialogContent
+                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      onInteractOutside={(event) => event.preventDefault()}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-bold text-center">
+                            Vacaciones
+                          </CardTitle>
+                        </CardHeader>
+                        <form onSubmit={handleSubmit}>
+                          <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="puestoVacaciones">Puesto</Label>
+                              <Input
+                                id="puestoVacaciones"
+                                name="puestoVacaciones"
+                                type="text"
+                                value={formData.puestoVacaciones}
+                                onChange={handleChange}
+                                readOnly={true}
+                                placeholder="Puesto..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Días</Label>
+                              <Input
+                                id="dias"
+                                name="dias"
+                                type="number"
+                                value={formData.dias}
+                                onChange={handleChange}
+                                readOnly={true}
+                                placeholder="Dias..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {renderDatePicker(
+                                "Fecha de inicio",
+                                fechaInicioPapeleta,
+                                handleChange,
+                                "fechaInicio",
+                                true
+                              )}
+                              {renderDatePicker(
+                                "Fecha de fin",
+                                fechaFinPapeleta,
+                                handleChange,
+                                "fechaFin",
+                                true
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Textarea
+                                id="motivo"
+                                name="motivo"
+                                value={formData.motivo}
+                                onChange={handleChange}
+                                readOnly={true}
+                                className="min-h-[100px]"
+                                placeholder="Coloca tus observaciones aquí..."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">Formato</Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Llena el formulario completamente y después haz clic en 
+                          "Descargar formato". Imprime el PDF, fírmalo y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin formato agregado
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div
+                              className="space-y-2"
+                              style={{
+                                color: (() => {
+                                  if (
+                                    estatusFormulario.startsWith("Autorizada")
+                                  )
+                                    return "green";
+                                  if (
+                                    estatusFormulario.startsWith(
+                                      "No autorizada"
+                                    )
+                                  )
+                                    return "red";
+                                  switch (estatusFormulario) {
+                                    case "Pendiente":
+                                      return "orange";
+                                    default:
+                                      return "black"; // color por defecto
+                                  }
+                                })(),
+                              }}
+                            >
+                              <Label
+                                htmlFor="estatus"
+                                style={{ color: "black" }}
+                              >
+                                Estatus
+                              </Label>
+                              <Select
+                                value={estatusFormulario}
+                                onValueChange={(value) => {
+                                  if (
+                                    value.startsWith("Autorizada") ||
+                                    value.startsWith("No autorizada")
+                                  ) {
+                                    handleOpenModalStatus(
+                                      idFormulario,
+                                      value,
+                                      tipoFormulario2
+                                    );
+                                  } else {
+                                    handleChangeStatus(idFormulario, value);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona una opción" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Autorizada por tu jefe directo">
+                                    Autorizada
+                                  </SelectItem>
+                                  <SelectItem value="Pendiente">
+                                    Pendiente
+                                  </SelectItem>
+                                  <SelectItem value="No autorizada por tu jefe directo">
+                                    No autorizada
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </CardContent>
+                        </form>
+                      </Card>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </div>
             </Card>
