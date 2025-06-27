@@ -18,13 +18,15 @@ export default async function handler(req, res) {
   const form = new formidable.IncomingForm({
     multiples: false, // Solo un archivo
     uploadDir: "/tmp",
-    keepExtensions: true,
+    // uploadDir: path.join(process.cwd(), "public/uploads"), keepExtensions: true,
   });
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
       console.error("Error al procesar el formulario:", err);
-      return res.status(500).json({ message: "Error al procesar el formulario" });
+      return res
+        .status(500)
+        .json({ message: "Error al procesar el formulario" });
     }
 
     const file = files.comprobante;
@@ -33,11 +35,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: "No se recibió ningún archivo" });
     }
 
+    const fileExt = path.extname(file.name).toLowerCase();
+    const allowedImageExts = [".jpg", ".jpeg", ".png", ".webp"];
+
+    const now = new Date();
+    const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
+    const newFileName = `${formattedDate}_${file.name}`;
+    const outputPath = path.join("/tmp", `processed_${newFileName}`);
+    // para que esto funcione en local
+    // const outputPath = path.join( process.cwd(), "public/uploads", `processed_${newFileName}`);
+
     try {
-      // Crear nuevo nombre de archivo con la fecha
-      const now = new Date();
-      const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
-      const newFileName = `${formattedDate}_${file.name}`;
+      // Si es imagen, comprimirla; si no, copiar directamente
+      if (allowedImageExts.includes(fileExt)) {
+        await sharp(file.path)
+          .toFormat(fileExt.replace(".", ""), { quality: 60 })
+          .toFile(outputPath);
+      } else {
+        fs.copyFileSync(file.path, outputPath);
+      }
 
       // Conectar al servidor FTP
       const client = new Client();
@@ -65,10 +81,17 @@ export default async function handler(req, res) {
         console.error("Error al eliminar archivo temporal:", unlinkErr);
       }
 
-      res.status(200).json({ message: "Archivo subido correctamente al FTP", fileName: newFileName });
+      res
+        .status(200)
+        .json({
+          message: "Archivo subido correctamente al FTP",
+          fileName: newFileName,
+        });
     } catch (error) {
-      console.error("Error al subir al FTP:", error);
-      res.status(500).json({ error: "No se pudo subir el archivo al FTP" });
+      console.error("Error al subir al FTP o procesar archivo:", error);
+      res
+        .status(500)
+        .json({ error: "No se pudo subir el archivo al FTP", error });
     }
   });
 }
