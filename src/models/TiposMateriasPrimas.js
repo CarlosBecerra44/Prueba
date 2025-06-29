@@ -8,6 +8,7 @@ const TipoMateriaPrima = sequelize.define(
     nombre: { type: DataTypes.STRING, allowNull: true },
     nivel: { type: DataTypes.INTEGER, allowNull: true },
     skip: { type: DataTypes.INTEGER, allowNull: true },
+    codigo: { type: DataTypes.STRING, allowNull: true },
   },
   {
     tableName: "tiposmaterialesprima",

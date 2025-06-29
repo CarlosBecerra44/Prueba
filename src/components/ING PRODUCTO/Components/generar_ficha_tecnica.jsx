@@ -228,7 +228,7 @@ export function FichaTecnica() {
   const formularioCompleto = () => {
     return (
       productoAValidar?.producto?.composicion?.trim() &&
-      productoAValidar?.producto?.modo_empleo?.trim() &&
+      // productoAValidar?.producto?.modo_empleo?.trim() &&
       productoAValidar?.producto?.condiciones?.trim() &&
       productoAValidar?.producto?.materia_extraña?.trim() &&
       productoAValidar?.producto?.consideracion?.trim() &&
@@ -442,26 +442,10 @@ export function FichaTecnica() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="no_articulo">Modo de empleo (uso)</Label>
-              <Input
-                id="no_articulo"
-                name="no_articulo"
-                type="text"
-                value={productoAValidar?.producto?.modo_empleo || ""}
-                onChange={(e) =>
-                  setProductoAValidar({
-                    ...productoAValidar,
-                    producto: {
-                      ...productoAValidar?.producto,
-                      modo_empleo: e.target.value,
-                    },
-                  })
-                }
-                placeholder="Modo de empleo del producto"
-                required
-              />
-            </div>
+            {/* <div className="space-y-2">
+                    <Label htmlFor="no_articulo">Modo de empleo (uso)</Label>
+                    <Input id="no_articulo" name="no_articulo" type="text" value={productoAValidar?.producto?.modo_empleo || ''} onChange={(e) => setProductoAValidar({...productoAValidar, producto: {...productoAValidar?.producto, modo_empleo: e.target.value},})} placeholder="Modo de empleo del producto" required/>
+                </div> */}
           </div>
 
           <div

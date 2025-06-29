@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     const tipoMateriaPrima = await TipoMateriaPrima.findOne({
       where: { id: producto.Tipo_id },
-      attributes: ["id", "nombre"],
+      attributes: ["id", "nombre","codigo"],
     });
 
     const identificadorTipoProducto = await IdentificadorTipoProducto.findAll({
@@ -64,6 +64,7 @@ export default async function handler(req, res) {
         codigo: producto?.codigo || null,
         veredicto: producto?.veredicto,
         tipo: tipoMateriaPrima?.nombre || null,
+        codigoIso: tipoMateriaPrima?.codigo || null,
         tipoEvaluacion: producto?.Tipo_id || null,
         descripcion: producto?.descripcion || null,
         composicion: producto?.composicion || null,
