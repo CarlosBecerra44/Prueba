@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   const form = new formidable.IncomingForm({
     multiples: false, // Solo un archivo
     uploadDir: "/tmp",
-    //uploadDir: path.join(process.cwd(), "uploads"),
+    // uploadDir: path.join(process.cwd(), "uploads"),
     keepExtensions: true,
   });
 
@@ -33,8 +33,8 @@ export default async function handler(req, res) {
 
     const file = files.comprobante;
 
-    if (!file) {
-      return res.status(400).json({ message: "No se recibió ningún archivo" });
+    if (!file || !file.path) {
+      return res.status(400).json({ message: "Archivo no válido" });
     }
 
     const fileExt = path.extname(file.name).toLowerCase();
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         fs.copyFileSync(file.path, outputPath);
       }
 
-      // Conectar al servidor FTP
+      // Conexión FTP
       const client = new Client();
       client.ftp.verbose = true;
 
@@ -73,11 +73,7 @@ export default async function handler(req, res) {
       });
 
       const remotePath = `/uploads/papeletas/${newFileName}`;
-
-      // Subir el archivo directamente
       await client.uploadFrom(outputPath, remotePath);
-
-      // Cerrar la conexión FTP
       client.close();
 
       // Borrar el archivo temporal

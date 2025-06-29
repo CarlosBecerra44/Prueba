@@ -396,7 +396,7 @@ export function TablaPermisosFaltaUsuario() {
               "La papeleta ha sido eliminada correctamente",
               "success"
             );
-            window.location.href = "/permisos";
+            window.location.href = "/papeletas_usuario";
           } else {
             Swal.fire("Error", "Error al eliminar la papeleta", "error");
           }
