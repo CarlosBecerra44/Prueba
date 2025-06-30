@@ -1497,7 +1497,6 @@ export function CMDProductos() {
 
                     {/* Botones de ficha tecnica */}
                     {user.categoria.toString() !== "6" &&
-                    user.tolerancias === null &&
                     user.veredicto === 1 &&
                     permiso?.tipo === 1 ? (
                       <Link
@@ -1507,17 +1506,6 @@ export function CMDProductos() {
                           Generar ficha técnica
                         </Button>
                       </Link>
-                    ) : user.categoria.toString() !== "6" &&
-                      user.tolerancias !== null &&
-                      user.veredicto === 1 &&
-                      permiso?.tipo === 1 ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => productoAPlanoMecanico(user.id)}
-                      >
-                        Descargar ficha técnica
-                      </Button>
                     ) : user.categoria.toString() === "6" &&
                       user.validado !== null &&
                       user.veredicto === 1 &&
@@ -2016,81 +2004,6 @@ export function CMDProductos() {
                         </form>
                       </DialogContent>
                     </Dialog>
-                    {/* Botones de validacion */}
-                    {user.categoria.toString() === "6" &&
-                    permiso?.tipo === 5 ? (
-                      <Link
-                        href={`/configuraciones/cmd/Productos/validar_producto_formula?id=${user.id}`}
-                      >
-                        <Button variant="outline" size="sm">
-                          Ficha informativa
-                        </Button>
-                      </Link>
-                    ) : user.categoria.toString() !== "6" &&
-                      permiso?.tipo === 1 ? (
-                      <Link
-                        href={`/configuraciones/cmd/Productos/validar_producto?id=${user.id}`}
-                      >
-                        <Button variant="outline" size="sm">
-                          Evaluar
-                        </Button>
-                      </Link>
-                    ) : (
-                      <div hidden></div>
-                    )}
-
-                    {/* Botones de ficha tecnica   && user.tolerancias === null*/}
-                    {user.categoria.toString() !== "6" &&
-                    user.veredicto === 1 &&
-                    permiso?.tipo === 1 ? (
-                      <Link
-                        href={`/configuraciones/cmd/Productos/generar_ficha_tecnica?id=${user.id}`}
-                      >
-                        <Button variant="outline" size="sm">
-                          Generar ficha técnica
-                        </Button>
-                      </Link>
-                    ) : // user.categoria.toString() !== "6" && user.tolerancias !== null && user.veredicto === 1 && permiso?.tipo === 1 ?
-                    // (<Button variant="outline" size="sm" onClick={() => productoAPlanoMecanico(user.id)}>Descargar ficha técnica</Button>) :
-                    user.categoria.toString() === "6" &&
-                      user.validado !== null &&
-                      user.veredicto === 1 &&
-                      permiso?.tipo === 5 ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => formulaAPDF(user.id)}
-                      >
-                        Descargar ficha técnica
-                      </Button>
-                    ) : (
-                      <div hidden></div>
-                    )}
-
-                    {/* Botones de catalogo */}
-                    {user.catalogoProductos === 1 &&
-                    user.veredicto === 1 &&
-                    permiso?.tipo === 1 ? (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleQuitarDelCatalogo(user.id)}
-                      >
-                        Quitar del catálogo
-                      </Button>
-                    ) : user.catalogoProductos === 0 &&
-                      user.veredicto === 1 &&
-                      permiso?.tipo === 1 ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleAgregarAlCatalogo(user.id)}
-                        style={{ width: "151px", backgroundColor: "#198754" }}
-                      >
-                        Enviar al catálogo
-                      </Button>
-                    ) : (
-                      <div hidden></div>
-                    )}
 
                     {/* Boton de eliminar */}
                     {isMaster ? (
