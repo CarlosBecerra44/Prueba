@@ -747,7 +747,9 @@ export function EditarEtiqueta() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Químico o Formulador</CardTitle>
-            <CardDescription>Carlos Corona o Fernanda Cruz</CardDescription>
+            <CardDescription>
+              Carlos Corona o Victoria Valenzuela
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
