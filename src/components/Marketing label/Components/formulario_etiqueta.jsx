@@ -149,6 +149,7 @@ export function DocumentSigningForm() {
                   "r.castellanos@aionsuplementos.com",
                   "v.rivera@aionsuplementos.com",
                   "y.juarez@aionsuplementos.com",
+                  "v.valenzuela@aionsuplementos.com",
                 ]
               : [
                   "a.garcilita@aionsuplementos.com",
@@ -167,6 +168,7 @@ export function DocumentSigningForm() {
                   "r.castellanos@aionsuplementos.com",
                   "v.rivera@aionsuplementos.com",
                   "y.juarez@aionsuplementos.com",
+                  "v.valenzuela@aionsuplementos.com",
                 ],
           subject:
             formulario.tipo === "Maquilas"

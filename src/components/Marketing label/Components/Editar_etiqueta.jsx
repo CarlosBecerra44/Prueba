@@ -405,10 +405,12 @@ export function EditarEtiqueta() {
         "r.contreras@aionsuplementos.com": [
           "j.corona@aionsuplementos.com",
           "f.cruz@aionsuplementos.com",
+          "v.valenzuela@aionsuplementos.com",
         ],
         "j.alvarado@aionsuplementos.com": [
           "j.corona@aionsuplementos.com",
           "f.cruz@aionsuplementos.com",
+          "v.valenzuela@aionsuplementos.com",
         ],
         "j.corona@aionsuplementos.com": [
           "j.leyva@aionsuplementos.com",
