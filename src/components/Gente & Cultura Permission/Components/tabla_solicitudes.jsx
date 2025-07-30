@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -80,10 +80,20 @@ export function TablaSolicitudes() {
   const [usersBonos, setUsersBonos] = useState([]);
   const [fechaInicioPapeleta, setFechaInicio] = useState("");
   const [fechaFinPapeleta, setFechaFin] = useState("");
+  const [ver, setVer] = useState(false);
   const [formularioNormalOExtemporaneo, setFormularioNormalOExtemporaneo] =
     useState(""); // Estado para abrir el formulario
   const [tipoFormularioAbierto, setTipoFormularioAbierto] = useState(false); // Estado para abrir el formulario
   const [isDisabled, setIsDisabled] = useState(false);
+  const [idFormulario, setIDFormulario] = useState("");
+  const [grupoFormulario, setGrupoFormulario] = useState("");
+  const [formularioExt, setFormularioExt] = useState("");
+  const [loadingFormat, setLoadingFormat] = useState(false);
+  const [searchTermPass, setSearchTermPass] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const inputRef = useRef(null);
+  const [searchTerms, setSearchTerms] = useState({});
+  const [debouncedSearchTerms, setDebouncedSearchTerms] = useState({});
 
   useEffect(() => {
     const checkTime = () => {
@@ -110,6 +120,32 @@ export function TablaSolicitudes() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Este useEffect se encarga del debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTermPass);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler); // limpia el timeout si se escribe antes de los 3s
+    };
+  }, [searchTermPass]);
+
+  useEffect(() => {
+    const timeouts = Object.entries(searchTerms).map(([index, term]) => {
+      return setTimeout(() => {
+        setDebouncedSearchTerms((prev) => ({
+          ...prev,
+          [index]: term,
+        }));
+      }, 500);
+    });
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [searchTerms]);
 
   const closeModalFormsEdit = () => {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
@@ -163,6 +199,11 @@ export function TablaSolicitudes() {
       },
     });
     setFormularioAbierto(true); // Abrir el formulario
+    setUsersBonos([]);
+    setSearchTermPass("");
+    setSearchTerms({});
+    setDebouncedSearchTerm("");
+    setDebouncedSearchTerms({});
   };
 
   const openModalType = () => {
@@ -247,7 +288,7 @@ export function TablaSolicitudes() {
 
       try {
         const response = await axios.get(
-          `/api/Users/getBossUsers?id=${idUser}`
+          `/api/Users/getBossUsersRequests?id=${idUser}`
         );
         if (response.data.success) {
           setUsers(response.data.users);
@@ -273,7 +314,7 @@ export function TablaSolicitudes() {
 
         try {
           const response = await axios.get(
-            `/api/Gente&CulturaAbsence/getUsersBonos?departamento=${departamentoBonos}`
+            `/api/Gente&CulturaAbsence/getUsersBonosRequests?departamento=${departamentoBonos}`
           );
           if (response.data.success) {
             setUsersBonos(response.data.users);
@@ -289,7 +330,7 @@ export function TablaSolicitudes() {
       } else {
         try {
           const response = await axios.get(
-            `/api/Gente&CulturaAbsence/getUsersBonos`
+            `/api/Gente&CulturaAbsence/getUsersBonosRequests`
           );
           if (response.data.success) {
             setUsersBonos(response.data.users);
@@ -336,6 +377,14 @@ export function TablaSolicitudes() {
     setFormularioNormalOExtemporaneo(value);
   };
 
+  const handleSearchChange = (value, index = null) => {
+    if (index === null) {
+      setSearchTermPass(value); // para el bono principal
+    } else {
+      setSearchTerms((prev) => ({ ...prev, [index]: value }));
+    }
+  };
+
   const encabezadosSolicitudes = [
     "ID",
     "Tipo",
@@ -371,6 +420,17 @@ export function TablaSolicitudes() {
     fetchPapeletas();
   }, [idUser]);
 
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get(
+        `/api/Gente&CulturaAbsence/getSolicitudes?id=${idUser}`
+      ); // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data);
+    } catch (error) {
+      console.error("Error al obtener eventos:", error);
+    }
+  };
+
   const handleEditForm = async (index) => {
     try {
       const response = await fetch(
@@ -383,6 +443,35 @@ export function TablaSolicitudes() {
       setFechaFin(data.fecha_fin);
       setFormularioPrincipalAbiertoEdit(true);
       obtenerUsuariosBonos(data.formulario.tipoSolicitud);
+      setVer(true);
+      setSearchTermPass("");
+      setSearchTerms({});
+      setDebouncedSearchTerm("");
+      setDebouncedSearchTerms({});
+    } catch (error) {
+      console.error("Error al obtener el formulario:", error);
+    }
+  };
+
+  const handleEditar = async (index) => {
+    try {
+      const response = await fetch(
+        `/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`
+      );
+      const data = await response.json();
+      setIDFormulario(data.id);
+      setGrupoFormulario(data.formulario_id);
+      setFormData(data.formulario);
+      setTipoFormulario2(data.tipo);
+      setFormularioExt(data.extemporanea);
+      setFechaInicio(data.fecha_inicio);
+      setFechaFin(data.fecha_fin);
+      setFormularioPrincipalAbiertoEdit(true);
+      setVer(false);
+      setSearchTermPass("");
+      setSearchTerms({});
+      setDebouncedSearchTerm("");
+      setDebouncedSearchTerms({});
     } catch (error) {
       console.error("Error al obtener el formulario:", error);
     }
@@ -486,6 +575,46 @@ export function TablaSolicitudes() {
 
   // Función para extraer los datos relevantes
   const extractData = (evento) => {
+    const handleDelete = async (index) => {
+      try {
+        // Mostrar alerta de confirmación
+        const result = await Swal.fire({
+          title: "¿Deseas eliminar la solicitud?",
+          text: "No podrás revertir esta acción",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "rgb(31 41 55)",
+          confirmButtonText: "Eliminar",
+          cancelButtonText: "Cancelar",
+        });
+
+        // Si el usuario confirma la eliminación
+        if (result.isConfirmed) {
+          const response = await axios.post(
+            `/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`
+          );
+          if (response.status === 200) {
+            fetchEventos();
+            await Swal.fire(
+              "Eliminada",
+              "La solicitud ha sido eliminada correctamente",
+              "success"
+            );
+          } else {
+            Swal.fire("Error", "Error al eliminar la solicitud", "error");
+          }
+        }
+      } catch (error) {
+        console.error("Error al eliminar la solicitud:", error);
+        Swal.fire(
+          "Error",
+          "Ocurrió un error al intentar eliminar la solicitud",
+          "error"
+        );
+      }
+    };
+
     return {
       id: evento.id,
       id_papeleta: evento.id_papeleta,
@@ -510,6 +639,42 @@ export function TablaSolicitudes() {
             onClick={() => handleEditForm(index)}
           >
             <VisualizeIcon />
+          </Button>
+          <Button
+            onClick={() => handleEditar(index)}
+            style={{
+              width: "1px",
+              height: "40px",
+              opacity: evento.estatus !== "Pendiente" ? "0.7" : "1",
+            }}
+            disabled={evento.estatus !== "Pendiente"}
+          >
+            <EditIcon />
+          </Button>
+          <Button
+            onClick={() => handleDelete(index)}
+            style={{
+              width: "1px",
+              height: "40px",
+              opacity: evento.estatus !== "Pendiente" ? "0.7" : "1",
+            }}
+            disabled={evento.estatus !== "Pendiente"}
+          >
+            <svg
+              width="25px"
+              height="25px"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 3L21 21M18 6L17.6 12M17.2498 17.2527L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6H4M16 6L15.4559 4.36754C15.1837 3.55086 14.4194 3 13.5585 3H10.4416C9.94243 3 9.47576 3.18519 9.11865 3.5M11.6133 6H20M14 14V17M10 10V17"
+                stroke="rgb(31 41 55)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </Button>
         </div>
       ),
@@ -655,11 +820,32 @@ export function TablaSolicitudes() {
     });
   };
 
+  const handleChangeComentario = (index, value) => {
+    const updatedBonos = [...formData.bonos.otros];
+    updatedBonos[index] = {
+      ...updatedBonos[index],
+      comentarios: value,
+    };
+    setFormData({
+      ...formData,
+      bonos: {
+        ...formData.bonos,
+        otros: updatedBonos,
+      },
+    });
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
 
     if (file) {
-      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+      ];
       if (!allowedTypes.includes(file.type)) {
         alert("Tipo de archivo no permitido");
         return;
@@ -696,62 +882,82 @@ export function TablaSolicitudes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    Swal.fire({
+      title: "Cargando...",
+      text: "Estamos procesando tu solicitud",
+      showConfirmButton: false,
+      allowOutsideClick: false, // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      },
+    });
+
     if (!session) {
       return;
     }
 
     try {
-      // Subir el archivo al FTP solo si hay un archivo seleccionado
       const fileInput = document.getElementById("comprobante");
       if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
 
-        reader.onload = async (e) => {
-          const base64File = e.target.result.split(",")[1]; // Obtener solo el contenido en base64
+        // Crear FormData y agregar archivo
+        const formDataFTP = new FormData();
+        formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
 
-          try {
-            const ftpResponse = await fetch(
-              "/api/Gente&CulturaPermission/subirPDFPapeletas",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  fileName: file.name,
-                  fileContent: base64File, // Enviar el archivo en Base64
-                }),
-              }
-            );
-
-            const ftpResult = await ftpResponse.json();
-            if (ftpResponse.ok) {
-              // Asignar el nombre del archivo subido a formData.comprobante
-              formData.comprobante = ftpResult.fileName;
-            } else {
-              console.error("Error al subir el archivo al FTP", ftpResult);
-              Swal.fire("Error", "Error al subir el archivo", "error");
-              return;
+        try {
+          const ftpResponse = await fetch(
+            "/api/Gente&CulturaPermission/subirPDFPapeletas",
+            {
+              method: "POST",
+              body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
             }
-          } catch (ftpError) {
-            console.error("Error en la solicitud de FTP", ftpError);
-            Swal.fire("Error", "Error en la subida del archivo", "error");
+          );
+
+          const ftpResult = await ftpResponse.json();
+
+          Swal.close();
+
+          if (ftpResponse.ok) {
+            // Asignar el nombre del archivo subido a formData.comprobante
+            formData.comprobante = ftpResult.fileName;
+          } else {
+            console.error("Error al subir el archivo al FTP", ftpResult);
+            Swal.fire({
+              title: "Error",
+              text: "Error al subir el archivo",
+              icon: "error",
+              timer: 3000,
+              showConfirmButton: false,
+            });
             return;
           }
-
-          // Después de subir el archivo, enviar el formulario
-          await enviarFormulario();
-        };
-
-        reader.readAsDataURL(file); // Leer el archivo como base64
-      } else {
-        // Si no hay archivo, solo enviar el formulario
-        await enviarFormulario();
+        } catch (ftpError) {
+          console.error("Error en la solicitud de FTP", ftpError);
+          Swal.fire({
+            title: "Error",
+            text: "Error en la subida del archivo",
+            icon: "error",
+            timer: 3000,
+            showConfirmButton: false,
+          });
+          return;
+        }
       }
+
+      // Luego de subir el archivo (o si no hay), enviar el resto del formulario
+      await enviarFormulario();
     } catch (error) {
       console.error("Error en el formulario:", error);
-      Swal.fire("Error", "Error al enviar el formulario", "error");
+      Swal.close();
+      Swal.fire({
+        title: "Error",
+        text: "Error al enviar el formulario",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -803,14 +1009,16 @@ export function TablaSolicitudes() {
           );
 
           if (enviarNotificacion.ok) {
+            closeModal();
+            closeModalForms();
+            closeModalFormsType();
+            fetchEventos();
             Swal.fire({
               title: "Creado",
               text: "Se ha creado correctamente",
               icon: "success",
               timer: 3000,
               showConfirmButton: false,
-            }).then(() => {
-              window.location.href = "/gente_y_cultura/solicitudes";
             });
           } else {
             console.error("Error al enviar la notificación");
@@ -818,6 +1026,7 @@ export function TablaSolicitudes() {
           }
         } catch (error) {
           console.error("Error en la solicitud de notificación:", error);
+          Swal.close();
           Swal.fire("Error", "Error en la notificación", "error");
         }
       } else {
@@ -825,8 +1034,177 @@ export function TablaSolicitudes() {
       }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
+      Swal.close();
       Swal.fire("Error", "Error al enviar el formulario", "error");
     }
+  };
+
+  const handleSubmitEdit = async (e) => {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Cargando...",
+      text: "Estamos procesando tu solicitud",
+      showConfirmButton: false,
+      allowOutsideClick: false, // Evita que se cierre haciendo clic fuera de la alerta
+      willOpen: () => {
+        Swal.showLoading(); // Muestra el indicador de carga (spinner)
+      },
+    });
+
+    if (!session) {
+      return;
+    }
+
+    try {
+      const fileInput = document.getElementById("comprobante");
+      if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+
+        // Crear FormData y agregar archivo
+        const formDataFTP = new FormData();
+        formDataFTP.append("comprobante", file); // "archivo" debe coincidir con formidable
+
+        try {
+          const ftpResponse = await fetch(
+            "/api/Gente&CulturaPermission/subirPDFPapeletas",
+            {
+              method: "POST",
+              body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
+            }
+          );
+
+          const ftpResult = await ftpResponse.json();
+
+          Swal.close();
+
+          if (ftpResponse.ok) {
+            // Asignar el nombre del archivo subido a formData.comprobante
+            formData.comprobante = ftpResult.fileName;
+          } else {
+            console.error("Error al subir el archivo al FTP", ftpResult);
+            Swal.fire({
+              title: "Error",
+              text: "Error al subir el archivo",
+              icon: "error",
+              timer: 3000,
+              showConfirmButton: false,
+            });
+            return;
+          }
+        } catch (ftpError) {
+          console.error("Error en la solicitud de FTP", ftpError);
+          Swal.fire({
+            title: "Error",
+            text: "Error en la subida del archivo",
+            icon: "error",
+            timer: 3000,
+            showConfirmButton: false,
+          });
+          return;
+        }
+      }
+
+      // Luego de subir el archivo (o si no hay), enviar el resto del formulario
+      await actualizarFormulario();
+    } catch (error) {
+      console.error("Error en el formulario:", error);
+      Swal.close();
+      Swal.fire({
+        title: "Error",
+        text: "Error al actualizar el formulario",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  };
+
+  const actualizarFormulario = async () => {
+    try {
+      const response = await fetch(
+        `/api/Gente&CulturaAbsence/actualizarFormularioFaltas?id=${idUser}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            formData,
+            tipoFormulario2,
+            formularioExt,
+            grupoFormulario,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        closeModalEdit();
+        fetchEventos();
+        Swal.fire({
+          title: "Actualizada",
+          text: "La solicitud ha sido actualizada correctamente",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        console.error("Error al actualizar el formulario");
+        Swal.fire({
+          title: "Error",
+          text: "Error al actualizar el formulario",
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error en la solicitud de actualización de formulario:",
+        error
+      );
+      Swal.close();
+      Swal.fire({
+        title: "Error",
+        text: "Error en la actualización del formulario",
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    }
+  };
+
+  const handleDownload = async () => {
+    setLoadingFormat(true); // Asegúrate que esta sea la misma usada en el botón
+
+    Swal.fire({
+      title: "Descargando...",
+      text: "Estamos procesando el archivo, por favor espere...",
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const fileName = "formato_movi_personal.xlsx";
+    const url = `/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+      fileName
+    )}`;
+
+    // Puedes usar un timeout solo para asegurar la carga visual
+    setTimeout(() => {
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      link.setAttribute("target", "_blank");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      Swal.close();
+      setLoadingFormat(false);
+    }, 1000);
   };
 
   const renderDatePicker = (
@@ -835,19 +1213,28 @@ export function TablaSolicitudes() {
     handleChange,
     name,
     readOnly = false,
-    removeSpacing = false
+    removeSpacing = false,
+    editMode = false
   ) => {
     // Obtener la fecha actual sin horas
     const hoy = startOfDay(new Date());
     const diaSemana = hoy.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
 
     let juevesInicioNomina = null;
+    let restringirDesdeJueves = false;
 
-    // Si es "Normal", calcular el jueves de nómina
-    if (formularioNormalOExtemporaneo === "Normal") {
+    // Si es creación y seleccionó "Normal"
+    if (!editMode && formularioNormalOExtemporaneo === "Normal") {
+      restringirDesdeJueves = true;
+    }
+
+    // Si es edición y el formulario NO es extemporáneo
+    if (editMode && formularioExt === 0) {
+      restringirDesdeJueves = true;
+    }
+
+    if (restringirDesdeJueves) {
       juevesInicioNomina = addDays(hoy, 4 - diaSemana);
-
-      // Si hoy es lunes (1), martes (2) o miércoles (3), restamos 7 días
       if (diaSemana <= 3) {
         juevesInicioNomina = subDays(juevesInicioNomina, 7);
       }
@@ -866,11 +1253,11 @@ export function TablaSolicitudes() {
               )}
               disabled={readOnly}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               {date ? (
-                format(date, "PPP", { locale: es })
+                format(date, "PP", { locale: es })
               ) : (
-                <span>Selecciona una fecha</span>
+                <span className="truncate">Selecciona una fecha</span>
               )}
             </Button2>
           </PopoverTrigger>
@@ -885,11 +1272,7 @@ export function TablaSolicitudes() {
                 initialFocus
                 className="grid grid-cols-7 gap-1"
                 locale={es}
-                fromDate={
-                  formularioNormalOExtemporaneo === "Normal"
-                    ? juevesInicioNomina
-                    : null
-                } // Si es "Normal", restringimos desde el jueves
+                fromDate={restringirDesdeJueves ? juevesInicioNomina : null}
                 toDate={null} // Hasta el miércoles siguiente
                 render={{
                   header: () => (
@@ -917,11 +1300,10 @@ export function TablaSolicitudes() {
       <div className="flex justify-center items-center text-center mb-4">
         <CardTitle className="text-3xl font-bold">Mis solicitudes</CardTitle>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "70px" }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
         <Button
-          disabled={isDisabled}
           style={{
-            background: isDisabled ? "gray" : "rgb(31 41 55)",
+            background: "rgb(31 41 55)",
             padding: "10px 15px",
             whiteSpace: "nowrap",
             display: "flex",
@@ -929,9 +1311,9 @@ export function TablaSolicitudes() {
             gap: "12px",
             color: "white",
             border: "none",
-            cursor: isDisabled ? "not-allowed" : "pointer",
+            cursor: "pointer",
           }}
-          onClick={!isDisabled ? openModalFormsType : undefined}
+          onClick={openModalFormsType}
         >
           <PermisosIcon className="h-4 w-4" />
           AGREGAR SOLICITUD
@@ -941,10 +1323,10 @@ export function TablaSolicitudes() {
       {tipoFormularioAbierto && (
         <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
           <DialogContent
-            className="border-none p-0"
+            className="border-none p-0 overflow-y-auto w-full max-w-[32.5vw] max-h-[30vh] shadow-lg ml-[6vw] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
-            <Card className="w-full max-w-lg">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   Nueva solicitud
@@ -963,6 +1345,7 @@ export function TablaSolicitudes() {
                       if (checked) openModalType(); // Abrir el modal después de actualizar el estado
                     }}
                     style={{ marginLeft: "30px" }}
+                    disabled={isDisabled}
                   />
                   <Label htmlFor="Normal">Normal</Label>
                 </div>
@@ -993,10 +1376,10 @@ export function TablaSolicitudes() {
           onOpenChange={closeModalForms}
         >
           <DialogContent
-            className="border-none p-0"
+            className="border-none p-0 overflow-y-auto w-full max-w-[32.5vw] max-h-[40vh] shadow-lg ml-[6vw] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
-            <Card className="w-full max-w-lg">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   Nueva solicitud
@@ -1080,10 +1463,10 @@ export function TablaSolicitudes() {
           {tipoFormulario2 === "Faltas" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Faltas
@@ -1097,7 +1480,7 @@ export function TablaSolicitudes() {
                           onValueChange={(value) =>
                             handleChange2({ name: "justificada", value })
                           }
-                          className="flex space-x-2"
+                          className="flex space-x-4"
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="si" id="justificada-si" />
@@ -1112,21 +1495,13 @@ export function TablaSolicitudes() {
                         </RadioGroup>
                       </div>
                       <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="nombreColaborador">
-                            Nombre del colaborador
-                          </Label>
-                        </div>
+                        <Label htmlFor="nombreColaborador">
+                          Nombre del colaborador
+                        </Label>
                         <Select
                           value={formData.nombreColaborador || ""}
                           onValueChange={(value) => {
-                            const selectedUser = allUsers.find(
+                            const selectedUser = users.find(
                               (user) => user.id === value
                             );
                             if (selectedUser) {
@@ -1135,23 +1510,62 @@ export function TablaSolicitudes() {
                                 nombreColaborador: selectedUser.id,
                               });
                             }
+                            setSearchTermPass("");
                           }}
-                          disabled={allUsers.length === 0}
+                          disabled={users.length === 0}
                         >
                           <SelectTrigger className="col-span-3">
                             <SelectValue placeholder="Seleccione el colaborador..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {allUsers.length > 0 ? (
-                              allUsers.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.nombre} {user.apellidos}
-                                </SelectItem>
-                              ))
+                            {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                            <div className="p-2">
+                              <Input
+                                ref={inputRef}
+                                placeholder="Buscar colaborador..."
+                                value={searchTermPass}
+                                onChange={(e) =>
+                                  setSearchTermPass(e.target.value)
+                                }
+                                onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                              />
+                            </div>
+
+                            {/* Filtrado sin selección automática */}
+                            {users.filter(
+                              (user) =>
+                                user.nombre
+                                  .toLowerCase()
+                                  .includes(
+                                    debouncedSearchTerm.toLowerCase()
+                                  ) ||
+                                user.apellidos
+                                  .toLowerCase()
+                                  .includes(debouncedSearchTerm.toLowerCase())
+                            ).length === 0 ? (
+                              <div className="p-2 text-center text-gray-500">
+                                No se encontraron usuarios
+                              </div>
                             ) : (
-                              <SelectItem disabled>
-                                No hay usuarios disponibles para seleccionar
-                              </SelectItem>
+                              users
+                                .filter(
+                                  (user) =>
+                                    user.nombre
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      ) ||
+                                    user.apellidos
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      )
+                                )
+                                .map((user) => (
+                                  <SelectItem key={user.id} value={user.id}>
+                                    {user.nombre} {user.apellidos}
+                                  </SelectItem>
+                                ))
                             )}
                           </SelectContent>
                         </Select>
@@ -1251,7 +1665,9 @@ export function TablaSolicitudes() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo
+                          !formData.motivo ||
+                          (!formData.comprobante &&
+                            formData.justificada === "si")
                         }
                       >
                         Enviar
@@ -1265,10 +1681,10 @@ export function TablaSolicitudes() {
           {tipoFormulario2 === "Suspension" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Suspensión o castigo
@@ -1280,21 +1696,13 @@ export function TablaSolicitudes() {
                   <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-6">
                       <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="nombreColaborador">
-                            Nombre del colaborador
-                          </Label>
-                        </div>
+                        <Label htmlFor="nombreColaborador">
+                          Nombre del colaborador
+                        </Label>
                         <Select
                           value={formData.nombreColaborador || ""}
                           onValueChange={(value) => {
-                            const selectedUser = allUsers.find(
+                            const selectedUser = users.find(
                               (user) => user.id === value
                             );
                             if (selectedUser) {
@@ -1303,23 +1711,62 @@ export function TablaSolicitudes() {
                                 nombreColaborador: selectedUser.id,
                               });
                             }
+                            setSearchTermPass("");
                           }}
-                          disabled={allUsers.length === 0}
+                          disabled={users.length === 0}
                         >
                           <SelectTrigger className="col-span-3">
                             <SelectValue placeholder="Seleccione el colaborador..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {allUsers.length > 0 ? (
-                              allUsers.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.nombre} {user.apellidos}
-                                </SelectItem>
-                              ))
+                            {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                            <div className="p-2">
+                              <Input
+                                ref={inputRef}
+                                placeholder="Buscar colaborador..."
+                                value={searchTermPass}
+                                onChange={(e) =>
+                                  setSearchTermPass(e.target.value)
+                                }
+                                onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                              />
+                            </div>
+
+                            {/* Filtrado sin selección automática */}
+                            {users.filter(
+                              (user) =>
+                                user.nombre
+                                  .toLowerCase()
+                                  .includes(
+                                    debouncedSearchTerm.toLowerCase()
+                                  ) ||
+                                user.apellidos
+                                  .toLowerCase()
+                                  .includes(debouncedSearchTerm.toLowerCase())
+                            ).length === 0 ? (
+                              <div className="p-2 text-center text-gray-500">
+                                No se encontraron usuarios
+                              </div>
                             ) : (
-                              <SelectItem disabled>
-                                No hay usuarios disponibles para seleccionar
-                              </SelectItem>
+                              users
+                                .filter(
+                                  (user) =>
+                                    user.nombre
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      ) ||
+                                    user.apellidos
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      )
+                                )
+                                .map((user) => (
+                                  <SelectItem key={user.id} value={user.id}>
+                                    {user.nombre} {user.apellidos}
+                                  </SelectItem>
+                                ))
                             )}
                           </SelectContent>
                         </Select>
@@ -1350,7 +1797,9 @@ export function TablaSolicitudes() {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="motivo">Observaciones</Label>
+                        <Label htmlFor="motivo">
+                          Observaciones (causa o motivo)
+                        </Label>
                         <Textarea
                           id="motivo"
                           name="motivo"
@@ -1385,16 +1834,9 @@ export function TablaSolicitudes() {
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
                 onInteractOutside={(event) => event.preventDefault()}
-                className="border-none p-0 overflow-y-auto no-scrollbar"
-                style={{
-                  width: "70%", // Ajusta el ancho
-                  maxWidth: "900px", // Límite del ancho
-                  height: "90vh", // Ajusta la altura
-                  maxHeight: "90vh", // Límite de la altura
-                  padding: "30px", // Margen interno
-                }}
+                className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
               >
-                <Card className="w-full xl">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Horas extras
@@ -1416,13 +1858,7 @@ export function TablaSolicitudes() {
                           "fechaFin"
                         )}
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "20px",
-                        }}
-                      >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <div
                             style={{
@@ -1437,7 +1873,6 @@ export function TablaSolicitudes() {
                             id="horaInicio"
                             name="horaInicio"
                             type="time"
-                            style={{ width: "385px" }}
                             value={formData.horaInicio}
                             onChange={handleChange}
                             required
@@ -1458,7 +1893,6 @@ export function TablaSolicitudes() {
                             id="horaFin"
                             name="horaFin"
                             type="time"
-                            style={{ width: "385px" }}
                             value={formData.horaFin}
                             onChange={handleChange}
                             required
@@ -1488,13 +1922,7 @@ export function TablaSolicitudes() {
                           placeholder="Coloca el motivo del tiempo extra aquí..."
                         />
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "40px",
-                        }}
-                      >
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div className="space-y-2">
                           <div
                             style={{
@@ -1509,14 +1937,13 @@ export function TablaSolicitudes() {
                             id="noOrden"
                             name="noOrden"
                             type="number"
-                            style={{ width: "80px" }}
                             value={formData.noOrden}
                             onChange={handleChange}
                             placeholder="No."
                             required
                           />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 col-span-2">
                           <div
                             style={{
                               position: "relative",
@@ -1532,7 +1959,6 @@ export function TablaSolicitudes() {
                             id="nombreProducto"
                             name="nombreProducto"
                             type="text"
-                            style={{ width: "300px" }}
                             value={formData.nombreProducto}
                             onChange={handleChange}
                             placeholder="Nombre del producto..."
@@ -1555,7 +1981,6 @@ export function TablaSolicitudes() {
                             id="cantidadProgramada"
                             name="cantidadProgramada"
                             type="number"
-                            style={{ width: "150px" }}
                             value={formData.cantidadProgramada}
                             onChange={handleChange}
                             placeholder="Cantidad..."
@@ -1578,7 +2003,6 @@ export function TablaSolicitudes() {
                             id="cantidadTerminada"
                             name="cantidadTerminada"
                             type="number"
-                            style={{ width: "130px" }}
                             value={formData.cantidadTerminada}
                             onChange={handleChange}
                             placeholder="Cantidad..."
@@ -1590,19 +2014,14 @@ export function TablaSolicitudes() {
                         {formData.productos.otros.map((otro, index) => (
                           <div
                             key={index}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                            }}
+                            className="grid grid-cols-1 md:grid-cols-5 gap-4"
                           >
-                            <div className="space-y-2">
+                            <div>
                               <Input
                                 id={`noOrden-${index}`}
                                 name={`noOrden-${index}`}
                                 value={otro.noOrden}
                                 type="number"
-                                style={{ width: "80px" }}
                                 onChange={(e) =>
                                   handleProductoChange(e, index, "noOrden")
                                 }
@@ -1610,13 +2029,12 @@ export function TablaSolicitudes() {
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div className="col-span-2">
                               <Input
                                 id={`nombreProducto-${index}`}
                                 name={`nombreProducto-${index}`}
                                 value={otro.nombreProducto}
                                 type="text"
-                                style={{ width: "300px", marginLeft: "35px" }}
                                 onChange={(e) =>
                                   handleProductoChange(
                                     e,
@@ -1628,13 +2046,12 @@ export function TablaSolicitudes() {
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div>
                               <Input
                                 id={`cantidadProgramada-${index}`}
                                 name={`cantidadProgramada-${index}`}
                                 value={otro.cantidadProgramada}
                                 type="number"
-                                style={{ width: "150px", marginLeft: "30px" }}
                                 onChange={(e) =>
                                   handleProductoChange(
                                     e,
@@ -1646,14 +2063,13 @@ export function TablaSolicitudes() {
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div>
                               <div className="flex items-center">
                                 <Input
                                   id={`cantidadTerminada-${index}`}
                                   name={`cantidadTerminada-${index}`}
                                   value={otro.cantidadTerminada}
                                   type="number"
-                                  style={{ width: "80px", marginLeft: "30px" }}
                                   onChange={(e) =>
                                     handleProductoChange(
                                       e,
@@ -1661,17 +2077,18 @@ export function TablaSolicitudes() {
                                       "cantidadTerminada"
                                     )
                                   }
-                                  placeholder="Cant..."
+                                  placeholder="Cantidad..."
                                   required
                                 />
-                                <Button
+                                <Button2
                                   type="button"
                                   variant="ghost"
                                   size="icon"
+                                  className="w-6"
                                   onClick={() => eliminarProducto(index)}
                                 >
                                   <X className="h-4 w-4" />
-                                </Button>
+                                </Button2>
                               </div>
                             </div>
                           </div>
@@ -1695,13 +2112,7 @@ export function TablaSolicitudes() {
                           Personal que se autoriza
                         </Label>
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div className="space-y-2">
                           <div
                             style={{
@@ -1716,14 +2127,13 @@ export function TablaSolicitudes() {
                             id="noPersonal"
                             name="noPersonal"
                             type="number"
-                            style={{ width: "80px" }}
                             value={formData.noPersonal}
                             onChange={handleChange}
                             placeholder="No."
                             required
                           />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 col-span-2">
                           <div
                             style={{
                               position: "relative",
@@ -1737,14 +2147,13 @@ export function TablaSolicitudes() {
                             id="nombrePersonal"
                             name="nombrePersonal"
                             type="text"
-                            style={{ width: "350px" }}
                             value={formData.nombrePersonal}
                             onChange={handleChange}
                             placeholder="Nombre del personal..."
                             required
                           />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 col-span-2">
                           <div
                             style={{
                               position: "relative",
@@ -1758,7 +2167,6 @@ export function TablaSolicitudes() {
                             id="area"
                             name="area"
                             type="text"
-                            style={{ width: "340px" }}
                             value={formData.area}
                             onChange={handleChange}
                             placeholder="Área..."
@@ -1770,19 +2178,14 @@ export function TablaSolicitudes() {
                         {formData.personal.otros.map((otro, index) => (
                           <div
                             key={index}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                            }}
+                            className="grid grid-cols-1 md:grid-cols-5 gap-4"
                           >
-                            <div className="space-y-2">
+                            <div>
                               <Input
                                 id={`noPersonal-${index}`}
                                 name={`noPersonal-${index}`}
                                 value={otro.noPersonal}
                                 type="number"
-                                style={{ width: "80px" }}
                                 onChange={(e) =>
                                   handlePersonalChange(e, index, "noPersonal")
                                 }
@@ -1790,13 +2193,12 @@ export function TablaSolicitudes() {
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div className="col-span-2">
                               <Input
                                 id={`nombrePersonal-${index}`}
                                 name={`nombrePersonal-${index}`}
                                 value={otro.nombrePersonal}
                                 type="text"
-                                style={{ width: "350px" }}
                                 onChange={(e) =>
                                   handlePersonalChange(
                                     e,
@@ -1808,28 +2210,28 @@ export function TablaSolicitudes() {
                                 required
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div className="col-span-2">
                               <div className="flex items-center">
                                 <Input
                                   id={`area-${index}`}
                                   name={`area-${index}`}
                                   value={otro.area}
                                   type="text"
-                                  style={{ width: "270px" }}
                                   onChange={(e) =>
                                     handlePersonalChange(e, index, "area")
                                   }
                                   placeholder="Área..."
                                   required
                                 />
-                                <Button
+                                <Button2
                                   type="button"
                                   variant="ghost"
                                   size="icon"
+                                  className="w-6"
                                   onClick={() => eliminarPersonal(index)}
                                 >
                                   <X className="h-4 w-4" />
-                                </Button>
+                                </Button2>
                               </div>
                             </div>
                           </div>
@@ -1893,17 +2295,9 @@ export function TablaSolicitudes() {
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
                 onInteractOutside={(event) => event.preventDefault()}
-                className="border-none p-0 overflow-y-auto no-scrollbar"
-                style={{
-                  width: "100%", // Ajusta el ancho
-                  maxWidth: "1600px", // Límite del ancho
-                  height: "65vh", // Ajusta la altura
-                  maxHeight: "65vh", // Límite de la altura
-                  padding: "30px", // Margen interno
-                  marginLeft: "120px",
-                }}
+                className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
               >
-                <Card className="w-full xl">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Bonos / Comisiones
@@ -1925,8 +2319,12 @@ export function TablaSolicitudes() {
                                 tipoSolicitud: value,
                                 noBono: "",
                                 nombreBono: "",
+                                bonoCantidad: "",
+                                comision: "",
+                                comentarios: "",
+                                total: 0,
+                                totalFinal: 0,
                                 bonos: {
-                                  ...formData.bonos,
                                   otros: [],
                                 },
                               });
@@ -1991,7 +2389,7 @@ export function TablaSolicitudes() {
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-6 gap-1">
+                      <div className="grid grid-cols-7 gap-1">
                         <div className="space-y-2">
                           <Label htmlFor="noBono">No.</Label>
                           <Input
@@ -2004,16 +2402,8 @@ export function TablaSolicitudes() {
                             readOnly={true}
                           />
                         </div>
-                        <div className="space-y-2">
-                          <div
-                            style={{
-                              position: "relative",
-                              display: "inline-flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Label htmlFor="nombreBono">Nombre</Label>
-                          </div>
+                        <div className="space-y-2 col-span-2">
+                          <Label htmlFor="nombreBono">Nombre</Label>
                           <Select
                             id={"nombreBono"}
                             name={"nombreBono"}
@@ -2029,21 +2419,63 @@ export function TablaSolicitudes() {
                                   nombreBono: selectedUser.id,
                                 });
                               }
+                              setSearchTermPass("");
+                              setDebouncedSearchTerm("");
                             }}
-                            disabled={usersBonos.length === 0} // Deshabilitar si no hay usuarios disponibles
+                            disabled={usersBonos.length === 0}
                           >
                             <SelectTrigger className="col-span-3">
                               <SelectValue placeholder="Seleccione el colaborador..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {usersBonos.length > 0 ? (
-                                usersBonos.map((user) => (
-                                  <SelectItem key={user.id} value={user.id}>
-                                    {user.nombre} {user.apellidos}
-                                  </SelectItem>
-                                ))
+                              {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                              <div className="p-2">
+                                <Input
+                                  ref={inputRef}
+                                  placeholder="Buscar colaborador..."
+                                  value={searchTermPass}
+                                  onChange={(e) =>
+                                    handleSearchChange(e.target.value)
+                                  }
+                                  onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                />
+                              </div>
+
+                              {/* Filtrado sin selección automática */}
+                              {usersBonos.filter(
+                                (user) =>
+                                  user.nombre
+                                    .toLowerCase()
+                                    .includes(
+                                      debouncedSearchTerm.toLowerCase()
+                                    ) ||
+                                  user.apellidos
+                                    .toLowerCase()
+                                    .includes(debouncedSearchTerm.toLowerCase())
+                              ).length === 0 ? (
+                                <div className="p-2 text-center text-gray-500">
+                                  No se encontraron usuarios
+                                </div>
                               ) : (
-                                <SelectItem disabled></SelectItem>
+                                usersBonos
+                                  .filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  )
+                                  .map((user) => (
+                                    <SelectItem key={user.id} value={user.id}>
+                                      {user.nombre} {user.apellidos}
+                                    </SelectItem>
+                                  ))
                               )}
                             </SelectContent>
                           </Select>
@@ -2054,6 +2486,7 @@ export function TablaSolicitudes() {
                             id="bonoCantidad"
                             name="bonoCantidad"
                             type="number"
+                            value={formData.bonoCantidad}
                             onChange={handleChangeBonos}
                             placeholder="Bono..."
                             required
@@ -2066,6 +2499,7 @@ export function TablaSolicitudes() {
                             name="comision"
                             type="number"
                             onChange={handleChangeBonos}
+                            value={formData.comision}
                             placeholder="Comisión..."
                             required
                           />
@@ -2076,6 +2510,7 @@ export function TablaSolicitudes() {
                             id="comentarios"
                             name="comentarios"
                             type="text"
+                            value={formData.comentarios}
                             onChange={handleChange}
                             placeholder="Comentarios..."
                           />
@@ -2095,7 +2530,7 @@ export function TablaSolicitudes() {
                       </div>
                       <div className="space-y-2">
                         {formData.bonos.otros.map((otro, index) => (
-                          <div key={index} className="grid grid-cols-6 gap-1">
+                          <div key={index} className="grid grid-cols-7 gap-1">
                             <div className="space-y-2">
                               <Input
                                 id={`noBono-${index}`}
@@ -2109,7 +2544,7 @@ export function TablaSolicitudes() {
                                 readOnly={true}
                               />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 col-span-2">
                               <Select
                                 id={"nombreBono"}
                                 name={"nombreBono"}
@@ -2134,22 +2569,90 @@ export function TablaSolicitudes() {
                                       },
                                     });
                                   }
+
+                                  setSearchTerms((prevTerms) => ({
+                                    ...prevTerms,
+                                    [index]: "",
+                                  }));
+
+                                  setDebouncedSearchTerms((prevDebounced) => ({
+                                    ...prevDebounced,
+                                    [index]: "",
+                                  }));
                                 }}
-                                value={otro.nombreBono || ""} // Mostrar el valor actual del Select
+                                value={otro.nombreBono || ""}
                                 disabled={usersBonos.length === 0}
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {usersBonos.length > 0 ? (
-                                    usersBonos.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                  <div className="p-2">
+                                    <Input
+                                      ref={inputRef}
+                                      placeholder="Buscar colaborador..."
+                                      value={searchTerms[index] || ""}
+                                      onChange={(e) =>
+                                        handleSearchChange(
+                                          e.target.value,
+                                          index
+                                        )
+                                      }
+                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                    />
+                                  </div>
+
+                                  {/* Filtrado sin selección automática */}
+                                  {usersBonos.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          (
+                                            debouncedSearchTerms[index] || ""
+                                          ).toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          (
+                                            debouncedSearchTerms[index] || ""
+                                          ).toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled></SelectItem>
+                                    usersBonos
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              (
+                                                debouncedSearchTerms[index] ||
+                                                ""
+                                              ).toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              (
+                                                debouncedSearchTerms[index] ||
+                                                ""
+                                              ).toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
@@ -2187,7 +2690,7 @@ export function TablaSolicitudes() {
                                 value={otro.comentarios || ""}
                                 type="text"
                                 onChange={(e) =>
-                                  handleChangeBonos(e, index, "comentarios")
+                                  handleChangeComentario(index, e.target.value)
                                 }
                                 placeholder="Comentarios..."
                               />
@@ -2198,7 +2701,6 @@ export function TablaSolicitudes() {
                                   id={`total-${index}`}
                                   name={`total-${index}`}
                                   type="number"
-                                  style={{ width: "207px" }}
                                   value={otro.total || 0}
                                   onChange={(e) =>
                                     handleChangeBonos(e, index, "total")
@@ -2206,36 +2708,35 @@ export function TablaSolicitudes() {
                                   placeholder="Total..."
                                   readOnly={true}
                                 />
-                                <Button
+                                <Button2
                                   type="button"
                                   variant="ghost"
                                   size="icon"
+                                  className="w-6"
                                   onClick={() => eliminarBono(index)}
                                 >
                                   <X className="h-4 w-4" />
-                                </Button>
+                                </Button2>
                               </div>
                             </div>
                           </div>
                         ))}
-                        <div
-                          className="space-y-2 ml-auto"
-                          style={{ width: "245px" }}
-                        >
-                          <Input
-                            id="totalFinal"
-                            name="totalFinal"
-                            type="number"
-                            value={formData.totalFinal || 0}
-                            placeholder="Total final..."
-                            readOnly={true}
-                          />
+                        <div className="grid grid-cols-7 gap-1">
+                          <div className="col-start-7">
+                            <Input
+                              id="totalFinal"
+                              name="totalFinal"
+                              type="number"
+                              value={formData.totalFinal || 0}
+                              placeholder="Total final..."
+                              readOnly={true}
+                            />
+                          </div>
                         </div>
                         <Button
                           style={{
                             background: "rgb(31 41 55)",
                             color: "white",
-                            width: "180px",
                           }}
                           type="button"
                           onClick={añadirBono}
@@ -2282,16 +2783,9 @@ export function TablaSolicitudes() {
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
                 onInteractOutside={(event) => event.preventDefault()}
-                className="border-none p-0 overflow-y-auto no-scrollbar"
-                style={{
-                  width: "100%", // Ajusta el ancho
-                  maxWidth: "600px", // Límite del ancho
-                  height: "85vh", // Ajusta la altura
-                  maxHeight: "85vh", // Límite de la altura
-                  padding: "45px", // Margen interno
-                }}
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
               >
-                <Card className="w-full max-w-lg">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
                       Aumento de sueldo / Cambio de puesto / Cambio de área
@@ -2300,21 +2794,13 @@ export function TablaSolicitudes() {
                   <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-6">
                       <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="nombreColaborador">
-                            Nombre del colaborador a aplicar ajuste
-                          </Label>
-                        </div>
+                        <Label htmlFor="nombreColaborador">
+                          Nombre del colaborador a aplicar ajuste
+                        </Label>
                         <Select
                           value={formData.nombreColaborador || ""}
                           onValueChange={(value) => {
-                            const selectedUser = allUsers.find(
+                            const selectedUser = users.find(
                               (user) => user.id === value
                             );
                             if (selectedUser) {
@@ -2324,45 +2810,65 @@ export function TablaSolicitudes() {
                                 puestoColaborador: selectedUser.puesto || "",
                               });
                             }
+                            setSearchTermPass("");
                           }}
-                          disabled={allUsers.length === 0} // Deshabilitar si no hay usuarios disponibles
+                          disabled={users.length === 0}
                         >
                           <SelectTrigger className="col-span-3">
                             <SelectValue placeholder="Seleccione el colaborador..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {allUsers.length > 0 ? (
-                              allUsers.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.nombre} {user.apellidos}
-                                </SelectItem>
-                              ))
+                            {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                            <div className="p-2">
+                              <Input
+                                ref={inputRef}
+                                placeholder="Buscar colaborador..."
+                                value={searchTermPass}
+                                onChange={(e) =>
+                                  setSearchTermPass(e.target.value)
+                                }
+                                onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                              />
+                            </div>
+
+                            {/* Filtrado sin selección automática */}
+                            {users.filter(
+                              (user) =>
+                                user.nombre
+                                  .toLowerCase()
+                                  .includes(
+                                    debouncedSearchTerm.toLowerCase()
+                                  ) ||
+                                user.apellidos
+                                  .toLowerCase()
+                                  .includes(debouncedSearchTerm.toLowerCase())
+                            ).length === 0 ? (
+                              <div className="p-2 text-center text-gray-500">
+                                No se encontraron usuarios
+                              </div>
                             ) : (
-                              <SelectItem disabled>
-                                No hay usuarios disponibles para seleccionar
-                              </SelectItem>
+                              users
+                                .filter(
+                                  (user) =>
+                                    user.nombre
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      ) ||
+                                    user.apellidos
+                                      .toLowerCase()
+                                      .includes(
+                                        debouncedSearchTerm.toLowerCase()
+                                      )
+                                )
+                                .map((user) => (
+                                  <SelectItem key={user.id} value={user.id}>
+                                    {user.nombre} {user.apellidos}
+                                  </SelectItem>
+                                ))
                             )}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="puestoColaborador">Puesto</Label>
-                        </div>
-                        <Input
-                          id="puestoColaborador"
-                          name="puestoColaborador"
-                          onChange={handleChange}
-                          type="text"
-                          value={formData.puestoColaborador}
-                          placeholder="Puesto del colaborador..."
-                        />
                       </div>
                       <div className="space-y-2">
                         <div
@@ -2385,57 +2891,19 @@ export function TablaSolicitudes() {
                             });
                           }}
                         >
-                          <SelectTrigger style={{ maxWidth: "500px" }}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Seleccionar motivo..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="modificacion">
-                              Modificación a perfil de puesto - Competencias
-                            </SelectItem>
-                            <SelectItem value="cambio">
+                            <SelectItem value="puesto">
                               Cambio de puesto
                             </SelectItem>
-                            <SelectItem value="desempeño">Desempeño</SelectItem>
+                            <SelectItem value="sueldo">
+                              Cambio de sueldo
+                            </SelectItem>
+                            <SelectItem value="area">Cambio de área</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="sueldoActual">Sueldo actual</Label>
-                        </div>
-                        <Input
-                          id="sueldoActual"
-                          name="sueldoActual"
-                          onChange={handleChange}
-                          type="number"
-                          value={formData.sueldoActual}
-                          placeholder="Sueldo actual..."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Label htmlFor="nuevoSueldo">Nuevo sueldo</Label>
-                        </div>
-                        <Input
-                          id="nuevoSueldo"
-                          name="nuevoSueldo"
-                          onChange={handleChange}
-                          type="number"
-                          value={formData.nuevoSueldo}
-                          placeholder="Nuevo sueldo..."
-                        />
                       </div>
                       <div className="grid grid-cols-1 gap-4">
                         {renderDatePicker(
@@ -2466,6 +2934,66 @@ export function TablaSolicitudes() {
                           placeholder="Coloca tus comentarios adicionales aquí..."
                         />
                       </div>
+                      <div className="space-y-2">
+                        <div
+                          style={{
+                            position: "relative",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                          }}
+                        >
+                          <Label htmlFor="comprobante">
+                            Formato de movimiento de personal
+                          </Label>
+
+                          <Tooltip
+                            title={`<p style="margin:0;padding:5px;text-align:justify;">Descarga el formato con el botón de "Descargar formato", después
+                              llénalo completamente y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                            arrow
+                          >
+                            <HelpIcon
+                              style={{ cursor: "pointer", fontSize: 18 }}
+                            />
+                          </Tooltip>
+                          <Button2
+                            variant="outline"
+                            onClick={() => handleDownload()}
+                            disabled={loadingFormat}
+                          >
+                            {loadingFormat
+                              ? "Descargando..."
+                              : "Descargar formato"}
+                          </Button2>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            id="comprobante"
+                            name="comprobante"
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                            onChange={handleFileChange}
+                            required
+                            className="hidden"
+                          />
+                          <Button2
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              document.getElementById("comprobante").click()
+                            }
+                            className="w-full"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Subir archivo (PDF, JPG, PNG, XLSX) Max: 4MB
+                          </Button2>
+                          {formData.comprobante && (
+                            <span className="text-sm text-muted-foreground">
+                              {formData.comprobante}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -2473,12 +3001,10 @@ export function TablaSolicitudes() {
                         className="w-full"
                         disabled={
                           !formData.nombreColaborador ||
-                          !formData.puestoColaborador ||
                           !formData.motivo ||
-                          !formData.sueldoActual ||
-                          !formData.nuevoSueldo ||
                           !formData.fechaInicio ||
-                          !formData.comentarios
+                          !formData.comentarios ||
+                          !formData.comprobante
                         }
                       >
                         Enviar
@@ -2498,7 +3024,7 @@ export function TablaSolicitudes() {
           onOpenChange={closeModalFormsEdit}
         >
           <DialogContent className="border-none p-0">
-            <Card className="w-full max-w-lg">
+            <Card className="w-full max-w-lg" hidden>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">
                   {tipoFormulario2}
@@ -2514,16 +3040,16 @@ export function TablaSolicitudes() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Faltas
                           </CardTitle>
                         </CardHeader>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                           <CardContent className="space-y-6">
                             <div className="space-y-2">
                               <Label>Tipo de falta</Label>
@@ -2532,8 +3058,8 @@ export function TablaSolicitudes() {
                                 onValueChange={(value) =>
                                   handleChange2({ name: "justificada", value })
                                 }
-                                className="flex space-x-2"
-                                disabled={true}
+                                disabled={ver ? true : false}
+                                className="flex space-x-4"
                               >
                                 <div className="flex items-center space-x-2">
                                   <RadioGroupItem
@@ -2556,21 +3082,13 @@ export function TablaSolicitudes() {
                               </RadioGroup>
                             </div>
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
-                                  const selectedUser = allUsers.find(
+                                  const selectedUser = users.find(
                                     (user) => user.id === value
                                   );
                                   if (selectedUser) {
@@ -2579,24 +3097,69 @@ export function TablaSolicitudes() {
                                       nombreColaborador: selectedUser.id,
                                     });
                                   }
+                                  setSearchTermPass("");
                                 }}
-                                disabled={formData.nombreColaborador !== ""}
+                                disabled={
+                                  users.length === 0 || ver ? true : false
+                                }
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {allUsers.length > 0 ? (
-                                    allUsers.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                  <div className="p-2">
+                                    <Input
+                                      ref={inputRef}
+                                      placeholder="Buscar colaborador..."
+                                      value={searchTermPass}
+                                      onChange={(e) =>
+                                        setSearchTermPass(e.target.value)
+                                      }
+                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                    />
+                                  </div>
+
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
@@ -2609,23 +3172,29 @@ export function TablaSolicitudes() {
                                 type="number"
                                 value={formData.dias}
                                 onChange={handleChange}
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                                 placeholder="Dias que faltó"
                               />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {renderDatePicker(
                                 "Fecha de inicio",
-                                fechaInicioPapeleta,
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
-                                fechaFinPapeleta,
+                                ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                             </div>
@@ -2638,7 +3207,7 @@ export function TablaSolicitudes() {
                                 onChange={handleChange}
                                 className="min-h-[100px]"
                                 placeholder="Coloca tus observaciones aquí..."
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                               />
                             </div>
                             <div className="space-y-2">
@@ -2668,7 +3237,7 @@ export function TablaSolicitudes() {
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                {formData.comprobante ? (
+                                {formData.comprobante && ver ? (
                                   <a
                                     href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
                                       formData.comprobante
@@ -2681,54 +3250,67 @@ export function TablaSolicitudes() {
                                   </a>
                                 ) : (
                                   <>
-                                    <span style={{ fontSize: 14 }}>
-                                      Sin justificante agregado
-                                    </span>
+                                    {ver ? (
+                                      <span style={{ fontSize: 14 }}>
+                                        Sin comprobante agregado
+                                      </span>
+                                    ) : (
+                                      <>
+                                        <input
+                                          id="comprobante"
+                                          name="comprobante" // Asegúrate que sea "comprobante"
+                                          type="file"
+                                          accept=".pdf,.jpg,.jpeg,.png"
+                                          onChange={handleFileChange}
+                                          className="hidden"
+                                        />
+                                        <Button2
+                                          type="button"
+                                          variant="outline"
+                                          onClick={() =>
+                                            document
+                                              .getElementById("comprobante")
+                                              .click()
+                                          }
+                                          className="w-full"
+                                        >
+                                          <Upload className="mr-2 h-4 w-4" />
+                                          Subir archivo (PDF, JPG, PNG) Max: 4MB
+                                        </Button2>
+                                        {formData.comprobante && (
+                                          <p className="text-sm text-muted-foreground break-all max-w-full">
+                                            {formData.comprobante}
+                                          </p>
+                                        )}
+                                      </>
+                                    )}
                                   </>
                                 )}
                               </div>
                             </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
                           </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.justificada ||
+                                  !formData.nombreColaborador ||
+                                  !formData.dias ||
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.motivo ||
+                                  (!formData.comprobante &&
+                                    formData.justificada === "si")
+                                }
+                              >
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
                         </form>
                       </Card>
                     </DialogContent>
@@ -2740,10 +3322,10 @@ export function TablaSolicitudes() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Suspensión o castigo
@@ -2752,24 +3334,16 @@ export function TablaSolicitudes() {
                             Las suspensiones son de 1 a 7 días como máximo
                           </DialogDescription>
                         </CardHeader>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                           <CardContent className="space-y-6">
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
-                                  const selectedUser = allUsers.find(
+                                  const selectedUser = users.find(
                                     (user) => user.id === value
                                   );
                                   if (selectedUser) {
@@ -2778,24 +3352,69 @@ export function TablaSolicitudes() {
                                       nombreColaborador: selectedUser.id,
                                     });
                                   }
+                                  setSearchTermPass("");
                                 }}
-                                disabled={formData.nombreColaborador !== ""}
+                                disabled={
+                                  users.length === 0 || ver ? true : false
+                                }
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {allUsers.length > 0 ? (
-                                    allUsers.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                  <div className="p-2">
+                                    <Input
+                                      ref={inputRef}
+                                      placeholder="Buscar colaborador..."
+                                      value={searchTermPass}
+                                      onChange={(e) =>
+                                        setSearchTermPass(e.target.value)
+                                      }
+                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                    />
+                                  </div>
+
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
@@ -2808,79 +3427,66 @@ export function TablaSolicitudes() {
                                 type="number"
                                 value={formData.dias}
                                 onChange={handleChange}
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                                 placeholder="Dias..."
                               />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {renderDatePicker(
                                 "Fecha de inicio",
-                                fechaInicioPapeleta,
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
-                                fechaFinPapeleta,
+                                ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Label htmlFor="motivo">
+                                Observaciones (causa o motivo)
+                              </Label>
                               <Textarea
                                 id="motivo"
                                 name="motivo"
                                 value={formData.motivo}
                                 onChange={handleChange}
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                                 className="min-h-[100px]"
                                 placeholder="Coloca tus observaciones aquí..."
                               />
                             </div>
-                            <div className="space-y-2" hidden>
-                              <Label>¿La falta es justificada?</Label>
-                              <RadioGroup
-                                onValueChange={handleChange}
-                                className="flex space-x-4"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="si"
-                                    id="justificada-si"
-                                  />
-                                  <Label htmlFor="justificada-si">Sí</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="no"
-                                    id="justificada-no"
-                                  />
-                                  <Label htmlFor="justificada-no">No</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-                            <div className="space-y-2" hidden>
-                              <Label htmlFor="pagada">
-                                ¿La falta es pagada?
-                              </Label>
-                              <Select onValueChange={handleChange}>
-                                <SelectTrigger id="pagada">
-                                  <SelectValue placeholder="Selecciona una opción" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="si">
-                                    Sí, es pagada
-                                  </SelectItem>
-                                  <SelectItem value="no">
-                                    No es pagada
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
                           </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.nombreColaborador ||
+                                  !formData.dias ||
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.motivo
+                                }
+                              >
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
                         </form>
                       </Card>
                     </DialogContent>
@@ -2893,46 +3499,39 @@ export function TablaSolicitudes() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "70%", // Ajusta el ancho
-                        maxWidth: "900px", // Límite del ancho
-                        height: "90vh", // Ajusta la altura
-                        maxHeight: "90vh", // Límite de la altura
-                        padding: "30px", // Margen interno
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
-                      <Card className="w-full xl">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Horas extras
                           </CardTitle>
                         </CardHeader>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                           <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {renderDatePicker(
                                 "Fecha de inicio",
-                                fechaInicioPapeleta,
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
-                                fechaFinPapeleta,
+                                ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "20px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -2949,10 +3548,10 @@ export function TablaSolicitudes() {
                                   id="horaInicio"
                                   name="horaInicio"
                                   type="time"
-                                  style={{ width: "385px" }}
                                   value={formData.horaInicio}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  required
                                   placeholder="Hora de inicio..."
                                 />
                               </div>
@@ -2970,10 +3569,10 @@ export function TablaSolicitudes() {
                                   id="horaFin"
                                   name="horaFin"
                                   type="time"
-                                  style={{ width: "385px" }}
                                   value={formData.horaFin}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  required
                                   placeholder="Hora de fin..."
                                 />
                               </div>
@@ -2995,18 +3594,12 @@ export function TablaSolicitudes() {
                                 name="motivo"
                                 value={formData.motivo}
                                 onChange={handleChange}
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                                 className="min-h-[100px]"
                                 placeholder="Coloca el motivo del tiempo extra aquí..."
                               />
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "40px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -3021,13 +3614,14 @@ export function TablaSolicitudes() {
                                   id="noOrden"
                                   name="noOrden"
                                   type="number"
-                                  style={{ width: "80px" }}
                                   value={formData.noOrden}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="No."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -3043,10 +3637,11 @@ export function TablaSolicitudes() {
                                   id="nombreProducto"
                                   name="nombreProducto"
                                   type="text"
-                                  style={{ width: "300px" }}
                                   value={formData.nombreProducto}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="Nombre del producto..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3065,10 +3660,11 @@ export function TablaSolicitudes() {
                                   id="cantidadProgramada"
                                   name="cantidadProgramada"
                                   type="number"
-                                  style={{ width: "150px" }}
                                   value={formData.cantidadProgramada}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="Cantidad..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3087,10 +3683,11 @@ export function TablaSolicitudes() {
                                   id="cantidadTerminada"
                                   name="cantidadTerminada"
                                   type="number"
-                                  style={{ width: "130px" }}
                                   value={formData.cantidadTerminada}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="Cantidad..."
+                                  required
                                 />
                               </div>
                             </div>
@@ -3098,98 +3695,123 @@ export function TablaSolicitudes() {
                               {formData.productos.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
+                                  className="grid grid-cols-1 md:grid-cols-5 gap-4"
                                 >
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`noOrden-${index}`}
                                       name={`noOrden-${index}`}
-                                      type="number"
-                                      style={{ width: "80px" }}
                                       value={otro.noOrden}
+                                      readOnly={ver ? true : false}
+                                      type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "noOrden")
+                                        handleProductoChange(
+                                          e,
+                                          index,
+                                          "noOrden"
+                                        )
                                       }
-                                      readOnly={true}
+                                      placeholder="No."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <Input
                                       id={`nombreProducto-${index}`}
                                       name={`nombreProducto-${index}`}
-                                      type="text"
-                                      style={{
-                                        width: "300px",
-                                        marginLeft: "35px",
-                                      }}
                                       value={otro.nombreProducto}
+                                      readOnly={ver ? true : false}
+                                      type="text"
                                       onChange={(e) =>
-                                        handleChange(e, index, "nombreProducto")
+                                        handleProductoChange(
+                                          e,
+                                          index,
+                                          "nombreProducto"
+                                        )
                                       }
-                                      readOnly={true}
+                                      placeholder="Nombre del producto..."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`cantidadProgramada-${index}`}
                                       name={`cantidadProgramada-${index}`}
-                                      type="number"
-                                      style={{
-                                        width: "150px",
-                                        marginLeft: "30px",
-                                      }}
                                       value={otro.cantidadProgramada}
+                                      type="number"
+                                      readOnly={ver ? true : false}
                                       onChange={(e) =>
-                                        handleChange(
+                                        handleProductoChange(
                                           e,
                                           index,
                                           "cantidadProgramada"
                                         )
                                       }
-                                      readOnly={true}
+                                      placeholder="Cantidad..."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div>
                                     <div className="flex items-center">
                                       <Input
                                         id={`cantidadTerminada-${index}`}
                                         name={`cantidadTerminada-${index}`}
-                                        type="number"
-                                        style={{
-                                          width: "130px",
-                                          marginLeft: "30px",
-                                        }}
                                         value={otro.cantidadTerminada}
+                                        readOnly={ver ? true : false}
+                                        type="number"
                                         onChange={(e) =>
-                                          handleChange(
+                                          handleProductoChange(
                                             e,
                                             index,
                                             "cantidadTerminada"
                                           )
                                         }
-                                        readOnly={true}
+                                        placeholder="Cantidad..."
+                                        required
                                       />
+                                      {ver ? (
+                                        <div hidden></div>
+                                      ) : (
+                                        <Button2
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="w-6"
+                                          onClick={() =>
+                                            eliminarProducto(index)
+                                          }
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button2>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
                               ))}
+                              {ver ? (
+                                <div hidden></div>
+                              ) : (
+                                <Button
+                                  style={{
+                                    background: "rgb(31 41 55)",
+                                    color: "white",
+                                  }}
+                                  type="button"
+                                  variant="outline"
+                                  onClick={añadirProducto}
+                                  className="mt-2"
+                                >
+                                  <PlusCircle className="h-4 w-4 mr-2" />
+                                  Agregar
+                                </Button>
+                              )}
                             </div>
                             <div>
                               <Label style={{ fontSize: 17 }}>
                                 Personal que se autoriza
                               </Label>
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "10px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -3204,13 +3826,14 @@ export function TablaSolicitudes() {
                                   id="noPersonal"
                                   name="noPersonal"
                                   type="number"
-                                  style={{ width: "80px" }}
                                   value={formData.noPersonal}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="No."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -3224,13 +3847,14 @@ export function TablaSolicitudes() {
                                   id="nombrePersonal"
                                   name="nombrePersonal"
                                   type="text"
-                                  style={{ width: "350px" }}
                                   value={formData.nombrePersonal}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="Nombre del personal..."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -3244,10 +3868,11 @@ export function TablaSolicitudes() {
                                   id="area"
                                   name="area"
                                   type="text"
-                                  style={{ width: "340px" }}
                                   value={formData.area}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
-                                  readOnly={true}
+                                  placeholder="Área..."
+                                  required
                                 />
                               </div>
                             </div>
@@ -3255,57 +3880,135 @@ export function TablaSolicitudes() {
                               {formData.personal.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
+                                  className="grid grid-cols-1 md:grid-cols-5 gap-4"
                                 >
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`noPersonal-${index}`}
                                       name={`noPersonal-${index}`}
-                                      type="number"
-                                      style={{ width: "80px" }}
                                       value={otro.noPersonal}
+                                      type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "noPersonal")
+                                        handlePersonalChange(
+                                          e,
+                                          index,
+                                          "noPersonal"
+                                        )
                                       }
-                                      readOnly={true}
+                                      placeholder="No."
+                                      required
+                                      readOnly={ver ? true : false}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <Input
                                       id={`nombrePersonal-${index}`}
                                       name={`nombrePersonal-${index}`}
-                                      type="text"
-                                      style={{ width: "350px" }}
                                       value={otro.nombrePersonal}
+                                      type="text"
                                       onChange={(e) =>
-                                        handleChange(e, index, "nombrePersonal")
+                                        handlePersonalChange(
+                                          e,
+                                          index,
+                                          "nombrePersonal"
+                                        )
                                       }
-                                      readOnly={true}
+                                      placeholder="Nombre del personal..."
+                                      required
+                                      readOnly={ver ? true : false}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <div className="flex items-center">
                                       <Input
                                         id={`area-${index}`}
                                         name={`area-${index}`}
-                                        type="text"
-                                        style={{ width: "340px" }}
                                         value={otro.area}
+                                        type="text"
                                         onChange={(e) =>
-                                          handleChange(e, index, "area")
+                                          handlePersonalChange(e, index, "area")
                                         }
-                                        readOnly={true}
+                                        placeholder="Área..."
+                                        required
+                                        readOnly={ver ? true : false}
                                       />
+                                      {ver ? (
+                                        <div hidden></div>
+                                      ) : (
+                                        <Button2
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="w-6"
+                                          onClick={() =>
+                                            eliminarPersonal(index)
+                                          }
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button2>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
                               ))}
+                              {ver ? (
+                                <div hidden></div>
+                              ) : (
+                                <Button
+                                  style={{
+                                    background: "rgb(31 41 55)",
+                                    color: "white",
+                                  }}
+                                  type="button"
+                                  variant="outline"
+                                  onClick={añadirPersonal}
+                                  className="mt-2"
+                                >
+                                  <PlusCircle className="h-4 w-4 mr-2" />
+                                  Agregar
+                                </Button>
+                              )}
                             </div>
                           </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.horaInicio ||
+                                  !formData.horaFin ||
+                                  !formData.motivo ||
+                                  !formData.noOrden ||
+                                  !formData.nombreProducto ||
+                                  !formData.cantidadProgramada ||
+                                  !formData.cantidadTerminada ||
+                                  !formData.noPersonal ||
+                                  !formData.nombrePersonal ||
+                                  !formData.area ||
+                                  formData.productos.otros.some(
+                                    (otro, index) =>
+                                      !otro.noOrden ||
+                                      !otro.nombreProducto ||
+                                      !otro.cantidadProgramada ||
+                                      !otro.cantidadTerminada
+                                  ) ||
+                                  formData.personal.otros.some(
+                                    (otro, index) =>
+                                      !otro.noPersonal ||
+                                      !otro.nombrePersonal ||
+                                      !otro.area
+                                  )
+                                }
+                              >
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
                         </form>
                       </Card>
                     </DialogContent>
@@ -3318,23 +4021,15 @@ export function TablaSolicitudes() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "1600px", // Límite del ancho
-                        height: "65vh", // Ajusta la altura
-                        maxHeight: "65vh", // Límite de la altura
-                        padding: "30px", // Margen interno
-                        marginLeft: "120px",
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
-                      <Card className="w-full xl">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Bonos / Comisiones
                           </CardTitle>
                         </CardHeader>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                           <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <div className="space-y-2">
@@ -3343,6 +4038,7 @@ export function TablaSolicitudes() {
                                 </Label>
                                 <Select
                                   value={formData.tipoSolicitud || ""}
+                                  disabled={ver ? true : false}
                                   onValueChange={(value) => {
                                     obtenerUsuariosBonos(value);
                                     setFormData({
@@ -3350,13 +4046,16 @@ export function TablaSolicitudes() {
                                       tipoSolicitud: value,
                                       noBono: "",
                                       nombreBono: "",
+                                      bonoCantidad: "",
+                                      comision: "",
+                                      comentarios: "",
+                                      total: 0,
+                                      totalFinal: 0,
                                       bonos: {
-                                        ...formData.bonos,
                                         otros: [],
                                       },
                                     });
                                   }}
-                                  disabled={formData.tipoSolicitud !== ""}
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el tipo de solicitud..." />
@@ -3379,7 +4078,7 @@ export function TablaSolicitudes() {
                                       mes: value,
                                     });
                                   }}
-                                  disabled={formData.mes !== ""}
+                                  disabled={ver ? true : false}
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el mes..." />
@@ -3421,11 +4120,11 @@ export function TablaSolicitudes() {
                                   value={formData.dias}
                                   onChange={handleChange}
                                   placeholder="Dias..."
-                                  readOnly={true}
+                                  readOnly={ver ? true : false}
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-6 gap-1">
+                            <div className="grid grid-cols-7 gap-1">
                               <div className="space-y-2">
                                 <Label htmlFor="noBono">No.</Label>
                                 <Input
@@ -3438,16 +4137,8 @@ export function TablaSolicitudes() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2">
-                                <div
-                                  style={{
-                                    position: "relative",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Label htmlFor="nombreBono">Nombre</Label>
-                                </div>
+                              <div className="space-y-2 col-span-2">
+                                <Label htmlFor="nombreBono">Nombre</Label>
                                 <Select
                                   id={"nombreBono"}
                                   name={"nombreBono"}
@@ -3463,24 +4154,72 @@ export function TablaSolicitudes() {
                                         nombreBono: selectedUser.id,
                                       });
                                     }
+                                    setSearchTermPass("");
+                                    setDebouncedSearchTerm("");
                                   }}
-                                  disabled={formData.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                                  disabled={
+                                    usersBonos.length === 0 || ver
+                                      ? true
+                                      : false
+                                  }
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el colaborador..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {usersBonos.length > 0 ? (
-                                      usersBonos.map((user) => (
-                                        <SelectItem
-                                          key={user.id}
-                                          value={user.id}
-                                        >
-                                          {user.nombre} {user.apellidos}
-                                        </SelectItem>
-                                      ))
+                                    {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                    <div className="p-2">
+                                      <Input
+                                        ref={inputRef}
+                                        placeholder="Buscar colaborador..."
+                                        value={searchTermPass}
+                                        onChange={(e) =>
+                                          handleSearchChange(e.target.value)
+                                        }
+                                        onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                      />
+                                    </div>
+
+                                    {/* Filtrado sin selección automática */}
+                                    {usersBonos.filter(
+                                      (user) =>
+                                        user.nombre
+                                          .toLowerCase()
+                                          .includes(
+                                            debouncedSearchTerm.toLowerCase()
+                                          ) ||
+                                        user.apellidos
+                                          .toLowerCase()
+                                          .includes(
+                                            debouncedSearchTerm.toLowerCase()
+                                          )
+                                    ).length === 0 ? (
+                                      <div className="p-2 text-center text-gray-500">
+                                        No se encontraron usuarios
+                                      </div>
                                     ) : (
-                                      <SelectItem disabled></SelectItem>
+                                      usersBonos
+                                        .filter(
+                                          (user) =>
+                                            user.nombre
+                                              .toLowerCase()
+                                              .includes(
+                                                debouncedSearchTerm.toLowerCase()
+                                              ) ||
+                                            user.apellidos
+                                              .toLowerCase()
+                                              .includes(
+                                                debouncedSearchTerm.toLowerCase()
+                                              )
+                                        )
+                                        .map((user) => (
+                                          <SelectItem
+                                            key={user.id}
+                                            value={user.id}
+                                          >
+                                            {user.nombre} {user.apellidos}
+                                          </SelectItem>
+                                        ))
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -3492,9 +4231,10 @@ export function TablaSolicitudes() {
                                   name="bonoCantidad"
                                   type="number"
                                   value={formData.bonoCantidad}
-                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
+                                  onChange={handleChangeBonos}
                                   placeholder="Bono..."
-                                  readOnly={true}
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3503,10 +4243,11 @@ export function TablaSolicitudes() {
                                   id="comision"
                                   name="comision"
                                   type="number"
+                                  onChange={handleChangeBonos}
                                   value={formData.comision}
-                                  onChange={handleChange}
+                                  readOnly={ver ? true : false}
                                   placeholder="Comisión..."
-                                  readOnly={true}
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3516,9 +4257,9 @@ export function TablaSolicitudes() {
                                   name="comentarios"
                                   type="text"
                                   value={formData.comentarios}
+                                  readOnly={ver ? true : false}
                                   onChange={handleChange}
                                   placeholder="Comentarios..."
-                                  readOnly={true}
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3527,8 +4268,8 @@ export function TablaSolicitudes() {
                                   id="total"
                                   name="total"
                                   type="number"
-                                  value={formData.total}
-                                  onChange={handleChange}
+                                  value={formData.total || 0}
+                                  onChange={handleChangeBonos}
                                   placeholder="Total..."
                                   readOnly={true}
                                 />
@@ -3538,7 +4279,7 @@ export function TablaSolicitudes() {
                               {formData.bonos.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  className="grid grid-cols-6 gap-1"
+                                  className="grid grid-cols-7 gap-1"
                                 >
                                   <div className="space-y-2">
                                     <Input
@@ -3553,41 +4294,128 @@ export function TablaSolicitudes() {
                                       readOnly={true}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="space-y-2 col-span-2">
                                     <Select
                                       id={"nombreBono"}
                                       name={"nombreBono"}
-                                      value={otro.nombreBono || ""}
                                       onValueChange={(value) => {
                                         const selectedUser = usersBonos.find(
                                           (user) => user.id === value
                                         );
                                         if (selectedUser) {
-                                          setFormData({
-                                            ...formData,
+                                          const updatedBonos = [
+                                            ...formData.bonos.otros,
+                                          ];
+                                          updatedBonos[index] = {
+                                            ...updatedBonos[index],
                                             noBono:
                                               selectedUser.numero_empleado,
                                             nombreBono: selectedUser.id,
+                                          };
+                                          setFormData({
+                                            ...formData,
+                                            bonos: {
+                                              ...formData.bonos,
+                                              otros: updatedBonos,
+                                            },
                                           });
                                         }
+
+                                        setSearchTerms((prevTerms) => ({
+                                          ...prevTerms,
+                                          [index]: "",
+                                        }));
+
+                                        setDebouncedSearchTerms(
+                                          (prevDebounced) => ({
+                                            ...prevDebounced,
+                                            [index]: "",
+                                          })
+                                        );
                                       }}
-                                      disabled={otro.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                                      value={otro.nombreBono || ""}
+                                      disabled={
+                                        usersBonos.length === 0 || ver
+                                          ? true
+                                          : false
+                                      }
                                     >
                                       <SelectTrigger className="col-span-3">
                                         <SelectValue placeholder="Seleccione el colaborador..." />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {usersBonos.length > 0 ? (
-                                          usersBonos.map((user) => (
-                                            <SelectItem
-                                              key={user.id}
-                                              value={user.id}
-                                            >
-                                              {user.nombre} {user.apellidos}
-                                            </SelectItem>
-                                          ))
+                                        {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                        <div className="p-2">
+                                          <Input
+                                            ref={inputRef}
+                                            placeholder="Buscar colaborador..."
+                                            value={searchTerms[index] || ""}
+                                            onChange={(e) =>
+                                              handleSearchChange(
+                                                e.target.value,
+                                                index
+                                              )
+                                            }
+                                            onKeyDown={(e) =>
+                                              e.stopPropagation()
+                                            } // Evitar selecciones accidentales con el teclado
+                                          />
+                                        </div>
+
+                                        {/* Filtrado sin selección automática */}
+                                        {usersBonos.filter(
+                                          (user) =>
+                                            user.nombre
+                                              .toLowerCase()
+                                              .includes(
+                                                (
+                                                  debouncedSearchTerms[index] ||
+                                                  ""
+                                                ).toLowerCase()
+                                              ) ||
+                                            user.apellidos
+                                              .toLowerCase()
+                                              .includes(
+                                                (
+                                                  debouncedSearchTerms[index] ||
+                                                  ""
+                                                ).toLowerCase()
+                                              )
+                                        ).length === 0 ? (
+                                          <div className="p-2 text-center text-gray-500">
+                                            No se encontraron usuarios
+                                          </div>
                                         ) : (
-                                          <SelectItem disabled></SelectItem>
+                                          usersBonos
+                                            .filter(
+                                              (user) =>
+                                                user.nombre
+                                                  .toLowerCase()
+                                                  .includes(
+                                                    (
+                                                      debouncedSearchTerms[
+                                                        index
+                                                      ] || ""
+                                                    ).toLowerCase()
+                                                  ) ||
+                                                user.apellidos
+                                                  .toLowerCase()
+                                                  .includes(
+                                                    (
+                                                      debouncedSearchTerms[
+                                                        index
+                                                      ] || ""
+                                                    ).toLowerCase()
+                                                  )
+                                            )
+                                            .map((user) => (
+                                              <SelectItem
+                                                key={user.id}
+                                                value={user.id}
+                                              >
+                                                {user.nombre} {user.apellidos}
+                                              </SelectItem>
+                                            ))
                                         )}
                                       </SelectContent>
                                     </Select>
@@ -3596,39 +4424,48 @@ export function TablaSolicitudes() {
                                     <Input
                                       id={`bonoCantidad-${index}`}
                                       name={`bonoCantidad-${index}`}
-                                      value={otro.bonoCantidad}
+                                      value={otro.bonoCantidad || ""}
+                                      readOnly={ver ? true : false}
                                       type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "bonoCantidad")
+                                        handleChangeBonos(
+                                          e,
+                                          index,
+                                          "bonoCantidad"
+                                        )
                                       }
                                       placeholder="Bono..."
-                                      readOnly={true}
+                                      required
                                     />
                                   </div>
                                   <div className="space-y-2">
                                     <Input
                                       id={`comision-${index}`}
                                       name={`comision-${index}`}
-                                      value={otro.comision}
+                                      value={otro.comision || ""}
+                                      readOnly={ver ? true : false}
                                       type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "comision")
+                                        handleChangeBonos(e, index, "comision")
                                       }
                                       placeholder="Comisión..."
-                                      readOnly={true}
+                                      required
                                     />
                                   </div>
                                   <div className="space-y-2">
                                     <Input
                                       id={`comentarios-${index}`}
                                       name={`comentarios-${index}`}
-                                      value={otro.comentarios}
+                                      value={otro.comentarios || ""}
+                                      readOnly={ver ? true : false}
                                       type="text"
                                       onChange={(e) =>
-                                        handleChange(e, index, "comentarios")
+                                        handleChangeComentario(
+                                          index,
+                                          e.target.value
+                                        )
                                       }
                                       placeholder="Comentarios..."
-                                      readOnly={true}
                                     />
                                   </div>
                                   <div className="space-y-2">
@@ -3637,33 +4474,91 @@ export function TablaSolicitudes() {
                                         id={`total-${index}`}
                                         name={`total-${index}`}
                                         type="number"
-                                        value={otro.total}
+                                        value={otro.total || 0}
                                         onChange={(e) =>
-                                          handleChange(e, index, "total")
+                                          handleChangeBonos(e, index, "total")
                                         }
                                         placeholder="Total..."
                                         readOnly={true}
                                       />
+                                      {ver ? (
+                                        <div hidden></div>
+                                      ) : (
+                                        <Button2
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="w-6"
+                                          onClick={() => eliminarBono(index)}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button2>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
                               ))}
-                              <div
-                                className="space-y-2 ml-auto"
-                                style={{ width: "245px" }}
-                              >
-                                <Input
-                                  id="totalFinal"
-                                  name="totalFinal"
-                                  type="number"
-                                  value={formData.totalFinal || ""}
-                                  onChange={handleChange}
-                                  placeholder="Total final..."
-                                  readOnly={true}
-                                />
+                              <div className="grid grid-cols-7 gap-1">
+                                <div className="col-start-7">
+                                  <Input
+                                    id="totalFinal"
+                                    name="totalFinal"
+                                    type="number"
+                                    value={formData.totalFinal || 0}
+                                    placeholder="Total final..."
+                                    readOnly={true}
+                                  />
+                                </div>
                               </div>
+                              {ver ? (
+                                <div hidden></div>
+                              ) : (
+                                <Button
+                                  style={{
+                                    background: "rgb(31 41 55)",
+                                    color: "white",
+                                  }}
+                                  type="button"
+                                  onClick={añadirBono}
+                                  variant="outline"
+                                  className="mt-2"
+                                >
+                                  <PlusCircle className="h-4 w-4 mr-2" />
+                                  Agregar
+                                </Button>
+                              )}
                             </div>
                           </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.tipoSolicitud ||
+                                  !formData.mes ||
+                                  !formData.dias ||
+                                  !formData.nombreBono ||
+                                  !formData.bonoCantidad ||
+                                  !formData.comision ||
+                                  !formData.comentarios ||
+                                  !formData.total ||
+                                  formData.bonos.otros.some(
+                                    (otro, index) =>
+                                      !otro.nombreBono ||
+                                      !otro.bonoCantidad ||
+                                      !otro.comision ||
+                                      !otro.comentarios ||
+                                      !otro.total
+                                  )
+                                }
+                              >
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
                         </form>
                       </Card>
                     </DialogContent>
@@ -3676,40 +4571,25 @@ export function TablaSolicitudes() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "600px", // Límite del ancho
-                        height: "85vh", // Ajusta la altura
-                        maxHeight: "85vh", // Límite de la altura
-                        padding: "45px", // Margen interno
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Aumento de sueldo / Cambio de puesto / Cambio de
                             área
                           </CardTitle>
                         </CardHeader>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmitEdit}>
                           <CardContent className="space-y-6">
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador a aplicar ajuste
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador a aplicar ajuste
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
-                                  const selectedUser = allUsers.find(
+                                  const selectedUser = users.find(
                                     (user) => user.id === value
                                   );
                                   if (selectedUser) {
@@ -3719,48 +4599,72 @@ export function TablaSolicitudes() {
                                       puestoColaborador: selectedUser.puesto,
                                     });
                                   }
+                                  setSearchTermPass("");
                                 }}
-                                disabled={formData.nombreColaborador !== ""} // Deshabilitar si no hay usuarios disponibles
+                                disabled={
+                                  users.length === 0 || ver ? true : false
+                                }
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {allUsers.length > 0 ? (
-                                    allUsers.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Input dentro del Select para filtrar, sin afectar la selección */}
+                                  <div className="p-2">
+                                    <Input
+                                      ref={inputRef}
+                                      placeholder="Buscar colaborador..."
+                                      value={searchTermPass}
+                                      onChange={(e) =>
+                                        setSearchTermPass(e.target.value)
+                                      }
+                                      onKeyDown={(e) => e.stopPropagation()} // Evitar selecciones accidentales con el teclado
+                                    />
+                                  </div>
+
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="puestoColaborador">
-                                  Puesto
-                                </Label>
-                              </div>
-                              <Input
-                                id="puestoColaborador"
-                                name="puestoColaborador"
-                                type="text"
-                                value={formData.puestoColaborador}
-                                placeholder="Puesto del colaborador..."
-                                readOnly={true}
-                              />
                             </div>
                             <div className="space-y-2">
                               <div
@@ -3774,73 +4678,40 @@ export function TablaSolicitudes() {
                               </div>
                               <Select
                                 value={formData.motivo || ""}
-                                disabled={formData.motivo !== ""}
+                                onValueChange={(value) => {
+                                  setFormData({
+                                    ...formData,
+                                    motivo: value,
+                                  });
+                                }}
+                                disabled={ver ? true : false}
                               >
-                                <SelectTrigger style={{ maxWidth: "500px" }}>
+                                <SelectTrigger>
                                   <SelectValue placeholder="Seleccionar motivo..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="modificacion">
-                                    Modificación a perfil de puesto -
-                                    Competencias
-                                  </SelectItem>
-                                  <SelectItem value="cambio">
+                                  <SelectItem value="puesto">
                                     Cambio de puesto
                                   </SelectItem>
-                                  <SelectItem value="desempeño">
-                                    Desempeño
+                                  <SelectItem value="sueldo">
+                                    Cambio de sueldo
+                                  </SelectItem>
+                                  <SelectItem value="area">
+                                    Cambio de área
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="sueldoActual">
-                                  Sueldo actual
-                                </Label>
-                              </div>
-                              <Input
-                                id="sueldoActual"
-                                name="sueldoActual"
-                                type="number"
-                                value={formData.sueldoActual}
-                                placeholder="Sueldo actual..."
-                                readOnly={true}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nuevoSueldo">
-                                  Nuevo sueldo
-                                </Label>
-                              </div>
-                              <Input
-                                id="nuevoSueldo"
-                                name="nuevoSueldo"
-                                type="number"
-                                value={formData.nuevoSueldo}
-                                placeholder="Nuevo sueldo..."
-                                readOnly={true}
-                              />
-                            </div>
                             <div className="grid grid-cols-1 gap-4">
                               {renderDatePicker(
                                 "Fecha requerida de ajuste",
-                                fechaInicioPapeleta,
+                                ver
+                                  ? fechaInicioPapeleta
+                                  : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
+                                ver ? true : false,
+                                false,
                                 true
                               )}
                             </div>
@@ -3861,12 +4732,77 @@ export function TablaSolicitudes() {
                                 name="comentarios"
                                 onChange={handleChange}
                                 value={formData.comentarios}
-                                readOnly={true}
+                                readOnly={ver ? true : false}
                                 className="min-h-[100px]"
                                 placeholder="Coloca tus comentarios adicionales aquí..."
                               />
                             </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">
+                                  Formato de movimiento de personal
+                                </Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Descarga el formato con el botón de "Descargar formato", después
+                              llénalo completamente y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin formato agregado
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </CardContent>
+                          {ver ? (
+                            <div hidden></div>
+                          ) : (
+                            <CardFooter>
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.nombreColaborador ||
+                                  !formData.motivo ||
+                                  !formData.fechaInicio ||
+                                  !formData.comentarios
+                                }
+                              >
+                                Actualizar
+                              </Button2>
+                            </CardFooter>
+                          )}
                         </form>
                       </Card>
                     </DialogContent>
@@ -4200,6 +5136,23 @@ function PermisosIcon(props) {
         strokeLinejoin="round"
         d="M15 3v4h4M9 13l2 2 4-4"
       />
+    </svg>
+  );
+}
+
+function EditIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      stroke="rgb(31 41 55)"
+      fill="rgb(31 41 55)"
+      width="20px"
+      height="20px"
+    >
+      <path d="M21,11.5V15H18a3,3,0,0,0-3,3v3H4.5A1.5,1.5,0,0,1,3,19.5V4.5A1.5,1.5,0,0,1,4.5,3h9A1.5,1.5,0,0,0,15,1.5h0A1.5,1.5,0,0,0,13.5,0h-9A4.5,4.5,0,0,0,0,4.5v15A4.5,4.5,0,0,0,4.5,24H16.484a4.5,4.5,0,0,0,3.181-1.317l3.017-3.017A4.5,4.5,0,0,0,24,16.485V11.5A1.5,1.5,0,0,0,22.5,10h0A1.5,1.5,0,0,0,21,11.5Z" />
+      <path d="M17.793,1.793l-12.5,12.5A1,1,0,0,0,5,15v3a1,1,0,0,0,1,1H9a1,1,0,0,0,.707-.293L22.038,6.376a3.379,3.379,0,0,0,.952-3.17A3.118,3.118,0,0,0,17.793,1.793Z" />
     </svg>
   );
 }

@@ -248,6 +248,17 @@ export function TablaPermisosFaltaUsuario() {
     fetchEventos();
   }, [idUser]);
 
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get(
+        `/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`
+      ); // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data);
+    } catch (error) {
+      console.error("Error al obtener eventos:", error);
+    }
+  };
+
   const handleEditForm = async (index) => {
     try {
       const response = await fetch(
@@ -391,12 +402,12 @@ export function TablaPermisosFaltaUsuario() {
             `/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`
           );
           if (response.status === 200) {
+            fetchEventos();
             await Swal.fire(
               "Eliminada",
               "La papeleta ha sido eliminada correctamente",
               "success"
             );
-            window.location.href = "/papeletas_usuario";
           } else {
             Swal.fire("Error", "Error al eliminar la papeleta", "error");
           }
@@ -739,14 +750,16 @@ export function TablaPermisosFaltaUsuario() {
           );
 
           if (enviarNotificacion.ok) {
+            closeModal();
+            closeModalForms();
+            closeModalFormsType();
+            fetchEventos();
             Swal.fire({
               title: "Creado",
               text: "Se ha creado correctamente",
               icon: "success",
               timer: 3000,
               showConfirmButton: false,
-            }).then(() => {
-              window.location.href = "/papeletas_usuario";
             });
           } else {
             console.error("Error al enviar la notificación");
@@ -891,14 +904,14 @@ export function TablaPermisosFaltaUsuario() {
       );
 
       if (response.ok) {
+        closeModalEdit();
+        fetchEventos();
         Swal.fire({
           title: "Actualizada",
           text: "La papeleta ha sido actualizada correctamente",
           icon: "success",
           timer: 3000,
           showConfirmButton: false,
-        }).then(() => {
-          window.location.href = "/papeletas_usuario";
         });
       } else {
         console.error("Error al actualizar el formulario");
@@ -932,19 +945,28 @@ export function TablaPermisosFaltaUsuario() {
     handleChange,
     name,
     readOnly = false,
-    removeSpacing = false
+    removeSpacing = false,
+    editMode = false
   ) => {
     // Obtener la fecha actual sin horas
     const hoy = startOfDay(new Date());
     const diaSemana = hoy.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
 
     let juevesInicioNomina = null;
+    let restringirDesdeJueves = false;
 
-    // Si es "Normal", calcular el jueves de nómina
-    if (formularioNormalOExtemporaneo === "Normal") {
+    // Si es creación y seleccionó "Normal"
+    if (!editMode && formularioNormalOExtemporaneo === "Normal") {
+      restringirDesdeJueves = true;
+    }
+
+    // Si es edición y el formulario NO es extemporáneo
+    if (editMode && formularioExt === 0) {
+      restringirDesdeJueves = true;
+    }
+
+    if (restringirDesdeJueves) {
       juevesInicioNomina = addDays(hoy, 4 - diaSemana);
-
-      // Si hoy es lunes (1), martes (2) o miércoles (3), restamos 7 días
       if (diaSemana <= 3) {
         juevesInicioNomina = subDays(juevesInicioNomina, 7);
       }
@@ -982,11 +1004,7 @@ export function TablaPermisosFaltaUsuario() {
                 initialFocus
                 className="grid grid-cols-7 gap-1"
                 locale={es}
-                fromDate={
-                  formularioNormalOExtemporaneo === "Normal"
-                    ? juevesInicioNomina
-                    : null
-                } // Si es "Normal", restringimos desde el jueves
+                fromDate={restringirDesdeJueves ? juevesInicioNomina : null}
                 toDate={null} // Hasta el miércoles siguiente
                 render={{
                   header: () => (
@@ -1036,7 +1054,7 @@ export function TablaPermisosFaltaUsuario() {
       {tipoFormularioAbierto && (
         <Dialog open={tipoFormularioAbierto} onOpenChange={closeModalFormsType}>
           <DialogContent
-            className="border-none p-0 overflow-y-auto w-full max-w-[65vh] max-h-[30vh] shadow-lg ml-[12vh] mt-auto"
+            className="border-none p-0 overflow-y-auto w-full max-w-[32.5vw] max-h-[30vh] shadow-lg ml-[6vw] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
             <Card>
@@ -1089,7 +1107,7 @@ export function TablaPermisosFaltaUsuario() {
           onOpenChange={closeModalForms}
         >
           <DialogContent
-            className="border-none p-0 overflow-y-auto w-full max-w-[65vh] max-h-[40vh] shadow-lg ml-[12vh] mt-auto"
+            className="border-none p-0 overflow-y-auto w-full max-w-[32.5vw] max-h-[40vh] shadow-lg ml-[6vw] mt-auto"
             onInteractOutside={(event) => event.preventDefault()}
           >
             <Card>
@@ -1178,7 +1196,7 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Llegada tarde / Salida antes" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
                 <Card>
@@ -1221,34 +1239,6 @@ export function TablaPermisosFaltaUsuario() {
                           placeholder="Coloca tus observaciones aquí..."
                         />
                       </div>
-                      <div className="space-y-2" hidden>
-                        <Label>¿La falta es justificada?</Label>
-                        <RadioGroup
-                          onValueChange={handleChange}
-                          className="flex space-x-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="si" id="justificada-si" />
-                            <Label htmlFor="justificada-si">Sí</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="no" id="justificada-no" />
-                            <Label htmlFor="justificada-no">No</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                      <div className="space-y-2" hidden>
-                        <Label htmlFor="pagada">¿La falta es pagada?</Label>
-                        <Select onValueChange={handleChange}>
-                          <SelectTrigger id="pagada">
-                            <SelectValue placeholder="Selecciona una opción" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="si">Sí, es pagada</SelectItem>
-                            <SelectItem value="no">No es pagada</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button2
@@ -1271,7 +1261,7 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Tiempo por tiempo" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
                 <Card>
@@ -1416,7 +1406,7 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Permiso" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
                 <Card>
@@ -1584,7 +1574,7 @@ export function TablaPermisosFaltaUsuario() {
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
                 onInteractOutside={(event) => event.preventDefault()}
-                className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
+                className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
               >
                 <Card>
                   <CardHeader>
@@ -1690,7 +1680,6 @@ export function TablaPermisosFaltaUsuario() {
                             type="text"
                             onChange={handleChange}
                             placeholder="Persona..."
-                            required
                           />
                         </div>
                         <div className="flex flex-col justify-end min-w-0 space-y-3">
@@ -1780,7 +1769,6 @@ export function TablaPermisosFaltaUsuario() {
                                   handleTrabajoChange(e, index, "persona")
                                 }
                                 placeholder="Persona..."
-                                required
                               />
                             </div>
                             <div>
@@ -1876,7 +1864,7 @@ export function TablaPermisosFaltaUsuario() {
           {tipoFormulario2 === "Vacaciones" && (
             <Dialog open={formularioAbierto} onOpenChange={closeModal}>
               <DialogContent
-                className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                 onInteractOutside={(event) => event.preventDefault()}
               >
                 <Card>
@@ -2043,7 +2031,7 @@ export function TablaPermisosFaltaUsuario() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2076,7 +2064,9 @@ export function TablaPermisosFaltaUsuario() {
                                   : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                             </div>
                             <div className="space-y-2">
@@ -2096,7 +2086,15 @@ export function TablaPermisosFaltaUsuario() {
                             <div hidden></div>
                           ) : (
                             <CardFooter>
-                              <Button2 type="submit" className="w-full">
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.horaFormulario ||
+                                  !formData.fechaInicio ||
+                                  !formData.motivo
+                                }
+                              >
                                 Actualizar
                               </Button2>
                             </CardFooter>
@@ -2112,7 +2110,7 @@ export function TablaPermisosFaltaUsuario() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2192,14 +2190,18 @@ export function TablaPermisosFaltaUsuario() {
                                   : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
                                 ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                             </div>
                             <div className="space-y-2">
@@ -2258,9 +2260,9 @@ export function TablaPermisosFaltaUsuario() {
                                           Subir archivo (PDF, JPG, PNG) Max: 4MB
                                         </Button2>
                                         {formData.comprobante && (
-                                          <span className="text-sm text-muted-foreground">
+                                          <p className="text-sm text-muted-foreground break-all max-w-full">
                                             {formData.comprobante}
-                                          </span>
+                                          </p>
                                         )}
                                       </>
                                     )}
@@ -2273,7 +2275,18 @@ export function TablaPermisosFaltaUsuario() {
                             <div hidden></div>
                           ) : (
                             <CardFooter>
-                              <Button2 type="submit" className="w-full">
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.dias ||
+                                  !formData.horas ||
+                                  !formData.minutos ||
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.motivo
+                                }
+                              >
                                 Actualizar
                               </Button2>
                             </CardFooter>
@@ -2289,7 +2302,7 @@ export function TablaPermisosFaltaUsuario() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2380,14 +2393,18 @@ export function TablaPermisosFaltaUsuario() {
                                   : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
                                 ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                             </div>
                             <div className="space-y-2">
@@ -2467,9 +2484,9 @@ export function TablaPermisosFaltaUsuario() {
                                           Subir archivo (PDF, JPG, PNG) Max: 4MB
                                         </Button2>
                                         {formData.comprobante && (
-                                          <span className="text-sm text-muted-foreground">
+                                          <p className="text-sm text-muted-foreground break-all max-w-full">
                                             {formData.comprobante}
-                                          </span>
+                                          </p>
                                         )}
                                       </>
                                     )}
@@ -2482,7 +2499,17 @@ export function TablaPermisosFaltaUsuario() {
                             <div hidden></div>
                           ) : (
                             <CardFooter>
-                              <Button2 type="submit" className="w-full">
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.conSueldo ||
+                                  !formData.dias ||
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.motivo
+                                }
+                              >
                                 Actualizar
                               </Button2>
                             </CardFooter>
@@ -2499,7 +2526,7 @@ export function TablaPermisosFaltaUsuario() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
                       <Card>
                         <CardHeader>
@@ -2523,14 +2550,18 @@ export function TablaPermisosFaltaUsuario() {
                                   : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
                                 ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                             </div>
                             <div
@@ -2570,7 +2601,9 @@ export function TablaPermisosFaltaUsuario() {
                                   formData.fechaFormulario,
                                   handleChange,
                                   "fechaFormulario",
-                                  ver ? true : false
+                                  ver ? true : false,
+                                  false,
+                                  true
                                 )}
                               </div>
                               <div className="flex flex-col justify-end min-w-0 space-y-3">
@@ -2619,7 +2652,7 @@ export function TablaPermisosFaltaUsuario() {
                                   name="persona"
                                   type="text"
                                   value={formData.persona}
-                                  placeholder="Persona..."
+                                  placeholder={ver ? "" : "Persona..."}
                                   onChange={handleChange}
                                   readOnly={ver ? true : false}
                                 />
@@ -2677,6 +2710,7 @@ export function TablaPermisosFaltaUsuario() {
                                         ),
                                       "fechaActividad",
                                       ver ? true : false,
+                                      true,
                                       true
                                     )}
                                   </div>
@@ -2720,7 +2754,7 @@ export function TablaPermisosFaltaUsuario() {
                                       name={`persona-${index}`}
                                       type="text"
                                       value={otro.persona}
-                                      placeholder="Persona..."
+                                      placeholder={ver ? "" : "Persona..."}
                                       onChange={(e) =>
                                         handleTrabajoChange(e, index, "persona")
                                       }
@@ -2802,7 +2836,28 @@ export function TablaPermisosFaltaUsuario() {
                             <div hidden></div>
                           ) : (
                             <CardFooter>
-                              <Button2 type="submit" className="w-full">
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.fechaFormulario ||
+                                  !formData.actividad ||
+                                  !formData.descripcion ||
+                                  !formData.tiempoRespuesta ||
+                                  !formData.comentarios ||
+                                  // Validar otros campos dinámicos
+                                  formData.planTrabajo.otros.some(
+                                    (otro, index) =>
+                                      !otro.fechaActividad ||
+                                      !otro.actividad ||
+                                      !otro.descripcion ||
+                                      !otro.tiempoRespuesta ||
+                                      !otro.comentarios
+                                  )
+                                }
+                              >
                                 Actualizar
                               </Button2>
                             </CardFooter>
@@ -2818,7 +2873,7 @@ export function TablaPermisosFaltaUsuario() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2861,14 +2916,18 @@ export function TablaPermisosFaltaUsuario() {
                                   : formData.fechaInicio,
                                 handleChange,
                                 "fechaInicio",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                               {renderDatePicker(
                                 "Fecha de fin",
                                 ver ? fechaFinPapeleta : formData.fechaFin,
                                 handleChange,
                                 "fechaFin",
-                                ver ? true : false
+                                ver ? true : false,
+                                false,
+                                true
                               )}
                             </div>
                             <div className="space-y-2">
@@ -2933,7 +2992,18 @@ export function TablaPermisosFaltaUsuario() {
                             <div hidden></div>
                           ) : (
                             <CardFooter>
-                              <Button2 type="submit" className="w-full">
+                              <Button2
+                                type="submit"
+                                className="w-full"
+                                disabled={
+                                  !formData.puestoVacaciones ||
+                                  !formData.dias ||
+                                  !formData.fechaInicio ||
+                                  !formData.fechaFin ||
+                                  !formData.motivo ||
+                                  !formData.comprobante
+                                }
+                              >
                                 Actualizar
                               </Button2>
                             </CardFooter>

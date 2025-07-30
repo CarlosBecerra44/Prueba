@@ -32,7 +32,7 @@ export async function middleware(req) {
   let permisos = {};
   try {
     const res = await fetch(
-      `https://aionnet.vercel.app/api/MarketingLabel/permiso?userId=${idUser}`
+      `https://aionnetpruebas.vercel.app/api/MarketingLabel/permiso?userId=${idUser}`
     );
     if (res.ok) {
       permisos = await res.json();
