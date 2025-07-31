@@ -131,6 +131,11 @@ export function TablaPermisosFaltaUsuario() {
       conSueldo: "",
       horaFormulario: "",
       fechaFormulario: null,
+      actividad: "",
+      descripcion: "",
+      tiempoRespuesta: "",
+      comentarios: "",
+      puestoVacaciones: "",
       planTrabajo: {
         otros: [],
       },
@@ -180,6 +185,11 @@ export function TablaPermisosFaltaUsuario() {
     conSueldo: "",
     horaFormulario: "",
     fechaFormulario: null,
+    actividad: "",
+    descripcion: "",
+    tiempoRespuesta: "",
+    comentarios: "",
+    puestoVacaciones: "",
     planTrabajo: {
       otros: [],
     },
@@ -248,7 +258,7 @@ export function TablaPermisosFaltaUsuario() {
     fetchEventos();
   }, [idUser]);
 
-  const fetchEventos = async () => {
+  const fetchPapeletas = async () => {
     try {
       const response = await axios.get(
         `/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`
@@ -402,7 +412,7 @@ export function TablaPermisosFaltaUsuario() {
             `/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`
           );
           if (response.status === 200) {
-            fetchEventos();
+            fetchPapeletas();
             await Swal.fire(
               "Eliminada",
               "La papeleta ha sido eliminada correctamente",
@@ -753,7 +763,7 @@ export function TablaPermisosFaltaUsuario() {
             closeModal();
             closeModalForms();
             closeModalFormsType();
-            fetchEventos();
+            fetchPapeletas();
             Swal.fire({
               title: "Creado",
               text: "Se ha creado correctamente",
@@ -905,7 +915,7 @@ export function TablaPermisosFaltaUsuario() {
 
       if (response.ok) {
         closeModalEdit();
-        fetchEventos();
+        fetchPapeletas();
         Swal.fire({
           title: "Actualizada",
           text: "La papeleta ha sido actualizada correctamente",
@@ -1247,7 +1257,7 @@ export function TablaPermisosFaltaUsuario() {
                         disabled={
                           !formData.horaFormulario ||
                           !formData.fechaInicio ||
-                          !formData.motivo
+                          !formData.motivo.trim()
                         }
                       >
                         Enviar
@@ -1375,9 +1385,9 @@ export function TablaPermisosFaltaUsuario() {
                             Subir archivo (PDF, JPG, PNG) Max: 4MB
                           </Button2>
                           {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-all max-w-full">
                               {formData.comprobante}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1392,7 +1402,7 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.minutos ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo
+                          !formData.motivo.trim()
                         }
                       >
                         Enviar
@@ -1543,9 +1553,9 @@ export function TablaPermisosFaltaUsuario() {
                             Subir archivo (PDF, JPG, PNG) Max: 4MB
                           </Button2>
                           {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-all max-w-full">
                               {formData.comprobante}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1559,7 +1569,7 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo
+                          !formData.motivo.trim()
                         }
                       >
                         Enviar
@@ -1838,18 +1848,18 @@ export function TablaPermisosFaltaUsuario() {
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
                           !formData.fechaFormulario ||
-                          !formData.actividad ||
-                          !formData.descripcion ||
-                          !formData.tiempoRespuesta ||
-                          !formData.comentarios ||
+                          !formData.actividad.trim() ||
+                          !formData.descripcion.trim() ||
+                          !formData.tiempoRespuesta.trim() ||
+                          !formData.comentarios.trim() ||
                           // Validar otros campos dinámicos
                           formData.planTrabajo.otros.some(
                             (otro, index) =>
                               !otro.fechaActividad ||
-                              !otro.actividad ||
-                              !otro.descripcion ||
-                              !otro.tiempoRespuesta ||
-                              !otro.comentarios
+                              !otro.actividad.trim() ||
+                              !otro.descripcion.trim() ||
+                              !otro.tiempoRespuesta.trim() ||
+                              !otro.comentarios.trim()
                           )
                         }
                       >
@@ -1978,9 +1988,9 @@ export function TablaPermisosFaltaUsuario() {
                             Subir archivo (PDF, JPG, PNG) Max: 4MB
                           </Button2>
                           {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-all max-w-full">
                               {formData.comprobante}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1990,11 +2000,11 @@ export function TablaPermisosFaltaUsuario() {
                         type="submit"
                         className="w-full"
                         disabled={
-                          !formData.puestoVacaciones ||
+                          !formData.puestoVacaciones.trim() ||
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo ||
+                          !formData.motivo.trim() ||
                           !formData.comprobante
                         }
                       >
@@ -2092,7 +2102,7 @@ export function TablaPermisosFaltaUsuario() {
                                 disabled={
                                   !formData.horaFormulario ||
                                   !formData.fechaInicio ||
-                                  !formData.motivo
+                                  !formData.motivo.trim()
                                 }
                               >
                                 Actualizar
@@ -2284,7 +2294,7 @@ export function TablaPermisosFaltaUsuario() {
                                   !formData.minutos ||
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
-                                  !formData.motivo
+                                  !formData.motivo.trim()
                                 }
                               >
                                 Actualizar
@@ -2507,7 +2517,7 @@ export function TablaPermisosFaltaUsuario() {
                                   !formData.dias ||
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
-                                  !formData.motivo
+                                  !formData.motivo.trim()
                                 }
                               >
                                 Actualizar
@@ -2843,18 +2853,18 @@ export function TablaPermisosFaltaUsuario() {
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
                                   !formData.fechaFormulario ||
-                                  !formData.actividad ||
-                                  !formData.descripcion ||
-                                  !formData.tiempoRespuesta ||
-                                  !formData.comentarios ||
+                                  !formData.actividad.trim() ||
+                                  !formData.descripcion.trim() ||
+                                  !formData.tiempoRespuesta.trim() ||
+                                  !formData.comentarios.trim() ||
                                   // Validar otros campos dinámicos
                                   formData.planTrabajo.otros.some(
                                     (otro, index) =>
                                       !otro.fechaActividad ||
-                                      !otro.actividad ||
-                                      !otro.descripcion ||
-                                      !otro.tiempoRespuesta ||
-                                      !otro.comentarios
+                                      !otro.actividad.trim() ||
+                                      !otro.descripcion.trim() ||
+                                      !otro.tiempoRespuesta.trim() ||
+                                      !otro.comentarios.trim()
                                   )
                                 }
                               >
@@ -2996,12 +3006,11 @@ export function TablaPermisosFaltaUsuario() {
                                 type="submit"
                                 className="w-full"
                                 disabled={
-                                  !formData.puestoVacaciones ||
+                                  !formData.puestoVacaciones.trim() ||
                                   !formData.dias ||
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
-                                  !formData.motivo ||
-                                  !formData.comprobante
+                                  !formData.motivo.trim()
                                 }
                               >
                                 Actualizar

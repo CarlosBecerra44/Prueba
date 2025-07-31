@@ -16,7 +16,13 @@ export default async function handler(req, res) {
         id_usuario: id,
         eliminado: 0,
         tipo: {
-          [Op.in]: ["Aumento sueldo", "Horas extras", "Bonos / Comisiones", "Faltas", "Suspension"],
+          [Op.in]: [
+            "Aumento sueldo",
+            "Horas extras",
+            "Bonos / Comisiones",
+            "Faltas",
+            "Suspension",
+          ],
         },
       },
       attributes: [
@@ -37,7 +43,14 @@ export default async function handler(req, res) {
       include: [
         {
           model: Usuario,
-          attributes: ["id", "numero_empleado", "nombre", "apellidos", "puesto", "jefe_directo"],
+          attributes: [
+            "id",
+            "numero_empleado",
+            "nombre",
+            "apellidos",
+            "puesto",
+            "jefe_directo",
+          ],
           include: [
             {
               model: Departamento,
@@ -51,11 +64,11 @@ export default async function handler(req, res) {
     });
 
     if (!eventos || eventos.length === 0) {
-      return res.status(404).json({ message: "No se encontraron eventos" });
+      return res.status(200).json([]);
     }
 
     // Mapeamos los resultados para ajustar nombres y valores
-    const result = eventos.map(evento => ({
+    const result = eventos.map((evento) => ({
       ...evento,
       numero_empleado: evento["Usuario.numero_empleado"] || null,
       nombre: evento["Usuario.nombre"] || null,
@@ -63,8 +76,12 @@ export default async function handler(req, res) {
       puesto: evento["Usuario.puesto"] || null,
       jefe_directo: evento["Usuario.jefe_directo"] || null,
       id_papeleta: evento.id,
-      nombre_departamento: evento["Usuario.Departamento.nombre_departamento"] || null,
-      formulario: typeof evento.formulario === "string" ? JSON.parse(evento.formulario) : evento.formulario,
+      nombre_departamento:
+        evento["Usuario.Departamento.nombre_departamento"] || null,
+      formulario:
+        typeof evento.formulario === "string"
+          ? JSON.parse(evento.formulario)
+          : evento.formulario,
     }));
 
     return res.status(200).json(result);

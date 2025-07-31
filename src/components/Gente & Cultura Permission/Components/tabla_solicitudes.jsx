@@ -400,6 +400,17 @@ export function TablaSolicitudes() {
     "Acción",
   ];
 
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get(
+        `/api/Gente&CulturaAbsence/getSolicitudes?id=${idUser}`
+      ); // Asegúrate de que esta ruta esté configurada en tu backend
+      setEventos(response.data);
+    } catch (error) {
+      console.error("Error al obtener eventos:", error);
+    }
+  };
+
   // Obtener eventos desde el backend
   useEffect(() => {
     if (!idUser) {
@@ -419,17 +430,6 @@ export function TablaSolicitudes() {
     };
     fetchPapeletas();
   }, [idUser]);
-
-  const fetchEventos = async () => {
-    try {
-      const response = await axios.get(
-        `/api/Gente&CulturaAbsence/getSolicitudes?id=${idUser}`
-      ); // Asegúrate de que esta ruta esté configurada en tu backend
-      setEventos(response.data);
-    } catch (error) {
-      console.error("Error al obtener eventos:", error);
-    }
-  };
 
   const handleEditForm = async (index) => {
     try {
@@ -467,6 +467,7 @@ export function TablaSolicitudes() {
       setFechaInicio(data.fecha_inicio);
       setFechaFin(data.fecha_fin);
       setFormularioPrincipalAbiertoEdit(true);
+      obtenerUsuariosBonos(data.formulario.tipoSolicitud);
       setVer(false);
       setSearchTermPass("");
       setSearchTerms({});
@@ -770,39 +771,31 @@ export function TablaSolicitudes() {
   const handleChangeBonos = (e, index = null, field = null) => {
     const { name, value } = e.target;
 
-    // Si el valor es vacío, lo dejamos como vacío, no forzamos el 0
-    const newValue = value === "" ? "" : parseFloat(value) || 0;
-
     setFormData((prevData) => {
       let updatedData = { ...prevData };
 
       if (index !== null && field) {
-        // Casos dinámicos (con índice), actualizando un campo específico de 'otros'
         const updatedOtros = [...prevData.bonos.otros];
 
         updatedOtros[index] = {
           ...updatedOtros[index],
-          [field]: newValue,
+          [field]: value, // Guardamos el valor tal cual, sin convertir a número aún
         };
 
-        // Calcular total para este índice
+        // Solo si los campos son numéricos, los parseamos para calcular el total
         const bono = parseFloat(updatedOtros[index]?.bonoCantidad) || 0;
         const comision = parseFloat(updatedOtros[index]?.comision) || 0;
         updatedOtros[index].total = bono + comision;
 
-        // Actualizar el array 'otros' en el estado
         updatedData.bonos = { otros: updatedOtros };
       } else if (name) {
-        // Casos fijos (sin índice, con nombre de campo)
-        updatedData[name] = newValue;
+        updatedData[name] = value;
 
-        // Recalcular total general para el campo fijo
         const bono = parseFloat(updatedData.bonoCantidad) || 0;
         const comision = parseFloat(updatedData.comision) || 0;
         updatedData.total = bono + comision;
       }
 
-      // Calcular el total final sumando todos los totales (fijos + dinámicos)
       const totalFijo = parseFloat(updatedData.total) || 0;
       const totalDinamico = updatedData.bonos?.otros.reduce((sum, item) => {
         const bono = parseFloat(item.bonoCantidad) || 0;
@@ -810,11 +803,7 @@ export function TablaSolicitudes() {
         return sum + bono + comision;
       }, 0);
 
-      // Total final es la suma del total fijo y el total dinámico
-      const totalFinal = totalFijo + totalDinamico;
-
-      // Actualizar totalFinal en el estado
-      updatedData.totalFinal = totalFinal;
+      updatedData.totalFinal = totalFijo + totalDinamico;
 
       return updatedData;
     });
@@ -1648,9 +1637,9 @@ export function TablaSolicitudes() {
                             Subir archivo (PDF, JPG, PNG) Max: 4MB
                           </Button2>
                           {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-all max-w-full">
                               {formData.comprobante}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1665,7 +1654,7 @@ export function TablaSolicitudes() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo ||
+                          !formData.motivo.trim() ||
                           (!formData.comprobante &&
                             formData.justificada === "si")
                         }
@@ -1819,7 +1808,7 @@ export function TablaSolicitudes() {
                           !formData.dias ||
                           !formData.fechaInicio ||
                           !formData.fechaFin ||
-                          !formData.motivo
+                          !formData.motivo.trim()
                         }
                       >
                         Enviar
@@ -2260,26 +2249,26 @@ export function TablaSolicitudes() {
                           !formData.fechaFin ||
                           !formData.horaInicio ||
                           !formData.horaFin ||
-                          !formData.motivo ||
+                          !formData.motivo.trim() ||
                           !formData.noOrden ||
-                          !formData.nombreProducto ||
+                          !formData.nombreProducto.trim() ||
                           !formData.cantidadProgramada ||
                           !formData.cantidadTerminada ||
                           !formData.noPersonal ||
-                          !formData.nombrePersonal ||
-                          !formData.area ||
+                          !formData.nombrePersonal.trim() ||
+                          !formData.area.trim() ||
                           formData.productos.otros.some(
                             (otro, index) =>
                               !otro.noOrden ||
-                              !otro.nombreProducto ||
+                              !otro.nombreProducto.trim() ||
                               !otro.cantidadProgramada ||
                               !otro.cantidadTerminada
                           ) ||
                           formData.personal.otros.some(
                             (otro, index) =>
                               !otro.noPersonal ||
-                              !otro.nombrePersonal ||
-                              !otro.area
+                              !otro.nombrePersonal.trim() ||
+                              !otro.area.trim()
                           )
                         }
                       >
@@ -2759,15 +2748,13 @@ export function TablaSolicitudes() {
                           !formData.nombreBono ||
                           !formData.bonoCantidad ||
                           !formData.comision ||
-                          !formData.comentarios ||
-                          !formData.total ||
+                          !formData.comentarios.trim() ||
                           formData.bonos.otros.some(
                             (otro, index) =>
                               !otro.nombreBono ||
                               !otro.bonoCantidad ||
                               !otro.comision ||
-                              !otro.comentarios ||
-                              !otro.total
+                              !otro.comentarios.trim()
                           )
                         }
                       >
@@ -2988,9 +2975,9 @@ export function TablaSolicitudes() {
                             Subir archivo (PDF, JPG, PNG, XLSX) Max: 4MB
                           </Button2>
                           {formData.comprobante && (
-                            <span className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground break-all max-w-full">
                               {formData.comprobante}
-                            </span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -3003,7 +2990,7 @@ export function TablaSolicitudes() {
                           !formData.nombreColaborador ||
                           !formData.motivo ||
                           !formData.fechaInicio ||
-                          !formData.comentarios ||
+                          !formData.comentarios.trim() ||
                           !formData.comprobante
                         }
                       >
@@ -3302,7 +3289,7 @@ export function TablaSolicitudes() {
                                   !formData.dias ||
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
-                                  !formData.motivo ||
+                                  !formData.motivo.trim() ||
                                   (!formData.comprobante &&
                                     formData.justificada === "si")
                                 }
@@ -3480,7 +3467,7 @@ export function TablaSolicitudes() {
                                   !formData.dias ||
                                   !formData.fechaInicio ||
                                   !formData.fechaFin ||
-                                  !formData.motivo
+                                  !formData.motivo.trim()
                                 }
                               >
                                 Actualizar
@@ -3982,26 +3969,26 @@ export function TablaSolicitudes() {
                                   !formData.fechaFin ||
                                   !formData.horaInicio ||
                                   !formData.horaFin ||
-                                  !formData.motivo ||
+                                  !formData.motivo.trim() ||
                                   !formData.noOrden ||
-                                  !formData.nombreProducto ||
+                                  !formData.nombreProducto.trim() ||
                                   !formData.cantidadProgramada ||
                                   !formData.cantidadTerminada ||
                                   !formData.noPersonal ||
-                                  !formData.nombrePersonal ||
-                                  !formData.area ||
+                                  !formData.nombrePersonal.trim() ||
+                                  !formData.area.trim() ||
                                   formData.productos.otros.some(
                                     (otro, index) =>
                                       !otro.noOrden ||
-                                      !otro.nombreProducto ||
+                                      !otro.nombreProducto.trim() ||
                                       !otro.cantidadProgramada ||
                                       !otro.cantidadTerminada
                                   ) ||
                                   formData.personal.otros.some(
                                     (otro, index) =>
                                       !otro.noPersonal ||
-                                      !otro.nombrePersonal ||
-                                      !otro.area
+                                      !otro.nombrePersonal.trim() ||
+                                      !otro.area.trim()
                                   )
                                 }
                               >
@@ -4543,15 +4530,13 @@ export function TablaSolicitudes() {
                                   !formData.nombreBono ||
                                   !formData.bonoCantidad ||
                                   !formData.comision ||
-                                  !formData.comentarios ||
-                                  !formData.total ||
+                                  !formData.comentarios.trim() ||
                                   formData.bonos.otros.some(
                                     (otro, index) =>
                                       !otro.nombreBono ||
                                       !otro.bonoCantidad ||
                                       !otro.comision ||
-                                      !otro.comentarios ||
-                                      !otro.total
+                                      !otro.comentarios.trim()
                                   )
                                 }
                               >
@@ -4796,7 +4781,7 @@ export function TablaSolicitudes() {
                                   !formData.nombreColaborador ||
                                   !formData.motivo ||
                                   !formData.fechaInicio ||
-                                  !formData.comentarios
+                                  !formData.comentarios.trim()
                                 }
                               >
                                 Actualizar
