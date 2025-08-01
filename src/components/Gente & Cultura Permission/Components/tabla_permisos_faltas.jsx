@@ -63,6 +63,7 @@ export function TablaPermisosFalta() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [eventos, setEventos] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [users, setUsers] = useState([]);
@@ -75,6 +76,8 @@ export function TablaPermisosFalta() {
   const [autorizar, setAutorizar] = useState(false);
   const [verPeticiones, setVerPeticiones] = useState("Papeletas semana");
   const [usersBonos, setUsersBonos] = useState([]);
+  const [debouncedSearchTerms, setDebouncedSearchTerms] = useState({});
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [index, setIndex] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -153,6 +156,26 @@ export function TablaPermisosFalta() {
     fetchEventos();
   }, []);
 
+  useEffect(() => {
+    const fetchDepartamentos = async () => {
+      try {
+        const response = await axios.get("/api/Users/getDepartamentos");
+        if (response.data.success) {
+          setDepartamentos(response.data.departments);
+        } else {
+          console.error(
+            "Error al obtener los departamentos:",
+            response.data.message
+          );
+        }
+      } catch (error) {
+        console.error("Error al hacer fetch de los departamentos:", error);
+      }
+    };
+
+    fetchDepartamentos();
+  }, []);
+
   const closeModalEdit = () => {
     setFormularioPrincipalAbiertoEdit(false); // Cerrar el formulario
   };
@@ -174,6 +197,47 @@ export function TablaPermisosFalta() {
       ...prevFormData,
       [name]: value, // Actualiza dinámicamente el campo según el `name`
     }));
+  };
+
+  const handleChangeBonos = (e, index = null, field = null) => {
+    const { name, value } = e.target;
+
+    setFormData((prevData) => {
+      let updatedData = { ...prevData };
+
+      if (index !== null && field) {
+        const updatedOtros = [...prevData.bonos.otros];
+
+        updatedOtros[index] = {
+          ...updatedOtros[index],
+          [field]: value, // Guardamos el valor tal cual, sin convertir a número aún
+        };
+
+        // Solo si los campos son numéricos, los parseamos para calcular el total
+        const bono = parseFloat(updatedOtros[index]?.bonoCantidad) || 0;
+        const comision = parseFloat(updatedOtros[index]?.comision) || 0;
+        updatedOtros[index].total = bono + comision;
+
+        updatedData.bonos = { otros: updatedOtros };
+      } else if (name) {
+        updatedData[name] = value;
+
+        const bono = parseFloat(updatedData.bonoCantidad) || 0;
+        const comision = parseFloat(updatedData.comision) || 0;
+        updatedData.total = bono + comision;
+      }
+
+      const totalFijo = parseFloat(updatedData.total) || 0;
+      const totalDinamico = updatedData.bonos?.otros.reduce((sum, item) => {
+        const bono = parseFloat(item.bonoCantidad) || 0;
+        const comision = parseFloat(item.comision) || 0;
+        return sum + bono + comision;
+      }, 0);
+
+      updatedData.totalFinal = totalFijo + totalDinamico;
+
+      return updatedData;
+    });
   };
 
   const handleEditForm = async (index) => {
@@ -1040,24 +1104,18 @@ export function TablaPermisosFalta() {
               <SelectValue placeholder="Seleccionar departamento" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="IT">IT</SelectItem>
-              <SelectItem value="Marketing">Marketing</SelectItem>
-              <SelectItem value="Ingeniería Nuevo Producto">
-                Ingeniería Nuevo Producto
-              </SelectItem>
-              <SelectItem value="Contabilidad">Contabilidad</SelectItem>
-              <SelectItem value="Gente y Cultura">Gente y Cultura</SelectItem>
-              <SelectItem value="Calidad">Calidad</SelectItem>
-              <SelectItem value="Planeación">Planeación</SelectItem>
-              <SelectItem value="Laboratorio">Laboratorio</SelectItem>
-              <SelectItem value="Maquilas">Maquilas</SelectItem>
-              <SelectItem value="Operaciones">Operaciones</SelectItem>
-              <SelectItem value="Auditorías">Auditorías</SelectItem>
-              <SelectItem value="Ventas">Ventas</SelectItem>
-              <SelectItem value="Almacén">Almacén</SelectItem>
-              <SelectItem value="Producción">Producción</SelectItem>
-              <SelectItem value="Compras">Compras</SelectItem>
+              <SelectItem value="todos">Todos los departamentos</SelectItem>
+              {departamentos.length > 0 ? (
+                departamentos.map((dep) => (
+                  <SelectItem key={dep.nombre} value={dep.nombre}>
+                    {dep.nombre}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled>
+                  No hay departamentos disponibles
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -1115,7 +1173,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -1133,8 +1191,8 @@ export function TablaPermisosFalta() {
                                 onValueChange={(value) =>
                                   handleChange2({ name: "justificada", value })
                                 }
-                                className="flex space-x-2"
                                 disabled={true}
+                                className="flex space-x-4"
                               >
                                 <div className="flex items-center space-x-2">
                                   <RadioGroupItem
@@ -1157,17 +1215,9 @@ export function TablaPermisosFalta() {
                               </RadioGroup>
                             </div>
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
@@ -1181,23 +1231,52 @@ export function TablaPermisosFalta() {
                                     });
                                   }
                                 }}
-                                disabled={formData.nombreColaborador !== ""}
+                                disabled={true}
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {users.length > 0 ? (
-                                    users.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
@@ -1281,11 +1360,9 @@ export function TablaPermisosFalta() {
                                     Descargar {formData.comprobante}
                                   </a>
                                 ) : (
-                                  <>
-                                    <span style={{ fontSize: 14 }}>
-                                      Sin justificante agregado
-                                    </span>
-                                  </>
+                                  <span style={{ fontSize: 14 }}>
+                                    Sin justificante agregado
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -1369,7 +1446,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -1496,7 +1573,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -1700,7 +1777,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -1937,7 +2014,7 @@ export function TablaPermisosFalta() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto w-full max-w-[120vh] max-h-[70vh] shadow-lg ml-[13vh]"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
                       <Card>
                         <CardHeader>
@@ -2262,7 +2339,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2277,17 +2354,9 @@ export function TablaPermisosFalta() {
                         <form onSubmit={handleSubmit}>
                           <CardContent className="space-y-6">
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
@@ -2301,23 +2370,52 @@ export function TablaPermisosFalta() {
                                     });
                                   }
                                 }}
-                                disabled={formData.nombreColaborador !== ""}
+                                disabled={true}
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {users.length > 0 ? (
-                                    users.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
@@ -2351,7 +2449,9 @@ export function TablaPermisosFalta() {
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="motivo">Observaciones</Label>
+                              <Label htmlFor="motivo">
+                                Observaciones (causa o motivo)
+                              </Label>
                               <Textarea
                                 id="motivo"
                                 name="motivo"
@@ -2441,7 +2541,7 @@ export function TablaPermisosFalta() {
                     onOpenChange={closeModalEdit}
                   >
                     <DialogContent
-                      className="border-none p-0 overflow-y-auto w-full max-w-[70vh] max-h-[80vh] shadow-lg ml-[12vh] mt-auto"
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                       onInteractOutside={(event) => event.preventDefault()}
                     >
                       <Card>
@@ -2631,16 +2731,9 @@ export function TablaPermisosFalta() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "70%", // Ajusta el ancho
-                        maxWidth: "900px", // Límite del ancho
-                        height: "90vh", // Ajusta la altura
-                        maxHeight: "90vh", // Límite de la altura
-                        padding: "30px", // Margen interno
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
-                      <Card className="w-full xl">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Horas extras
@@ -2664,13 +2757,7 @@ export function TablaPermisosFalta() {
                                 true
                               )}
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "20px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -2687,10 +2774,10 @@ export function TablaPermisosFalta() {
                                   id="horaInicio"
                                   name="horaInicio"
                                   type="time"
-                                  style={{ width: "385px" }}
                                   value={formData.horaInicio}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  required
                                   placeholder="Hora de inicio..."
                                 />
                               </div>
@@ -2708,10 +2795,10 @@ export function TablaPermisosFalta() {
                                   id="horaFin"
                                   name="horaFin"
                                   type="time"
-                                  style={{ width: "385px" }}
                                   value={formData.horaFin}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  required
                                   placeholder="Hora de fin..."
                                 />
                               </div>
@@ -2738,13 +2825,7 @@ export function TablaPermisosFalta() {
                                 placeholder="Coloca el motivo del tiempo extra aquí..."
                               />
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "40px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -2759,13 +2840,14 @@ export function TablaPermisosFalta() {
                                   id="noOrden"
                                   name="noOrden"
                                   type="number"
-                                  style={{ width: "80px" }}
                                   value={formData.noOrden}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="No."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -2781,10 +2863,11 @@ export function TablaPermisosFalta() {
                                   id="nombreProducto"
                                   name="nombreProducto"
                                   type="text"
-                                  style={{ width: "300px" }}
                                   value={formData.nombreProducto}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="Nombre del producto..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -2803,10 +2886,11 @@ export function TablaPermisosFalta() {
                                   id="cantidadProgramada"
                                   name="cantidadProgramada"
                                   type="number"
-                                  style={{ width: "150px" }}
                                   value={formData.cantidadProgramada}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="Cantidad..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -2825,10 +2909,11 @@ export function TablaPermisosFalta() {
                                   id="cantidadTerminada"
                                   name="cantidadTerminada"
                                   type="number"
-                                  style={{ width: "130px" }}
                                   value={formData.cantidadTerminada}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="Cantidad..."
+                                  required
                                 />
                               </div>
                             </div>
@@ -2836,80 +2921,79 @@ export function TablaPermisosFalta() {
                               {formData.productos.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
+                                  className="grid grid-cols-1 md:grid-cols-5 gap-4"
                                 >
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`noOrden-${index}`}
                                       name={`noOrden-${index}`}
-                                      type="number"
-                                      style={{ width: "80px" }}
                                       value={otro.noOrden}
-                                      onChange={(e) =>
-                                        handleChange(e, index, "noOrden")
-                                      }
                                       readOnly={true}
+                                      type="number"
+                                      onChange={(e) =>
+                                        handleProductoChange(
+                                          e,
+                                          index,
+                                          "noOrden"
+                                        )
+                                      }
+                                      placeholder="No."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <Input
                                       id={`nombreProducto-${index}`}
                                       name={`nombreProducto-${index}`}
-                                      type="text"
-                                      style={{
-                                        width: "300px",
-                                        marginLeft: "35px",
-                                      }}
                                       value={otro.nombreProducto}
-                                      onChange={(e) =>
-                                        handleChange(e, index, "nombreProducto")
-                                      }
                                       readOnly={true}
+                                      type="text"
+                                      onChange={(e) =>
+                                        handleProductoChange(
+                                          e,
+                                          index,
+                                          "nombreProducto"
+                                        )
+                                      }
+                                      placeholder="Nombre del producto..."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`cantidadProgramada-${index}`}
                                       name={`cantidadProgramada-${index}`}
-                                      type="number"
-                                      style={{
-                                        width: "150px",
-                                        marginLeft: "30px",
-                                      }}
                                       value={otro.cantidadProgramada}
+                                      type="number"
+                                      readOnly={true}
                                       onChange={(e) =>
-                                        handleChange(
+                                        handleProductoChange(
                                           e,
                                           index,
                                           "cantidadProgramada"
                                         )
                                       }
-                                      readOnly={true}
+                                      placeholder="Cantidad..."
+                                      required
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div>
                                     <div className="flex items-center">
                                       <Input
                                         id={`cantidadTerminada-${index}`}
                                         name={`cantidadTerminada-${index}`}
-                                        type="number"
-                                        style={{
-                                          width: "130px",
-                                          marginLeft: "30px",
-                                        }}
                                         value={otro.cantidadTerminada}
+                                        readOnly={true}
+                                        type="number"
                                         onChange={(e) =>
-                                          handleChange(
+                                          handleProductoChange(
                                             e,
                                             index,
                                             "cantidadTerminada"
                                           )
                                         }
-                                        readOnly={true}
+                                        placeholder="Cantidad..."
+                                        required
                                       />
                                     </div>
                                   </div>
@@ -2921,13 +3005,7 @@ export function TablaPermisosFalta() {
                                 Personal que se autoriza
                               </Label>
                             </div>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "10px",
-                              }}
-                            >
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                               <div className="space-y-2">
                                 <div
                                   style={{
@@ -2942,13 +3020,14 @@ export function TablaPermisosFalta() {
                                   id="noPersonal"
                                   name="noPersonal"
                                   type="number"
-                                  style={{ width: "80px" }}
                                   value={formData.noPersonal}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="No."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -2962,13 +3041,14 @@ export function TablaPermisosFalta() {
                                   id="nombrePersonal"
                                   name="nombrePersonal"
                                   type="text"
-                                  style={{ width: "350px" }}
                                   value={formData.nombrePersonal}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="Nombre del personal..."
+                                  required
                                 />
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-2 col-span-2">
                                 <div
                                   style={{
                                     position: "relative",
@@ -2982,10 +3062,11 @@ export function TablaPermisosFalta() {
                                   id="area"
                                   name="area"
                                   type="text"
-                                  style={{ width: "340px" }}
                                   value={formData.area}
-                                  onChange={handleChange}
                                   readOnly={true}
+                                  onChange={handleChange}
+                                  placeholder="Área..."
+                                  required
                                 />
                               </div>
                             </div>
@@ -2993,49 +3074,56 @@ export function TablaPermisosFalta() {
                               {formData.personal.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
+                                  className="grid grid-cols-1 md:grid-cols-5 gap-4"
                                 >
-                                  <div className="space-y-2">
+                                  <div>
                                     <Input
                                       id={`noPersonal-${index}`}
                                       name={`noPersonal-${index}`}
-                                      type="number"
-                                      style={{ width: "80px" }}
                                       value={otro.noPersonal}
+                                      type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "noPersonal")
+                                        handlePersonalChange(
+                                          e,
+                                          index,
+                                          "noPersonal"
+                                        )
                                       }
+                                      placeholder="No."
+                                      required
                                       readOnly={true}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <Input
                                       id={`nombrePersonal-${index}`}
                                       name={`nombrePersonal-${index}`}
-                                      type="text"
-                                      style={{ width: "350px" }}
                                       value={otro.nombrePersonal}
+                                      type="text"
                                       onChange={(e) =>
-                                        handleChange(e, index, "nombrePersonal")
+                                        handlePersonalChange(
+                                          e,
+                                          index,
+                                          "nombrePersonal"
+                                        )
                                       }
+                                      placeholder="Nombre del personal..."
+                                      required
                                       readOnly={true}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="col-span-2">
                                     <div className="flex items-center">
                                       <Input
                                         id={`area-${index}`}
                                         name={`area-${index}`}
-                                        type="text"
-                                        style={{ width: "340px" }}
                                         value={otro.area}
+                                        type="text"
                                         onChange={(e) =>
-                                          handleChange(e, index, "area")
+                                          handlePersonalChange(e, index, "area")
                                         }
+                                        placeholder="Área..."
+                                        required
                                         readOnly={true}
                                       />
                                     </div>
@@ -3123,17 +3211,9 @@ export function TablaPermisosFalta() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "1600px", // Límite del ancho
-                        height: "65vh", // Ajusta la altura
-                        maxHeight: "65vh", // Límite de la altura
-                        padding: "30px", // Margen interno
-                        marginLeft: "120px",
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[60vw] max-h-[70vh] shadow-lg ml-[6.5vw]"
                     >
-                      <Card className="w-full xl">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Bonos / Comisiones
@@ -3148,6 +3228,7 @@ export function TablaPermisosFalta() {
                                 </Label>
                                 <Select
                                   value={formData.tipoSolicitud || ""}
+                                  disabled={true}
                                   onValueChange={(value) => {
                                     obtenerUsuariosBonos(value);
                                     setFormData({
@@ -3155,13 +3236,16 @@ export function TablaPermisosFalta() {
                                       tipoSolicitud: value,
                                       noBono: "",
                                       nombreBono: "",
+                                      bonoCantidad: "",
+                                      comision: "",
+                                      comentarios: "",
+                                      total: 0,
+                                      totalFinal: 0,
                                       bonos: {
-                                        ...formData.bonos,
                                         otros: [],
                                       },
                                     });
                                   }}
-                                  disabled={formData.tipoSolicitud !== ""}
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el tipo de solicitud..." />
@@ -3184,7 +3268,7 @@ export function TablaPermisosFalta() {
                                       mes: value,
                                     });
                                   }}
-                                  disabled={formData.mes !== ""}
+                                  disabled={true}
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el mes..." />
@@ -3230,7 +3314,7 @@ export function TablaPermisosFalta() {
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-6 gap-1">
+                            <div className="grid grid-cols-7 gap-1">
                               <div className="space-y-2">
                                 <Label htmlFor="noBono">No.</Label>
                                 <Input
@@ -3243,22 +3327,14 @@ export function TablaPermisosFalta() {
                                   readOnly={true}
                                 />
                               </div>
-                              <div className="space-y-2">
-                                <div
-                                  style={{
-                                    position: "relative",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Label htmlFor="nombreBono">Nombre</Label>
-                                </div>
+                              <div className="space-y-2 col-span-2">
+                                <Label htmlFor="nombreBono">Nombre</Label>
                                 <Select
                                   id={"nombreBono"}
                                   name={"nombreBono"}
                                   value={formData.nombreBono || ""}
                                   onValueChange={(value) => {
-                                    const selectedUser = usersBonos.find(
+                                    const selectedUser = users.find(
                                       (user) => user.id === value
                                     );
                                     if (selectedUser) {
@@ -3269,23 +3345,52 @@ export function TablaPermisosFalta() {
                                       });
                                     }
                                   }}
-                                  disabled={formData.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                                  disabled={true}
                                 >
                                   <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Seleccione el colaborador..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {usersBonos.length > 0 ? (
-                                      usersBonos.map((user) => (
-                                        <SelectItem
-                                          key={user.id}
-                                          value={user.id}
-                                        >
-                                          {user.nombre} {user.apellidos}
-                                        </SelectItem>
-                                      ))
+                                    {/* Filtrado sin selección automática */}
+                                    {users.filter(
+                                      (user) =>
+                                        user.nombre
+                                          .toLowerCase()
+                                          .includes(
+                                            debouncedSearchTerm.toLowerCase()
+                                          ) ||
+                                        user.apellidos
+                                          .toLowerCase()
+                                          .includes(
+                                            debouncedSearchTerm.toLowerCase()
+                                          )
+                                    ).length === 0 ? (
+                                      <div className="p-2 text-center text-gray-500">
+                                        No se encontraron usuarios
+                                      </div>
                                     ) : (
-                                      <SelectItem disabled></SelectItem>
+                                      users
+                                        .filter(
+                                          (user) =>
+                                            user.nombre
+                                              .toLowerCase()
+                                              .includes(
+                                                debouncedSearchTerm.toLowerCase()
+                                              ) ||
+                                            user.apellidos
+                                              .toLowerCase()
+                                              .includes(
+                                                debouncedSearchTerm.toLowerCase()
+                                              )
+                                        )
+                                        .map((user) => (
+                                          <SelectItem
+                                            key={user.id}
+                                            value={user.id}
+                                          >
+                                            {user.nombre} {user.apellidos}
+                                          </SelectItem>
+                                        ))
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -3297,9 +3402,10 @@ export function TablaPermisosFalta() {
                                   name="bonoCantidad"
                                   type="number"
                                   value={formData.bonoCantidad}
-                                  onChange={handleChange}
-                                  placeholder="Bono..."
                                   readOnly={true}
+                                  onChange={handleChangeBonos}
+                                  placeholder="Bono..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3308,10 +3414,11 @@ export function TablaPermisosFalta() {
                                   id="comision"
                                   name="comision"
                                   type="number"
+                                  onChange={handleChangeBonos}
                                   value={formData.comision}
-                                  onChange={handleChange}
-                                  placeholder="Comisión..."
                                   readOnly={true}
+                                  placeholder="Comisión..."
+                                  required
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3321,9 +3428,9 @@ export function TablaPermisosFalta() {
                                   name="comentarios"
                                   type="text"
                                   value={formData.comentarios}
+                                  readOnly={true}
                                   onChange={handleChange}
                                   placeholder="Comentarios..."
-                                  readOnly={true}
                                 />
                               </div>
                               <div className="space-y-2">
@@ -3332,8 +3439,8 @@ export function TablaPermisosFalta() {
                                   id="total"
                                   name="total"
                                   type="number"
-                                  value={formData.total}
-                                  onChange={handleChange}
+                                  value={formData.total || 0}
+                                  onChange={handleChangeBonos}
                                   placeholder="Total..."
                                   readOnly={true}
                                 />
@@ -3343,7 +3450,7 @@ export function TablaPermisosFalta() {
                               {formData.bonos.otros.map((otro, index) => (
                                 <div
                                   key={index}
-                                  className="grid grid-cols-6 gap-1"
+                                  className="grid grid-cols-7 gap-1"
                                 >
                                   <div className="space-y-2">
                                     <Input
@@ -3358,41 +3465,101 @@ export function TablaPermisosFalta() {
                                       readOnly={true}
                                     />
                                   </div>
-                                  <div className="space-y-2">
+                                  <div className="space-y-2 col-span-2">
                                     <Select
                                       id={"nombreBono"}
                                       name={"nombreBono"}
-                                      value={otro.nombreBono || ""}
                                       onValueChange={(value) => {
-                                        const selectedUser = usersBonos.find(
+                                        const selectedUser = users.find(
                                           (user) => user.id === value
                                         );
                                         if (selectedUser) {
-                                          setFormData({
-                                            ...formData,
+                                          const updatedBonos = [
+                                            ...formData.bonos.otros,
+                                          ];
+                                          updatedBonos[index] = {
+                                            ...updatedBonos[index],
                                             noBono:
                                               selectedUser.numero_empleado,
                                             nombreBono: selectedUser.id,
+                                          };
+                                          setFormData({
+                                            ...formData,
+                                            bonos: {
+                                              ...formData.bonos,
+                                              otros: updatedBonos,
+                                            },
                                           });
                                         }
+
+                                        setDebouncedSearchTerms(
+                                          (prevDebounced) => ({
+                                            ...prevDebounced,
+                                            [index]: "",
+                                          })
+                                        );
                                       }}
-                                      disabled={otro.nombreBono !== null} // Deshabilitar si no hay usuarios disponibles
+                                      value={otro.nombreBono || ""}
+                                      disabled={true}
                                     >
                                       <SelectTrigger className="col-span-3">
                                         <SelectValue placeholder="Seleccione el colaborador..." />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {usersBonos.length > 0 ? (
-                                          usersBonos.map((user) => (
-                                            <SelectItem
-                                              key={user.id}
-                                              value={user.id}
-                                            >
-                                              {user.nombre} {user.apellidos}
-                                            </SelectItem>
-                                          ))
+                                        {/* Filtrado sin selección automática */}
+                                        {users.filter(
+                                          (user) =>
+                                            user.nombre
+                                              .toLowerCase()
+                                              .includes(
+                                                (
+                                                  debouncedSearchTerms[index] ||
+                                                  ""
+                                                ).toLowerCase()
+                                              ) ||
+                                            user.apellidos
+                                              .toLowerCase()
+                                              .includes(
+                                                (
+                                                  debouncedSearchTerms[index] ||
+                                                  ""
+                                                ).toLowerCase()
+                                              )
+                                        ).length === 0 ? (
+                                          <div className="p-2 text-center text-gray-500">
+                                            No se encontraron usuarios
+                                          </div>
                                         ) : (
-                                          <SelectItem disabled></SelectItem>
+                                          users
+                                            .filter(
+                                              (user) =>
+                                                user.nombre
+                                                  .toLowerCase()
+                                                  .includes(
+                                                    (
+                                                      debouncedSearchTerms[
+                                                        index
+                                                      ] || ""
+                                                    ).toLowerCase()
+                                                  ) ||
+                                                user.apellidos
+                                                  .toLowerCase()
+                                                  .includes(
+                                                    (
+                                                      debouncedSearchTerms[
+                                                        index
+                                                      ] || ""
+                                                    ).toLowerCase()
+                                                  )
+                                            )
+                                            .map((user) => (
+                                              <SelectItem
+                                                key={user.id}
+                                                value={user.id}
+                                              >
+                                                {user.nombre} {user.apellidos}
+                                              </SelectItem>
+                                            ))
                                         )}
                                       </SelectContent>
                                     </Select>
@@ -3401,39 +3568,48 @@ export function TablaPermisosFalta() {
                                     <Input
                                       id={`bonoCantidad-${index}`}
                                       name={`bonoCantidad-${index}`}
-                                      value={otro.bonoCantidad}
+                                      value={otro.bonoCantidad || ""}
+                                      readOnly={true}
                                       type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "bonoCantidad")
+                                        handleChangeBonos(
+                                          e,
+                                          index,
+                                          "bonoCantidad"
+                                        )
                                       }
                                       placeholder="Bono..."
-                                      readOnly={true}
+                                      required
                                     />
                                   </div>
                                   <div className="space-y-2">
                                     <Input
                                       id={`comision-${index}`}
                                       name={`comision-${index}`}
-                                      value={otro.comision}
+                                      value={otro.comision || ""}
+                                      readOnly={true}
                                       type="number"
                                       onChange={(e) =>
-                                        handleChange(e, index, "comision")
+                                        handleChangeBonos(e, index, "comision")
                                       }
                                       placeholder="Comisión..."
-                                      readOnly={true}
+                                      required
                                     />
                                   </div>
                                   <div className="space-y-2">
                                     <Input
                                       id={`comentarios-${index}`}
                                       name={`comentarios-${index}`}
-                                      value={otro.comentarios}
+                                      value={otro.comentarios || ""}
+                                      readOnly={true}
                                       type="text"
                                       onChange={(e) =>
-                                        handleChange(e, index, "comentarios")
+                                        handleChangeComentario(
+                                          index,
+                                          e.target.value
+                                        )
                                       }
                                       placeholder="Comentarios..."
-                                      readOnly={true}
                                     />
                                   </div>
                                   <div className="space-y-2">
@@ -3442,9 +3618,9 @@ export function TablaPermisosFalta() {
                                         id={`total-${index}`}
                                         name={`total-${index}`}
                                         type="number"
-                                        value={otro.total}
+                                        value={otro.total || 0}
                                         onChange={(e) =>
-                                          handleChange(e, index, "total")
+                                          handleChangeBonos(e, index, "total")
                                         }
                                         placeholder="Total..."
                                         readOnly={true}
@@ -3453,19 +3629,17 @@ export function TablaPermisosFalta() {
                                   </div>
                                 </div>
                               ))}
-                              <div
-                                className="space-y-2 ml-auto"
-                                style={{ width: "245px" }}
-                              >
-                                <Input
-                                  id="totalFinal"
-                                  name="totalFinal"
-                                  type="number"
-                                  value={formData.totalFinal || ""}
-                                  onChange={handleChange}
-                                  placeholder="Total final..."
-                                  readOnly={true}
-                                />
+                              <div className="grid grid-cols-7 gap-1">
+                                <div className="col-start-7">
+                                  <Input
+                                    id="totalFinal"
+                                    name="totalFinal"
+                                    type="number"
+                                    value={formData.totalFinal || 0}
+                                    placeholder="Total final..."
+                                    readOnly={true}
+                                  />
+                                </div>
                               </div>
                             </div>
                             <div
@@ -3548,16 +3722,9 @@ export function TablaPermisosFalta() {
                   >
                     <DialogContent
                       onInteractOutside={(event) => event.preventDefault()}
-                      className="border-none p-0 overflow-y-auto no-scrollbar"
-                      style={{
-                        width: "100%", // Ajusta el ancho
-                        maxWidth: "600px", // Límite del ancho
-                        height: "85vh", // Ajusta la altura
-                        maxHeight: "85vh", // Límite de la altura
-                        padding: "45px", // Margen interno
-                      }}
+                      className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
                     >
-                      <Card className="w-full max-w-lg">
+                      <Card>
                         <CardHeader>
                           <CardTitle className="text-2xl font-bold text-center">
                             Aumento de sueldo / Cambio de puesto / Cambio de
@@ -3567,17 +3734,9 @@ export function TablaPermisosFalta() {
                         <form onSubmit={handleSubmit}>
                           <CardContent className="space-y-6">
                             <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nombreColaborador">
-                                  Nombre del colaborador a aplicar ajuste
-                                </Label>
-                              </div>
+                              <Label htmlFor="nombreColaborador">
+                                Nombre del colaborador a aplicar ajuste
+                              </Label>
                               <Select
                                 value={formData.nombreColaborador || ""}
                                 onValueChange={(value) => {
@@ -3592,47 +3751,55 @@ export function TablaPermisosFalta() {
                                     });
                                   }
                                 }}
-                                disabled={formData.nombreColaborador !== ""} // Deshabilitar si no hay usuarios disponibles
+                                disabled={true}
                               >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Seleccione el colaborador..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {users.length > 0 ? (
-                                    users.map((user) => (
-                                      <SelectItem key={user.id} value={user.id}>
-                                        {user.nombre} {user.apellidos}
-                                      </SelectItem>
-                                    ))
+                                  {/* Filtrado sin selección automática */}
+                                  {users.filter(
+                                    (user) =>
+                                      user.nombre
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        ) ||
+                                      user.apellidos
+                                        .toLowerCase()
+                                        .includes(
+                                          debouncedSearchTerm.toLowerCase()
+                                        )
+                                  ).length === 0 ? (
+                                    <div className="p-2 text-center text-gray-500">
+                                      No se encontraron usuarios
+                                    </div>
                                   ) : (
-                                    <SelectItem disabled>
-                                      No hay usuarios disponibles para
-                                      seleccionar
-                                    </SelectItem>
+                                    users
+                                      .filter(
+                                        (user) =>
+                                          user.nombre
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            ) ||
+                                          user.apellidos
+                                            .toLowerCase()
+                                            .includes(
+                                              debouncedSearchTerm.toLowerCase()
+                                            )
+                                      )
+                                      .map((user) => (
+                                        <SelectItem
+                                          key={user.id}
+                                          value={user.id}
+                                        >
+                                          {user.nombre} {user.apellidos}
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="puestoColaborador">
-                                  Puesto
-                                </Label>
-                              </div>
-                              <Input
-                                id="puestoColaborador"
-                                name="puestoColaborador"
-                                type="text"
-                                value={formData.puestoColaborador}
-                                placeholder="Puesto del colaborador..."
-                                readOnly={true}
-                              />
                             </div>
                             <div className="space-y-2">
                               <div
@@ -3646,66 +3813,29 @@ export function TablaPermisosFalta() {
                               </div>
                               <Select
                                 value={formData.motivo || ""}
-                                disabled={formData.motivo !== ""}
+                                onValueChange={(value) => {
+                                  setFormData({
+                                    ...formData,
+                                    motivo: value,
+                                  });
+                                }}
+                                disabled={true}
                               >
-                                <SelectTrigger style={{ maxWidth: "500px" }}>
+                                <SelectTrigger>
                                   <SelectValue placeholder="Seleccionar motivo..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="modificacion">
-                                    Modificación a perfil de puesto -
-                                    Competencias
-                                  </SelectItem>
-                                  <SelectItem value="cambio">
+                                  <SelectItem value="puesto">
                                     Cambio de puesto
                                   </SelectItem>
-                                  <SelectItem value="desempeño">
-                                    Desempeño
+                                  <SelectItem value="sueldo">
+                                    Cambio de sueldo
+                                  </SelectItem>
+                                  <SelectItem value="area">
+                                    Cambio de área
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="sueldoActual">
-                                  Sueldo actual
-                                </Label>
-                              </div>
-                              <Input
-                                id="sueldoActual"
-                                name="sueldoActual"
-                                type="number"
-                                value={formData.sueldoActual}
-                                placeholder="Sueldo actual..."
-                                readOnly={true}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Label htmlFor="nuevoSueldo">
-                                  Nuevo sueldo
-                                </Label>
-                              </div>
-                              <Input
-                                id="nuevoSueldo"
-                                name="nuevoSueldo"
-                                type="number"
-                                value={formData.nuevoSueldo}
-                                placeholder="Nuevo sueldo..."
-                                readOnly={true}
-                              />
                             </div>
                             <div className="grid grid-cols-1 gap-4">
                               {renderDatePicker(
@@ -3737,6 +3867,53 @@ export function TablaPermisosFalta() {
                                 className="min-h-[100px]"
                                 placeholder="Coloca tus comentarios adicionales aquí..."
                               />
+                            </div>
+                            <div className="space-y-2">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Label htmlFor="comprobante">
+                                  Formato de movimiento de personal
+                                </Label>
+                                <div style={{ marginLeft: "10px" }}>
+                                  <Tooltip
+                                    title={`<p style="margin:0;padding:5px;text-align:justify;">Descarga el formato con el botón de "Descargar formato", después
+                                                          llénalo completamente y súbelo en este apartado en cualquiera de los formatos permitidos.</p>`}
+                                    arrow
+                                  >
+                                    <HelpIcon
+                                      style={{
+                                        cursor: "pointer",
+                                        fontSize: 18,
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {formData.comprobante ? (
+                                  <a
+                                    href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+                                      formData.comprobante
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    Descargar {formData.comprobante}
+                                  </a>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: 14 }}>
+                                      Sin formato agregado
+                                    </span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                             <div
                               className="space-y-2"

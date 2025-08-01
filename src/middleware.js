@@ -60,6 +60,8 @@ export async function middleware(req) {
     isStandard: rol === "Estándar",
     hasAccessPapeletas:
       rol !== "Máster" && tienePermiso("Papeletas", "Modulo papeletas"),
+    hasAccessPapeletasEnviadas:
+      rol !== "Máster" && tienePermiso("Papeletas", "Papeletas enviadas"),
     hasAccessAutorizarPapeletas:
       rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
     hasAccessSolicitudes:
@@ -117,6 +119,12 @@ export async function middleware(req) {
       "/perfil",
       "/papeletas_usuario",
       "/gente_y_cultura/todas_papeletas",
+    ],
+    hasAccessPapeletasEnviadas: [
+      "/inicio",
+      "/perfil",
+      "/papeletas_usuario",
+      "/gente_y_cultura/papeletas_enviadas",
     ],
     hasAccessAutorizarPapeletas: [
       "/inicio",

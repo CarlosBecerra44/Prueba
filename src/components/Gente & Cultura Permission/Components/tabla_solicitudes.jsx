@@ -3239,7 +3239,7 @@ export function TablaSolicitudes() {
                                   <>
                                     {ver ? (
                                       <span style={{ fontSize: 14 }}>
-                                        Sin comprobante agregado
+                                        Sin justificante agregado
                                       </span>
                                     ) : (
                                       <>

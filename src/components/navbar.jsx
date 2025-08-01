@@ -32,6 +32,7 @@ import {
 import { TfiTarget } from "react-icons/tfi";
 import { BsBarChart } from "react-icons/bs";
 import { useUserContext } from "@/utils/userContext";
+import { TbSend } from "react-icons/tb";
 
 export function Navbarv1() {
   const { userData, loading } = useUserContext();
@@ -45,6 +46,7 @@ export function Navbarv1() {
     isStandardMkt,
     isStandard,
     hasAccessPapeletas,
+    hasAccessPapeletasEnviadas,
     hasAccessAutorizarPapeletas,
     hasAccessSolicitudes,
     hasAllAccessVacantes,
@@ -108,6 +110,7 @@ export function Navbarv1() {
         "itMember",
         "standardMkt",
         "hasAccessPapeletas",
+        "hasAccessPapeletasEnviadas",
         "hasAccessAutorizarPapeletas",
         "hasAccessSolicitudes",
         "hasAllAccessVacantes",
@@ -124,6 +127,7 @@ export function Navbarv1() {
         "master",
         "adminGC",
         "hasAccessPapeletas",
+        "hasAccessPapeletasEnviadas",
         "hasAccessAutorizarPapeletas",
         "hasAccessSolicitudes",
         "hasAllAccessVacantes",
@@ -146,6 +150,13 @@ export function Navbarv1() {
         },
         {
           id: 3,
+          name: "Papeletas enviadas",
+          href: "/gente_y_cultura/papeletas_enviadas",
+          icon: <TbSend className="h-6 w-6 text-gray-400" />,
+          roles: ["master", "hasAccessPapeletasEnviadas"],
+        },
+        {
+          id: 4,
           name: "Ver mis solicitudes",
           href: "/gente_y_cultura/solicitudes",
           icon: <RiMailSendLine className="h-6 w-6 text-gray-400" />,
@@ -153,7 +164,7 @@ export function Navbarv1() {
         },
 
         {
-          id: 4,
+          id: 5,
           name: "Usuarios y empresas",
           href: "#",
           icon: <FaBuildingUser className="h-6 w-6 ml-1 text-gray-400" />,
@@ -178,7 +189,7 @@ export function Navbarv1() {
           ],
         },
         {
-          id: 5,
+          id: 6,
           name: "Vacantes",
           href: "/gente_y_cultura/vacantes",
           icon: <FiUserPlus className="h-6 w-6 text-gray-400" />,
@@ -342,6 +353,11 @@ export function Navbarv1() {
     if (isAdminGC && category.includes("adminGC")) return true;
     if (isITMember && category.includes("itMember")) return true;
     if (hasAccessPapeletas && category.includes("hasAccessPapeletas"))
+      return true;
+    if (
+      hasAccessPapeletasEnviadas &&
+      category.includes("hasAccessPapeletasEnviadas")
+    )
       return true;
     if (
       hasAccessAutorizarPapeletas &&

@@ -25,6 +25,8 @@ export function useUser() {
     isStandard: rol === "Estándar",
     hasAccessPapeletas:
       rol !== "Máster" && tienePermiso("Papeletas", "Modulo papeletas"),
+    hasAccessPapeletasEnviadas:
+      rol !== "Máster" && tienePermiso("Papeletas", "Papeletas enviadas"),
     hasAccessAutorizarPapeletas:
       rol !== "Máster" && tienePermiso("Papeletas", "Autorizar"),
     hasAccessSolicitudes:
