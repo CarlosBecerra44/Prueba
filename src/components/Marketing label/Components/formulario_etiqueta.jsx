@@ -147,7 +147,6 @@ export function DocumentSigningForm() {
                   "j.alvarado@aionsuplementos.com",
                   "f.cruz@aionsuplementos.com",
                   "r.castellanos@aionsuplementos.com",
-                  "v.rivera@aionsuplementos.com",
                   "y.juarez@aionsuplementos.com",
                   "v.valenzuela@aionsuplementos.com",
                 ]
@@ -166,7 +165,6 @@ export function DocumentSigningForm() {
                   "j.alvarado@aionsuplementos.com",
                   "f.cruz@aionsuplementos.com",
                   "r.castellanos@aionsuplementos.com",
-                  "v.rivera@aionsuplementos.com",
                   "y.juarez@aionsuplementos.com",
                   "v.valenzuela@aionsuplementos.com",
                 ],
