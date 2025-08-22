@@ -784,7 +784,7 @@ export function EditarEtiqueta() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Ingeniería de productos</CardTitle>
-            <CardDescription>Jania Leyva o Roger Castellanos</CardDescription>
+            <CardDescription>Roger Castellanos o Elena Briseño</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
@@ -943,7 +943,7 @@ export function EditarEtiqueta() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Planeación</CardTitle>
-            <CardDescription>Jaret Pérez o Verónica Rivera</CardDescription>
+            <CardDescription>Jaret Pérez</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
