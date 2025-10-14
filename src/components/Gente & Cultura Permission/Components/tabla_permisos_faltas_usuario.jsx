@@ -1185,6 +1185,18 @@ export function TablaPermisosFaltaUsuario() {
 									/>
 									<Label htmlFor="Vacaciones">Vacaciones</Label>
 								</div>
+								<div className="flex items-center space-x-2">
+									<Checkbox
+										id="Omisión de Checada"
+										checked={tipoFormulario2 === "Omisión de Checada"}
+										onCheckedChange={(checked) => {
+											handleCheckboxChange(checked ? "Omisión de Checada" : "");
+											if (checked) openModal(); // Abrir el modal después de actualizar el estado
+										}}
+										style={{ marginLeft: "30px" }}
+									/>
+									<Label htmlFor="Omisión de Checada">Omisión de Checada</Label>
+								</div>
 							</div>
 						</Card>
 					</DialogContent>
@@ -1968,6 +1980,69 @@ export function TablaPermisosFaltaUsuario() {
 													!formData.fechaFin ||
 													!formData.motivo.trim() ||
 													!formData.comprobante
+												}>
+												Enviar
+											</Button2>
+										</CardFooter>
+									</form>
+								</Card>
+							</DialogContent>
+						</Dialog>
+					)}
+					{tipoFormulario2 === "Omisión de Checada" && (
+						<Dialog open={formularioAbierto} onOpenChange={closeModal}>
+							<DialogContent
+								className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
+								onInteractOutside={(event) => event.preventDefault()}>
+								<Card>
+									<CardHeader>
+										<CardTitle className="text-2xl font-bold text-center">
+											Omisión de Checada
+										</CardTitle>
+										<DialogDescription className="text-center">
+											Autorización para Omisión de Checada
+										</DialogDescription>
+									</CardHeader>
+									<form onSubmit={handleSubmit}>
+										<CardContent className="space-y-6">
+											<div className="space-y-2">
+												<Label htmlFor="motivo">Hora</Label>
+												<Input
+													id="horaFormulario"
+													name="horaFormulario"
+													type="time"
+													onChange={handleChange}
+													required
+												/>
+											</div>
+											<div className="grid grid-cols-1 gap-4">
+												{renderDatePicker(
+													"Fecha",
+													formData.fechaInicio,
+													handleChange,
+													"fechaInicio"
+												)}
+											</div>
+											<div className="space-y-2">
+												<Label htmlFor="motivo">Observaciones</Label>
+												<Textarea
+													id="motivo"
+													name="motivo"
+													onChange={handleChange}
+													required
+													className="min-h-[100px]"
+													placeholder="Coloca tus observaciones aquí..."
+												/>
+											</div>
+										</CardContent>
+										<CardFooter>
+											<Button2
+												type="submit"
+												className="w-full"
+												disabled={
+													!formData.horaFormulario ||
+													!formData.fechaInicio ||
+													!formData.motivo.trim()
 												}>
 												Enviar
 											</Button2>
@@ -2945,6 +3020,82 @@ export function TablaPermisosFaltaUsuario() {
 										</DialogContent>
 									</Dialog>
 								)}
+								{tipoFormulario2 === "Omisión de Checada" && (
+									<Dialog
+										open={formularioPrincipalAbiertoEdit}
+										onOpenChange={closeModalEdit}>
+										<DialogContent
+											className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
+											onInteractOutside={(event) => event.preventDefault()}>
+											<Card>
+												<CardHeader>
+													<CardTitle className="text-2xl font-bold text-center">
+														Omisión de Checada
+													</CardTitle>
+													<DialogDescription className="text-center">
+														Autorización para Omisión de Checada
+													</DialogDescription>
+												</CardHeader>
+												<form onSubmit={handleSubmitEdit}>
+													<CardContent className="space-y-6">
+														<div className="space-y-2">
+															<Label htmlFor="horaFormulario">Hora</Label>
+															<Input
+																id="horaFormulario"
+																name="horaFormulario"
+																type="time"
+																value={formData.horaFormulario}
+																onChange={handleChange}
+																readOnly={ver ? true : false}
+															/>
+														</div>
+														<div className="grid grid-cols-1 gap-4">
+															{renderDatePicker(
+																"Fecha",
+																ver
+																	? fechaInicioPapeleta
+																	: formData.fechaInicio,
+																handleChange,
+																"fechaInicio",
+																ver ? true : false,
+																false,
+																true
+															)}
+														</div>
+														<div className="space-y-2">
+															<Label htmlFor="motivo">Observaciones</Label>
+															<Textarea
+																id="motivo"
+																name="motivo"
+																value={formData.motivo}
+																onChange={handleChange}
+																className="min-h-[100px]"
+																placeholder="Coloca tus observaciones aquí..."
+																readOnly={ver ? true : false}
+															/>
+														</div>
+													</CardContent>
+													{ver ? (
+														<div hidden></div>
+													) : (
+														<CardFooter>
+															<Button2
+																type="submit"
+																className="w-full"
+																disabled={
+																	!formData.horaFormulario ||
+																	!formData.fechaInicio ||
+																	!formData.motivo.trim()
+																}>
+																Actualizar
+															</Button2>
+														</CardFooter>
+													)}
+												</form>
+											</Card>
+										</DialogContent>
+									</Dialog>
+								)}
 							</div>
 						</Card>
 					</DialogContent>
@@ -2989,6 +3140,9 @@ export function TablaPermisosFaltaUsuario() {
 							<SelectItem value="Permiso">Permiso</SelectItem>
 							<SelectItem value="Home Office">Home Office</SelectItem>
 							<SelectItem value="Vacaciones">Vacaciones</SelectItem>
+							<SelectItem value="Omisión de Checada">
+								Omisión de Checada
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>

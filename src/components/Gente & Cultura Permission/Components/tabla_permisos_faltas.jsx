@@ -294,6 +294,7 @@ export function TablaPermisosFalta() {
 			"Permiso",
 			"Home Office",
 			"Vacaciones",
+			"Omisión de Checada",
 		];
 
 		// Determinar el tipo a utilizar
@@ -584,6 +585,7 @@ export function TablaPermisosFalta() {
 			"Permiso",
 			"Home Office",
 			"Vacaciones",
+			"Omisión de Checada",
 		];
 
 		// Filtrar por tipo de petición
@@ -1084,6 +1086,9 @@ export function TablaPermisosFalta() {
 								<SelectItem value="Permiso">Permiso</SelectItem>
 								<SelectItem value="Home Office">Home Office</SelectItem>
 								<SelectItem value="Vacaciones">Vacaciones</SelectItem>
+								<SelectItem value="Omisión de Checada">
+									Omisión de Checada
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
