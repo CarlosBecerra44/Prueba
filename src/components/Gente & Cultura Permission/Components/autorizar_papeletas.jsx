@@ -1745,7 +1745,7 @@ export function AutorizarPapeletas() {
 														Omisión de Checada
 													</CardTitle>
 													<DialogDescription className="text-center">
-														Autorización para llegar Omitir Checada
+														Autorización para no afectar Omision de Checada
 													</DialogDescription>
 												</CardHeader>
 												<form onSubmit={handleSubmit}>
@@ -1890,6 +1890,9 @@ export function AutorizarPapeletas() {
 							<SelectItem value="Permiso">Permiso</SelectItem>
 							<SelectItem value="Home Office">Home Office</SelectItem>
 							<SelectItem value="Vacaciones">Vacaciones</SelectItem>
+							<SelectItem value="Omisión de Checada">
+								Omisión de Checada
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>

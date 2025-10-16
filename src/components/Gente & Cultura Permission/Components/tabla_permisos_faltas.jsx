@@ -2658,6 +2658,128 @@ export function TablaPermisosFalta() {
 										</DialogContent>
 									</Dialog>
 								)}
+								{tipoFormulario2 === "Omisión de Checada" && (
+									<Dialog
+										open={formularioPrincipalAbiertoEdit}
+										onOpenChange={closeModalEdit}>
+										<DialogContent
+											className="border-none p-0 overflow-y-auto w-full max-w-[35vw] max-h-[80vh] shadow-lg ml-[6vw] mt-auto"
+											onInteractOutside={(event) => event.preventDefault()}>
+											<Card>
+												<CardHeader>
+													<CardTitle className="text-2xl font-bold text-center">
+														Omisión de Checada
+													</CardTitle>
+													<DialogDescription className="text-center">
+														Autorización para no afectar Omision de Checada
+													</DialogDescription>
+												</CardHeader>
+												<form onSubmit={handleSubmit}>
+													<CardContent className="space-y-6">
+														<div className="space-y-2">
+															<Label htmlFor="horaFormulario">Hora</Label>
+															<Input
+																id="horaFormulario"
+																name="horaFormulario"
+																type="time"
+																value={formData.horaFormulario}
+																onChange={handleChange}
+																readOnly={true}
+															/>
+														</div>
+														<div className="grid grid-cols-1 gap-4">
+															{renderDatePicker(
+																"Fecha",
+																fechaInicioPapeleta,
+																handleChange,
+																"fechaInicio",
+																true
+															)}
+														</div>
+														<div className="space-y-2">
+															<Label htmlFor="motivo">Observaciones</Label>
+															<Textarea
+																id="motivo"
+																name="motivo"
+																value={formData.motivo}
+																onChange={handleChange}
+																className="min-h-[100px]"
+																placeholder="Coloca tus observaciones aquí..."
+																readOnly={true}
+															/>
+														</div>
+														<div
+															className="space-y-2"
+															style={{
+																color: (() => {
+																	if (
+																		estatusFormulario.startsWith(
+																			"Autorizada por RH"
+																		)
+																	)
+																		return "green";
+																	if (
+																		estatusFormulario.startsWith(
+																			"No autorizada"
+																		)
+																	)
+																		return "red";
+																	switch (estatusFormulario) {
+																		case "Autorizada por tu jefe directo":
+																			return "orange";
+																		default:
+																			return "black"; // color por defecto
+																	}
+																})(),
+															}}>
+															<Label
+																htmlFor="estatus"
+																style={{ color: "black" }}>
+																Estatus
+															</Label>
+															<Select
+																value={estatusFormulario}
+																onValueChange={(value) => {
+																	if (
+																		value.startsWith("Autorizada por RH") ||
+																		value.startsWith("No autorizada")
+																	) {
+																		handleOpenModalStatus(
+																			idFormulario,
+																			value,
+																			tipoFormulario2
+																		);
+																	} else {
+																		handleChangeStatus(
+																			idFormulario,
+																			value,
+																			null,
+																			tipoFormulario2
+																		);
+																	}
+																}}>
+																<SelectTrigger>
+																	<SelectValue placeholder="Selecciona una opción" />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectItem value="Autorizada por RH">
+																		Autorizada
+																	</SelectItem>
+																	<SelectItem value="Autorizada por tu jefe directo">
+																		Autorizada por el departamento
+																	</SelectItem>
+																	<SelectItem value="No autorizada por RH">
+																		No autorizada
+																	</SelectItem>
+																</SelectContent>
+															</Select>
+														</div>
+													</CardContent>
+												</form>
+											</Card>
+										</DialogContent>
+									</Dialog>
+								)}
 								{tipoFormulario2 === "Horas extras" && (
 									<Dialog
 										open={formularioPrincipalAbiertoEdit}
