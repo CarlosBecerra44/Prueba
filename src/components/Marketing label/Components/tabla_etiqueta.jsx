@@ -241,15 +241,24 @@ export function TablaEventosMejorada() {
 	};
 
 	// Filtrar los eventos en base a la búsqueda y el filtro de estatus
-	const filteredEventos = eventos.map(extractData).filter(
-		(evento) =>
-			(statusFilter === "todos" || evento.estatus === statusFilter) &&
-			Object.values(evento)
-				.filter((value) => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
-				.some((value) =>
-					value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
-				),
-	);
+	const filteredEventos = eventos.map(extractData).filter((evento) => {
+		//Ocultar eliminados SOLO cuando está en "todos"
+		if (statusFilter === "todos" && evento.estatus === "Eliminado") {
+			return false;
+		}
+
+		//Si el filtro NO es "todos", aplicar filtro normal
+		if (statusFilter !== "todos" && evento.estatus !== statusFilter) {
+			return false;
+		}
+
+		//Búsqueda en todos los campos
+		return Object.values(evento)
+			.filter((value) => value !== null && value !== undefined)
+			.some((value) =>
+				value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
+			);
+	});
 
 	// Acción que contiene los botones
 	const renderAccion = (index) => (
@@ -415,6 +424,7 @@ export function TablaEventosMejorada() {
 							<SelectItem value="Completado">Completado</SelectItem>
 							<SelectItem value="Pendiente">Pendiente</SelectItem>
 							<SelectItem value="Rechazado">Rechazado</SelectItem>
+							<SelectItem value="Eliminado">Eliminado</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
