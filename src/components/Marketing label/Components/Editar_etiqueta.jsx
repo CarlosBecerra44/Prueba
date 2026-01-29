@@ -91,6 +91,29 @@ export function EditarEtiqueta() {
 
 	const modificacionesGerenteMkt = ["Teléfono", "Mail/email"];
 
+	//Esto determina que es una etiqueta tipo maquilas y ser salta la autorizacion de gerente maquilas
+	useEffect(() => {
+		if (formulario.tipo === "Maquilas" && !formulario["authorize-10"]) {
+			const today = new Date();
+			const localDate = //fecha de hoy
+				today.getFullYear() +
+				"-" +
+				String(today.getMonth() + 1).padStart(2, "0") +
+				"-" +
+				String(today.getDate()).padStart(2, "0");
+
+			setFormulario((prev) => ({
+				...prev,
+				["verifier-10"]: "Gerente de maquilas", // uso de un nombre automático
+				["authorize-10"]: "si",
+				["fecha_autorizacion-10"]: localDate,
+				["readOnly-10"]: true,
+				["readOnlyComments-10"]: true,
+				["selectDisabled-10"]: true,
+			}));
+		}
+	}, [formulario.tipo]);
+
 	useEffect(() => {
 		async function fetchData() {
 			if (!id) return;
