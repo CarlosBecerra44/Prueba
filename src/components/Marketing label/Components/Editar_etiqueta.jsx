@@ -91,29 +91,6 @@ export function EditarEtiqueta() {
 
 	const modificacionesGerenteMkt = ["Teléfono", "Mail/email"];
 
-	//Esto determina que es una etiqueta tipo maquilas y ser salta la autorizacion de gerente maquilas
-	useEffect(() => {
-		if (formulario.tipo === "Maquilas" && !formulario["authorize-10"]) {
-			const today = new Date();
-			const localDate = //fecha de hoy
-				today.getFullYear() +
-				"-" +
-				String(today.getMonth() + 1).padStart(2, "0") +
-				"-" +
-				String(today.getDate()).padStart(2, "0");
-
-			setFormulario((prev) => ({
-				...prev,
-				["verifier-10"]: "Gerente de maquilas", // uso de un nombre automático
-				["authorize-10"]: "si",
-				["fecha_autorizacion-10"]: localDate,
-				["readOnly-10"]: true,
-				["readOnlyComments-10"]: true,
-				["selectDisabled-10"]: true,
-			}));
-		}
-	}, [formulario.tipo]);
-
 	useEffect(() => {
 		async function fetchData() {
 			if (!id) return;
@@ -244,35 +221,6 @@ export function EditarEtiqueta() {
 		formulario.tipo,
 	]); // Se ejecuta cada vez que el formulario cambie
 
-	useEffect(() => {
-		// Obtenemos todas las autorizaciones (authorize-X)
-		const autorizaciones = Object.keys(formulario)
-			.filter((key) => key.startsWith("authorize-"))
-			.map((key) => formulario[key]);
-
-		// Si alguna es "no", se rechaza la etiqueta
-		const hayRechazo = autorizaciones.includes("no");
-
-		if (hayRechazo && formulario.estatus !== "Rechazado") {
-			setFormulario((prev) => ({
-				...prev,
-				estatus: "Rechazado",
-			}));
-		}
-	}, [
-		formulario[`authorize-0`],
-		formulario[`authorize-1`],
-		formulario[`authorize-2`],
-		formulario[`authorize-3`],
-		formulario[`authorize-4`],
-		formulario[`authorize-5`],
-		formulario[`authorize-6`],
-		formulario[`authorize-7`],
-		formulario[`authorize-8`],
-		formulario[`authorize-9`],
-		formulario[`authorize-10`],
-	]);
-
 	const handleInputChange = (e) => {
 		if (!e || !e.target) {
 			console.error("Evento o target no válido");
@@ -315,12 +263,29 @@ export function EditarEtiqueta() {
 		}));
 	};
 
+	const tieneRechazo = () => {
+		// Revisar verificadores normales
+		for (let i = 0; i < verifiers.length; i++) {
+			if (formulario[`authorize-${i}`] === "no") {
+				return true;
+			}
+		}
+
+		// Revisar maquilas si aplica
+		if (formulario.tipo === "Maquilas" && formulario["authorize-10"] === "no") {
+			return true;
+		}
+
+		return false;
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
 		const dataToSend = {
 			...formulario,
 			selectedImages: formulario.selectedImages,
+			estatus: tieneRechazo() ? "Rechazado" : formulario.estatus,
 		};
 
 		try {
