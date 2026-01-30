@@ -91,6 +91,33 @@ export function EditarEtiqueta() {
 
 	const modificacionesGerenteMkt = ["Teléfono", "Mail/email"];
 
+	const recalcularFirmas = (form) => {
+		let contador = 0;
+
+		verifiers.forEach((_, index) => {
+			const nombre = form[`verifier-${index}`];
+			const autorizacion = form[`authorize-${index}`];
+
+			if (
+				typeof nombre === "string" &&
+				nombre.trim() !== "" &&
+				(autorizacion === "si" || autorizacion === "no")
+			) {
+				contador++;
+			}
+		});
+
+		if (
+			form.tipo === "Maquilas" &&
+			form["verifier-10"] &&
+			form["authorize-10"] === "si"
+		) {
+			contador++;
+		}
+
+		return contador;
+	};
+
 	useEffect(() => {
 		async function fetchData() {
 			if (!id) return;
@@ -113,9 +140,33 @@ export function EditarEtiqueta() {
 					prueba = data.selectedImages;
 				}
 
+				// Fecha local YYYY-MM-DD
+				const today = new Date();
+				const localDate =
+					today.getFullYear() +
+					"-" +
+					String(today.getMonth() + 1).padStart(2, "0") +
+					"-" +
+					String(today.getDate()).padStart(2, "0");
+
+				// Auto-autorización maquilas
+				const maquilasAuto =
+					data.tipo === "Maquilas"
+						? {
+								["verifier-1"]: data["verifier-1"] || "Gerente de Maquilas",
+								["authorize-1"]: "si",
+								["fecha_autorizacion-1"]:
+									data["fecha_autorizacion-1"] || localDate,
+								["readOnly-1"]: true,
+								["selectDisabled-1"]: true,
+								["readOnlyComments-1"]: true,
+							}
+						: {};
+
 				setFormulario((prev) => ({
 					...data,
-					selectedImages: prueba, // Manejamos como objeto, esté o no parseado
+					selectedImages: prueba,
+					...maquilasAuto, // Manejamos como objeto, esté o no parseado
 					...Array.from({ length: verifiers.length }, (_, index) => ({
 						[`readOnly-${index}`]: !!data[`verifier-${index}`], // Marcar readOnly si ya tiene valor
 						[`readOnlyComments-${index}`]:
@@ -124,12 +175,15 @@ export function EditarEtiqueta() {
 								data[`authorize-${index}`] === "si"), // Lo mismo para comentarios
 						[`selectDisabled-${index}`]: !!data[`authorize-${index}`], // Desactivar el Select si ya tiene valor
 					})).reduce((acc, curr) => ({ ...acc, ...curr }), {}), // Combina los estados en un solo objeto
-					[`readOnly-10`]: !!data[`verifier-10`], // Marcar readOnly si ya tiene valor
-					[`readOnlyComments-10`]:
-						!!data[`comments-10`] ||
-						(!data[`comments-10`] && data[`authorize-10`] === "si"), // Lo mismo para comentarios
-					[`selectDisabled-10`]: !!data[`authorize-10`], // Desactivar el Select si ya tiene valor
 				}));
+				const totalFirmas = recalcularFirmas(formFinal);
+
+				setFormulario({
+					...formFinal,
+					firmas: totalFirmas,
+				});
+
+				setContadorFirmas(totalFirmas);
 
 				setLoading(false); // Datos listos
 			} catch (error) {
@@ -1117,10 +1171,6 @@ export function EditarEtiqueta() {
 													...prev,
 													["fecha_autorizacion-10"]: today,
 												}));
-											}
-
-											if (verificarCamposMaquilas()) {
-												setContadorFirmas((prev) => prev + 1);
 											}
 										}}
 										value={formulario["verifier-10"] || ""}
