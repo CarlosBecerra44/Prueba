@@ -494,10 +494,10 @@ export function EditarEtiqueta() {
 				"j.leyva@aionsuplementos.com": "l.torres@aionsuplementos.com",
 				"r.castellanos@aionsuplementos.com": "l.torres@aionsuplementos.com",
 				"l.torres@aionsuplementos.com": [
-					"t.alvarez@aionsuplementos.com",
+					"j.sotelo@aionsuplementos.com ",
 					"m.uribe@aionsuplementos.com",
 				],
-				"t.alvarez@aionsuplementos.com": "j.pérez@aionsuplementos.com",
+				"j.sotelo@aionsuplementos.com ": "j.pérez@aionsuplementos.com",
 				"m.uribe@aionsuplementos.com": "j.pérez@aionsuplementos.com",
 			};
 
