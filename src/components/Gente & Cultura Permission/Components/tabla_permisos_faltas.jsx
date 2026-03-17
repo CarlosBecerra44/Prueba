@@ -130,7 +130,7 @@ export function TablaPermisosFalta() {
 				} else {
 					console.error(
 						"Error al obtener los usuarios:",
-						response.data.message
+						response.data.message,
 					);
 				}
 			} catch (error) {
@@ -144,7 +144,7 @@ export function TablaPermisosFalta() {
 	const fetchEventos = async () => {
 		try {
 			const response = await axios.get(
-				"/api/Gente&CulturaAbsence/getFaltasTabla"
+				"/api/Gente&CulturaAbsence/getFaltasTabla",
 			); // Asegúrate de que esta ruta esté configurada en tu backend
 			setEventos(response.data);
 		} catch (error) {
@@ -165,7 +165,7 @@ export function TablaPermisosFalta() {
 				} else {
 					console.error(
 						"Error al obtener los departamentos:",
-						response.data.message
+						response.data.message,
 					);
 				}
 			} catch (error) {
@@ -243,7 +243,7 @@ export function TablaPermisosFalta() {
 	const handleEditForm = async (index) => {
 		try {
 			const response = await fetch(
-				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`
+				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`,
 			);
 			const data = await response.json();
 			setFormData(data.formulario);
@@ -279,7 +279,7 @@ export function TablaPermisosFalta() {
 		index,
 		nuevoEstatus,
 		comentarios,
-		tipo = null
+		tipo = null,
 	) => {
 		const solicitudesTipos = [
 			"Horas extras",
@@ -319,7 +319,7 @@ export function TablaPermisosFalta() {
 		try {
 			const response = await axios.post(
 				`/api/Gente&CulturaAbsence/actualizarEstatusPapeletas`,
-				{ id: index, estatus: nuevoEstatus, comentarios: comentarios || null } // Asegura que no sea undefined
+				{ id: index, estatus: nuevoEstatus, comentarios: comentarios || null }, // Asegura que no sea undefined
 			);
 
 			if (response.status === 200) {
@@ -327,10 +327,10 @@ export function TablaPermisosFalta() {
 				if (tipoSeleccionado) {
 					// Determinar el tipo de notificación
 					const esPapeleta = papeletasTipos.some((tipo) =>
-						tipoSeleccionado.startsWith(tipo)
+						tipoSeleccionado.startsWith(tipo),
 					);
 					const esSolicitud = solicitudesTipos.some((tipo) =>
-						tipoSeleccionado.startsWith(tipo)
+						tipoSeleccionado.startsWith(tipo),
 					);
 
 					const tipoNotificacion = esSolicitud
@@ -361,7 +361,7 @@ export function TablaPermisosFalta() {
 										idPapeleta: index,
 									},
 								}),
-							}
+							},
 						);
 
 						if (!enviarNotificacion.ok) {
@@ -425,14 +425,14 @@ export function TablaPermisosFalta() {
 
 				try {
 					const response = await axios.get(
-						`/api/Gente&CulturaAbsence/getUsersBonos?departamento=${departamentoBonos}`
+						`/api/Gente&CulturaAbsence/getUsersBonos?departamento=${departamentoBonos}`,
 					);
 					if (response.data.success) {
 						setUsersBonos(response.data.users);
 					} else {
 						console.error(
 							"Error al obtener los usuarios:",
-							response.data.message
+							response.data.message,
 						);
 					}
 				} catch (error) {
@@ -441,14 +441,14 @@ export function TablaPermisosFalta() {
 			} else {
 				try {
 					const response = await axios.get(
-						`/api/Gente&CulturaAbsence/getUsersBonos`
+						`/api/Gente&CulturaAbsence/getUsersBonos`,
 					);
 					if (response.data.success) {
 						setUsersBonos(response.data.users);
 					} else {
 						console.error(
 							"Error al obtener los usuarios:",
-							response.data.message
+							response.data.message,
 						);
 					}
 				} catch (error) {
@@ -478,7 +478,7 @@ export function TablaPermisosFalta() {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({ formData, estatus }), // Enviar todo el objeto formData como JSON
-				}
+				},
 			);
 			if (response.ok) {
 				Swal.fire({
@@ -504,7 +504,7 @@ export function TablaPermisosFalta() {
 		handleChange,
 		name,
 		readOnly = false,
-		removeSpacing = false
+		removeSpacing = false,
 	) => (
 		<div className={removeSpacing ? "" : "space-y-2"}>
 			<Label>{label}</Label>
@@ -514,7 +514,7 @@ export function TablaPermisosFalta() {
 						variant="outline"
 						className={cn(
 							"w-full justify-start text-left font-normal",
-							!date && "text-muted-foreground"
+							!date && "text-muted-foreground",
 						)}
 						disabled={readOnly} // Desactiva el botón si es readOnly
 					>
@@ -549,7 +549,7 @@ export function TablaPermisosFalta() {
 			tipo:
 				evento.tipo === "Suspension"
 					? "Suspensión o castigo" +
-					  (evento.extemporanea === 1 ? " - Extemporánea" : "")
+						(evento.extemporanea === 1 ? " - Extemporánea" : "")
 					: evento.tipo + (evento.extemporanea === 1 ? " - Extemporánea" : ""),
 			nombre: evento.nombre + " " + evento.apellidos,
 			fecha_subida: evento.fecha_subida,
@@ -620,11 +620,11 @@ export function TablaPermisosFalta() {
 
 		// Filtrar por término de búsqueda
 		const values = Object.values(evento).filter(
-			(value) => value !== null && value !== undefined
+			(value) => value !== null && value !== undefined,
 		);
 		if (
 			!values.some((value) =>
-				value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+				value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
 			)
 		) {
 			return false;
@@ -736,17 +736,17 @@ export function TablaPermisosFalta() {
 								day: "2-digit",
 								month: "2-digit",
 								year: "numeric",
-						  })
+							})
 						: "Sin datos",
 					Comentarios: evento.comentarios || "Sin datos",
 					Estatus:
 						evento.estatus === "Autorizada por tu jefe directo"
 							? "Autorizada por el departamento"
 							: evento.estatus === "Pendiente"
-							? "Autorizada por el departamento"
-							: evento.estatus || "Sin datos",
+								? "Autorizada por el departamento"
+								: evento.estatus || "Sin datos",
 				};
-			})
+			}),
 		);
 
 		const workbook = XLSX.utils.book_new();
@@ -754,19 +754,19 @@ export function TablaPermisosFalta() {
 			verPeticiones === "Todas las solicitudes"
 				? "Solicitudes"
 				: verPeticiones === "Todas las papeletas"
-				? "Papeletas"
-				: verPeticiones === "Papeletas extemporaneas"
-				? "Papeletas y solicitudes ext"
-				: "Papeletas y solicitudes";
+					? "Papeletas"
+					: verPeticiones === "Papeletas extemporaneas"
+						? "Papeletas y solicitudes ext"
+						: "Papeletas y solicitudes";
 
 		const nombreArchivo =
 			verPeticiones === "Todas las solicitudes"
 				? "solicitudes.xlsx"
 				: verPeticiones === "Todas las papeletas"
-				? "papeletas.xlsx"
-				: verPeticiones === "Papeletas extemporaneas"
-				? "papeletas_y_solicitudes_ex.xlsx"
-				: "papeletas_y_solicitudes.xlsx";
+					? "papeletas.xlsx"
+					: verPeticiones === "Papeletas extemporaneas"
+						? "papeletas_y_solicitudes_ex.xlsx"
+						: "papeletas_y_solicitudes.xlsx";
 
 		XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
 		XLSX.writeFile(workbook, nombreArchivo);
@@ -776,7 +776,7 @@ export function TablaPermisosFalta() {
 		const fetchPapeletas = async () => {
 			try {
 				const response = await axios.get(
-					"/api/Gente&CulturaAbsence/getTodasPapeletas"
+					"/api/Gente&CulturaAbsence/getTodasPapeletas",
 				); // Asegúrate de que esta ruta esté configurada en tu backend
 				setEventos(response.data);
 				setAutorizar(false);
@@ -793,7 +793,7 @@ export function TablaPermisosFalta() {
 		const fetchSolicitudes = async () => {
 			try {
 				const response = await axios.get(
-					"/api/Gente&CulturaAbsence/getTodasSolicitudes"
+					"/api/Gente&CulturaAbsence/getTodasSolicitudes",
 				); // Asegúrate de que esta ruta esté configurada en tu backend
 				setEventos(response.data);
 				setAutorizar(true);
@@ -810,7 +810,7 @@ export function TablaPermisosFalta() {
 		const fetchPapeletasSemana = async () => {
 			try {
 				const response = await axios.get(
-					"/api/Gente&CulturaAbsence/getFaltasTabla"
+					"/api/Gente&CulturaAbsence/getFaltasTabla",
 				); // Asegúrate de que esta ruta esté configurada en tu backend
 				setEventos(response.data);
 				setAutorizar(true);
@@ -827,7 +827,7 @@ export function TablaPermisosFalta() {
 		const fetchPapeletasSolicitudesExtemp = async () => {
 			try {
 				const response = await axios.get(
-					"/api/Gente&CulturaAbsence/getFaltasExtemporaneas"
+					"/api/Gente&CulturaAbsence/getFaltasExtemporaneas",
 				); // Asegúrate de que esta ruta esté configurada en tu backend
 				setEventos(response.data);
 				setAutorizar(true);
@@ -869,7 +869,7 @@ export function TablaPermisosFalta() {
 	const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
 	const currentEventos = filteredEventos.slice(
 		indexOfFirstEvento,
-		indexOfLastEvento
+		indexOfLastEvento,
 	);
 	const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
 
@@ -1216,7 +1216,7 @@ export function TablaPermisosFalta() {
 																value={formData.nombreColaborador || ""}
 																onValueChange={(value) => {
 																	const selectedUser = users.find(
-																		(user) => user.id === value
+																		(user) => user.id === value,
 																	);
 																	if (selectedUser) {
 																		setFormData({
@@ -1236,13 +1236,13 @@ export function TablaPermisosFalta() {
 																			user.nombre
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
+																					debouncedSearchTerm.toLowerCase(),
 																				) ||
 																			user.apellidos
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
-																				)
+																					debouncedSearchTerm.toLowerCase(),
+																				),
 																	).length === 0 ? (
 																		<div className="p-2 text-center text-gray-500">
 																			No se encontraron usuarios
@@ -1254,13 +1254,13 @@ export function TablaPermisosFalta() {
 																					user.nombre
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
+																							debouncedSearchTerm.toLowerCase(),
 																						) ||
 																					user.apellidos
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
-																						)
+																							debouncedSearchTerm.toLowerCase(),
+																						),
 																			)
 																			.map((user) => (
 																				<SelectItem
@@ -1291,14 +1291,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -1341,7 +1341,7 @@ export function TablaPermisosFalta() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -1365,7 +1365,7 @@ export function TablaPermisosFalta() {
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -1392,14 +1392,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -1461,7 +1461,7 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -1476,19 +1476,60 @@ export function TablaPermisosFalta() {
 																readOnly={true}
 															/>
 														</div>
+														<div className="space-y-2">
+															<div
+																style={{
+																	position: "relative",
+																	display: "inline-flex",
+																	alignItems: "center",
+																}}>
+																<Label htmlFor="comprobante">Comprobante</Label>
+																<div style={{ marginLeft: "10px" }}>
+																	<Tooltip
+																		title={`<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`}
+																		arrow>
+																		<HelpIcon
+																			style={{
+																				cursor: "pointer",
+																				fontSize: 18,
+																			}}
+																		/>
+																	</Tooltip>
+																</div>
+															</div>
+															<div className="flex items-center space-x-2">
+																{formData.comprobante ? (
+																	<a
+																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+																			formData.comprobante,
+																		)}`}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																		className="text-sm text-blue-600 hover:underline">
+																		Descargar {formData.comprobante}
+																	</a>
+																) : (
+																	<>
+																		<span style={{ fontSize: 14 }}>
+																			Sin comprobante agregado
+																		</span>
+																	</>
+																)}
+															</div>
+														</div>
 														<div
 															className="space-y-2"
 															style={{
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -1515,14 +1556,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -1628,14 +1669,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -1656,7 +1697,7 @@ export function TablaPermisosFalta() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -1678,13 +1719,13 @@ export function TablaPermisosFalta() {
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -1711,14 +1752,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -1834,14 +1875,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -1881,7 +1922,7 @@ export function TablaPermisosFalta() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -1903,13 +1944,13 @@ export function TablaPermisosFalta() {
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -1936,14 +1977,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -1996,14 +2037,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div
@@ -2041,7 +2082,7 @@ export function TablaPermisosFalta() {
 																	formData.fechaFormulario,
 																	handleChange,
 																	"fechaFormulario",
-																	true
+																	true,
 																)}
 															</div>
 															<div className="flex flex-col justify-end min-w-0 space-y-3">
@@ -2133,11 +2174,11 @@ export function TablaPermisosFalta() {
 																				handleTrabajoChange(
 																					e,
 																					index,
-																					"fechaActividad"
+																					"fechaActividad",
 																				),
 																			"fechaActividad",
 																			true,
-																			true
+																			true,
 																		)}
 																	</div>
 																	<div>
@@ -2186,7 +2227,7 @@ export function TablaPermisosFalta() {
 																				handleChange(
 																					e,
 																					index,
-																					"tiempoRespuesta"
+																					"tiempoRespuesta",
 																				)
 																			}
 																			readOnly={true}
@@ -2216,13 +2257,13 @@ export function TablaPermisosFalta() {
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -2249,14 +2290,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -2308,7 +2349,7 @@ export function TablaPermisosFalta() {
 																value={formData.nombreColaborador || ""}
 																onValueChange={(value) => {
 																	const selectedUser = users.find(
-																		(user) => user.id === value
+																		(user) => user.id === value,
 																	);
 																	if (selectedUser) {
 																		setFormData({
@@ -2328,13 +2369,13 @@ export function TablaPermisosFalta() {
 																			user.nombre
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
+																					debouncedSearchTerm.toLowerCase(),
 																				) ||
 																			user.apellidos
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
-																				)
+																					debouncedSearchTerm.toLowerCase(),
+																				),
 																	).length === 0 ? (
 																		<div className="p-2 text-center text-gray-500">
 																			No se encontraron usuarios
@@ -2346,13 +2387,13 @@ export function TablaPermisosFalta() {
 																					user.nombre
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
+																							debouncedSearchTerm.toLowerCase(),
 																						) ||
 																					user.apellidos
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
-																						)
+																							debouncedSearchTerm.toLowerCase(),
+																						),
 																			)
 																			.map((user) => (
 																				<SelectItem
@@ -2383,14 +2424,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2417,7 +2458,7 @@ export function TablaPermisosFalta() {
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -2444,14 +2485,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			"Suspensión o castigo"
+																			"Suspensión o castigo",
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			"Suspensión o castigo"
+																			"Suspensión o castigo",
 																		);
 																	}
 																}}>
@@ -2522,14 +2563,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2570,7 +2611,7 @@ export function TablaPermisosFalta() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -2592,13 +2633,13 @@ export function TablaPermisosFalta() {
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -2625,14 +2666,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -2693,7 +2734,7 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2714,13 +2755,13 @@ export function TablaPermisosFalta() {
 																color: (() => {
 																	if (
 																		estatusFormulario.startsWith(
-																			"Autorizada por RH"
+																			"Autorizada por RH",
 																		)
 																	)
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -2747,14 +2788,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -2801,14 +2842,14 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
 																fechaFinPapeleta,
 																handleChange,
 																"fechaFin",
-																true
+																true,
 															)}
 														</div>
 														<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2980,7 +3021,7 @@ export function TablaPermisosFalta() {
 																				handleProductoChange(
 																					e,
 																					index,
-																					"noOrden"
+																					"noOrden",
 																				)
 																			}
 																			placeholder="No."
@@ -2998,7 +3039,7 @@ export function TablaPermisosFalta() {
 																				handleProductoChange(
 																					e,
 																					index,
-																					"nombreProducto"
+																					"nombreProducto",
 																				)
 																			}
 																			placeholder="Nombre del producto..."
@@ -3016,7 +3057,7 @@ export function TablaPermisosFalta() {
 																				handleProductoChange(
 																					e,
 																					index,
-																					"cantidadProgramada"
+																					"cantidadProgramada",
 																				)
 																			}
 																			placeholder="Cantidad..."
@@ -3035,7 +3076,7 @@ export function TablaPermisosFalta() {
 																					handleProductoChange(
 																						e,
 																						index,
-																						"cantidadTerminada"
+																						"cantidadTerminada",
 																					)
 																				}
 																				placeholder="Cantidad..."
@@ -3128,7 +3169,7 @@ export function TablaPermisosFalta() {
 																				handlePersonalChange(
 																					e,
 																					index,
-																					"noPersonal"
+																					"noPersonal",
 																				)
 																			}
 																			placeholder="No."
@@ -3146,7 +3187,7 @@ export function TablaPermisosFalta() {
 																				handlePersonalChange(
 																					e,
 																					index,
-																					"nombrePersonal"
+																					"nombrePersonal",
 																				)
 																			}
 																			placeholder="Nombre del personal..."
@@ -3183,7 +3224,7 @@ export function TablaPermisosFalta() {
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -3210,14 +3251,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -3370,7 +3411,7 @@ export function TablaPermisosFalta() {
 																	value={formData.nombreBono || ""}
 																	onValueChange={(value) => {
 																		const selectedUser = users.find(
-																			(user) => user.id === value
+																			(user) => user.id === value,
 																		);
 																		if (selectedUser) {
 																			setFormData({
@@ -3391,13 +3432,13 @@ export function TablaPermisosFalta() {
 																				user.nombre
 																					.toLowerCase()
 																					.includes(
-																						debouncedSearchTerm.toLowerCase()
+																						debouncedSearchTerm.toLowerCase(),
 																					) ||
 																				user.apellidos
 																					.toLowerCase()
 																					.includes(
-																						debouncedSearchTerm.toLowerCase()
-																					)
+																						debouncedSearchTerm.toLowerCase(),
+																					),
 																		).length === 0 ? (
 																			<div className="p-2 text-center text-gray-500">
 																				No se encontraron usuarios
@@ -3409,13 +3450,13 @@ export function TablaPermisosFalta() {
 																						user.nombre
 																							.toLowerCase()
 																							.includes(
-																								debouncedSearchTerm.toLowerCase()
+																								debouncedSearchTerm.toLowerCase(),
 																							) ||
 																						user.apellidos
 																							.toLowerCase()
 																							.includes(
-																								debouncedSearchTerm.toLowerCase()
-																							)
+																								debouncedSearchTerm.toLowerCase(),
+																							),
 																				)
 																				.map((user) => (
 																					<SelectItem
@@ -3503,7 +3544,7 @@ export function TablaPermisosFalta() {
 																			name={"nombreBono"}
 																			onValueChange={(value) => {
 																				const selectedUser = users.find(
-																					(user) => user.id === value
+																					(user) => user.id === value,
 																				);
 																				if (selectedUser) {
 																					const updatedBonos = [
@@ -3528,7 +3569,7 @@ export function TablaPermisosFalta() {
 																					(prevDebounced) => ({
 																						...prevDebounced,
 																						[index]: "",
-																					})
+																					}),
 																				);
 																			}}
 																			value={otro.nombreBono || ""}
@@ -3546,7 +3587,7 @@ export function TablaPermisosFalta() {
 																								(
 																									debouncedSearchTerms[index] ||
 																									""
-																								).toLowerCase()
+																								).toLowerCase(),
 																							) ||
 																						user.apellidos
 																							.toLowerCase()
@@ -3554,8 +3595,8 @@ export function TablaPermisosFalta() {
 																								(
 																									debouncedSearchTerms[index] ||
 																									""
-																								).toLowerCase()
-																							)
+																								).toLowerCase(),
+																							),
 																				).length === 0 ? (
 																					<div className="p-2 text-center text-gray-500">
 																						No se encontraron usuarios
@@ -3571,7 +3612,7 @@ export function TablaPermisosFalta() {
 																											debouncedSearchTerms[
 																												index
 																											] || ""
-																										).toLowerCase()
+																										).toLowerCase(),
 																									) ||
 																								user.apellidos
 																									.toLowerCase()
@@ -3580,8 +3621,8 @@ export function TablaPermisosFalta() {
 																											debouncedSearchTerms[
 																												index
 																											] || ""
-																										).toLowerCase()
-																									)
+																										).toLowerCase(),
+																									),
 																						)
 																						.map((user) => (
 																							<SelectItem
@@ -3605,7 +3646,7 @@ export function TablaPermisosFalta() {
 																				handleChangeBonos(
 																					e,
 																					index,
-																					"bonoCantidad"
+																					"bonoCantidad",
 																				)
 																			}
 																			placeholder="Bono..."
@@ -3636,7 +3677,7 @@ export function TablaPermisosFalta() {
 																			onChange={(e) =>
 																				handleChangeComentario(
 																					index,
-																					e.target.value
+																					e.target.value,
 																				)
 																			}
 																			placeholder="Comentarios..."
@@ -3682,7 +3723,7 @@ export function TablaPermisosFalta() {
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -3709,14 +3750,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -3766,7 +3807,7 @@ export function TablaPermisosFalta() {
 																value={formData.nombreColaborador || ""}
 																onValueChange={(value) => {
 																	const selectedUser = users.find(
-																		(user) => user.id === value
+																		(user) => user.id === value,
 																	);
 																	if (selectedUser) {
 																		setFormData({
@@ -3787,13 +3828,13 @@ export function TablaPermisosFalta() {
 																			user.nombre
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
+																					debouncedSearchTerm.toLowerCase(),
 																				) ||
 																			user.apellidos
 																				.toLowerCase()
 																				.includes(
-																					debouncedSearchTerm.toLowerCase()
-																				)
+																					debouncedSearchTerm.toLowerCase(),
+																				),
 																	).length === 0 ? (
 																		<div className="p-2 text-center text-gray-500">
 																			No se encontraron usuarios
@@ -3805,13 +3846,13 @@ export function TablaPermisosFalta() {
 																					user.nombre
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
+																							debouncedSearchTerm.toLowerCase(),
 																						) ||
 																					user.apellidos
 																						.toLowerCase()
 																						.includes(
-																							debouncedSearchTerm.toLowerCase()
-																						)
+																							debouncedSearchTerm.toLowerCase(),
+																						),
 																			)
 																			.map((user) => (
 																				<SelectItem
@@ -3864,7 +3905,7 @@ export function TablaPermisosFalta() {
 																fechaInicioPapeleta,
 																handleChange,
 																"fechaInicio",
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -3916,7 +3957,7 @@ export function TablaPermisosFalta() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -3942,7 +3983,7 @@ export function TablaPermisosFalta() {
 																		return "green";
 																	if (
 																		estatusFormulario.startsWith(
-																			"No autorizada"
+																			"No autorizada",
 																		)
 																	)
 																		return "red";
@@ -3969,14 +4010,14 @@ export function TablaPermisosFalta() {
 																		handleOpenModalStatus(
 																			idFormulario,
 																			value,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	} else {
 																		handleChangeStatus(
 																			idFormulario,
 																			value,
 																			null,
-																			tipoFormulario2
+																			tipoFormulario2,
 																		);
 																	}
 																}}>
@@ -4061,12 +4102,12 @@ export function TablaPermisosFalta() {
 										{evento.jefe_directo
 											? (() => {
 													const jefe = users.find(
-														(u) => u.id === evento.jefe_directo
+														(u) => u.id === evento.jefe_directo,
 													);
 													return jefe
 														? `${jefe.nombre} ${jefe.apellidos}`
 														: "Sin jefe directo especificado";
-											  })()
+												})()
 											: "Sin jefe directo especificado"}
 									</TableCell>
 									<TableCell>
@@ -4102,16 +4143,16 @@ export function TablaPermisosFalta() {
 														day: "2-digit",
 														month: "2-digit",
 														year: "numeric",
-													}
-											  )} ${new Date(evento.fecha_subida).toLocaleTimeString(
+													},
+												)} ${new Date(evento.fecha_subida).toLocaleTimeString(
 													"es-ES",
 													{
 														hour: "2-digit",
 														minute: "2-digit",
 														second: "2-digit",
 														hour12: false, // Cambiar a true si prefieres formato de 12 horas
-													}
-											  )}`
+													},
+												)}`
 											: "Sin fecha de subida especificada"}
 									</TableCell>
 									<TableCell>
@@ -4123,8 +4164,8 @@ export function TablaPermisosFalta() {
 														day: "2-digit",
 														month: "2-digit",
 														year: "numeric",
-													}
-											  )
+													},
+												)
 											: "Sin fecha requerida especificada"}
 									</TableCell>
 									<TableCell>
@@ -4159,14 +4200,14 @@ export function TablaPermisosFalta() {
 														handleOpenModalStatus(
 															evento.id_papeleta,
 															value,
-															evento.tipo
+															evento.tipo,
 														);
 													} else {
 														handleChangeStatus(
 															evento.id_papeleta,
 															value,
 															null,
-															evento.tipo
+															evento.tipo,
 														);
 													}
 												}}>
@@ -4231,7 +4272,7 @@ export function TablaPermisosFalta() {
 													<Card>
 														<CardHeader>
 															{modalDataStatus?.estatus?.startsWith(
-																"Autorizada"
+																"Autorizada",
 															) ? (
 																<CardTitle
 																	style={{ color: "green" }}
@@ -4243,7 +4284,7 @@ export function TablaPermisosFalta() {
 																		"Faltas",
 																		"Suspensión o castigo",
 																	].some((tipo) =>
-																		modalDataStatus.tipo?.startsWith(tipo)
+																		modalDataStatus.tipo?.startsWith(tipo),
 																	)
 																		? "Agregar comentario - Sí se autoriza la solicitud"
 																		: "Agregar comentario - Sí se autoriza la papeleta"}
@@ -4259,7 +4300,7 @@ export function TablaPermisosFalta() {
 																		"Faltas",
 																		"Suspensión o castigo",
 																	].some((tipo) =>
-																		modalDataStatus.tipo?.startsWith(tipo)
+																		modalDataStatus.tipo?.startsWith(tipo),
 																	)
 																		? "Agregar comentario - No se autoriza la solicitud"
 																		: "Agregar comentario - No se autoriza la papeleta"}
@@ -4292,7 +4333,7 @@ export function TablaPermisosFalta() {
 														</CardContent>
 														<CardFooter>
 															{modalDataStatus.estatus.startsWith(
-																"Autorizada"
+																"Autorizada",
 															) ? (
 																<Button2
 																	className="w-full"
@@ -4300,7 +4341,7 @@ export function TablaPermisosFalta() {
 																		handleChangeStatus(
 																			modalDataStatus.id,
 																			modalDataStatus.estatus,
-																			comentarios
+																			comentarios,
 																		)
 																	}>
 																	Enviar
@@ -4313,7 +4354,7 @@ export function TablaPermisosFalta() {
 																		handleChangeStatus(
 																			modalDataStatus.id,
 																			modalDataStatus.estatus,
-																			comentarios
+																			comentarios,
 																		)
 																	}>
 																	Enviar
@@ -4377,7 +4418,7 @@ export function TablaPermisosFalta() {
 						(page) =>
 							page === currentPage ||
 							page === currentPage - 1 ||
-							page === currentPage + 1
+							page === currentPage + 1,
 					)
 					.map((page) => (
 						<button

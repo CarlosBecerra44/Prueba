@@ -204,7 +204,7 @@ export function TablaPermisosFaltaUsuario() {
 				} else {
 					console.error(
 						"Error al obtener los usuarios:",
-						response.data.message
+						response.data.message,
 					);
 				}
 			} catch (error) {
@@ -248,7 +248,7 @@ export function TablaPermisosFaltaUsuario() {
 
 			try {
 				const response = await axios.get(
-					`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`
+					`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`,
 				); // Asegúrate de que esta ruta esté configurada en tu backend
 				setEventos(response.data);
 			} catch (error) {
@@ -261,7 +261,7 @@ export function TablaPermisosFaltaUsuario() {
 	const fetchPapeletas = async () => {
 		try {
 			const response = await axios.get(
-				`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`
+				`/api/Gente&CulturaAbsence/getFaltas?id=${idUser}`,
 			); // Asegúrate de que esta ruta esté configurada en tu backend
 			setEventos(response.data);
 		} catch (error) {
@@ -272,7 +272,7 @@ export function TablaPermisosFaltaUsuario() {
 	const handleEditForm = async (index) => {
 		try {
 			const response = await fetch(
-				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`
+				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`,
 			);
 			const data = await response.json();
 			setFormData(data.formulario);
@@ -289,7 +289,7 @@ export function TablaPermisosFaltaUsuario() {
 	const handleEditar = async (index) => {
 		try {
 			const response = await fetch(
-				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`
+				`/api/Gente&CulturaAbsence/obtenerFormularioFaltas?id=${index}`,
 			);
 			const data = await response.json();
 			setIDFormulario(data.id);
@@ -409,14 +409,14 @@ export function TablaPermisosFaltaUsuario() {
 				// Si el usuario confirma la eliminación
 				if (result.isConfirmed) {
 					const response = await axios.post(
-						`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`
+						`/api/Gente&CulturaAbsence/eliminarFormularioFaltas?id=${index}`,
 					);
 					if (response.status === 200) {
 						fetchPapeletas();
 						await Swal.fire(
 							"Eliminada",
 							"La papeleta ha sido eliminada correctamente",
-							"success"
+							"success",
 						);
 					} else {
 						Swal.fire("Error", "Error al eliminar la papeleta", "error");
@@ -427,7 +427,7 @@ export function TablaPermisosFaltaUsuario() {
 				Swal.fire(
 					"Error",
 					"Ocurrió un error al intentar eliminar la papeleta",
-					"error"
+					"error",
 				);
 			}
 		};
@@ -499,8 +499,8 @@ export function TablaPermisosFaltaUsuario() {
 			Object.values(evento)
 				.filter((value) => value !== null && value !== undefined) // Filtra valores nulos o indefinidos
 				.some((value) =>
-					value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-				) // Filtro por término de búsqueda
+					value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
+				), // Filtro por término de búsqueda
 	);
 
 	const { data: session, status } = useSession();
@@ -620,7 +620,7 @@ export function TablaPermisosFaltaUsuario() {
 	const indexOfFirstEvento = indexOfLastEvento - itemsPerPage;
 	const currentEventos = filteredEventos.slice(
 		indexOfFirstEvento,
-		indexOfLastEvento
+		indexOfLastEvento,
 	);
 	const totalPages = Math.ceil(filteredEventos.length / itemsPerPage);
 
@@ -658,7 +658,7 @@ export function TablaPermisosFaltaUsuario() {
 						{
 							method: "POST",
 							body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
-						}
+						},
 					);
 
 					const ftpResult = await ftpResponse.json();
@@ -729,7 +729,7 @@ export function TablaPermisosFaltaUsuario() {
 						tipoFormulario2,
 						formularioNormalOExtemporaneo,
 					}),
-				}
+				},
 			);
 
 			if (response.ok) {
@@ -752,7 +752,7 @@ export function TablaPermisosFaltaUsuario() {
 									jefe_directo: jefe_directo,
 								},
 							}),
-						}
+						},
 					);
 
 					if (enviarNotificacion.ok) {
@@ -842,7 +842,7 @@ export function TablaPermisosFaltaUsuario() {
 						{
 							method: "POST",
 							body: formDataFTP, // No se define Content-Type manualmente, fetch lo hace
-						}
+						},
 					);
 
 					const ftpResult = await ftpResponse.json();
@@ -906,7 +906,7 @@ export function TablaPermisosFaltaUsuario() {
 						formularioExt,
 						grupoFormulario,
 					}),
-				}
+				},
 			);
 
 			if (response.ok) {
@@ -932,7 +932,7 @@ export function TablaPermisosFaltaUsuario() {
 		} catch (error) {
 			console.error(
 				"Error en la solicitud de actualización de formulario:",
-				error
+				error,
 			);
 			Swal.close();
 			Swal.fire({
@@ -952,7 +952,7 @@ export function TablaPermisosFaltaUsuario() {
 		name,
 		readOnly = false,
 		removeSpacing = false,
-		editMode = false
+		editMode = false,
 	) => {
 		// Obtener la fecha actual sin horas
 		const hoy = startOfDay(new Date());
@@ -987,7 +987,7 @@ export function TablaPermisosFaltaUsuario() {
 							variant="outline"
 							className={cn(
 								"w-full justify-start text-left font-normal",
-								!date && "text-muted-foreground"
+								!date && "text-muted-foreground",
 							)}
 							disabled={readOnly}>
 							<CalendarIcon className="h-4 w-4" />
@@ -1089,7 +1089,7 @@ export function TablaPermisosFaltaUsuario() {
 										checked={formularioNormalOExtemporaneo === "Extemporánea"}
 										onCheckedChange={(checked) => {
 											handleCheckboxChangeTypeForm(
-												checked ? "Extemporánea" : ""
+												checked ? "Extemporánea" : "",
 											);
 											if (checked) openModalType(); // Abrir el modal después de actualizar el estado
 										}}
@@ -1127,7 +1127,7 @@ export function TablaPermisosFaltaUsuario() {
 										checked={tipoFormulario2 === "Llegada tarde / Salida antes"}
 										onCheckedChange={(checked) => {
 											handleCheckboxChange(
-												checked ? "Llegada tarde / Salida antes" : ""
+												checked ? "Llegada tarde / Salida antes" : "",
 											);
 											if (checked) openModal(); // Abrir el modal después de actualizar el estado
 										}}
@@ -1217,7 +1217,7 @@ export function TablaPermisosFaltaUsuario() {
 											Llegada tarde / Salida antes
 										</CardTitle>
 										<DialogDescription className="text-center">
-											Autorización para llegar tarde o salir temprano
+											Autorización para llegar tarde o salir tempranooo
 										</DialogDescription>
 									</CardHeader>
 									<form onSubmit={handleSubmit}>
@@ -1237,7 +1237,7 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 											</div>
 											<div className="space-y-2">
@@ -1250,6 +1250,50 @@ export function TablaPermisosFaltaUsuario() {
 													className="min-h-[100px]"
 													placeholder="Coloca tus observaciones aquí..."
 												/>
+											</div>
+											<div className="space-y-2">
+												<div
+													style={{
+														position: "relative",
+														display: "inline-flex",
+														alignItems: "center",
+													}}>
+													<Label htmlFor="comprobante">Comprobante</Label>
+													<div style={{ marginLeft: "10px" }}>
+														<Tooltip
+															title={`<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`}
+															arrow>
+															<HelpIcon
+																style={{ cursor: "pointer", fontSize: 18 }}
+															/>
+														</Tooltip>
+													</div>
+												</div>
+												<div className="flex items-center space-x-2">
+													<input
+														id="comprobante"
+														name="comprobante" // Asegúrate que sea "comprobante"
+														type="file"
+														accept=".pdf,.jpg,.jpeg,.png"
+														onChange={handleFileChange}
+														className="hidden"
+													/>
+													<Button2
+														type="button"
+														variant="outline"
+														onClick={() =>
+															document.getElementById("comprobante").click()
+														}
+														className="w-full">
+														<Upload className="mr-2 h-4 w-4" />
+														Subir archivo (PDF, JPG, PNG) Max: 4MB
+													</Button2>
+													{formData.comprobante && (
+														<p className="text-sm text-muted-foreground break-all max-w-full">
+															{formData.comprobante}
+														</p>
+													)}
+												</div>
 											</div>
 										</CardContent>
 										<CardFooter>
@@ -1340,13 +1384,13 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha de inicio",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 												{renderDatePicker(
 													"Fecha de fin",
 													formData.fechaFin,
 													handleChange,
-													"fechaFin"
+													"fechaFin",
 												)}
 											</div>
 											<div className="space-y-2">
@@ -1436,12 +1480,12 @@ export function TablaPermisosFaltaUsuario() {
 													<div style={{ marginLeft: "10px" }}>
 														<Tooltip
 															title={`<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
-                        <ul style="margin:0;padding:5px;text-align:justify;">
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
-                          <li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
-                        </ul>`}
+                        									<ul style="margin:0;padding:5px;text-align:justify;">
+                        									<li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
+                          									<li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
+                          									<li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
+                        									<li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
+                        									</ul>`}
 															arrow>
 															<HelpIcon
 																style={{ cursor: "pointer", fontSize: 18 }}
@@ -1484,13 +1528,13 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha de inicio",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 												{renderDatePicker(
 													"Fecha de fin",
 													formData.fechaFin,
 													handleChange,
-													"fechaFin"
+													"fechaFin",
 												)}
 											</div>
 											<div className="space-y-2">
@@ -1592,13 +1636,13 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha de inicio",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 												{renderDatePicker(
 													"Fecha de fin",
 													formData.fechaFin,
 													handleChange,
-													"fechaFin"
+													"fechaFin",
 												)}
 											</div>
 											<div
@@ -1633,7 +1677,7 @@ export function TablaPermisosFaltaUsuario() {
 														"Fecha",
 														formData.fechaFormulario,
 														handleChange,
-														"fechaFormulario"
+														"fechaFormulario",
 													)}
 												</div>
 												<div className="flex flex-col justify-end min-w-0 space-y-3">
@@ -1718,11 +1762,11 @@ export function TablaPermisosFaltaUsuario() {
 																	handleTrabajoChange(
 																		e,
 																		index,
-																		"fechaActividad"
+																		"fechaActividad",
 																	),
 																"fechaActividad",
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div>
@@ -1773,7 +1817,7 @@ export function TablaPermisosFaltaUsuario() {
 																	handleTrabajoChange(
 																		e,
 																		index,
-																		"tiempoRespuesta"
+																		"tiempoRespuesta",
 																	)
 																}
 																placeholder="Tiempo de respuesta..."
@@ -1839,7 +1883,7 @@ export function TablaPermisosFaltaUsuario() {
 															!otro.actividad.trim() ||
 															!otro.descripcion.trim() ||
 															!otro.tiempoRespuesta.trim() ||
-															!otro.comentarios.trim()
+															!otro.comentarios.trim(),
 													)
 												}>
 												Enviar
@@ -1888,13 +1932,13 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha de inicio",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 												{renderDatePicker(
 													"Fecha de fin",
 													formData.fechaFin,
 													handleChange,
-													"fechaFin"
+													"fechaFin",
 												)}
 											</div>
 											<div className="space-y-2">
@@ -1934,7 +1978,7 @@ export function TablaPermisosFaltaUsuario() {
 																formData,
 																nombre,
 																apellidos,
-																departamento
+																departamento,
 															)
 														}
 														disabled={loading}>
@@ -2020,7 +2064,7 @@ export function TablaPermisosFaltaUsuario() {
 													"Fecha",
 													formData.fechaInicio,
 													handleChange,
-													"fechaInicio"
+													"fechaInicio",
 												)}
 											</div>
 											<div className="space-y-2">
@@ -2109,7 +2153,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2123,6 +2167,77 @@ export function TablaPermisosFaltaUsuario() {
 																placeholder="Coloca tus observaciones aquí..."
 																readOnly={ver ? true : false}
 															/>
+														</div>
+														<div className="space-y-2">
+															<div
+																style={{
+																	position: "relative",
+																	display: "inline-flex",
+																	alignItems: "center",
+																}}>
+																<Label htmlFor="comprobante">Comprobante</Label>
+																<div style={{ marginLeft: "10px" }}>
+																	<Tooltip
+																		title={`<p style="margin:0;padding:5px;text-align:justify;">Sube aquí tu documento correspondiente al tipo de permiso requerido.</p>`}
+																		arrow>
+																		<HelpIcon
+																			style={{
+																				cursor: "pointer",
+																				fontSize: 18,
+																			}}
+																		/>
+																	</Tooltip>
+																</div>
+															</div>
+															<div className="flex items-center space-x-2">
+																{formData.comprobante && ver ? (
+																	<a
+																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
+																			formData.comprobante,
+																		)}`}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																		className="text-sm text-blue-600 hover:underline">
+																		Descargar {formData.comprobante}
+																	</a>
+																) : (
+																	<>
+																		{ver ? (
+																			<span style={{ fontSize: 14 }}>
+																				Sin comprobante agregado
+																			</span>
+																		) : (
+																			<>
+																				<input
+																					id="comprobante"
+																					name="comprobante" // Asegúrate que sea "comprobante"
+																					type="file"
+																					accept=".pdf,.jpg,.jpeg,.png"
+																					onChange={handleFileChange}
+																					className="hidden"
+																				/>
+																				<Button2
+																					type="button"
+																					variant="outline"
+																					onClick={() =>
+																						document
+																							.getElementById("comprobante")
+																							.click()
+																					}
+																					className="w-full">
+																					<Upload className="mr-2 h-4 w-4" />
+																					Subir archivo (PDF, JPG, PNG) Max: 4MB
+																				</Button2>
+																				{formData.comprobante && (
+																					<p className="text-sm text-muted-foreground break-all max-w-full">
+																						{formData.comprobante}
+																					</p>
+																				)}
+																			</>
+																		)}
+																	</>
+																)}
+															</div>
 														</div>
 													</CardContent>
 													{ver ? (
@@ -2230,7 +2345,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
@@ -2239,7 +2354,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaFin",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2260,7 +2375,7 @@ export function TablaPermisosFaltaUsuario() {
 																{formData.comprobante && ver ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -2360,12 +2475,12 @@ export function TablaPermisosFaltaUsuario() {
 																<div style={{ marginLeft: "10px" }}>
 																	<Tooltip
 																		title={`<p style="margin:0;padding:5px;text-align:justify;">La empresa concederá a los trabajadores permiso con goce de sueldo en los siguientes casos:</p>
-                        <ul style="margin:0;padding:5px;text-align:justify;">
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
-                          <li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
-                          <li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
-                        </ul>`}
+                        												<ul style="margin:0;padding:5px;text-align:justify;">
+                          												<li style="margin-bottom:5px;"><strong>Muerte de algún familiar consanguíneo en línea recta:</strong> Padre, Madre, Cónyuge e Hijos (5 días). Adjuntar copia simple del acta de defunción.</li>
+                          												<li style="margin-bottom:5px;"><strong>Muerte de algún familiar en segundo grado:</strong> Abuelos, hermanos, suegros (2 días). Adjuntar copia simple del acta de defunción.</li>
+                          												<li style="margin-bottom:5px;"><strong>Permiso por paternidad:</strong> 5 días por nacimiento o adopción. Ajuntar copia simple del acta de nacimiento de su hijo.</li>
+                          												<li><strong>Permiso por matrimonio:</strong> Civil o religioso, 3 días. Adjuntar copia simple del acta de matrimonio.</li>
+                        												</ul>`}
 																		arrow>
 																		<HelpIcon
 																			style={{
@@ -2425,7 +2540,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
@@ -2434,7 +2549,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaFin",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2474,7 +2589,7 @@ export function TablaPermisosFaltaUsuario() {
 																{formData.comprobante && ver ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -2575,7 +2690,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
@@ -2584,7 +2699,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaFin",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div
@@ -2624,7 +2739,7 @@ export function TablaPermisosFaltaUsuario() {
 																	"fechaFormulario",
 																	ver ? true : false,
 																	false,
-																	true
+																	true,
 																)}
 															</div>
 															<div className="flex flex-col justify-end min-w-0 space-y-3">
@@ -2721,12 +2836,12 @@ export function TablaPermisosFaltaUsuario() {
 																				handleTrabajoChange(
 																					e,
 																					index,
-																					"fechaActividad"
+																					"fechaActividad",
 																				),
 																			"fechaActividad",
 																			ver ? true : false,
 																			true,
-																			true
+																			true,
 																		)}
 																	</div>
 																	<div>
@@ -2740,7 +2855,7 @@ export function TablaPermisosFaltaUsuario() {
 																				handleTrabajoChange(
 																					e,
 																					index,
-																					"actividad"
+																					"actividad",
 																				)
 																			}
 																			readOnly={ver ? true : false}
@@ -2757,7 +2872,7 @@ export function TablaPermisosFaltaUsuario() {
 																				handleTrabajoChange(
 																					e,
 																					index,
-																					"descripcion"
+																					"descripcion",
 																				)
 																			}
 																			readOnly={ver ? true : false}
@@ -2787,7 +2902,7 @@ export function TablaPermisosFaltaUsuario() {
 																				handleTrabajoChange(
 																					e,
 																					index,
-																					"tiempoRespuesta"
+																					"tiempoRespuesta",
 																				)
 																			}
 																			readOnly={ver ? true : false}
@@ -2806,7 +2921,7 @@ export function TablaPermisosFaltaUsuario() {
 																					handleTrabajoChange(
 																						e,
 																						index,
-																						"comentarios"
+																						"comentarios",
 																					)
 																				}
 																				readOnly={ver ? true : false}
@@ -2869,7 +2984,7 @@ export function TablaPermisosFaltaUsuario() {
 																			!otro.actividad.trim() ||
 																			!otro.descripcion.trim() ||
 																			!otro.tiempoRespuesta.trim() ||
-																			!otro.comentarios.trim()
+																			!otro.comentarios.trim(),
 																	)
 																}>
 																Actualizar
@@ -2930,7 +3045,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 															{renderDatePicker(
 																"Fecha de fin",
@@ -2939,7 +3054,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaFin",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -2980,7 +3095,7 @@ export function TablaPermisosFaltaUsuario() {
 																{formData.comprobante ? (
 																	<a
 																		href={`/api/Gente&CulturaAbsence/descargarPDF?fileName=${encodeURIComponent(
-																			formData.comprobante
+																			formData.comprobante,
 																		)}`}
 																		target="_blank"
 																		rel="noopener noreferrer"
@@ -3059,7 +3174,7 @@ export function TablaPermisosFaltaUsuario() {
 																"fechaInicio",
 																ver ? true : false,
 																false,
-																true
+																true,
 															)}
 														</div>
 														<div className="space-y-2">
@@ -3216,12 +3331,12 @@ export function TablaPermisosFaltaUsuario() {
 										{evento.jefe_directo
 											? (() => {
 													const jefe = allUsers.find(
-														(u) => u.id === evento.jefe_directo
+														(u) => u.id === evento.jefe_directo,
 													);
 													return jefe
 														? `${jefe.nombre} ${jefe.apellidos}`
 														: "Sin datos";
-											  })()
+												})()
 											: "Sin datos"}
 									</TableCell>
 									<TableCell>
@@ -3232,34 +3347,34 @@ export function TablaPermisosFaltaUsuario() {
 														day: "2-digit",
 														month: "2-digit",
 														year: "numeric",
-													}
-											  )} ${new Date(evento.fecha_subida).toLocaleTimeString(
+													},
+												)} ${new Date(evento.fecha_subida).toLocaleTimeString(
 													"es-ES",
 													{
 														hour: "2-digit",
 														minute: "2-digit",
 														second: "2-digit",
 														hour12: false, // Cambiar a true si prefieres formato de 12 horas
-													}
-											  )}`
+													},
+												)}`
 											: "Sin datos"}
 									</TableCell>
 									<TableCell>
 										{evento.fecha_actualizacion
 											? `${new Date(
-													evento.fecha_actualizacion
-											  ).toLocaleDateString("es-ES", {
+													evento.fecha_actualizacion,
+												).toLocaleDateString("es-ES", {
 													day: "2-digit",
 													month: "2-digit",
 													year: "numeric",
-											  })} ${new Date(
-													evento.fecha_actualizacion
-											  ).toLocaleTimeString("es-ES", {
+												})} ${new Date(
+													evento.fecha_actualizacion,
+												).toLocaleTimeString("es-ES", {
 													hour: "2-digit",
 													minute: "2-digit",
 													second: "2-digit",
 													hour12: false, // Cambiar a true si prefieres formato de 12 horas
-											  })}`
+												})}`
 											: "Sin datos"}
 									</TableCell>
 									<TableCell>
@@ -3320,7 +3435,7 @@ export function TablaPermisosFaltaUsuario() {
 						(page) =>
 							page === currentPage ||
 							page === currentPage - 1 ||
-							page === currentPage + 1
+							page === currentPage + 1,
 					)
 					.map((page) => (
 						<button
