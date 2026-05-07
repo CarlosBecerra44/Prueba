@@ -66,6 +66,7 @@ export function TablaPermisosFaltaUsuario() {
 	const apellidos = userData?.user?.apellidos;
 	const idUser = userData?.user?.id;
 	const departamento = userData?.departamento?.nombre;
+	const puesto = userData?.user?.puesto;
 	const jefe_directo = userData?.user?.jefe_directo;
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("todos");
@@ -306,7 +307,7 @@ export function TablaPermisosFaltaUsuario() {
 		}
 	};
 
-	const handleDownload = (formData, nombre, apellido, departamento) => {
+	const handleDownload = (formData, nombre, apellido, departamento, puesto) => {
 		setLoading(true);
 
 		// Mostrar alerta de carga
@@ -348,7 +349,7 @@ export function TablaPermisosFaltaUsuario() {
 				["Fecha de solicitud", today],
 				["Nombre", `${nombre} ${apellido}`],
 				["Departamento", departamento],
-				["Puesto", formData.puestoVacaciones || "Sin puesto especificado"],
+				["Puesto", puesto],
 				[
 					"Vacaciones",
 					`Días: ${
@@ -1979,6 +1980,7 @@ export function TablaPermisosFaltaUsuario() {
 																nombre,
 																apellidos,
 																departamento,
+																puesto,
 															)
 														}
 														disabled={loading}>
