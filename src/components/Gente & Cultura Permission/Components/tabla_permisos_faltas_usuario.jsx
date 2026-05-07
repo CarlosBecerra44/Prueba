@@ -1218,7 +1218,7 @@ export function TablaPermisosFaltaUsuario() {
 											Llegada tarde / Salida antes
 										</CardTitle>
 										<DialogDescription className="text-center">
-											Autorización para llegar tarde o salir tempranooo
+											Autorización para llegar tarde o salir tempranoo
 										</DialogDescription>
 									</CardHeader>
 									<form onSubmit={handleSubmit}>
