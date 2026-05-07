@@ -136,7 +136,6 @@ export function TablaPermisosFaltaUsuario() {
 			descripcion: "",
 			tiempoRespuesta: "",
 			comentarios: "",
-			puestoVacaciones: "",
 			planTrabajo: {
 				otros: [],
 			},
@@ -190,7 +189,6 @@ export function TablaPermisosFaltaUsuario() {
 		descripcion: "",
 		tiempoRespuesta: "",
 		comentarios: "",
-		puestoVacaciones: "",
 		planTrabajo: {
 			otros: [],
 		},
@@ -1909,16 +1907,6 @@ export function TablaPermisosFaltaUsuario() {
 									<form onSubmit={handleSubmit}>
 										<CardContent className="space-y-6">
 											<div className="space-y-2">
-												<Label htmlFor="puestoVacaciones">Puesto</Label>
-												<Input
-													id="puestoVacaciones"
-													name="puestoVacaciones"
-													type="text"
-													onChange={handleChange}
-													placeholder="Puesto..."
-												/>
-											</div>
-											<div className="space-y-2">
 												<Label htmlFor="motivo">Días</Label>
 												<Input
 													id="dias"
@@ -2020,7 +2008,6 @@ export function TablaPermisosFaltaUsuario() {
 												type="submit"
 												className="w-full"
 												disabled={
-													!formData.puestoVacaciones.trim() ||
 													!formData.dias ||
 													!formData.fechaInicio ||
 													!formData.fechaFin ||
@@ -3014,18 +3001,6 @@ export function TablaPermisosFaltaUsuario() {
 												<form onSubmit={handleSubmitEdit}>
 													<CardContent className="space-y-6">
 														<div className="space-y-2">
-															<Label htmlFor="puestoVacaciones">Puesto</Label>
-															<Input
-																id="puestoVacaciones"
-																name="puestoVacaciones"
-																type="text"
-																value={formData.puestoVacaciones}
-																onChange={handleChange}
-																readOnly={ver ? true : false}
-																placeholder="Puesto..."
-															/>
-														</div>
-														<div className="space-y-2">
 															<Label htmlFor="motivo">Días</Label>
 															<Input
 																id="dias"
@@ -3122,7 +3097,6 @@ export function TablaPermisosFaltaUsuario() {
 																type="submit"
 																className="w-full"
 																disabled={
-																	!formData.puestoVacaciones.trim() ||
 																	!formData.dias ||
 																	!formData.fechaInicio ||
 																	!formData.fechaFin ||
