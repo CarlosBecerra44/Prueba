@@ -47,53 +47,23 @@ export function EditarEtiqueta() {
 
 	const verifiers = [
 		"Directora de marketing",
-		"Gerente de maquilas y desarrollo de nuevo productos",
+		"Desarrollo de nuevos productos",
 		"Investigación y desarrollo de nuevos productos",
-		"Ingeniería de productos",
 		"Gerente de marketing",
-		"Diseñador gráfico",
-		"Gerente o supervisor de calidad",
-		"Gerente o coordinador de auditorías",
-		"Químico o formulador",
-		"Planeación",
+		"Maestro de Materiales",
 	];
-
-	const modificacionesDiseñador = [
-		"Tamaño de letra",
-		"Logotipo",
-		"Tipografía",
-		"Colores",
-	];
-
-	const modificacionesIYDNP = [
-		"Código QR",
-		"Código de barras",
-		"Cambio estético",
-		"Cambio crítico",
-		"Distribuido y elaborado por",
-		"Tabla nutrimental",
-		"Lista de ingredientes",
-	];
-
-	const modificacionesCalidad = ["Información", "Ortografía"];
-
-	const modificacionesAuditorias = ["Auditable"];
-
-	const modificacionesQuimico = ["Fórmula"];
 
 	const modificacionesIngenieíaNProducto = [
 		"Dimensiones",
 		"Sustrato",
-		"Impresión",
 		"Acabado",
 		"Rollo",
 	];
 
-	const modificacionesGerenteMkt = ["Teléfono", "Mail/email"];
-
 	const recalcularFirmas = (form) => {
 		let contador = 0;
 
+		// Contar los verifiers normales (índices 0-9)
 		verifiers.forEach((_, index) => {
 			const nombre = form[`verifier-${index}`];
 			const autorizacion = form[`authorize-${index}`];
@@ -107,12 +77,17 @@ export function EditarEtiqueta() {
 			}
 		});
 
-		if (
-			form.tipo === "Maquilas" &&
-			form["verifier-10"] &&
-			form["authorize-10"] === "si"
-		) {
-			contador++;
+		// Contar el verifier extra de Maquilas (índice 10) solo si aplica
+		if (form.tipo === "Maquilas") {
+			const nombreMaq = form["verifier-10"];
+			const autorizacionMaq = form["authorize-10"];
+			if (
+				typeof nombreMaq === "string" &&
+				nombreMaq.trim() !== "" &&
+				(autorizacionMaq === "si" || autorizacionMaq === "no")
+			) {
+				contador++;
+			}
 		}
 
 		return contador;
@@ -160,6 +135,15 @@ export function EditarEtiqueta() {
 								["readOnly-1"]: true,
 								["selectDisabled-1"]: true,
 								["readOnlyComments-1"]: true,
+								["comments-1"]: "Adelante",
+								["verifier-0"]: data["verifier-0"] || "Directora de marketing",
+								["authorize-0"]: "si",
+								["fecha_autorizacion-0"]:
+									data["fecha_autorizacion-0"] || localDate,
+								["readOnly-0"]: true,
+								["selectDisabled-0"]: true,
+								["readOnlyComments-0"]: true,
+								["comments-0"]: "Adelante",
 							}
 						: {};
 
@@ -176,12 +160,19 @@ export function EditarEtiqueta() {
 						[`selectDisabled-${index}`]: !!data[`authorize-${index}`], // Desactivar el Select si ya tiene valor
 					})).reduce((acc, curr) => ({ ...acc, ...curr }), {}), // Combina los estados en un solo objeto
 				}));
-				const totalFirmas = recalcularFirmas(formFinal);
+				// Construir el estado combinado para calcular firmas correctamente
+				const mergedData = {
+					...data,
+					selectedImages: prueba,
+					...maquilasAuto,
+				};
+				const totalFirmas = recalcularFirmas(mergedData);
 
-				setFormulario({
-					...formFinal,
+				// Actualizar solo el campo firmas sin sobreescribir el estado completo
+				setFormulario((prev) => ({
+					...prev,
 					firmas: totalFirmas,
-				});
+				}));
 
 				setContadorFirmas(totalFirmas);
 
@@ -255,22 +246,12 @@ export function EditarEtiqueta() {
 		formulario[`verifier-2`],
 		formulario[`verifier-3`],
 		formulario[`verifier-4`],
-		formulario[`verifier-5`],
-		formulario[`verifier-6`],
-		formulario[`verifier-7`],
-		formulario[`verifier-8`],
-		formulario[`verifier-9`],
 		formulario[`verifier-10`],
 		formulario[`authorize-0`],
 		formulario[`authorize-1`],
 		formulario[`authorize-2`],
 		formulario[`authorize-3`],
 		formulario[`authorize-4`],
-		formulario[`authorize-5`],
-		formulario[`authorize-6`],
-		formulario[`authorize-7`],
-		formulario[`authorize-8`],
-		formulario[`authorize-9`],
 		formulario[`authorize-10`],
 		formulario.tipo,
 	]); // Se ejecuta cada vez que el formulario cambie
@@ -336,10 +317,14 @@ export function EditarEtiqueta() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
+		// Recalcular firmas justo antes de guardar para garantizar el valor correcto
+		const firmasActualizadas = recalcularFirmas(formulario);
+
 		const dataToSend = {
 			...formulario,
 			selectedImages: formulario.selectedImages,
 			estatus: tieneRechazo() ? "Rechazado" : formulario.estatus,
+			firmas: firmasActualizadas,
 		};
 
 		try {
@@ -494,10 +479,10 @@ export function EditarEtiqueta() {
 				"j.leyva@aionsuplementos.com": "l.torres@aionsuplementos.com",
 				"r.castellanos@aionsuplementos.com": "l.torres@aionsuplementos.com",
 				"l.torres@aionsuplementos.com": [
-					"j.sotelo@aionsuplementos.com ",
+					"j.sotelo@aionsuplementos.com",
 					"m.uribe@aionsuplementos.com",
 				],
-				"j.sotelo@aionsuplementos.com ": "j.pérez@aionsuplementos.com",
+				"j.sotelo@aionsuplementos.com": "j.pérez@aionsuplementos.com",
 				"m.uribe@aionsuplementos.com": "j.pérez@aionsuplementos.com",
 			};
 
@@ -645,7 +630,6 @@ export function EditarEtiqueta() {
 									label: "Fecha de elaboración",
 									type: "date",
 								},
-								{ id: "edicion", label: "Edición" },
 								{ id: "sustrato", label: "Sustrato" },
 								{ id: "dimensiones", label: "Dimensiones" },
 								{ id: "escala", label: "Escala" },
@@ -676,172 +660,6 @@ export function EditarEtiqueta() {
 									readOnly={!tienePermiso("Diseño", "description")}
 								/>
 							</div>
-							{modificacionesDiseñador.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectDiseñador${index + 1}`}
-										value={formulario[`miSelectDiseñador${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(value, `miSelectDiseñador${index + 1}`)
-										}
-										disabled={!tienePermiso("Diseño", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>
-							Investigación y desarrollo de nuevos productos
-						</CardTitle>
-						<CardDescription>Pedro Marin</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{modificacionesIYDNP.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectInvestigacion${index + 1}`}
-										value={
-											formulario[`miSelectInvestigacion${index + 1}`] || ""
-										} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(
-												value,
-												`miSelectInvestigacion${index + 1}`,
-											)
-										}
-										disabled={
-											!tienePermiso(
-												"Investigación y Desarrollo de Nuevos Productos",
-												item,
-											)
-										}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Calidad</CardTitle>
-						<CardDescription>Blanca Solano o Carmen Álvarez</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{modificacionesCalidad.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectCalidad${index + 1}`}
-										value={formulario[`miSelectCalidad${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(value, `miSelectCalidad${index + 1}`)
-										}
-										disabled={!tienePermiso("Calidad", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Auditorías</CardTitle>
-						<CardDescription>Rosa Contreras o Janette Alvarado</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{modificacionesAuditorias.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectAuditorias${index + 1}`}
-										value={formulario[`miSelectAuditorias${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(
-												value,
-												`miSelectAuditorias${index + 1}`,
-											)
-										}
-										disabled={!tienePermiso("Auditorías", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Químico o Formulador</CardTitle>
-						<CardDescription>
-							Carlos Corona o Victoria Valenzuela
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{modificacionesQuimico.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectQuimico${index + 1}`}
-										value={formulario[`miSelectQuimico${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(value, `miSelectQuimico${index + 1}`)
-										}
-										disabled={!tienePermiso("Laboratorio", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
 						</div>
 					</CardContent>
 				</Card>
@@ -855,61 +673,58 @@ export function EditarEtiqueta() {
 						<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
 							{modificacionesIngenieíaNProducto.map((item, index) => (
 								<div key={item}>
-									{item === "Impresión" ? (
-										<div className="space-y-2">
-											<Label>{item}</Label>
-											<Select
-												name={`miSelectIngenieria${index + 1}`}
-												value={
-													formulario[`miSelectIngenieria${index + 1}`] || ""
-												} // Usamos la clave dinámica en `formulario`
-												onValueChange={(value) =>
-													handleSelectChange(
-														value,
-														`miSelectIngenieria${index + 1}`,
-													)
-												}
-												disabled={
-													!tienePermiso("Ingeniería de Productos", item)
-												}>
-												<SelectTrigger>
-													<SelectValue placeholder="Seleccionar" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="Interior">Interior</SelectItem>
-													<SelectItem value="Exterior">Exterior</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-									) : (
-										<div className="space-y-2">
-											<Label>{item}</Label>
-											<Select
-												name={`miSelectIngenieria${index + 1}`}
-												value={
-													formulario[`miSelectIngenieria${index + 1}`] || ""
-												} // Usamos la clave dinámica en `formulario`
-												onValueChange={(value) =>
-													handleSelectChange(
-														value,
-														`miSelectIngenieria${index + 1}`,
-													)
-												}
-												disabled={
-													!tienePermiso("Ingeniería de Productos", item)
-												}>
-												<SelectTrigger>
-													<SelectValue placeholder="Seleccionar" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="si">Sí</SelectItem>
-													<SelectItem value="no">No</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-									)}
+									<div className="space-y-2">
+										<Label>{item}</Label>
+										<Select
+											name={`miSelectIngenieria${index + 1}`}
+											value={formulario[`miSelectIngenieria${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
+											onValueChange={(value) =>
+												handleSelectChange(
+													value,
+													`miSelectIngenieria${index + 1}`,
+												)
+											}
+											disabled={!tienePermiso("Ingeniería de Productos", item)}>
+											<SelectTrigger>
+												<SelectValue placeholder="Seleccionar" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="si">Sí</SelectItem>
+												<SelectItem value="no">No</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
 								</div>
 							))}
+							<div className="space-y-2">
+								<Label>Medida de centro</Label>
+
+								<div className="flex gap-2 max-w-xs">
+									<Input
+										type="number"
+										step="0.01"
+										name="medida_centro"
+										value={formulario.medida_centro || ""}
+										onChange={handleInputChange}
+									/>
+
+									<div className="w-24">
+										<Select
+											value={formulario.unidad_medida_centro || ""}
+											onValueChange={(value) =>
+												handleSelectChange(value, "unidad_medida_centro")
+											}>
+											<SelectTrigger>
+												<SelectValue placeholder="Unidad" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="cm">CM</SelectItem>
+												<SelectItem value="in">Pulgadas</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+							</div>
 							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 								{Array.from({ length: 8 }).map((_, index) => (
 									<div key={index} className="flex items-center space-x-2">
@@ -937,91 +752,6 @@ export function EditarEtiqueta() {
 										</label>
 									</div>
 								))}
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Gerente de marketing</CardTitle>
-						<CardDescription>Jahaziel Sotelo</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 gap-6">
-							{modificacionesGerenteMkt.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectGerenteMkt${index + 1}`}
-										value={formulario[`miSelectGerenteMkt${index + 1}`] || ""} // Usamos la clave dinámica en `formulario`
-										onValueChange={(value) =>
-											handleSelectChange(
-												value,
-												`miSelectGerenteMkt${index + 1}`,
-											)
-										}
-										disabled={!tienePermiso("Gerente de Marketing", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Compras</CardTitle>
-						<CardDescription>Karla Bayardo</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							<div>
-								<div className="space-y-2">
-									<Label htmlFor="value">Valor ($)</Label>
-									<Input
-										id="value"
-										name="value"
-										type="number"
-										placeholder="$"
-										onChange={handleInputChange}
-										value={formulario?.value}
-										readOnly={!tienePermiso("Compras", "Valor")}
-									/>
-								</div>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Planeación</CardTitle>
-						<CardDescription>Jaret Pérez</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							<div>
-								<div className="space-y-2">
-									<Label htmlFor="inventory">Inventario (pzs)</Label>
-									<Input
-										id="inventory"
-										name="inventory"
-										type="number"
-										placeholder="Pzs"
-										onChange={handleInputChange}
-										value={formulario?.inventory}
-										readOnly={!tienePermiso("Planeación", "Inventario")}
-									/>
-								</div>
 							</div>
 						</div>
 					</CardContent>
@@ -1061,10 +791,6 @@ export function EditarEtiqueta() {
 													...prev,
 													[`fecha_autorizacion-${index}`]: localDate,
 												}));
-											}
-
-											if (verificarCampos(index)) {
-												setContadorFirmas((prev) => prev + 1);
 											}
 										}}
 										value={formulario[`verifier-${index}`] || ""}

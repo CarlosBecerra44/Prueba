@@ -163,38 +163,38 @@ export function TablaEventosMejorada() {
 	}, []);
 
 	const renderNombres = (evento) => {
-		const nombresPorDefecto = {
-			DirMkt: "Directora de marketing",
-			GerMaq: "Gerente de maquilas",
-			IYD: "Investigación y desarrollo de nuevos productos",
-			IP: "Ingeniería de productos",
-			GerMkt: "Gerente de marketing",
-			Diseñador: "Diseñador gráfico",
-			GerCal: "Gerente de calidad",
-			GerAud: "Gerente auditorías",
-			Quimico: "Químico",
-			Planeacion: "Planeación",
-			Maquilas: "Maquilas",
-		};
+		// Mapeo explícito: nombre visible → índice de verifier-N en el formulario
+		const verifierSlots = [
+			{ label: "Directora de marketing", index: 0 },
+			{
+				label: "Desarrollo de nuevos productos",
+				index: 1,
+			},
+			{ label: "Investigación y desarrollo de nuevos productos", index: 2 },
+			{ label: "Gerente de marketing", index: 3 },
+			{ label: "Maestro de Materiales", index: 4 },
+			// Maquilas usa índice 10 y solo aparece cuando el tipo es "Maquilas"
+			{ label: "Maquilas", index: 10, soloMaquilas: true },
+		];
 
-		return Object.keys(nombresPorDefecto)
-			.filter((key, index, arr) => {
-				// Excluir el último elemento si el tipo no es "Maquilas"
-				if (
-					evento.datos_formulario.tipo !== "Maquilas" &&
-					index === arr.length - 1
-				)
-					return false;
+		const tipo = evento.datos_formulario?.tipo;
+
+		return verifierSlots
+			.filter(({ index, soloMaquilas }) => {
+				// Omitir el slot de Maquilas si el tipo no es Maquilas
+				if (soloMaquilas && tipo !== "Maquilas") return false;
+
 				const verifierKey = `verifier-${index}`;
 				const authorizeKey = `authorize-${index}`;
 
-				// Incluir solo los nombres cuya firma no existe o está vacía
-				const pendingToSign =
-					evento.datos_formulario?.[verifierKey] &&
-					evento.datos_formulario?.[authorizeKey];
-				return !pendingToSign; // Excluir si existe un valor en verifier
+				// Pendiente = no tiene nombre O no tiene autorización
+				const firmado =
+					evento.datos_formulario?.[verifierKey]?.trim() &&
+					(evento.datos_formulario?.[authorizeKey] === "si" ||
+						evento.datos_formulario?.[authorizeKey] === "no");
+				return !firmado;
 			})
-			.map((key) => nombresPorDefecto[key])
+			.map(({ label }) => label)
 			.join(", ");
 	};
 
@@ -265,7 +265,8 @@ export function TablaEventosMejorada() {
 		<div style={{ display: "flex", gap: "1px" }}>
 			{(session && session.user.email === "o.rivera@aionsuplementos.com") ||
 			session.user.email === "p.gomez@aionsuplementos.com" ||
-			session.user.email === "a.garcilita@aionsuplementos.com" ? (
+			session.user.email === "a.garcilita@aionsuplementos.com" ||
+			session.user.email === "j.orozco@aionsuplementos.com" ? (
 				<Button
 					onClick={() => handleChangeStatus(index)}
 					style={{ width: "1px", height: "40px" }}>
@@ -305,6 +306,7 @@ export function TablaEventosMejorada() {
 
 			{(session && session.user.email === "o.rivera@aionsuplementos.com") ||
 			session.user.email === "p.gomez@aionsuplementos.com" ||
+			session.user.email === "j.orozco@aionsuplementos.com" ||
 			session.user.email === "a.garcilita@aionsuplementos.com" ? (
 				<Button
 					onClick={() => handleDelete(index)}
@@ -371,7 +373,8 @@ export function TablaEventosMejorada() {
 				<CardTitle className="text-3xl font-bold">Etiquetas</CardTitle>
 			</div>
 			{(session && session.user.email === "o.rivera@aionsuplementos.com") ||
-			session.user.email === "a.garcilita@aionsuplementos.com" ? (
+			session.user.email === "a.garcilita@aionsuplementos.com" ||
+			session.user.email === "j.orozco@aionsuplementos.com" ? (
 				<div style={{ display: "flex" }}>
 					<a href="/marketing/etiquetas/formulario">
 						<Button
@@ -492,11 +495,11 @@ export function TablaEventosMejorada() {
 											: evento.tipo === "Maquilas"
 									) ? (
 										<TableCell>
-											{evento.firmas ? evento.firmas + "/11" : "0/11"}
+											{evento.firmas ? evento.firmas + "/6" : "0/6"}
 										</TableCell>
 									) : (
 										<TableCell>
-											{evento.firmas ? evento.firmas + "/10" : "0/10"}
+											{evento.firmas ? evento.firmas + "/5" : "0/5"}
 										</TableCell>
 									)}
 									<TableCell

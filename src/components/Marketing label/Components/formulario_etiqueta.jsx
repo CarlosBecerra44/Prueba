@@ -137,7 +137,7 @@ export function DocumentSigningForm() {
 									"r.contreras@aionsuplementos.com",
 									"j.leyva@aionsuplementos.com",
 									"c.alvarez@aionsuplementos.com",
-									"j.sotelo@aionsuplementos.com ",
+									"j.sotelo@aionsuplementos.com",
 									"j.pérez@aionsuplementos.com",
 									"j.corona@aionsuplementos.com",
 									"p.gomez@aionsuplementos.com",
@@ -156,7 +156,7 @@ export function DocumentSigningForm() {
 									"r.contreras@aionsuplementos.com",
 									"j.leyva@aionsuplementos.com",
 									"c.alvarez@aionsuplementos.com",
-									"j.sotelo@aionsuplementos.com ",
+									"j.sotelo@aionsuplementos.com",
 									"j.pérez@aionsuplementos.com",
 									"j.corona@aionsuplementos.com",
 									"p.gomez@aionsuplementos.com",
@@ -269,13 +269,6 @@ export function DocumentSigningForm() {
 		return formulario?.tipo && nowPdfPreview;
 	};
 
-	const modificacionesDiseñador = [
-		"Tamaño de letra",
-		"Logotipo",
-		"Tipografía",
-		"Colores",
-	];
-
 	return (
 		<div className="container mx-auto py-8 space-y-12">
 			<h1 className="text-3xl font-bold text-center mb-8">Nueva etiqueta</h1>
@@ -353,7 +346,6 @@ export function DocumentSigningForm() {
 									label: "Fecha de elaboración",
 									type: "date",
 								},
-								{ id: "edicion", label: "Edición" },
 								{ id: "sustrato", label: "Sustrato" },
 								{ id: "dimensiones", label: "Dimensiones" },
 								{ id: "escala", label: "Escala" },
@@ -388,27 +380,6 @@ export function DocumentSigningForm() {
 									readOnly={!tienePermiso("Diseño", "description")}
 								/>
 							</div>
-							{modificacionesDiseñador.map((item, index) => (
-								<div key={item} className="space-y-2">
-									<Label>{item}</Label>
-									{/* Usamos la clave dinámica `miSelectX` para cada select */}
-									<Select
-										name={`miSelectDiseñador${index + 1}`}
-										value={formulario[`miSelectDiseñador${index + 1}`] || ""}
-										onValueChange={(value) =>
-											handleInputChange(value, `miSelectDiseñador${index + 1}`)
-										}
-										disabled={!tienePermiso("Diseño", item)}>
-										<SelectTrigger>
-											<SelectValue placeholder="Seleccionar" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="si">Sí</SelectItem>
-											<SelectItem value="no">No</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							))}
 						</div>
 					</CardContent>
 				</Card>
