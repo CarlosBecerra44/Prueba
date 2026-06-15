@@ -1714,6 +1714,10 @@ export function UserManagementTable() {
 																	</SelectItem>
 																	<SelectItem value="2">Eren</SelectItem>
 																	<SelectItem value="3">Inik</SelectItem>
+																	<SelectItem value="4">Tupla</SelectItem>
+																	<SelectItem value="5">
+																		Wolf Nation Gym
+																	</SelectItem>
 																</SelectContent>
 															</Select>
 														</div>
