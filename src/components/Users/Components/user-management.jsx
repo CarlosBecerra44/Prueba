@@ -49,6 +49,7 @@ const formSections = [
 			"dimensiones",
 			"escala",
 			"description",
+			"version_anterior",
 		],
 	},
 	{
@@ -61,6 +62,7 @@ const formSections = [
 			"Rollo",
 			"Medida de centro",
 			"Seleccionar imágenes",
+			"Numero de PT",
 		],
 	},
 	{
@@ -1157,7 +1159,7 @@ export function UserManagementTable() {
 											</SelectItem>
 											<SelectItem value="2">Eren</SelectItem>
 											<SelectItem value="3">Inik</SelectItem>
-											<SelectItem value="4">Tupla</SelectItem>
+											<SelectItem value="4">Dupla</SelectItem>
 											<SelectItem value="5">Wolf Nation Gym</SelectItem>
 										</SelectContent>
 									</Select>
@@ -1714,7 +1716,7 @@ export function UserManagementTable() {
 																	</SelectItem>
 																	<SelectItem value="2">Eren</SelectItem>
 																	<SelectItem value="3">Inik</SelectItem>
-																	<SelectItem value="4">Tupla</SelectItem>
+																	<SelectItem value="4">Dupla</SelectItem>
 																	<SelectItem value="5">
 																		Wolf Nation Gym
 																	</SelectItem>

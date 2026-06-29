@@ -447,53 +447,31 @@ export function EditarEtiqueta() {
 				"o.rivera@aionsuplementos.com": "p.gomez@aionsuplementos.com",
 				"a.garcilita@aionsuplementos.com": "p.gomez@aionsuplementos.com",
 				"p.gomez@aionsuplementos.com": [
+					"r.castellanos@aionsuplementos.com",
+					"l.gama@aionsuplementos.com",
+				],
+				"r.castellanos@aionsuplementos.com": "j.sotelo@aionsuplementos.com",
+				"l.gama@aionsuplementos.com": "j.sotelo@aionsuplementos.com",
+				"j.sotelo@aionsuplementos.com": "a.haro@aionsuplementos.com",
+				"a.haro@aionsuplementos.com": [
+					"j.pérez@aionsuplementos.com",
 					"b.solano@aionsuplementos.com",
-					"c.alvarez@aionsuplementos.com",
-				],
-				"b.solano@aionsuplementos.com": [
 					"r.contreras@aionsuplementos.com",
 					"j.alvarado@aionsuplementos.com",
-				],
-				"c.alvarez@aionsuplementos.com": [
-					"r.contreras@aionsuplementos.com",
-					"j.alvarado@aionsuplementos.com",
-				],
-				"r.contreras@aionsuplementos.com": [
 					"j.corona@aionsuplementos.com",
-					"f.cruz@aionsuplementos.com",
-					"v.valenzuela@aionsuplementos.com",
-				],
-				"j.alvarado@aionsuplementos.com": [
-					"j.corona@aionsuplementos.com",
-					"f.cruz@aionsuplementos.com",
-					"v.valenzuela@aionsuplementos.com",
-				],
-				"j.corona@aionsuplementos.com": [
 					"j.leyva@aionsuplementos.com",
-					"r.castellanos@aionsuplementos.com",
 				],
-				"f.cruz@aionsuplementos.com": [
-					"j.leyva@aionsuplementos.com",
-					"r.castellanos@aionsuplementos.com",
-				],
-				"j.leyva@aionsuplementos.com": "l.torres@aionsuplementos.com",
-				"r.castellanos@aionsuplementos.com": "l.torres@aionsuplementos.com",
-				"l.torres@aionsuplementos.com": [
-					"j.sotelo@aionsuplementos.com",
-					"m.uribe@aionsuplementos.com",
-				],
-				"j.sotelo@aionsuplementos.com": "j.pérez@aionsuplementos.com",
-				"m.uribe@aionsuplementos.com": "j.pérez@aionsuplementos.com",
 			};
 
 			// Ajustar emailFlow si tipo es "Maquilas"
 			if (formulario.tipo && formulario.tipo == "Maquilas") {
-				emailFlow1["j.pérez@aionsuplementos.com"] =
+				emailFlow1["a.haro@aionsuplementos.com"] =
 					"r.barberena@aionsuplementos.com";
 			}
 
 			// Buscar el siguiente destinatario
 			const nextRecipient = emailFlow1[userEmail1];
+			const finish = userEmail1 === "a.haro@aionsuplementos.com";
 
 			// Solo si existe un siguiente destinatario
 			if (nextRecipient) {
@@ -505,8 +483,10 @@ export function EditarEtiqueta() {
 						},
 						body: JSON.stringify({
 							recipientEmail: nextRecipient,
-							subject: "Etiqueta editada",
-							message: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/etiquetas/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
+							subject: finish ? "Etiqueta concluida" : "Etiqueta editada",
+							message: finish
+								? `La etiqueta ha sido firmada y aprobada por los departamentos correspondiente. El proceso de firma ha concluido.\nEste es el enlace de la etiqueta: https://aionnet.vercel.app/marketing/etiquetas/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`
+								: `La etiqueta ha sido editada por ${session.user.name}. Por favor, revísala.\nEste es el enlace de la etiqueta para que puedas editarla: https://aionnet.vercel.app/marketing/etiquetas/Editar?id=${id} \nAsegúrate de iniciar sesión con tu usuario antes de hacer clic en el enlace.`,
 						}),
 					});
 
@@ -633,6 +613,7 @@ export function EditarEtiqueta() {
 								{ id: "sustrato", label: "Sustrato" },
 								{ id: "dimensiones", label: "Dimensiones" },
 								{ id: "escala", label: "Escala" },
+								{ id: "version_anterior", label: "Version Anterior(URL)" },
 							].map((field) => (
 								<div key={field.id} className="space-y-2">
 									<Label htmlFor={field.id}>{field.label}</Label>
@@ -696,6 +677,15 @@ export function EditarEtiqueta() {
 									</div>
 								</div>
 							))}
+							<div className="space-y-2">
+								<Label>Numero de PT</Label>
+								<Input
+									placeholder="..."
+									name="numero_pt"
+									value={formulario.numero_pt || ""}
+									onChange={handleInputChange}
+								/>
+							</div>
 							<div className="space-y-2">
 								<Label>Medida de centro</Label>
 
