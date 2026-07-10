@@ -128,14 +128,6 @@ export function EditarEtiqueta() {
 				const maquilasAuto =
 					data.tipo === "Maquilas"
 						? {
-								["verifier-1"]: data["verifier-1"] || "Gerente de Maquilas",
-								["authorize-1"]: "si",
-								["fecha_autorizacion-1"]:
-									data["fecha_autorizacion-1"] || localDate,
-								["readOnly-1"]: true,
-								["selectDisabled-1"]: true,
-								["readOnlyComments-1"]: true,
-								["comments-1"]: "Adelante",
 								["verifier-0"]: data["verifier-0"] || "Directora de marketing",
 								["authorize-0"]: "si",
 								["fecha_autorizacion-0"]:
@@ -143,7 +135,7 @@ export function EditarEtiqueta() {
 								["readOnly-0"]: true,
 								["selectDisabled-0"]: true,
 								["readOnlyComments-0"]: true,
-								["comments-0"]: "Adelante",
+								["comments-0"]: "No requieren firma",
 							}
 						: {};
 
