@@ -63,7 +63,7 @@ export function EditarEtiqueta() {
 	const recalcularFirmas = (form) => {
 		let contador = 0;
 
-		// Contar los verifiers normales (índices 0-9)
+		// Contar los verifiers normales (índices 0-4)
 		verifiers.forEach((_, index) => {
 			const nombre = form[`verifier-${index}`];
 			const autorizacion = form[`authorize-${index}`];
@@ -444,8 +444,19 @@ export function EditarEtiqueta() {
 				],
 				"r.castellanos@aionsuplementos.com": "j.sotelo@aionsuplementos.com",
 				"l.gama@aionsuplementos.com": "j.sotelo@aionsuplementos.com",
-				"j.sotelo@aionsuplementos.com": "a.haro@aionsuplementos.com",
+				"j.sotelo@aionsuplementos.com": [
+					"a.haro@aionsuplementos.com",
+					"e.bueno@aionsuplementos.com",
+				],
 				"a.haro@aionsuplementos.com": [
+					"j.pérez@aionsuplementos.com",
+					"b.solano@aionsuplementos.com",
+					"r.contreras@aionsuplementos.com",
+					"j.alvarado@aionsuplementos.com",
+					"j.corona@aionsuplementos.com",
+					"j.leyva@aionsuplementos.com",
+				],
+				"e.bueno@aionsuplementos.com": [
 					"j.pérez@aionsuplementos.com",
 					"b.solano@aionsuplementos.com",
 					"r.contreras@aionsuplementos.com",
