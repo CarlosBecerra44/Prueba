@@ -1,98 +1,130 @@
 import fs from "fs";
-import { Client } from "basic-ftp";
+import SftpClient from "ssh2-sftp-client";
 import formidable from "formidable";
 import path from "path";
 import sharp from "sharp";
+import os from "os";
 
 // Desactiva el body parser de Next.js para usar formidable
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+	api: {
+		bodyParser: false,
+	},
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Método no permitido" });
-  }
+	if (req.method !== "POST") {
+		return res.status(405).json({
+			message: "Método no permitido",
+		});
+	}
 
-  const form = new formidable.IncomingForm({
-    multiples: false, // Solo un archivo
-    uploadDir: "/tmp",
-    // uploadDir: path.join(process.cwd(), "uploads"),
-    keepExtensions: true,
-  });
+	const form = new formidable.IncomingForm({
+		multiples: false,
+		uploadDir: os.tmpdir(),
+		keepExtensions: true,
+	});
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Error al procesar el formulario:", err);
-      return res
-        .status(500)
-        .json({ message: "Error al procesar el formulario" });
-    }
+	form.parse(req, async (err, fields, files) => {
+		if (err) {
+			console.error("Error al procesar el formulario:", err);
 
-    const file = files.comprobante;
+			return res.status(500).json({
+				message: "Error al procesar el formulario",
+			});
+		}
 
-    if (!file || !file.path) {
-      return res.status(400).json({ message: "Archivo no válido" });
-    }
+		const file = Array.isArray(files.comprobante)
+			? files.comprobante[0]
+			: files.comprobante;
 
-    const fileExt = path.extname(file.name).toLowerCase();
-    const allowedImageExts = [".jpg", ".jpeg", ".png", ".webp"];
+		if (!file || !file.path) {
+			return res.status(400).json({
+				message: "Archivo no válido",
+			});
+		}
 
-    const now = new Date();
-    const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
-    const newFileName = `${formattedDate}_${file.name}`;
-    const outputPath = path.join("/tmp", `processed_${newFileName}`);
-    // para que esto funcione en local
-    /*const outputPath = path.join(
-      process.cwd(),
-      "uploads",
-      `processed_${newFileName}`
-    );*/
+		const fileExt = path.extname(file.name).toLowerCase();
+		const allowedImageExts = [".jpg", ".jpeg", ".png", ".webp"];
+		const now = new Date();
+		const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
+		const newFileName = `${formattedDate}_${file.name}`;
+		const outputPath = path.join(os.tmpdir(), `processed_${newFileName}`);
+		const sftp = new SftpClient();
 
-    try {
-      // Si es imagen, comprimirla; si no, copiar directamente
-      if (allowedImageExts.includes(fileExt)) {
-        await sharp(file.path)
-          .toFormat(fileExt.replace(".", ""), { quality: 60 })
-          .toFile(outputPath);
-      } else {
-        fs.copyFileSync(file.path, outputPath);
-      }
+		try {
+			// ==========================================
+			// 1. Procesar el archivo
+			// ==========================================
 
-      // Conexión FTP
-      const client = new Client();
-      client.ftp.verbose = true;
+			if (allowedImageExts.includes(fileExt)) {
+				await sharp(file.path)
+					.toFormat(fileExt.replace(".", ""), {
+						quality: 60,
+					})
+					.toFile(outputPath);
+			} else {
+				fs.copyFileSync(file.path, outputPath);
+			}
 
-      await client.access({
-        host: "50.6.199.166",
-        user: "aionnet",
-        password: "Rrio1003",
-        secure: false,
-      });
+			await sftp.connect({
+				host: "aionnet.duckdns.org",
+				port: 22,
+				username: "aionnet",
+				password: "$z[r1eQ1",
+			});
 
-      const remotePath = `/uploads/papeletas/${newFileName}`;
-      await client.uploadFrom(outputPath, remotePath);
-      client.close();
+			console.log("Conexión SFTP establecida");
 
-      // Borrar el archivo temporal
-      try {
-        fs.unlinkSync(file.path);
-        fs.unlinkSync(outputPath);
-      } catch (unlinkErr) {
-        console.error("Error al eliminar archivo temporal:", unlinkErr);
-      }
+			const remoteDir = "/uploads/papeletas";
 
-      res.status(200).json({
-        message: "Archivo subido correctamente al FTP",
-        fileName: newFileName,
-      });
-    } catch (error) {
-      console.error("Error al subir al FTP o procesar archivo:", error);
-      res
-        .status(500)
-        .json({ error: "No se pudo subir el archivo al FTP", error });
-    }
-  });
+			// Crear el directorio si no existe
+			await sftp.mkdir(remoteDir, true);
+
+			const remotePath = `${remoteDir}/${newFileName}`;
+
+			await sftp.put(outputPath, remotePath);
+
+			console.log(`Archivo subido correctamente: ${remotePath}`);
+
+			// ==========================================
+			// 5. Cerrar conexión SFTP
+			// ==========================================
+
+			await sftp.end();
+
+			// ==========================================
+			// 6. Borrar archivos temporales
+			// ==========================================
+
+			try {
+				fs.unlinkSync(file.path);
+				fs.unlinkSync(outputPath);
+			} catch (unlinkErr) {
+				console.error("Error al eliminar archivo temporal:", unlinkErr);
+			}
+
+			// ==========================================
+			// 7. Respuesta
+			// ==========================================
+
+			return res.status(200).json({
+				message: "Archivo subido correctamente al SFTP",
+				fileName: newFileName,
+			});
+		} catch (error) {
+			console.error("Error al subir al SFTP o procesar archivo:", error);
+
+			try {
+				await sftp.end();
+			} catch (e) {
+				// Ignorar error al cerrar conexión
+			}
+
+			return res.status(500).json({
+				message: "No se pudo subir el archivo al SFTP",
+				error: error.message,
+			});
+		}
+	});
 }
