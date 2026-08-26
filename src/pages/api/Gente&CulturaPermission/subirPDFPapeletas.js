@@ -44,12 +44,18 @@ export default async function handler(req, res) {
 			});
 		}
 
-		const fileExt = path.extname(file.name).toLowerCase();
+		// ==========================================
+		// Mantener EXACTAMENTE el nombre original
+		// ==========================================
+		const originalFileName = file.name;
+
+		const fileExt = path.extname(originalFileName).toLowerCase();
+
 		const allowedImageExts = [".jpg", ".jpeg", ".png", ".webp"];
-		const now = new Date();
-		const formattedDate = now.toISOString().replace(/[-:T]/g, "").split(".")[0];
-		const newFileName = `${formattedDate}_${file.name}`;
-		const outputPath = path.join(os.tmpdir(), `processed_${newFileName}`);
+
+		// Archivo temporal procesado
+		const outputPath = path.join(os.tmpdir(), `processed_${originalFileName}`);
+
 		const sftp = new SftpClient();
 
 		try {
@@ -67,6 +73,10 @@ export default async function handler(req, res) {
 				fs.copyFileSync(file.path, outputPath);
 			}
 
+			// ==========================================
+			// 2. Conectar al SFTP
+			// ==========================================
+
 			await sftp.connect({
 				host: "aionnet.duckdns.org",
 				port: 22,
@@ -76,12 +86,19 @@ export default async function handler(req, res) {
 
 			console.log("Conexión SFTP establecida");
 
+			// ==========================================
+			// 3. Directorio remoto
+			// ==========================================
+
 			const remoteDir = "/uploads/papeletas";
 
-			// Crear el directorio si no existe
 			await sftp.mkdir(remoteDir, true);
 
-			const remotePath = `${remoteDir}/${newFileName}`;
+			// ==========================================
+			// 4. Usar el nombre ORIGINAL
+			// ==========================================
+
+			const remotePath = `${remoteDir}/${originalFileName}`;
 
 			await sftp.put(outputPath, remotePath);
 
@@ -110,7 +127,7 @@ export default async function handler(req, res) {
 
 			return res.status(200).json({
 				message: "Archivo subido correctamente al SFTP",
-				fileName: newFileName,
+				fileName: originalFileName,
 			});
 		} catch (error) {
 			console.error("Error al subir al SFTP o procesar archivo:", error);
