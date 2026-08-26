@@ -132,6 +132,7 @@ export function DocumentSigningForm() {
 					emails:
 						formulario.tipo === "Maquilas"
 							? [
+									"j.orozco@aionsuplementos.com",
 									"a.garcilita@aionsuplementos.com",
 									"b.solano@aionsuplementos.com",
 									"r.contreras@aionsuplementos.com",
@@ -148,6 +149,7 @@ export function DocumentSigningForm() {
 									"a.haro@aionsuplementos.com",
 								]
 							: [
+									"j.orozco@aionsuplementos.com",
 									"a.garcilita@aionsuplementos.com",
 									"b.solano@aionsuplementos.com",
 									"r.contreras@aionsuplementos.com",

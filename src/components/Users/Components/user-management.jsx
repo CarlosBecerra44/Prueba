@@ -80,6 +80,7 @@ const formSections = [
 			"Gerente de marketing",
 			"Maquilas",
 			"Maestro de Materiales",
+			"Diseñador gráfico",
 		],
 	},
 	{
